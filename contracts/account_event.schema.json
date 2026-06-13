@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nautilus.local/contracts/account_event.schema.json",
+  "title": "AccountEvent",
+  "type": "object",
+  "required": ["event_id", "seq", "ts_event", "account_id", "account_kind", "event_type", "checksum"],
+  "properties": {
+    "event_id": { "type": "string" },
+    "seq": { "type": "integer", "minimum": 0 },
+    "ts_event": { "type": "string", "format": "date-time" },
+    "account_id": { "type": "string" },
+    "account_kind": {
+      "type": "string",
+      "enum": ["sandbox_paper", "real_feed_sandbox_paper", "broker_paper_probe", "live_broker", "backtest_replay"]
+    },
+    "event_type": { "type": "string" },
+    "source_ref": { "type": "string" },
+    "checksum": { "type": "string" }
+  },
+  "additionalProperties": true
+}
+

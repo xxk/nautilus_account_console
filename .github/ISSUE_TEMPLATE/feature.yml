@@ -1,0 +1,43 @@
+name: Feature
+description: Propose an implementation slice for Nautilus Account Console.
+title: "[Feature]: "
+labels: ["feature"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What account-console capability is missing?
+    validations:
+      required: true
+  - type: dropdown
+    id: layer
+    attributes:
+      label: Layer
+      options:
+        - contracts
+        - rust-hotpath
+        - python-backend
+        - typescript-frontend
+        - docs-acceptance
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance
+      description: What tests, artifacts or typed evidence prove the feature?
+    validations:
+      required: true
+  - type: checkboxes
+    id: boundaries
+    attributes:
+      label: Boundary checks
+      options:
+        - label: Does not write runtime/admission/approval/capital/broker truth
+          required: true
+        - label: Does not treat raw report messages as account truth
+          required: true
+        - label: Does not claim Paper ready, Live ready, capital allocated or can trade
+          required: true
+

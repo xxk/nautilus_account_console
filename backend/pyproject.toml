@@ -1,0 +1,26 @@
+[build-system]
+requires = ["hatchling>=1.21"]
+build-backend = "hatchling.build"
+
+[project]
+name = "nautilus-account-console"
+version = "0.1.0"
+description = "Read-only account console API for Nautilus account read models."
+readme = "../README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "fastapi>=0.115",
+  "pydantic>=2.7",
+  "uvicorn[standard]>=0.30"
+]
+
+[project.scripts]
+nac = "nautilus_account_console.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/nautilus_account_console"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+

@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nautilus.local/contracts/order_event.schema.json",
+  "title": "OrderEvent",
+  "type": "object",
+  "required": [
+    "event_id",
+    "seq",
+    "ts_event",
+    "account_id",
+    "account_kind",
+    "client_order_id",
+    "event_type",
+    "order_status",
+    "checksum"
+  ],
+  "properties": {
+    "event_id": { "type": "string" },
+    "seq": { "type": "integer", "minimum": 0 },
+    "ts_event": { "type": "string", "format": "date-time" },
+    "ts_recv": { "type": "string", "format": "date-time" },
+    "account_id": { "type": "string" },
+    "account_kind": {
+      "type": "string",
+      "enum": ["sandbox_paper", "real_feed_sandbox_paper", "broker_paper_probe", "live_broker", "backtest_replay"]
+    },
+    "portfolio_uid": { "type": "string" },
+    "strategy_id": { "type": "string" },
+    "instrument_id": { "type": "string" },
+    "client_order_id": { "type": "string" },
+    "venue_order_id": { "type": "string" },
+    "event_type": { "type": "string" },
+    "order_status": { "type": "string" },
+    "side": { "type": "string" },
+    "price": { "type": "number" },
+    "quantity": { "type": "number" },
+    "filled_qty": { "type": "number" },
+    "last_px": { "type": "number" },
+    "last_qty": { "type": "number" },
+    "leaves_qty": { "type": "number" },
+    "reason": { "type": "string" },
+    "latency_ms": { "type": "number" },
+    "report_msg_type": { "type": "string" },
+    "report_msg_ref": { "type": "string" },
+    "report_msg_checksum": { "type": "string" },
+    "report_msg_excerpt": { "type": "string" },
+    "source_ref": { "type": "string" },
+    "checksum": { "type": "string" }
+  },
+  "additionalProperties": false
+}
+

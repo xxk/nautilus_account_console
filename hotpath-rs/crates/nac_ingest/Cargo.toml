@@ -1,0 +1,12 @@
+[package]
+name = "nac_ingest"
+edition.workspace = true
+license.workspace = true
+version.workspace = true
+
+[dependencies]
+nac_ledger = { path = "../nac_ledger" }
+
+[lib]
+path = "src/lib.rs"
+

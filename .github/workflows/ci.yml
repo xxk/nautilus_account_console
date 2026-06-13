@@ -1,0 +1,79 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  python:
+    name: Python backend
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install backend
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e backend pytest
+
+      - name: Compile backend
+        run: python -m compileall backend/src
+
+      - name: Test backend
+        run: python -m pytest backend/tests
+
+  rust:
+    name: Rust hotpath
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Test hotpath workspace
+        run: cargo test --manifest-path hotpath-rs/Cargo.toml
+
+  frontend:
+    name: Frontend
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install frontend
+        working-directory: frontend
+        run: npm install
+
+      - name: Build frontend
+        working-directory: frontend
+        run: npm run build
+
+  boundary:
+    name: Read-only boundary scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install ripgrep
+        run: sudo apt-get update && sudo apt-get install -y ripgrep
+
+      - name: Scan implementation for forbidden UI/runtime claims
+        run: |
+          ! rg -n "Paper ready|Live ready|admitted|production ready|capital allocated|can trade|place order|latest/|debug/|raw report.*truth|runtime truth|capital truth|submit order|cancel order|replace order" frontend/src backend/src hotpath-rs/crates
+

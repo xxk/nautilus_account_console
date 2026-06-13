@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nautilus.local/contracts/report_msg.schema.json",
+  "title": "ReportMsg",
+  "type": "object",
+  "required": ["report_msg_ref", "report_msg_checksum", "report_msg_type"],
+  "properties": {
+    "report_msg_ref": { "type": "string" },
+    "report_msg_checksum": { "type": "string" },
+    "report_msg_type": { "type": "string" },
+    "content_type": { "type": "string" },
+    "excerpt": { "type": "string" },
+    "normalized_event_id": { "type": "string" }
+  },
+  "additionalProperties": true
+}
+

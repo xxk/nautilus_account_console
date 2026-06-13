@@ -1,0 +1,9 @@
+# Replace these placeholders after the GitHub organization/repository owner is known.
+# Keep ownership aligned with the ADR-0045 layer boundaries.
+
+# /contracts/        @OWNER/account-console-contracts
+# /hotpath-rs/       @OWNER/account-console-hotpath
+# /backend/          @OWNER/account-console-backend
+# /frontend/         @OWNER/account-console-frontend
+# /docs/             @OWNER/account-console-docs
+

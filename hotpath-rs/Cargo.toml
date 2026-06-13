@@ -1,0 +1,13 @@
+[workspace]
+resolver = "2"
+members = [
+  "crates/nac_ingest",
+  "crates/nac_ledger",
+  "crates/nac_stream"
+]
+
+[workspace.package]
+edition = "2021"
+license = "Proprietary"
+version = "0.1.0"
+

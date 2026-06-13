@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nautilus.local/contracts/account_snapshot.schema.json",
+  "title": "AccountSnapshot",
+  "type": "object",
+  "required": ["account_id", "account_kind", "equity", "available_cash", "margin_used", "last_seq", "checksum"],
+  "properties": {
+    "account_id": { "type": "string" },
+    "account_kind": {
+      "type": "string",
+      "enum": ["sandbox_paper", "real_feed_sandbox_paper", "broker_paper_probe", "live_broker", "backtest_replay"]
+    },
+    "portfolio_uid": { "type": "string" },
+    "session_id": { "type": "string" },
+    "equity": { "type": "number" },
+    "available_cash": { "type": "number" },
+    "margin_used": { "type": "number" },
+    "position_count": { "type": "integer", "minimum": 0 },
+    "open_order_count": { "type": "integer", "minimum": 0 },
+    "fill_count_today": { "type": "integer", "minimum": 0 },
+    "event_lag_ms": { "type": "number" },
+    "health": { "type": "string" },
+    "blocker_id": { "type": "string" },
+    "last_seq": { "type": "integer", "minimum": 0 },
+    "source_ref": { "type": "string" },
+    "checksum": { "type": "string" }
+  },
+  "additionalProperties": false
+}
+

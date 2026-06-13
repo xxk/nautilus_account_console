@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nautilus.local/contracts/fill_event.schema.json",
+  "title": "FillEvent",
+  "type": "object",
+  "required": ["event_id", "seq", "ts_event", "account_id", "client_order_id", "instrument_id", "last_px", "last_qty", "checksum"],
+  "properties": {
+    "event_id": { "type": "string" },
+    "seq": { "type": "integer", "minimum": 0 },
+    "ts_event": { "type": "string", "format": "date-time" },
+    "account_id": { "type": "string" },
+    "client_order_id": { "type": "string" },
+    "instrument_id": { "type": "string" },
+    "last_px": { "type": "number" },
+    "last_qty": { "type": "number" },
+    "fee": { "type": "number" },
+    "source_ref": { "type": "string" },
+    "checksum": { "type": "string" }
+  },
+  "additionalProperties": true
+}
+
