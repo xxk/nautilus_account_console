@@ -1,7 +1,7 @@
-import { Activity, AlertTriangle, Radio, RefreshCw } from "lucide-react";
+import { Activity, AlertTriangle, FileText, Radio, RefreshCw } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
-import { fetchAccounts, fetchEvents, openEventStream } from "./api";
+import { fetchAccounts, fetchEvents, fetchOrderExecutionReports, openEventStream } from "./api";
 import type { AccountSnapshot, OrderEvent } from "./types";
 
 function formatMoney(value: number): string {
@@ -15,6 +15,8 @@ export function App() {
   const [accounts, setAccounts] = useState<AccountSnapshot[]>([]);
   const [selectedAccountId, setSelectedAccountId] = useState<string | null>(null);
   const [events, setEvents] = useState<OrderEvent[]>([]);
+  const [selectedClientOrderId, setSelectedClientOrderId] = useState<string | null>(null);
+  const [executionReports, setExecutionReports] = useState<OrderEvent[]>([]);
   const [streamStatus, setStreamStatus] = useState<"live" | "stale">("stale");
   const [error, setError] = useState<string | null>(null);
 
@@ -37,9 +39,22 @@ export function App() {
       return;
     }
     fetchEvents(selectedAccount.account_id)
-      .then(setEvents)
+      .then((rows) => {
+        setEvents(rows);
+        setSelectedClientOrderId(rows[0]?.client_order_id ?? null);
+      })
       .catch((reason: unknown) => setError(String(reason)));
   }, [selectedAccount?.account_id]);
+
+  useEffect(() => {
+    if (!selectedAccount || !selectedClientOrderId) {
+      setExecutionReports([]);
+      return;
+    }
+    fetchOrderExecutionReports(selectedAccount.account_id, selectedClientOrderId)
+      .then((payload) => setExecutionReports(payload.reports))
+      .catch((reason: unknown) => setError(String(reason)));
+  }, [selectedAccount?.account_id, selectedClientOrderId]);
 
   useEffect(() => {
     if (!selectedAccount) {
@@ -54,6 +69,7 @@ export function App() {
           if (current.some((row) => row.seq === event.seq)) {
             return current;
           }
+          setSelectedClientOrderId((selected) => selected ?? event.client_order_id);
           return [...current, event].slice(-500);
         });
       },
@@ -112,27 +128,84 @@ export function App() {
                 <Metric label="Last seq" value={String(selectedAccount.last_seq)} />
               </div>
 
-              <div className="tape-header">
-                <div className="section-title">
-                  <RefreshCw size={16} />
-                  Order Event Tape
+              <div className="order-workspace">
+                <div>
+                  <div className="tape-header">
+                    <div className="section-title">
+                      <RefreshCw size={16} />
+                      Order Event Tape
+                    </div>
+                    <span>{events.length} events</span>
+                  </div>
+                  <div className="event-tape" data-testid="order-event-tape">
+                    {events.map((event) => (
+                      <button
+                        className={
+                          event.client_order_id === selectedClientOrderId
+                            ? "event-row selected"
+                            : "event-row"
+                        }
+                        key={event.event_id}
+                        onClick={() => setSelectedClientOrderId(event.client_order_id)}
+                        type="button"
+                      >
+                        <div className="event-main">
+                          <strong>#{event.seq}</strong>
+                          <span>{event.client_order_id}</span>
+                          <span>{event.order_status}</span>
+                          <span>{event.instrument_id}</span>
+                        </div>
+                        <div className="event-sub">{event.report_msg_excerpt}</div>
+                      </button>
+                    ))}
+                  </div>
                 </div>
-                <span>{events.length} events</span>
-              </div>
-              <div className="event-tape" data-testid="order-event-tape">
-                {events.map((event) => (
-                  <article className="event-row" key={event.event_id}>
-                    <div className="event-main">
-                      <strong>#{event.seq}</strong>
-                      <span>{event.event_type}</span>
-                      <span>{event.order_status}</span>
-                      <span>{event.instrument_id}</span>
+
+                <aside className="report-panel" data-testid="order-execution-reports">
+                  <div className="section-title">
+                    <FileText size={16} />
+                    Order Execution Reports
+                  </div>
+                  {selectedClientOrderId ? (
+                    <div className="selected-order">
+                      <span>Selected order</span>
+                      <strong>{selectedClientOrderId}</strong>
                     </div>
-                    <div className="event-sub" data-testid="report-msg-drawer">
-                      {event.report_msg_excerpt}
-                    </div>
-                  </article>
-                ))}
+                  ) : null}
+                  <div className="report-list" data-testid="report-msg-drawer">
+                    {executionReports.map((report) => (
+                      <article className="report-row" data-testid="execution-report-row" key={report.event_id}>
+                        <div className="report-row-head">
+                          <strong>#{report.seq}</strong>
+                          <span>{report.event_type}</span>
+                          <span>{report.order_status}</span>
+                        </div>
+                        <dl>
+                          <div>
+                            <dt>Report type</dt>
+                            <dd>{report.report_msg_type ?? "-"}</dd>
+                          </div>
+                          <div>
+                            <dt>Latency</dt>
+                            <dd>{report.latency_ms ?? "-"} ms</dd>
+                          </div>
+                          <div>
+                            <dt>Ref</dt>
+                            <dd>{report.report_msg_ref ?? "-"}</dd>
+                          </div>
+                          <div>
+                            <dt>Checksum</dt>
+                            <dd>{report.report_msg_checksum ?? "-"}</dd>
+                          </div>
+                        </dl>
+                        <p>{report.report_msg_excerpt}</p>
+                      </article>
+                    ))}
+                    {executionReports.length === 0 ? (
+                      <div className="empty">Select an order to inspect execution reports.</div>
+                    ) : null}
+                  </div>
+                </aside>
               </div>
             </>
           ) : (
@@ -152,4 +225,3 @@ function Metric({ label, value }: { label: string; value: string }) {
     </div>
   );
 }
-

@@ -50,10 +50,12 @@ The current MVP scaffold implements the first version as:
 1. Left account selector.
 2. Account summary metrics.
 3. Order event tape.
-4. Inline report message excerpt.
+4. Adjacent selected-order execution reports panel.
 5. Stream status.
 
-The next UI slice should convert the inline report message excerpt into a right-side drawer.
+The selected-order execution reports panel is the default MVP behavior: selecting any row in the order event tape selects that `client_order_id`, and the neighboring panel shows every normalized execution report/order report event for that order.
+
+The later drawer can still be added for large raw payload inspection, but it must be opened from a selected execution report and loaded by `report_msg_ref`.
 
 ## 3. Routes
 
@@ -82,7 +84,8 @@ Compatibility aliases may exist later, but they must route to the same account w
 | Orders | later tab, not required in first skeleton | current order reducer |
 | Fills | later tab, not required in first skeleton | fill ledger |
 | Order Event Tape | latest events, cursor, event type, status, instrument and report ref/excerpt | normalized order events |
-| Report Msg Drawer | selected event raw/normalized report detail by ref/checksum | report msg payload store |
+| Order Execution Reports | all execution reports for the selected `client_order_id` shown beside the tape | normalized order events scoped by account and client order |
+| Report Msg Drawer | selected report raw/normalized payload detail by ref/checksum | report msg payload store |
 | Reconcile | later tab for target vs actual, blockers and source refs | reconcile summary |
 | Provenance | later tab for refs/checksums/runtime owner/session id | manifest/read model |
 
@@ -133,9 +136,9 @@ MVP UI acceptance is met when:
 | UI-A2 | Account overview supports selecting an account | pass |
 | UI-A3 | Account summary shows equity, cash, margin and last cursor/seq | pass |
 | UI-A4 | Order event tape renders normalized events | pass |
-| UI-A5 | Report msg provenance is visible for a selected or listed event | partial: inline excerpt exists; drawer is successor |
+| UI-A5 | Selecting an order shows all execution reports for that `client_order_id` in the adjacent panel | pass |
 | UI-A6 | Stream status is visible | pass |
-| UI-A7 | UI has stable `data-testid` hooks for console, overview, row, detail, summary, tape, report msg and blocker | pass |
+| UI-A7 | UI has stable `data-testid` hooks for console, overview, row, detail, summary, tape, execution reports, report msg and blocker | pass |
 | UI-A8 | UI does not expose trading actions | pass |
 | UI-A9 | UI does not display forbidden readiness/capital/live wording | pass by static scan |
 | UI-A10 | Frontend build and browser render are verified | blocked by current Node/npm environment |
@@ -151,4 +154,4 @@ The next UI change should add:
 5. Positions, Orders, Fills and Reconcile tabs.
 6. Playwright screenshot and non-overlap checks once Node/npm is available.
 7. Browser backpressure test against synthetic streamed events.
-
+8. Deep links from `/accounts/{account_id}/orders/{client_order_id}` into the selected-order report panel.

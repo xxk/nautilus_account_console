@@ -11,15 +11,15 @@
 | --- | --- | --- |
 | Project layout | pass | `contracts/`, `backend/`, `hotpath-rs/`, `frontend/` exist |
 | Shared contracts | pass | JSON schemas for account event, order event, fill event, account snapshot and report msg exist |
-| Python API skeleton | pass | FastAPI app exposes health, account list, account detail, event query and SSE event stream |
-| Python tests | pass | `python -m pytest backend\tests` -> 2 passed |
+| Python API skeleton | pass | FastAPI app exposes health, account list, account detail, event query, order execution reports query and SSE event stream |
+| Python tests | pass | `python -m pytest backend\tests` -> 3 passed |
 | Python compile | pass | `python -m compileall backend\src` -> passed |
 | Rust hot path skeleton | pass | `nac_ingest`, `nac_ledger`, `nac_stream` crates exist |
 | Rust tests | pass | `cargo test --manifest-path hotpath-rs\Cargo.toml` -> 3 passed |
 | TypeScript UI scaffold | partial | Vite/React source exists, but Node/npm is unavailable in current environment |
 | UI design doc | pass | `docs/design/account-console-ui-mvp.md` defines layout, route model, high-frequency interaction rules and UI acceptance |
-| UI first screen shape | pass | Current React scaffold renders account overview, account summary, order event tape, report msg excerpt and stream status |
-| UI report msg drawer | partial | Current scaffold shows report msg excerpt inline; right-side drawer is successor work |
+| UI first screen shape | pass | Current React scaffold renders account overview, account summary, order event tape, selected-order execution reports panel and stream status |
+| UI report msg drawer | partial | Current scaffold shows report refs/checksums/excerpts in the adjacent execution reports panel; raw payload drawer is successor work |
 | Read-only boundary | pass | No runtime/admission/capital/broker writer implemented |
 | Forbidden readiness wording | pass | UI does not display `Paper ready`, `Live ready`, `admitted`, `production ready`, `capital allocated` or `can trade` |
 | HFT production evidence | not yet | benchmark harness and typed performance artifacts are successor work |
@@ -44,7 +44,7 @@
    - account overview
    - account detail summary
    - order event tape
-   - report msg excerpt projection
+   - adjacent selected-order execution reports panel
    - stream status
 6. The UI design acceptance is documented in `docs/design/account-console-ui-mvp.md`.
 
@@ -61,7 +61,7 @@ This MVP does not yet prove:
 7. Cross-language schema generation.
 8. Browser build or runtime behavior, because Node/npm is unavailable in the current environment.
 9. Paper readiness, Live readiness, capital allocation or broker tradability.
-10. Right-side report msg drawer behavior; the MVP scaffold currently uses inline report message excerpts.
+10. Raw report msg drawer behavior; the MVP scaffold currently shows refs/checksums/excerpts in the selected-order execution reports panel.
 
 ## 4. Successor Gates
 
@@ -75,7 +75,7 @@ Before this project can claim ADR-0045 HFT readiness, add:
 6. Browser virtualized event tape test once Node/npm is available.
 7. Large report msg on-demand payload test.
 8. Cross-language contract tests for Rust, Python and TypeScript.
-9. Right-side report msg drawer with lazy payload fetch.
+9. Raw report msg drawer with lazy payload fetch from a selected execution report.
 10. UI route tests for `/accounts`, `/accounts/{account_id}` and `/accounts/{account_id}/events`.
 11. Playwright screenshot/non-overlap checks once Node/npm is available.
 
@@ -92,7 +92,7 @@ Observed results on 2026-06-13:
 
 ```text
 compileall: pass
-pytest: 2 passed
+pytest: 3 passed
 cargo test: 3 passed
 forbidden wording scan: no UI violation found
 frontend build: blocked by missing/unavailable Node/npm

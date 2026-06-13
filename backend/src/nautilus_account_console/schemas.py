@@ -69,8 +69,13 @@ class AccountDetail(BaseModel):
     recent_order_events: list[OrderEvent]
 
 
+class OrderExecutionReports(BaseModel):
+    account_id: str
+    client_order_id: str
+    reports: list[OrderEvent]
+
+
 class Health(BaseModel):
     ok: bool
     service: str
     version: str
-

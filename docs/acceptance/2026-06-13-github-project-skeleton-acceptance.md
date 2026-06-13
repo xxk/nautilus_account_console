@@ -35,7 +35,7 @@ rg -n "Paper ready|Live ready|admitted|production ready|capital allocated|can tr
 Observed results:
 
 ```text
-pytest: 2 passed
+pytest: 3 passed
 cargo test: 3 passed
 implementation boundary scan: no matches
 ```
@@ -68,4 +68,3 @@ After push:
 3. Replace `.github/CODEOWNERS` placeholders with real users or teams.
 4. Confirm GitHub Actions passes on the first PR.
 5. Add repository description: `Read-only event-driven account console for Nautilus read models`.
-

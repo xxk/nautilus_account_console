@@ -154,6 +154,12 @@ button {
   justify-content: space-between;
 }
 
+.order-workspace {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: minmax(420px, 1fr) minmax(320px, 420px);
+}
+
 .event-tape {
   border: 1px solid #dde3e8;
   border-radius: 6px;
@@ -162,12 +168,26 @@ button {
 }
 
 .event-row {
+  background: #ffffff;
   border-bottom: 1px solid #edf1f4;
+  border-left: 0;
+  border-right: 0;
+  border-top: 0;
+  color: inherit;
+  cursor: pointer;
+  display: block;
   padding: 10px 12px;
+  text-align: left;
+  width: 100%;
 }
 
 .event-row:last-child {
   border-bottom: 0;
+}
+
+.event-row.selected {
+  background: #eef8f6;
+  box-shadow: inset 3px 0 0 #248277;
 }
 
 .event-main {
@@ -180,6 +200,83 @@ button {
   color: #5b6770;
   font-size: 13px;
   margin-top: 6px;
+}
+
+.report-panel {
+  border: 1px solid #dde3e8;
+  border-radius: 6px;
+  min-width: 0;
+  padding: 12px;
+}
+
+.selected-order {
+  background: #f6f7f9;
+  border: 1px solid #dde3e8;
+  border-radius: 6px;
+  margin-bottom: 12px;
+  padding: 10px;
+}
+
+.selected-order span {
+  color: #5b6770;
+  display: block;
+  font-size: 12px;
+  margin-bottom: 4px;
+}
+
+.selected-order strong {
+  overflow-wrap: anywhere;
+}
+
+.report-list {
+  max-height: 452px;
+  overflow: auto;
+}
+
+.report-row {
+  border-bottom: 1px solid #edf1f4;
+  padding: 10px 0;
+}
+
+.report-row:first-child {
+  padding-top: 0;
+}
+
+.report-row:last-child {
+  border-bottom: 0;
+}
+
+.report-row-head {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: 48px 1fr 1fr;
+  margin-bottom: 8px;
+}
+
+.report-row dl {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: 1fr;
+  margin: 0;
+}
+
+.report-row dl div {
+  min-width: 0;
+}
+
+.report-row dt {
+  color: #5b6770;
+  font-size: 12px;
+}
+
+.report-row dd {
+  margin: 2px 0 0;
+  overflow-wrap: anywhere;
+}
+
+.report-row p {
+  color: #5b6770;
+  margin: 8px 0 0;
 }
 
 .empty {
@@ -207,8 +304,11 @@ button {
     grid-template-columns: repeat(2, minmax(120px, 1fr));
   }
 
+  .order-workspace {
+    grid-template-columns: 1fr;
+  }
+
   .event-main {
     grid-template-columns: 56px 1fr;
   }
 }
-

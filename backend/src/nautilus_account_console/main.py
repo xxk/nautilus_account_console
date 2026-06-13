@@ -8,8 +8,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 
 from . import __version__
-from .ledger import get_account_snapshot, list_account_snapshots, list_order_events
-from .schemas import AccountDetail, AccountSnapshot, Health, OrderEvent
+from .ledger import (
+    get_account_snapshot,
+    list_account_snapshots,
+    list_order_events,
+    list_order_execution_reports,
+)
+from .schemas import AccountDetail, AccountSnapshot, Health, OrderEvent, OrderExecutionReports
 
 
 app = FastAPI(title="Nautilus Account Console API", version=__version__)
@@ -52,6 +57,23 @@ def account_events(
     return list_order_events(account_id, cursor=cursor, limit=limit)
 
 
+@app.get(
+    "/api/accounts/{account_id}/orders/{client_order_id}/execution-reports",
+    response_model=OrderExecutionReports,
+)
+def order_execution_reports(account_id: str, client_order_id: str) -> OrderExecutionReports:
+    if get_account_snapshot(account_id) is None:
+        raise HTTPException(status_code=404, detail="account not found")
+    reports = list_order_execution_reports(account_id, client_order_id)
+    if not reports:
+        raise HTTPException(status_code=404, detail="order reports not found")
+    return OrderExecutionReports(
+        account_id=account_id,
+        client_order_id=client_order_id,
+        reports=reports,
+    )
+
+
 async def _event_stream(account_id: str, cursor: int) -> AsyncIterator[str]:
     events = list_order_events(account_id, cursor=cursor)
     for event in events:
@@ -75,4 +97,3 @@ def account_event_stream(
         media_type="text/event-stream",
         headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
     )
-

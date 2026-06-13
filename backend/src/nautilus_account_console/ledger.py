@@ -24,6 +24,8 @@ def seed_order_events() -> list[OrderEvent]:
         {
             "seq": 1,
             "ts": "2026-06-13T01:00:00Z",
+            "client_order_id": "C-0001",
+            "venue_order_id": "V-0001",
             "event_type": "submitted",
             "order_status": "SUBMITTED",
             "filled_qty": 0.0,
@@ -33,6 +35,8 @@ def seed_order_events() -> list[OrderEvent]:
         {
             "seq": 2,
             "ts": "2026-06-13T01:00:00.080Z",
+            "client_order_id": "C-0001",
+            "venue_order_id": "V-0001",
             "event_type": "accepted",
             "order_status": "ACCEPTED",
             "filled_qty": 0.0,
@@ -42,6 +46,8 @@ def seed_order_events() -> list[OrderEvent]:
         {
             "seq": 3,
             "ts": "2026-06-13T01:00:00.180Z",
+            "client_order_id": "C-0001",
+            "venue_order_id": "V-0001",
             "event_type": "partially_filled",
             "order_status": "PARTIALLY_FILLED",
             "filled_qty": 1.0,
@@ -49,6 +55,18 @@ def seed_order_events() -> list[OrderEvent]:
             "last_qty": 1.0,
             "leaves_qty": 1.0,
             "excerpt": "sandbox report: partial fill",
+        },
+        {
+            "seq": 4,
+            "ts": "2026-06-13T01:00:01.040Z",
+            "client_order_id": "C-0002",
+            "venue_order_id": "V-0002",
+            "event_type": "rejected",
+            "order_status": "REJECTED",
+            "filled_qty": 0.0,
+            "leaves_qty": 0.0,
+            "reason": "risk_limit",
+            "excerpt": "sandbox report: rejected by risk limit",
         },
     ]
     events: list[OrderEvent] = []
@@ -67,8 +85,8 @@ def seed_order_events() -> list[OrderEvent]:
                 portfolio_uid=portfolio_uid,
                 strategy_id="strategy.demo",
                 instrument_id="IF.TEST",
-                client_order_id="C-0001",
-                venue_order_id="V-0001",
+                client_order_id=str(row["client_order_id"]),
+                venue_order_id=str(row["venue_order_id"]),
                 event_type=str(row["event_type"]),
                 order_status=str(row["order_status"]),
                 side="BUY",
@@ -78,6 +96,7 @@ def seed_order_events() -> list[OrderEvent]:
                 last_px=row.get("last_px"),
                 last_qty=row.get("last_qty"),
                 leaves_qty=float(row["leaves_qty"]),
+                reason=row.get("reason"),
                 latency_ms=80.0,
                 report_msg_type="sandbox_execution_report",
                 report_msg_ref=f"fixture://mvp/report-msg/{seq}.json",
@@ -130,3 +149,10 @@ def list_order_events(account_id: str, cursor: int = 0, limit: int = 500) -> lis
         if event.account_id == account_id and event.seq > cursor
     ][:limit]
 
+
+def list_order_execution_reports(account_id: str, client_order_id: str) -> list[OrderEvent]:
+    return [
+        event
+        for event in EVENTS
+        if event.account_id == account_id and event.client_order_id == client_order_id
+    ]

@@ -55,3 +55,8 @@ export interface OrderEvent {
   checksum: string;
 }
 
+export interface OrderExecutionReports {
+  account_id: string;
+  client_order_id: string;
+  reports: OrderEvent[];
+}
