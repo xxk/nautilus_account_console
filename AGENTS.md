@@ -14,6 +14,29 @@ It is a read-only account observation console for sandbox, real-feed sandbox Pap
 4. HFT acceptance requires typed benchmark evidence for durable ledger zero-loss, bounded lag, cursor replay, backpressure and virtualized browser rendering.
 5. Rust owns the default high-frequency hot path. Python owns control/query/integration. TypeScript owns the browser projection.
 
+## Codex Project Worktree Layout
+
+This repository participates in `D:/Nautilus/global_docs/adr/0006-project-scoped-codex-worktree-layout.md`.
+
+Codex development branches should be opened from `D:/Nautilus/_worktrees/<project-topic>/nautilus_account_console/`. The primary repo at `D:/Nautilus/nautilus_account_console` is reserved for `main` / `master` sync, merges, worktree creation and recovery.
+
+When a project also changes sibling owners, each sibling repo must have its own worktree under the same project topic:
+
+```text
+D:/Nautilus/_worktrees/<project-topic>/
+  nautilus_strategies/
+  nautilus_account_console/
+  nautilus_ctp_adapter/
+```
+
+The `_worktrees` layout is operational only. It must not become runtime truth, account truth, broker truth, admission truth, proposal acceptance, or evidence truth. This repository still owns only read-only account console contracts, reducers, APIs, and UI projections.
+
+Current repo/worktree gate:
+
+```powershell
+python D:/Nautilus/global_docs/scripts/check_codex_worktree_layout.py --repo .
+```
+
 ## Layout
 
 | Path | Responsibility |
@@ -30,6 +53,7 @@ Use the fastest applicable checks:
 ```powershell
 python -m compileall backend/src
 cargo test --manifest-path hotpath-rs/Cargo.toml
+python D:/Nautilus/global_docs/scripts/check_codex_worktree_layout.py --repo .
 ```
 
 When Node/npm is available:
