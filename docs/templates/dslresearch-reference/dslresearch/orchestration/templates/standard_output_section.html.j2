@@ -1,0 +1,43 @@
+{#- Renders the standard output section for a backtest report.
+    Context variables:
+      title                — section title
+      run_id               — engine_metadata.run_id
+      trader_id            — engine_metadata.trader_id
+      iterations           — int
+      equity_point_count   — int
+      total_events         — int
+      total_orders         — int
+      total_positions      — int
+      orders_count         — int
+      fills_count          — int
+      positions_count      — int
+      fees_count           — int
+      strategy_class       — string
+      strategy_repo        — string
+      strategy_module      — string
+      engine_metadata_json — pre-serialized JSON string
+      strategy_identity_json — pre-serialized JSON string
+      fees_totals_json     — pre-serialized JSON string
+      raw_stats_json       — pre-serialized JSON string
+      fills_table_html     — pre-rendered fills table (safe HTML)
+      orders_table_html    — pre-rendered orders table (safe HTML)
+-#}
+<section class="card">
+<h2>{{ title }}</h2>
+<table><thead><tr><th>字段</th><th>值</th><th>字段</th><th>值</th></tr></thead><tbody>
+<tr><td>run_id</td><td><code>{{ run_id }}</code></td><td>trader_id</td><td><code>{{ trader_id }}</code></td></tr>
+<tr><td>iterations</td><td>{{ iterations }}</td><td>equity_curve.point_count</td><td>{{ equity_point_count }}</td></tr>
+<tr><td>total_events</td><td>{{ total_events }}</td><td>total_orders</td><td>{{ total_orders }}</td></tr>
+<tr><td>total_positions</td><td>{{ total_positions }}</td><td>orders/fills/positions</td><td>{{ orders_count }} / {{ fills_count }} / {{ positions_count }}</td></tr>
+<tr><td>fees.count</td><td>{{ fees_count }}</td><td>strategy_class</td><td><code>{{ strategy_class }}</code></td></tr>
+<tr><td>strategy_repo</td><td><code>{{ strategy_repo }}</code></td><td>strategy_module</td><td><code>{{ strategy_module }}</code></td></tr>
+</tbody></table>
+<div class="split-grid">
+<div><h3>engine_metadata</h3><pre>{{ engine_metadata_json }}</pre></div>
+<div><h3>strategy_identity</h3><pre>{{ strategy_identity_json }}</pre></div>
+<div><h3>fees.totals</h3><pre>{{ fees_totals_json }}</pre></div>
+<div><h3>raw_stats</h3><pre>{{ raw_stats_json }}</pre></div>
+</div>
+{{ fills_table_html | safe }}
+{{ orders_table_html | safe }}
+</section>

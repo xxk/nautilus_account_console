@@ -1,0 +1,102 @@
+{
+  "proposal_id": "p004-account-workbench-summary-panel",
+  "phase": "phase8_account_workbench_closeout",
+  "status": "account_workbench_closeout_passed",
+  "created_at": "2026-06-15T00:15:33+08:00",
+  "scope": {
+    "workbench": "Account Workbench",
+    "routes_closed_out": [
+      "/accounts/acct.demo-19053",
+      "/accounts/acct.demo-19053/orders",
+      "/accounts/acct.demo-19053/orders/p077-e100-rb2610-closeyesterday",
+      "/accounts/acct.demo-19053/positions",
+      "/accounts/acct.demo-19053/settlement",
+      "/accounts/acct.demo-19053/equity",
+      "/accounts/acct.demo-19053/reconcile",
+      "/accounts/acct.demo-19053/incidents",
+      "/accounts/acct.demo-19053/evidence"
+    ],
+    "phase_evidence_refs": [
+      "docs/acceptance/2026-06-14-p004-phase1-summary-contract-fixtures.json",
+      "docs/acceptance/2026-06-14-p004-phase2-summary-ui-browser-evidence.json",
+      "docs/acceptance/2026-06-14-p004-phase3-orders-contract-fixtures.json",
+      "docs/acceptance/2026-06-14-p004-phase3-orders-ui-browser-evidence.json",
+      "docs/acceptance/2026-06-14-p004-phase4-positions-contract-fixtures.json",
+      "docs/acceptance/2026-06-14-p004-phase4-positions-ui-browser-evidence.json",
+      "docs/acceptance/2026-06-14-p004-phase5-settlement-equity-contract-fixtures.json",
+      "docs/acceptance/2026-06-14-p004-phase5-settlement-equity-ui-browser-evidence.json",
+      "docs/acceptance/2026-06-14-p004-phase6-reconcile-incidents-contract-fixtures.json",
+      "docs/acceptance/2026-06-14-p004-phase6-reconcile-incidents-ui-browser-evidence.json",
+      "docs/acceptance/2026-06-14-p004-phase7-evidence-contract-fixtures.json",
+      "docs/acceptance/2026-06-15-p004-phase7-evidence-ui-browser-evidence.json"
+    ]
+  },
+  "validation": {
+    "proposal_docs": "passed: python scripts/check_proposal_docs.py --root . --proposal-id p004-account-workbench-summary-panel",
+    "owner_boundaries": "passed: python scripts/validate_owner_boundaries.py",
+    "backend_compileall": "passed: python -m compileall backend/src",
+    "rust_hotpath": "passed: cargo test --manifest-path hotpath-rs/Cargo.toml",
+    "frontend_fixture_validator": "passed: frontend/scripts/validate-account-health-fixtures.mjs",
+    "frontend_typecheck": "passed: TypeScript createProgram diagnostics",
+    "frontend_build": "passed: Vite build",
+    "forbidden_action_scan": "passed through frontend fixture validator and browser assertions"
+  },
+  "closeout_browser_evidence": [
+    {
+      "viewport": "desktop",
+      "path": "docs/acceptance/browser-evidence/p004-phase8-account-workbench-closeout/account-workbench-closeout-desktop.png",
+      "sha256": "12137794cb3cc23f703a6fe1e51dffe9cb56a20a2f56e49ecdcca8a88a695dc4",
+      "assertions": {
+        "summary_panels": 1,
+        "source_refs": 2,
+        "forbidden_action_buttons": 0
+      }
+    },
+    {
+      "viewport": "tablet",
+      "path": "docs/acceptance/browser-evidence/p004-phase8-account-workbench-closeout/account-workbench-closeout-tablet.png",
+      "sha256": "e6145ee4c80a930aa22468d7b013ebe6bd8b9a78e0d4514731b8f3a2e2c295bc",
+      "assertions": {
+        "summary_panels": 1,
+        "source_refs": 2,
+        "forbidden_action_buttons": 0
+      }
+    },
+    {
+      "viewport": "mobile",
+      "path": "docs/acceptance/browser-evidence/p004-phase8-account-workbench-closeout/account-workbench-closeout-mobile.png",
+      "sha256": "cedc9be0ba44be627daaaa154efa51d12bbb82fa1ee4154f8dd083f60760f597",
+      "assertions": {
+        "summary_panels": 1,
+        "source_refs": 2,
+        "forbidden_action_buttons": 0
+      }
+    }
+  ],
+  "negative_assertions": {
+    "runtime_truth": false,
+    "account_truth": false,
+    "order_truth": false,
+    "position_truth": false,
+    "settlement_truth": false,
+    "equity_truth": false,
+    "reconcile_truth": false,
+    "incident_truth": false,
+    "evidence_truth": false,
+    "ledger_truth": false,
+    "ui_truth": false,
+    "paper_ready": false,
+    "live_ready": false,
+    "broker_tradable": false,
+    "admission_truth": false,
+    "capital_truth": false,
+    "action_controls": false,
+    "account_console_runtime_truth": false,
+    "account_console_ui_complete": false,
+    "loop_complete": false
+  },
+  "residual_scope": [
+    "This closes P004 Account Workbench scoped phases only.",
+    "It does not close ADR0044/ADR0045, P077, P078, sibling owner work, or Account Console UI as a whole."
+  ]
+}

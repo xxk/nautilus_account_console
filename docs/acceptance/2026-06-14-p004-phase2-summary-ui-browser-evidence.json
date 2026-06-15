@@ -1,0 +1,198 @@
+{
+  "schema": "account-console.p004-phase2-summary-ui-browser-evidence.v1",
+  "created_at": "2026-06-14T14:17:02.544Z",
+  "repository": "D:/Nautilus/nautilus_account_console",
+  "proposal_id": "p004-account-workbench-summary-panel",
+  "phase": "phase_2_summary_ui_slice",
+  "status": "implementation_browser_evidence",
+  "route": "/accounts/{account_id}",
+  "fixture_route_opened": "/accounts/acct.demo-19053",
+  "source_contract_gate": {
+    "artifact": "docs/acceptance/2026-06-14-p004-phase1-summary-contract-fixtures.json",
+    "checksum": "sha256:0e1cb660e0ccb8309006b1c58ff15d8b230fffc058d6e5fdd400a35ebe97ed73"
+  },
+  "contracts": [
+    {
+      "path": "contracts/ui/panels/account_summary_panel.contract.json",
+      "checksum": "sha256:68bec7f5b57042c75a5cccb9f250652afd8c555080a1cc6b4bbff2c77b96b046"
+    }
+  ],
+  "fixtures": [
+    {
+      "state": "happy_path",
+      "path": "contracts/ui/fixtures/account_workbench/account_summary_happy_path.json",
+      "checksum": "sha256:7a63ce38f144420fe1afe1aa11e37ce5f8b595531ba1c692ce930a346f861fb5"
+    },
+    {
+      "state": "empty",
+      "path": "contracts/ui/fixtures/account_workbench/account_summary_empty.json",
+      "checksum": "sha256:84ff5f5a98d4508188318718d22cc03068c26e44cafcd06e379e13a0bb6bcefe"
+    },
+    {
+      "state": "blocked",
+      "path": "contracts/ui/fixtures/account_workbench/account_summary_blocked.json",
+      "checksum": "sha256:7770bcf5469744e82d4d5b51a41900f014641e6d48dece9cd37ba5ab103b85d7"
+    },
+    {
+      "state": "stale",
+      "path": "contracts/ui/fixtures/account_workbench/account_summary_stale_stream.json",
+      "checksum": "sha256:4ee839a65374917536f010386c4babe98b1d7a6e3907d70e4289b26832c3baf8"
+    },
+    {
+      "state": "partial",
+      "path": "contracts/ui/fixtures/account_workbench/account_summary_partial_evidence.json",
+      "checksum": "sha256:bab7f3d952e6914dda6c9d3a5ce3bffc4c71c7df3b7225e0854527c2b0580f48"
+    }
+  ],
+  "implementation_files": [
+    {
+      "path": "frontend/src/App.tsx",
+      "checksum": "sha256:057d60c02031bb634a8497eac060d266e2dc0909675d6fcf2e13fb6f6b6df8e3"
+    },
+    {
+      "path": "frontend/src/types.ts",
+      "checksum": "sha256:990be95f73229da4684936ff23139192510383fc2b5f7422ce8b4751b3b637c6"
+    },
+    {
+      "path": "frontend/src/styles.css",
+      "checksum": "sha256:770e06709c06f499beb98007a8a6da56ed4338bcf01dc0172d5c44251f7ea882"
+    },
+    {
+      "path": "frontend/tests/e2e/account-summary-panel.spec.ts",
+      "checksum": "sha256:ba66fd74992c66adedbd9972399cc0b26729f92951889db4645928f4e5531337"
+    },
+    {
+      "path": "frontend/playwright.config.ts",
+      "checksum": "sha256:c64d2e6a1bd70d685da5c6bbbfbaeaf4206601cdc2f2232bf216fbb6939e0549"
+    }
+  ],
+  "browser_evidence": [
+    {
+      "viewport": "desktop",
+      "state": "happy_path",
+      "path": "docs/acceptance/browser-evidence/p004-account-workbench-summary-panel/desktop-summary-happy.png",
+      "checksum": "sha256:12137794cb3cc23f703a6fe1e51dffe9cb56a20a2f56e49ecdcca8a88a695dc4"
+    },
+    {
+      "viewport": "desktop",
+      "state": "blocked",
+      "path": "docs/acceptance/browser-evidence/p004-account-workbench-summary-panel/desktop-summary-blocked.png",
+      "checksum": "sha256:69c7c7a71b2d2b38ef071fa04347cdf3e0a885eee36cc48a7b810ba7f28eb87c"
+    },
+    {
+      "viewport": "desktop",
+      "state": "stale",
+      "path": "docs/acceptance/browser-evidence/p004-account-workbench-summary-panel/desktop-summary-stale.png",
+      "checksum": "sha256:e41c4ffc9403bc57188532faf98295bc3cb8d5864f4079a7d7f54e548cd12d81"
+    },
+    {
+      "viewport": "tablet",
+      "state": "happy_path",
+      "path": "docs/acceptance/browser-evidence/p004-account-workbench-summary-panel/tablet-summary-happy.png",
+      "checksum": "sha256:f85fd705262363297621bd9f0a9db8d62ed9f3d6f6fffa32a3f0a2e56fd70ea4"
+    },
+    {
+      "viewport": "tablet",
+      "state": "blocked",
+      "path": "docs/acceptance/browser-evidence/p004-account-workbench-summary-panel/tablet-summary-blocked.png",
+      "checksum": "sha256:545b5735da81181f8ecbedb31bc7d8ddd42e7ff3a554e1c9676e3f150e55347a"
+    },
+    {
+      "viewport": "tablet",
+      "state": "stale",
+      "path": "docs/acceptance/browser-evidence/p004-account-workbench-summary-panel/tablet-summary-stale.png",
+      "checksum": "sha256:2cfa686f8cfbb4950bf08af5f43b906af6fc0fc444e8530a3f8496a2fc7780c5"
+    },
+    {
+      "viewport": "mobile",
+      "state": "happy_path",
+      "path": "docs/acceptance/browser-evidence/p004-account-workbench-summary-panel/mobile-summary-happy.png",
+      "checksum": "sha256:6c1352d073949b790594374dbfa17c6e645dd61aaa9ce0347582d29cf0d73c64"
+    },
+    {
+      "viewport": "mobile",
+      "state": "blocked",
+      "path": "docs/acceptance/browser-evidence/p004-account-workbench-summary-panel/mobile-summary-blocked.png",
+      "checksum": "sha256:4c34c08273889a0f8d59fefe8150558589ce3fd5984f79806e834a84305a797d"
+    },
+    {
+      "viewport": "mobile",
+      "state": "stale",
+      "path": "docs/acceptance/browser-evidence/p004-account-workbench-summary-panel/mobile-summary-stale.png",
+      "checksum": "sha256:8a7df1a107f520a6bfcc32110d8ef17930a4b3ba5e7142f212370a16cafc816d"
+    }
+  ],
+  "selectors_verified": [
+    "account-workbench-summary-panel",
+    "account-workbench-context-bar",
+    "account-summary-metric-strip",
+    "account-summary-source-ref",
+    "account-summary-boundary-list",
+    "account-summary-blocker",
+    "account-summary-stale-state",
+    "account-summary-empty-state",
+    "account-summary-detail-drawer",
+    "account-workbench-tab-list",
+    "account-positions-panel",
+    "account-workbench-stream-state"
+  ],
+  "gates": [
+    {
+      "command": "npm test",
+      "cwd": "frontend",
+      "result": "pass"
+    },
+    {
+      "command": "npm run build",
+      "cwd": "frontend",
+      "result": "pass"
+    },
+    {
+      "command": "npm run test:e2e",
+      "cwd": "frontend",
+      "result": "pass",
+      "observed": "9 passed"
+    },
+    {
+      "command": "python scripts/validate_owner_boundaries.py",
+      "result": "pass"
+    },
+    {
+      "command": "python scripts/check_proposal_docs.py --root .",
+      "result": "pass"
+    }
+  ],
+  "authority_boundary": {
+    "read_only_projection": true,
+    "frontend_code_changed": true,
+    "browser_evidence_claimed": true,
+    "runtime_truth": false,
+    "account_truth": false,
+    "order_truth": false,
+    "ledger_truth": false,
+    "ui_truth": false,
+    "paper_ready": false,
+    "live_ready": false,
+    "broker_tradable": false,
+    "admission_truth": false,
+    "capital_truth": false,
+    "account_console_runtime_truth": false,
+    "account_console_ui_complete": false,
+    "loop_complete": false
+  },
+  "runtime_actions": {
+    "paper_order_sent": false,
+    "live_order_sent": false,
+    "broker_action_sent": false,
+    "account_mutation_sent": false,
+    "capital_or_admission_action_sent": false
+  },
+  "rejection_rules": [
+    "Screenshots prove only browser rendering for the declared fixture states.",
+    "Fixture rows are deterministic read-model examples and are not runtime, account, order, ledger, readiness, admission or capital truth.",
+    "The Summary UI slice must not imply that orders, settlement, equity, reconcile, incidents, evidence or the full Account Console UI are complete.",
+    "No direct order, broker, funding, admission, approval, account lifecycle or runtime action controls may be added by this slice."
+  ],
+  "next_allowed_phase": "phase_3_orders_and_order_lifecycle_gate_or_smaller_contract_fixture_slice"
+}
+

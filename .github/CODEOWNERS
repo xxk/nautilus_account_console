@@ -6,4 +6,4 @@
 # /backend/          @OWNER/account-console-backend
 # /frontend/         @OWNER/account-console-frontend
 # /docs/             @OWNER/account-console-docs
-
+# /docs/ownership/   @OWNER/account-console-architecture

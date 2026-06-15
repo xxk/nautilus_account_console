@@ -1,0 +1,77 @@
+{
+  "schema_version": "account_reconcile_panel.v1",
+  "workbench": "Account Workbench",
+  "panel": "Account Reconcile Panel",
+  "route": "/accounts/{account_id}/reconcile",
+  "fixture_state": "partial",
+  "context": {
+    "trading_day": "2026-06-14",
+    "session_id": "account-workbench.fixture.20260614.006",
+    "run_id": "account-reconcile.fixture.partial.001",
+    "reducer_checkpoint_id": "account-reconcile.checkpoint.partial.001",
+    "reducer_checkpoint_ts": "2026-06-14T15:34:16Z",
+    "stream_state": "partial",
+    "projection_owner": "account-console-contracts",
+    "source_authority": "typed_blocker"
+  },
+  "account": {
+    "account_id": "acct.demo-19053",
+    "account_alias": "19053",
+    "account_kind": "real_feed_sandbox_paper"
+  },
+  "reconcile_items": [
+    {
+      "item_id": "reconcile.fee-tax.partial.001",
+      "category": "fee_tax",
+      "severity": "warning",
+      "status": "partial",
+      "expected_value": 7.5,
+      "observed_value": 7.5,
+      "delta": 0.0,
+      "tolerance_ref": null,
+      "mismatch_ref": null,
+      "owner": "external fee/tax owner",
+      "next_action": "provide tolerance ref before accepting reconcile row",
+      "source_ref": "fixture://account-workbench/reconcile/acct.demo-19053/partial/fee-tax",
+      "checksum": "sha256:c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1"
+    }
+  ],
+  "blockers": [
+    {
+      "blocker_id": "account-reconcile.missing-tolerance-ref",
+      "severity": "warning",
+      "kind": "missing_tolerance_ref",
+      "owner": "external fee/tax owner",
+      "next_action": "publish tolerance ref or typed blocker",
+      "source_ref": "fixture://account-workbench/reconcile/acct.demo-19053/partial/fee-tax",
+      "checksum": "sha256:c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2"
+    }
+  ],
+  "source_refs": [
+    {
+      "kind": "reconcile_partial_projection",
+      "owner": "account-console-contracts",
+      "source_ref": "fixture://account-workbench/reconcile/acct.demo-19053/partial",
+      "checksum": "sha256:c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3",
+      "authority": "typed partial fixture; not reconcile truth"
+    }
+  ],
+  "boundaries": {
+    "read_only_projection": true,
+    "runtime_truth": false,
+    "account_truth": false,
+    "order_truth": false,
+    "ledger_truth": false,
+    "ui_truth": false,
+    "paper_ready": false,
+    "live_ready": false,
+    "broker_tradable": false,
+    "admission_truth": false,
+    "capital_truth": false,
+    "action_controls": false
+  },
+  "rejection_rules": [
+    "Reject partial reconcile projection as closeout evidence.",
+    "Reject tolerance-free rows as accepted reconcile rows."
+  ]
+}

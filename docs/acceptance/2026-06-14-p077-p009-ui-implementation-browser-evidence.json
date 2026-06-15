@@ -1,0 +1,152 @@
+{
+  "schema": "account-console.p077-p009-ui-implementation-browser-evidence.v1",
+  "created_at": "2026-06-14T12:05:20.985Z",
+  "action_mode": "read_only_ui_implementation_no_runtime_truth",
+  "proposal": {
+    "proposal_id": "p009-p077-paper-slice-evidence-panel",
+    "status": "implementation_browser_evidence",
+    "supersedes_blocker_portion": "account-console.p077.e90.ui-route-acceptance-missing",
+    "design_gate_ref": "D:/Nautilus/nautilus_account_console/docs/acceptance/2026-06-14-p077-p009-ui-slice-design-gate.json",
+    "design_gate_checksum": "sha256:47c6fe67f2ed12fde59fab54615db420f36bca8999feed1d5929cd828c6f5809"
+  },
+  "source_fixture": {
+    "contract_ref": "D:/Nautilus/nautilus_account_console/contracts/ui/panels/p077_paper_slice_panel.contract.json",
+    "contract_checksum": "sha256:e23fac66f8e774670f13e9f05c5b8686b5dd9fb5cee051408b2355b7d132b8be",
+    "fixture_ref": "D:/Nautilus/nautilus_account_console/contracts/ui/fixtures/p077_paper_slice/e87_close_yesterday_filled.json",
+    "fixture_checksum": "sha256:07df4d0e1fd5304fda74d8e9aa80ab642fa03040db94b19ef9b0e169d3834b94",
+    "producer_owner": "nautilus_ctp_adapter",
+    "projection_owner": "account-console-contracts"
+  },
+  "route_mapping": {
+    "implemented_route": "/accounts/19053/evidence",
+    "also_supported_context": "/accounts/19053/orders/{client_order_id}",
+    "parent_workbench": "Account Workbench",
+    "top_level_route_added": false,
+    "primary_navigation_entry_added": false,
+    "fixture_route_identifier_treated_as_product_route": false
+  },
+  "frontend_changes": [
+    {
+      "path": "D:/Nautilus/nautilus_account_console/frontend/src/App.tsx",
+      "checksum": "sha256:b407e2bed3800b559d2a0f193c9064ccea898db1a026e91050eae63b98b2d7cb",
+      "purpose": "route-aware Account Workbench rendering and read-only P077 panel"
+    },
+    {
+      "path": "D:/Nautilus/nautilus_account_console/frontend/src/types.ts",
+      "checksum": "sha256:3e2acd4f324fce3508c1623dd0dfd17c5060047fc2177c8dd6a80e264fcef735",
+      "purpose": "typed P077 paper slice fixture contract"
+    },
+    {
+      "path": "D:/Nautilus/nautilus_account_console/frontend/src/styles.css",
+      "checksum": "sha256:bdc8fe4ca2055de15171eebdc67cf5df3a74541b0ce348f2faafa79deb2ed1f4",
+      "purpose": "responsive P077 panel layout"
+    },
+    {
+      "path": "D:/Nautilus/nautilus_account_console/frontend/scripts/validate-account-health-fixtures.mjs",
+      "checksum": "sha256:b3046303c3980e716f7a91adf09c4f34ce5adc0810f0f048e0a481d04053fb0e",
+      "purpose": "P077 fixture and visible UI wording validation"
+    },
+    {
+      "path": "D:/Nautilus/nautilus_account_console/frontend/tests/e2e/p077-paper-slice-panel.spec.ts",
+      "checksum": "sha256:d3f4fe758e5141dffefcfb71b85a23094b01fe32c3cec24b38aad74d53cd1d32",
+      "purpose": "desktop/tablet/mobile browser evidence for P009"
+    }
+  ],
+  "browser_evidence": {
+    "status": "passed",
+    "command": "$env:PATH='D:\\\\Nautilus\\\\.tools\\\\node-v22.22.3-win-x64;' + $env:PATH; D:/Nautilus/.tools/node-v22.22.3-win-x64/npm.cmd run test:e2e",
+    "viewports": ["desktop", "tablet", "mobile"],
+    "screenshots": [
+      {
+        "viewport": "desktop",
+        "path": "D:/Nautilus/nautilus_account_console/docs/acceptance/browser-evidence/p009-p077-paper-slice-evidence-panel/desktop-p077-e90.png",
+        "checksum": "sha256:94c14293810ea790fdd07f84209c9f6f95dc3aacc98b463c3639c920ece432bd"
+      },
+      {
+        "viewport": "tablet",
+        "path": "D:/Nautilus/nautilus_account_console/docs/acceptance/browser-evidence/p009-p077-paper-slice-evidence-panel/tablet-p077-e90.png",
+        "checksum": "sha256:20cdd02b0e1d4b79be558e6a6d65faa77618c60ddbc13f489025051301c5c2d3"
+      },
+      {
+        "viewport": "mobile",
+        "path": "D:/Nautilus/nautilus_account_console/docs/acceptance/browser-evidence/p009-p077-paper-slice-evidence-panel/mobile-p077-e90.png",
+        "checksum": "sha256:3e4b378e7848c0fe6cea4ebe6644da2d03ab1f990dc3e21130a2ac8d0eb88d2a"
+      }
+    ],
+    "visible_forbidden_text_scan": "passed"
+  },
+  "gates": [
+    {
+      "name": "frontend fixture validation",
+      "status": "passed",
+      "command": "$env:PATH='D:\\\\Nautilus\\\\.tools\\\\node-v22.22.3-win-x64;' + $env:PATH; D:/Nautilus/.tools/node-v22.22.3-win-x64/npm.cmd test",
+      "summary": "account health and P077 paper slice fixtures plus forbidden scan passed"
+    },
+    {
+      "name": "frontend build",
+      "status": "passed",
+      "command": "$env:PATH='D:\\\\Nautilus\\\\.tools\\\\node-v22.22.3-win-x64;' + $env:PATH; D:/Nautilus/.tools/node-v22.22.3-win-x64/npm.cmd run build",
+      "summary": "tsc -b and vite build passed"
+    },
+    {
+      "name": "frontend e2e",
+      "status": "passed",
+      "command": "$env:PATH='D:\\\\Nautilus\\\\.tools\\\\node-v22.22.3-win-x64;' + $env:PATH; D:/Nautilus/.tools/node-v22.22.3-win-x64/npm.cmd run test:e2e",
+      "summary": "6 Playwright tests passed, including P009 desktop/tablet/mobile"
+    },
+    {
+      "name": "proposal docs",
+      "status": "passed",
+      "command": "python scripts/check_proposal_docs.py --root .",
+      "summary": "PROPOSAL_DOCS_OK: proposals=5"
+    },
+    {
+      "name": "owner boundary",
+      "status": "passed",
+      "command": "python scripts/validate_owner_boundaries.py",
+      "summary": "owner boundary validation passed with E93 validator hook"
+    },
+    {
+      "name": "owner-side blocker adoption",
+      "status": "passed",
+      "command": "python D:/Nautilus/global_docs/scripts/check_owner_side_blocker_repair_adoption.py --check-hooks",
+      "summary": "OWNER_SIDE_BLOCKER_REPAIR_ADOPTION_OK: checked_files=8 hooks=checked"
+    },
+    {
+      "name": "backend compileall",
+      "status": "passed",
+      "command": "python -m compileall backend/src",
+      "summary": "backend/src compileall passed"
+    },
+    {
+      "name": "hotpath rust tests",
+      "status": "passed",
+      "command": "cargo test --manifest-path hotpath-rs/Cargo.toml",
+      "summary": "nac_ingest, nac_ledger and nac_stream tests passed"
+    }
+  ],
+  "boundaries": {
+    "read_only_projection": true,
+    "runtime_truth": false,
+    "ledger_truth": false,
+    "ui_truth": false,
+    "paper_ready": false,
+    "live_ready": false,
+    "broker_tradable": false,
+    "admission_truth": false,
+    "capital_truth": false,
+    "paper_send_authorized": false,
+    "paper_send_attempted": false,
+    "native_send_attempted": false,
+    "frontend_code_changed": true,
+    "browser_evidence_claimed": true
+  },
+  "rejection_rules": [
+    "Browser screenshots prove only display behavior for the cited fixture, not source truth.",
+    "The panel must not expose order action controls or retry authorization.",
+    "The panel must not infer readiness, admission, capital, broker or runtime conclusions.",
+    "The top-level /orders/p077-paper-slice route remains an internal fixture route identifier, not a product route."
+  ],
+  "remaining_blockers": []
+}
+

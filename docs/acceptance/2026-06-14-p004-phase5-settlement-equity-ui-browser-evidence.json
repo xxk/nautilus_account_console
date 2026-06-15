@@ -1,0 +1,191 @@
+{
+  "schema": "account-console.p004-phase5-settlement-equity-ui-browser-evidence.v1",
+  "created_at": "2026-06-14T15:25:23.347Z",
+  "proposal": {
+    "proposal_id": "p004-account-workbench-summary-panel",
+    "phase": "phase_5_settlement_equity_ui",
+    "status": "implementation_browser_evidence"
+  },
+  "action_mode": "read_only_ui_implementation_no_runtime_truth",
+  "routes": [
+    "/accounts/{account_id}/settlement",
+    "/accounts/{account_id}/equity"
+  ],
+  "implemented_routes": [
+    "/accounts/acct.demo-19053/settlement",
+    "/accounts/acct.demo-19053/equity"
+  ],
+  "source_evidence": [
+    {
+      "kind": "p004_phase5_settlement_equity_contract_fixtures",
+      "path": "docs/acceptance/2026-06-14-p004-phase5-settlement-equity-contract-fixtures.json",
+      "checksum": "sha256:f881d2b0dbb0b3496dacf50abb0ae84e2b84f3bfbf4ffcf04f1ac07c6ac41fa1",
+      "authority": "account-console-acceptance"
+    }
+  ],
+  "frontend_files": [
+    {
+      "path": "frontend/src/App.tsx",
+      "checksum": "sha256:50b09d61d61e6cc1e8bb3a4c51df6e68e2a3d808ce9664383ae07955bd2e6380"
+    },
+    {
+      "path": "frontend/src/types.ts",
+      "checksum": "sha256:f7907fd3baf334d2ec1dd24415d6a374d26f2f83b2c0a006ddb02848e5a712a4"
+    },
+    {
+      "path": "frontend/tests/e2e/account-settlement-equity-panel.spec.ts",
+      "checksum": "sha256:7eb390a1249a7703fa1e5adb4635b4df2c5038cf0a3c445939b17e72defa0f80"
+    }
+  ],
+  "browser_evidence": {
+    "status": "passed",
+    "viewports": ["desktop", "tablet", "mobile"],
+    "states": [
+      "settlement_current",
+      "settlement_blocked",
+      "settlement_partial_checked_no_screenshot",
+      "settlement_stale_checked_no_screenshot",
+      "equity_current",
+      "equity_blocked",
+      "equity_partial_checked_no_screenshot",
+      "equity_stale_checked_no_screenshot"
+    ],
+    "screenshots": [
+      {
+        "viewport": "desktop",
+        "state": "settlement_current",
+        "path": "docs/acceptance/browser-evidence/p004-account-workbench-settlement-equity-panel/desktop-settlement-current.png",
+        "checksum": "sha256:fc29914711b5b9221ee072bda2340bc2b7b98c765bb95ac0345d3be5a8d13547"
+      },
+      {
+        "viewport": "desktop",
+        "state": "settlement_blocked",
+        "path": "docs/acceptance/browser-evidence/p004-account-workbench-settlement-equity-panel/desktop-settlement-blocked.png",
+        "checksum": "sha256:046b00cdc35c7533b2da849620d9041ee24baad96f90f5f8da705c7a0284e001"
+      },
+      {
+        "viewport": "desktop",
+        "state": "equity_current",
+        "path": "docs/acceptance/browser-evidence/p004-account-workbench-settlement-equity-panel/desktop-equity-current.png",
+        "checksum": "sha256:8c672dad0a59588831dd50238ebec01baf2382a1f0ac6378bffb88fa0315f944"
+      },
+      {
+        "viewport": "desktop",
+        "state": "equity_blocked",
+        "path": "docs/acceptance/browser-evidence/p004-account-workbench-settlement-equity-panel/desktop-equity-blocked.png",
+        "checksum": "sha256:474d7659c0dd8dd24b077bea8be3d065c2e70bf2a53ec5d1be069d5eec024406"
+      },
+      {
+        "viewport": "tablet",
+        "state": "settlement_current",
+        "path": "docs/acceptance/browser-evidence/p004-account-workbench-settlement-equity-panel/tablet-settlement-current.png",
+        "checksum": "sha256:9e7359ecd36394bfcdeaa56c2c03a6379f97481ad0b1b940b5d289490be16135"
+      },
+      {
+        "viewport": "tablet",
+        "state": "settlement_blocked",
+        "path": "docs/acceptance/browser-evidence/p004-account-workbench-settlement-equity-panel/tablet-settlement-blocked.png",
+        "checksum": "sha256:46d1565049f287eab83822ee7361b57ec8efc9bed8828cc394108a0e12c2f6d3"
+      },
+      {
+        "viewport": "tablet",
+        "state": "equity_current",
+        "path": "docs/acceptance/browser-evidence/p004-account-workbench-settlement-equity-panel/tablet-equity-current.png",
+        "checksum": "sha256:2b9e476ece78e30c4fc9c6f45693b8c8d04746ecf40809efb5240a20516d8525"
+      },
+      {
+        "viewport": "tablet",
+        "state": "equity_blocked",
+        "path": "docs/acceptance/browser-evidence/p004-account-workbench-settlement-equity-panel/tablet-equity-blocked.png",
+        "checksum": "sha256:550d369be12778f033846461fd9843570be1585ec6fdfc057fb0eddf35ec5c1b"
+      },
+      {
+        "viewport": "mobile",
+        "state": "settlement_current",
+        "path": "docs/acceptance/browser-evidence/p004-account-workbench-settlement-equity-panel/mobile-settlement-current.png",
+        "checksum": "sha256:e9b2d5fe59d5831d89c20e65568d803993ab1057faa5cb4b7f5d5832ceb4c8c9"
+      },
+      {
+        "viewport": "mobile",
+        "state": "settlement_blocked",
+        "path": "docs/acceptance/browser-evidence/p004-account-workbench-settlement-equity-panel/mobile-settlement-blocked.png",
+        "checksum": "sha256:4da4f8c55abd8f169cdd87be9563c4bf3b0d690cab5dee8e9acee0e79bd23ad6"
+      },
+      {
+        "viewport": "mobile",
+        "state": "equity_current",
+        "path": "docs/acceptance/browser-evidence/p004-account-workbench-settlement-equity-panel/mobile-equity-current.png",
+        "checksum": "sha256:512c5b29587c16371a39b6161ea22fe8faf925bfd6354c8caebce2e08af60cc0"
+      },
+      {
+        "viewport": "mobile",
+        "state": "equity_blocked",
+        "path": "docs/acceptance/browser-evidence/p004-account-workbench-settlement-equity-panel/mobile-equity-blocked.png",
+        "checksum": "sha256:fdc204e2ad2b2f4f395e381021525b4bb5230cc474bbde946b1dcbe3c011df2f"
+      }
+    ]
+  },
+  "gates": [
+    {
+      "name": "fixture validator",
+      "command": "node_repl import frontend/scripts/validate-account-health-fixtures.mjs",
+      "status": "passed"
+    },
+    {
+      "name": "typescript check",
+      "command": "node_repl TypeScript program getPreEmitDiagnostics",
+      "status": "passed"
+    },
+    {
+      "name": "vite build",
+      "command": "node_repl vite.build({ root: frontend })",
+      "status": "passed"
+    },
+    {
+      "name": "settlement/equity browser evidence",
+      "command": "node_repl Playwright chromium route capture",
+      "status": "passed"
+    }
+  ],
+  "accepted_scope": {
+    "settlement_contract": true,
+    "settlement_fixtures": true,
+    "settlement_ui": true,
+    "equity_contract": true,
+    "equity_fixtures": true,
+    "equity_ui": true,
+    "browser_evidence": true,
+    "account_console_ui_complete": false
+  },
+  "authority_boundary": {
+    "read_only_projection": true,
+    "runtime_truth": false,
+    "account_truth": false,
+    "settlement_truth": false,
+    "equity_truth": false,
+    "position_truth": false,
+    "order_truth": false,
+    "ledger_truth": false,
+    "ui_truth": false,
+    "paper_ready": false,
+    "live_ready": false,
+    "broker_tradable": false,
+    "admission_truth": false,
+    "capital_truth": false,
+    "action_controls": false
+  },
+  "runtime_actions": {
+    "paper_send_authorized": false,
+    "paper_send_attempted": false,
+    "native_send_attempted": false,
+    "live_action_attempted": false
+  },
+  "rejection_rules": [
+    "This artifact accepts only the P004 Phase 5 read-only settlement/equity UI and browser rendering evidence.",
+    "Screenshots prove rendering only and do not prove account, settlement, equity, order, ledger or runtime authority.",
+    "The UI must not derive settlement, equity, day close or ledger state in the browser.",
+    "No account mutation, broker action, readiness, admission, capital or trading authority is created."
+  ]
+}
+
+

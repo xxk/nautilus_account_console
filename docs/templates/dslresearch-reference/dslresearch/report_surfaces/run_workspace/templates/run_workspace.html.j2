@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8" />
+    <title>{{ report_title }}</title>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; }
+        body { margin: 24px 28px; background: #f6f8fa; color: #1f2328; font-family: Segoe UI, Microsoft YaHei, sans-serif; }
+        .shell { max-width: 1100px; margin: 0 auto; }
+        .hero, .card { background: #fff; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,.08); padding: 18px 20px; margin-bottom: 16px; }
+        .eyebrow { font-size: .78rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: #57606a; margin: 0 0 4px; }
+        .meta, .boundary { color: #57606a; line-height: 1.8; }
+        .summary-pills, .link-row, .artifact-links { display: flex; flex-wrap: wrap; gap: 8px; }
+        .pill { display: inline-flex; align-items: center; padding: 4px 10px; border-radius: 999px; background: #eef2f6; color: #44505c; border: 1px solid #d0d7de; font-size: .76rem; font-weight: 700; }
+        .portal-link { display: inline-flex; align-items: center; justify-content: center; min-height: 38px; padding: 8px 14px; border-radius: 10px; border: 1px solid rgba(9, 105, 218, .16); background: #fff; color: #0969da; text-decoration: none; font-weight: 600; }
+        .portal-link.primary { background: #0969da; color: #fff; border-color: #0969da; }
+        .portal-link.secondary { background: #f6f8fa; color: #24507a; border-color: #d0d7de; }
+        .portal-button { display: inline-flex; align-items: center; justify-content: center; min-height: 38px; padding: 8px 14px; border-radius: 10px; border: 1px solid #0969da; background: #0969da; color: #fff; font-weight: 700; cursor: pointer; }
+        .portal-button:disabled { opacity: .65; cursor: wait; }
+        .verifier-status { margin-top: 12px; padding: 10px 12px; border-radius: 8px; border: 1px solid #d0d7de; background: #f6f8fa; color: #44505c; font-size: .86rem; }
+        .verifier-status.failed { border-color: #fca5a5; background: #fee2e2; color: #991b1b; }
+        .verifier-status.passed { border-color: #86efac; background: #dcfce7; color: #166534; }
+        .verifier-rule-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: .86rem; }
+        .verifier-rule-table th, .verifier-rule-table td { text-align: left; padding: 8px 10px; border-bottom: 1px solid #eaecef; vertical-align: top; }
+        .verifier-rule-table th { color: #57606a; font-weight: 700; }
+        .rule-status { display: inline-flex; min-width: 54px; justify-content: center; padding: 2px 8px; border-radius: 999px; border: 1px solid #d0d7de; background: #f6f8fa; font-size: .76rem; font-weight: 700; }
+        .rule-status.pass { border-color: #86efac; background: #dcfce7; color: #166534; }
+        .rule-status.fail, .rule-status.block { border-color: #fca5a5; background: #fee2e2; color: #991b1b; }
+        .kv-table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+        .kv-table th, .kv-table td { text-align: left; padding: 10px 12px; border-bottom: 1px solid #eaecef; vertical-align: top; }
+        .kv-table th { width: 220px; color: #57606a; font-size: .88rem; }
+        .empty { color: #6b7280; font-style: italic; }
+    </style>
+</head>
+<body>
+    <div class="shell">
+        <section class="hero">
+            <p class="eyebrow">run workspace</p>
+            <h1>{{ title }}</h1>
+            <div class="meta">{{ subtitle }}</div>
+            <div class="summary-pills" style="margin-top: 12px;">
+                <span class="pill">case-id={{ case_id }}</span>
+                <span class="pill">run-id={{ run_id }}</span>
+                <span class="pill">status={{ status }}</span>
+                <span class="pill">job_state={{ job_state }}</span>
+            </div>
+            <div class="link-row" style="margin-top: 14px;">
+                <a class="portal-link secondary" href="{{ dev_home_uri }}">研发首页 / Dev Home</a>
+                {% if factor_board_uri %}
+                <a class="portal-link secondary" href="{{ factor_board_uri }}">因子生命周期看板 / Factor Lifecycle Board</a>
+                {% endif %}
+                {% if case_uri %}
+                <a class="portal-link primary" href="{{ case_uri }}">返回 Portal Case / Back to Portal Case</a>
+                {% endif %}
+                {% if verifier_rules_uri %}
+                <a class="portal-link secondary" href="{{ verifier_rules_uri }}" data-testid="run-workspace-case-verifier-nav-link">Case Verifier / 验证卡片</a>
+                {% endif %}
+            </div>
+        </section>
+
+        <section class="card">
+            <h2>Timeline</h2>
+            <div class="boundary">解释这次 run 为什么被触发、当前处于什么状态，以及它在时间线上落在什么位置。</div>
+            <table class="kv-table">
+                {% for row in timeline_rows %}
+                <tr><th>{{ row.label }}</th><td>{{ row.value }}</td></tr>
+                {% endfor %}
+            </table>
+        </section>
+
+        <section class="card">
+            <h2>Artifacts</h2>
+            <div class="boundary">Run Workspace 只读展示该 run 的证据入口，并优先把 formal evidence / result sidecar 回链暴露出来，而不是退回原始目录浏览。</div>
+            {% if artifact_links %}
+            <div class="artifact-links" style="margin-top: 14px;">
+                {% for link in artifact_links %}
+                <a class="portal-link secondary" href="{{ link.href }}" title="{{ link.title }}">{{ link.label }}</a>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty" style="margin-top: 14px;">当前 run 还没有可见 artifact。</div>
+            {% endif %}
+        </section>
+
+        <section class="card" data-testid="formal-artifact-card">
+            <h2>Formal Artifact Bundle / Final Backtest Contract</h2>
+            <div class="boundary">这里只读展示 ADR-0023 formal artifact bundle；report.md、result.json、factor_result.json 只能作为 historical/evidence，旧 signal_snapshot.json / snapshot_sequence.json / latest_portfolio_targets.json 也只保留 bridge/replay/historical 身份。</div>
+            {% if formal_artifact_panel.available %}
+            <div class="boundary" style="margin-top: 14px;">{{ formal_artifact_panel.summary }}</div>
+            <table class="kv-table" data-testid="formal-artifact-metrics-table">
+                <tr><th>field</th><th>value</th></tr>
+                {% for row in formal_artifact_panel.rows %}
+                <tr>
+                    <td>{{ row.label }}</td>
+                    <td>{{ row.value }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+            <div class="artifact-links" style="margin-top: 14px;">
+                {% for link in formal_artifact_panel.links %}
+                <a class="portal-link secondary" href="{{ link.href }}" title="{{ link.title }}">{{ link.label }}</a>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty" style="margin-top: 14px;">{{ formal_artifact_panel.summary }}</div>
+            {% endif %}
+        </section>
+
+        <section class="card" data-testid="performance-provenance-card">
+            <h2>Performance Provenance / Engine</h2>
+            <div class="boundary">这里展示 prescreen / final 阶段实际或计划使用的绩效 gateway 与执行引擎；来源是 run artifact 中的 performance_provenance.json。</div>
+            {% if performance_provenance.available %}
+            <table class="kv-table" data-testid="performance-provenance-table">
+                <tr><th>stage</th><th>status</th><th>gateway</th><th>engine</th><th>artifact_stage</th><th>result_uri</th><th>notes</th></tr>
+                {% for row in performance_provenance.rows %}
+                <tr>
+                    <td>{{ row.stage }}</td>
+                    <td>{{ row.status }}</td>
+                    <td>{{ row.gateway }}</td>
+                    <td>{{ row.engine }}</td>
+                    <td>{{ row.artifact_stage }}</td>
+                    <td>{{ row.result_uri }}</td>
+                    <td>{{ row.notes }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+            <div class="artifact-links" style="margin-top: 14px;">
+                <a class="portal-link secondary" href="{{ performance_provenance.artifact_href }}" title="{{ performance_provenance.artifact_title }}">performance_provenance.json</a>
+            </div>
+            {% else %}
+            <div class="empty" style="margin-top: 14px;">{{ performance_provenance.empty_message }}</div>
+            {% endif %}
+        </section>
+
+        <section class="card">
+            <h2>Logs</h2>
+            <div class="boundary">这里保留 run/job 的最小控制面板日志字段，帮助定位是谁触发、预期执行什么、以及是否有明确错误。</div>
+            <table class="kv-table">
+                {% for row in log_rows %}
+                <tr><th>{{ row.label }}</th><td>{{ row.value }}</td></tr>
+                {% endfor %}
+            </table>
+        </section>
+
+        <section class="card">
+            <h2>Verifier Result</h2>
+            <div class="boundary">这里读取主仓 projection 后的 verifier 结果，用于修复级反馈；不直接深扫 external verifier 原始目录。</div>
+            {% if verifier_rules_uri %}
+            <div class="artifact-links" style="margin-top: 14px;" data-testid="run-workspace-case-verifier-link-row">
+                <a class="portal-link secondary" href="{{ verifier_rules_uri }}" data-testid="run-workspace-case-verifier-link">Case Verifier / 验证卡片</a>
+            </div>
+            {% endif %}
+            {% if run_artifact_verifier_uri %}
+            <div style="margin-top: 14px;">
+                <button class="portal-button" type="button" id="run-artifact-verifier-button" data-verifier-url="{{ run_artifact_verifier_uri }}" data-testid="run-artifact-verifier-button">
+                    触发外部 Verifier / Run External Verifier
+                </button>
+                <div class="verifier-status" id="run-artifact-verifier-status" data-testid="run-artifact-verifier-status">等待触发 / Pending</div>
+                <div id="run-artifact-verifier-rules" data-testid="run-artifact-verifier-rules" {% if not run_artifact_verifier_rules %}hidden{% endif %}>
+                    <table class="verifier-rule-table">
+                        <thead>
+                            <tr>
+                                <th>Rule</th>
+                                <th>Status</th>
+                                <th>Summary</th>
+                            </tr>
+                        </thead>
+                        <tbody id="run-artifact-verifier-rules-body">
+                            {% for rule in run_artifact_verifier_rules %}
+                            <tr>
+                                <td>{{ rule.rule_id }}</td>
+                                <td><span class="rule-status {{ rule.status | lower }}">{{ rule.status }}</span></td>
+                                <td>{{ rule.summary }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% endif %}
+            {% if run_artifact_verifier_links %}
+            <div class="artifact-links" style="margin-top: 14px;">
+                {% for link in run_artifact_verifier_links %}
+                <a class="portal-link secondary" href="{{ link.href }}" title="{{ link.title }}">{{ link.label }}</a>
+                {% endfor %}
+            </div>
+            {% endif %}
+            {% if verifier_panel.available %}
+            <table class="kv-table">
+                {% for row in verifier_panel.summary_rows %}
+                <tr><th>{{ row.label }}</th><td>{{ row.value }}</td></tr>
+                {% endfor %}
+            </table>
+            {% if verifier_panel.links %}
+            <div class="artifact-links" style="margin-top: 14px;">
+                {% for link in verifier_panel.links %}
+                <a class="portal-link secondary" href="{{ link.href }}" title="{{ link.title }}">{{ link.label }}</a>
+                {% endfor %}
+            </div>
+            {% endif %}
+            {% else %}
+            <div class="empty" style="margin-top: 14px;">{{ verifier_panel.empty_message }}</div>
+            {% endif %}
+        </section>
+
+        <section class="card">
+            <h2>Diff vs previous</h2>
+            <div class="boundary">{{ diff_summary }}</div>
+            {% if diff_rows %}
+            <table class="kv-table">
+                <tr><th>field</th><th>previous</th><th>current</th></tr>
+                {% for row in diff_rows %}
+                <tr><td>{{ row.label }}</td><td>{{ row.previous }}</td><td>{{ row.current }}</td></tr>
+                {% endfor %}
+            </table>
+            {% else %}
+            <div class="empty" style="margin-top: 14px;">没有需要展示的关键字段差异。</div>
+            {% endif %}
+        </section>
+    </div>
+    <script>
+    (function () {
+      var button = document.getElementById('run-artifact-verifier-button');
+      var status = document.getElementById('run-artifact-verifier-status');
+      var rulesWrap = document.getElementById('run-artifact-verifier-rules');
+      var rulesBody = document.getElementById('run-artifact-verifier-rules-body');
+      if (!button || !status) return;
+      function normalizeStatus(value) {
+        return String(value || '').trim();
+      }
+      function renderRules(payload) {
+        if (!rulesWrap || !rulesBody) return;
+        var rows = Array.isArray(payload.checkResults) ? payload.checkResults : [];
+        rulesBody.textContent = '';
+        rows.forEach(function (row) {
+          var tr = document.createElement('tr');
+          var ruleCell = document.createElement('td');
+          var statusCell = document.createElement('td');
+          var summaryCell = document.createElement('td');
+          var badge = document.createElement('span');
+          var ruleStatus = normalizeStatus(row.status);
+          ruleCell.textContent = normalizeStatus(row.ruleId) || '-';
+          badge.className = 'rule-status ' + ruleStatus.toLowerCase();
+          badge.textContent = ruleStatus || '-';
+          statusCell.appendChild(badge);
+          summaryCell.textContent = normalizeStatus(row.summary) || '-';
+          tr.appendChild(ruleCell);
+          tr.appendChild(statusCell);
+          tr.appendChild(summaryCell);
+          rulesBody.appendChild(tr);
+        });
+        rulesWrap.hidden = rows.length === 0;
+      }
+      button.addEventListener('click', function () {
+        var url = button.getAttribute('data-verifier-url') || '';
+        if (!url) return;
+        button.disabled = true;
+        status.className = 'verifier-status';
+        status.textContent = '运行中 / Running...';
+        fetch(url, {method: 'POST', headers: {'Accept': 'application/json'}})
+          .then(function (response) {
+            return response.json().then(function (payload) {
+              if (!response.ok || payload.verdict !== 'Pass') {
+                throw new Error(payload.summary || payload.message || ('verifier failed: HTTP ' + response.status));
+              }
+              status.className = 'verifier-status passed';
+              status.textContent = '通过 / Passed: ' + (payload.summary || '');
+              renderRules(payload);
+              button.disabled = false;
+            });
+          })
+          .catch(function (error) {
+            status.className = 'verifier-status failed';
+            status.textContent = '失败 / Failed: ' + (error.message || 'external verifier failed');
+            button.disabled = false;
+          });
+      });
+    })();
+    </script>
+</body>
+</html>

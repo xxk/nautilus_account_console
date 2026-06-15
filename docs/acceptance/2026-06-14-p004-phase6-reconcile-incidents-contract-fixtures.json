@@ -1,0 +1,158 @@
+{
+  "schema": "account-console.p004-phase6-reconcile-incidents-contract-fixtures.v1",
+  "created_at": "2026-06-14T15:34:16.659Z",
+  "proposal": {
+    "proposal_id": "p004-account-workbench-summary-panel",
+    "phase": "phase_6_reconcile_incidents_contract_fixtures",
+    "status": "contract_fixture_gate_passed"
+  },
+  "action_mode": "contract_fixture_gate_only_no_ui_no_runtime_truth",
+  "routes": [
+    "/accounts/{account_id}/reconcile",
+    "/accounts/{account_id}/incidents"
+  ],
+  "contracts": [
+    {
+      "path": "contracts/ui/panels/account_reconcile_panel.contract.json",
+      "checksum": "sha256:b95e2c9da66acddd6e00cb75b3fcacb9ce250a79acac283911d01a57017277ab"
+    },
+    {
+      "path": "contracts/ui/panels/account_incidents_panel.contract.json",
+      "checksum": "sha256:1f66bd76b8ee6012b0a2af360b219376ecb2d1a6e5944ae074ea4eef568ddf1f"
+    }
+  ],
+  "fixtures": [
+    {
+      "state": "matched",
+      "path": "contracts/ui/fixtures/account_workbench/account_reconcile_matched.json",
+      "checksum": "sha256:94b9cb00afd07c061abc6a58481ef04faeacb357c44f15c3076b50302d77e1e8"
+    },
+    {
+      "state": "empty",
+      "path": "contracts/ui/fixtures/account_workbench/account_reconcile_empty.json",
+      "checksum": "sha256:49b1db3e572167bef15de718096ebbc008b05566ce5719642ce32d6452c98950"
+    },
+    {
+      "state": "mismatch",
+      "path": "contracts/ui/fixtures/account_workbench/account_reconcile_mismatch.json",
+      "checksum": "sha256:4029643df11bad15ab2bff05fe43d89b4e36bc11a6ba9d15edceb905e90c9e7b"
+    },
+    {
+      "state": "stale",
+      "path": "contracts/ui/fixtures/account_workbench/account_reconcile_stale_stream.json",
+      "checksum": "sha256:030513f5adcb291c9c3d41407c275d9392800225a30e18a6708a2b2a9bf35b44"
+    },
+    {
+      "state": "partial",
+      "path": "contracts/ui/fixtures/account_workbench/account_reconcile_partial_missing_tolerance.json",
+      "checksum": "sha256:3769b63617362e5b5c7565dff2d78d556e769d775e72d6b31cb72519476d56ef"
+    },
+    {
+      "state": "active_incidents",
+      "path": "contracts/ui/fixtures/account_workbench/account_incidents_active.json",
+      "checksum": "sha256:673024f09ae81e93060da966ada80175a470170416408e6d23f646b6aa8bbf54"
+    },
+    {
+      "state": "empty",
+      "path": "contracts/ui/fixtures/account_workbench/account_incidents_empty.json",
+      "checksum": "sha256:d1df816cdc8aaad4ec0d07b06c143de7da63b975abffab479d500245fb799c6c"
+    },
+    {
+      "state": "blocked",
+      "path": "contracts/ui/fixtures/account_workbench/account_incidents_blocked_source.json",
+      "checksum": "sha256:519f868d552d3581b36fe6316aa10992425ee3e730fe91eebd2bac7520d4e74b"
+    },
+    {
+      "state": "stale",
+      "path": "contracts/ui/fixtures/account_workbench/account_incidents_stale_stream.json",
+      "checksum": "sha256:48ed7439fca31324069b456acaa7cb03c8bcfb78ffdcbb898badf235d4c8b2a2"
+    },
+    {
+      "state": "partial",
+      "path": "contracts/ui/fixtures/account_workbench/account_incidents_partial_missing_repair.json",
+      "checksum": "sha256:51df62965189eace7c77b620db936ea3fcbabe65f62b5fb6ea33267d91a890c7"
+    }
+  ],
+  "validator_files": [
+    {
+      "path": "frontend/scripts/validate-account-health-fixtures.mjs",
+      "checksum": "sha256:d35e500f8398e52369dedc5dcf10ccd1252125bb588cff13d88f2416405e7097"
+    },
+    {
+      "path": "scripts/validate_owner_boundaries.py",
+      "checksum": "sha256:4613412a7f5b681131cea7f0d8b14fc34b99928f27002f9554b19f3803d1918b"
+    }
+  ],
+  "gates": [
+    {
+      "name": "phase6 json parse",
+      "status": "passed"
+    },
+    {
+      "name": "owner boundary validation",
+      "command": "python scripts/validate_owner_boundaries.py",
+      "status": "passed"
+    },
+    {
+      "name": "frontend fixture validation",
+      "command": "node_repl import frontend/scripts/validate-account-health-fixtures.mjs",
+      "status": "passed"
+    },
+    {
+      "name": "proposal docs",
+      "command": "python scripts/check_proposal_docs.py --root . --proposal-id p004-account-workbench-summary-panel",
+      "status": "passed"
+    },
+    {
+      "name": "backend compileall",
+      "command": "python -m compileall backend/src",
+      "status": "passed"
+    },
+    {
+      "name": "hotpath rust tests",
+      "command": "cargo test --manifest-path hotpath-rs/Cargo.toml",
+      "status": "passed"
+    }
+  ],
+  "accepted_scope": {
+    "reconcile_contract": true,
+    "reconcile_fixtures": true,
+    "incidents_contract": true,
+    "incidents_fixtures": true,
+    "ui_implementation": false,
+    "browser_evidence": false,
+    "account_console_ui_complete": false
+  },
+  "authority_boundary": {
+    "read_only_projection": true,
+    "runtime_truth": false,
+    "account_truth": false,
+    "reconcile_truth": false,
+    "incident_truth": false,
+    "settlement_truth": false,
+    "equity_truth": false,
+    "position_truth": false,
+    "order_truth": false,
+    "ledger_truth": false,
+    "ui_truth": false,
+    "paper_ready": false,
+    "live_ready": false,
+    "broker_tradable": false,
+    "admission_truth": false,
+    "capital_truth": false,
+    "action_controls": false
+  },
+  "runtime_actions": {
+    "paper_send_authorized": false,
+    "paper_send_attempted": false,
+    "native_send_attempted": false,
+    "live_action_attempted": false
+  },
+  "rejection_rules": [
+    "This artifact accepts only P004 Phase 6 reconcile/incidents contracts and deterministic fixtures.",
+    "Reconcile mismatch rows must expose severity, owner, next_action, tolerance_ref or mismatch_ref instead of being hidden by styling.",
+    "Incident rows must expose category, severity, owner, next_action and repair_ref or typed blocker.",
+    "No UI implementation, browser evidence, runtime, account, reconcile, incident, ledger, readiness, admission, capital or trading authority is created."
+  ]
+}
+

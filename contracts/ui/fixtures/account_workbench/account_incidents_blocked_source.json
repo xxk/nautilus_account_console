@@ -1,0 +1,73 @@
+{
+  "schema_version": "account_incidents_panel.v1",
+  "workbench": "Account Workbench",
+  "panel": "Account Incidents Panel",
+  "route": "/accounts/{account_id}/incidents",
+  "fixture_state": "blocked",
+  "context": {
+    "trading_day": "2026-06-14",
+    "session_id": "account-workbench.fixture.20260614.006",
+    "run_id": "account-incidents.fixture.blocked.001",
+    "reducer_checkpoint_id": "account-incidents.checkpoint.blocked.001",
+    "reducer_checkpoint_ts": "2026-06-14T15:34:16Z",
+    "stream_state": "blocked",
+    "projection_owner": "account-console-contracts",
+    "source_authority": "typed_blocker"
+  },
+  "account": {
+    "account_id": "acct.demo-19053",
+    "account_alias": "19053",
+    "account_kind": "real_feed_sandbox_paper"
+  },
+  "incidents": [
+    {
+      "incident_id": "incident.source-blocker.001",
+      "category": "source_blocker",
+      "severity": "high",
+      "status": "blocked",
+      "owner": "external incident owner",
+      "next_action": "publish incident source artifact or typed blocker",
+      "repair_ref": null,
+      "source_ref": "fixture://account-workbench/incidents/acct.demo-19053/blocked/source",
+      "checksum": "sha256:c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7"
+    }
+  ],
+  "blockers": [
+    {
+      "blocker_id": "account-incidents.missing-source",
+      "severity": "high",
+      "kind": "incident_source_missing",
+      "owner": "external incident owner",
+      "next_action": "publish incident source artifact or typed blocker",
+      "source_ref": "fixture://account-workbench/incidents/acct.demo-19053/blocked/source",
+      "checksum": "sha256:c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8"
+    }
+  ],
+  "source_refs": [
+    {
+      "kind": "incident_blocked_projection",
+      "owner": "account-console-contracts",
+      "source_ref": "fixture://account-workbench/incidents/acct.demo-19053/blocked",
+      "checksum": "sha256:c9c9c9c9c9c9c9c9c9c9c9c9c9c9c9c9c9c9c9c9c9c9c9c9c9c9c9c9c9c9c9c9",
+      "authority": "typed blocker fixture; not incident truth"
+    }
+  ],
+  "boundaries": {
+    "read_only_projection": true,
+    "runtime_truth": false,
+    "account_truth": false,
+    "order_truth": false,
+    "ledger_truth": false,
+    "ui_truth": false,
+    "paper_ready": false,
+    "live_ready": false,
+    "broker_tradable": false,
+    "admission_truth": false,
+    "capital_truth": false,
+    "action_controls": false
+  },
+  "rejection_rules": [
+    "Reject blocked incident projection as repaired state.",
+    "Reject missing repair_ref as a closeout-ready incident."
+  ]
+}

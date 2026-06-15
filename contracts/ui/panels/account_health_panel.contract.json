@@ -1,0 +1,338 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nautilus.local/contracts/ui/panels/account_health_panel.contract.json",
+  "title": "Account Health Panel Read Model",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "workbench",
+    "panel",
+    "route",
+    "fixture_state",
+    "context",
+    "summary",
+    "filters",
+    "accounts"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "account_health_panel.v1"
+    },
+    "workbench": {
+      "type": "string",
+      "const": "Daily Closeout"
+    },
+    "panel": {
+      "type": "string",
+      "const": "Account Health Panel"
+    },
+    "route": {
+      "type": "string",
+      "const": "/closeout"
+    },
+    "fixture_state": {
+      "type": "string",
+      "enum": ["happy_path", "empty", "blocked", "stale", "partial"]
+    },
+    "context": {
+      "$ref": "#/$defs/context"
+    },
+    "summary": {
+      "$ref": "#/$defs/summary"
+    },
+    "filters": {
+      "$ref": "#/$defs/filters"
+    },
+    "accounts": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/account_health_row"
+      }
+    }
+  },
+  "$defs": {
+    "account_kind": {
+      "type": "string",
+      "enum": [
+        "sandbox_paper",
+        "real_feed_sandbox_paper",
+        "broker_paper_probe",
+        "live_broker",
+        "backtest_replay"
+      ]
+    },
+    "state_badge": {
+      "type": "string",
+      "enum": ["healthy", "blocked", "stale", "partial", "empty", "warning"]
+    },
+    "closeout_state": {
+      "type": "string",
+      "enum": ["complete", "blocked", "stale", "partial", "empty"]
+    },
+    "settlement_state": {
+      "type": "string",
+      "enum": ["settled", "blocked", "stale", "partial", "missing"]
+    },
+    "equity_continuity": {
+      "type": "string",
+      "enum": ["continuous", "gap", "stale", "partial", "missing"]
+    },
+    "severity": {
+      "type": "string",
+      "enum": ["info", "warning", "high", "critical"]
+    },
+    "context": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "trading_day",
+        "session_id",
+        "closeout_run_id",
+        "reducer_checkpoint_id",
+        "reducer_checkpoint_ts",
+        "stream_state",
+        "last_cursor",
+        "source_ref",
+        "checksum"
+      ],
+      "properties": {
+        "trading_day": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+        },
+        "session_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "closeout_run_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "reducer_checkpoint_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "reducer_checkpoint_ts": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "stream_state": {
+          "$ref": "#/$defs/state_badge"
+        },
+        "last_cursor": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "source_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "checksum": {
+          "type": "string",
+          "pattern": "^sha256:[a-f0-9]{64}$"
+        }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "total_accounts",
+        "closeout_completed",
+        "closeout_blocked",
+        "settlement_blocked",
+        "stale_or_partial",
+        "open_blockers"
+      ],
+      "properties": {
+        "total_accounts": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "closeout_completed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "closeout_blocked": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "settlement_blocked": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "stale_or_partial": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "open_blockers": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "filters": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "account_types",
+        "closeout_states",
+        "settlement_states",
+        "blocker_severities"
+      ],
+      "properties": {
+        "account_types": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/account_kind"
+          },
+          "uniqueItems": true
+        },
+        "closeout_states": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/closeout_state"
+          },
+          "uniqueItems": true
+        },
+        "settlement_states": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/settlement_state"
+          },
+          "uniqueItems": true
+        },
+        "blocker_severities": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/severity"
+          },
+          "uniqueItems": true
+        }
+      }
+    },
+    "blocker": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "blocker_id",
+        "severity",
+        "kind",
+        "owner",
+        "next_diagnostic_ref",
+        "source_ref"
+      ],
+      "properties": {
+        "blocker_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "severity": {
+          "$ref": "#/$defs/severity"
+        },
+        "kind": {
+          "type": "string",
+          "minLength": 1
+        },
+        "owner": {
+          "type": "string",
+          "minLength": 1
+        },
+        "next_diagnostic_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source_ref": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "account_health_row": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "account_id",
+        "account_type",
+        "owner",
+        "closeout_state",
+        "settlement_state",
+        "equity_continuity",
+        "blocker_count",
+        "source_ref",
+        "checksum",
+        "closeout_run_id",
+        "settlement_run_id",
+        "equity_curve_artifact_id",
+        "last_cursor",
+        "last_checkpoint_ts",
+        "blockers"
+      ],
+      "properties": {
+        "account_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "account_type": {
+          "$ref": "#/$defs/account_kind"
+        },
+        "owner": {
+          "type": "string",
+          "minLength": 1
+        },
+        "closeout_state": {
+          "$ref": "#/$defs/closeout_state"
+        },
+        "settlement_state": {
+          "$ref": "#/$defs/settlement_state"
+        },
+        "equity_continuity": {
+          "$ref": "#/$defs/equity_continuity"
+        },
+        "blocker_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "source_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "checksum": {
+          "type": "string",
+          "pattern": "^sha256:[a-f0-9]{64}$"
+        },
+        "closeout_run_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "settlement_run_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "equity_curve_artifact_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "latest_blocker_id": {
+          "type": ["string", "null"]
+        },
+        "last_cursor": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "last_checkpoint_ts": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "blockers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/blocker"
+          }
+        }
+      }
+    }
+  }
+}

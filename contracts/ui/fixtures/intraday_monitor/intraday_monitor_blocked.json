@@ -1,0 +1,73 @@
+{
+  "schema_version": "intraday_monitor_panel.v1",
+  "workbench": "Intraday Monitor",
+  "panel": "Intraday Monitor Exception Queue Panel",
+  "route": "/monitor",
+  "fixture_state": "blocked",
+  "context": {
+    "trading_day": "2026-06-14",
+    "session_id": "intraday-monitor.fixture.20260614.003",
+    "monitor_checkpoint_id": "intraday-monitor.checkpoint.blocked.001",
+    "monitor_checkpoint_ts": "2026-06-14T16:35:36Z",
+    "stream_state": "blocked",
+    "projection_owner": "account-console-contracts",
+    "source_authority": "typed_blocker"
+  },
+  "lag_summary": {
+    "max_lag_ms": null,
+    "stale_stream_count": 0,
+    "open_incident_count": 0,
+    "blocked_source_count": 1
+  },
+  "exceptions": [
+    {
+      "exception_id": "monitor.exception.source-blocker.001",
+      "kind": "source_blocker",
+      "severity": "high",
+      "owner": "external monitor source owner",
+      "next_action": "provide monitor snapshot owner artifact",
+      "source_ref": "fixture://intraday-monitor/exceptions/source-blocker-001",
+      "checksum": "sha256:c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1"
+    }
+  ],
+  "streams": [],
+  "incidents": [],
+  "blockers": [
+    {
+      "blocker_id": "monitor.blocker.missing-source.001",
+      "severity": "high",
+      "kind": "missing_monitor_source",
+      "owner": "external monitor source owner",
+      "next_action": "publish typed monitor snapshot or blocker",
+      "source_ref": "fixture://intraday-monitor/blockers/missing-source-001",
+      "checksum": "sha256:c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2"
+    }
+  ],
+  "source_refs": [
+    {
+      "kind": "typed_blocker",
+      "owner": "account-console-contracts",
+      "source_ref": "fixture://intraday-monitor/blocked",
+      "checksum": "sha256:c4c4c4c4c4c4c4c4c4c4c4c4c4c4c4c4c4c4c4c4c4c4c4c4c4c4c4c4c4c4c4c4",
+      "authority": "deterministic blocker fixture; not runtime authority"
+    }
+  ],
+  "boundaries": {
+    "read_only_projection": true,
+    "runtime_truth": false,
+    "account_truth": false,
+    "order_truth": false,
+    "ledger_truth": false,
+    "ui_truth": false,
+    "paper_ready": false,
+    "live_ready": false,
+    "broker_tradable": false,
+    "admission_truth": false,
+    "capital_truth": false,
+    "action_controls": false
+  },
+  "rejection_rules": [
+    "Reject blocked fixture as UI implementation permission.",
+    "Reject blocker display as source-owner repair."
+  ]
+}

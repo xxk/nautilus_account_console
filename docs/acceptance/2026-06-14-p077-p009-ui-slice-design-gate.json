@@ -1,0 +1,78 @@
+{
+  "artifact_type": "account_console_p077_p009_ui_slice_design_gate",
+  "schema": "account-console.p077-p009-ui-slice-design-gate.v1",
+  "created_at": "2026-06-14T11:57:20Z",
+  "selected_lane": "ADR0045 Account Console P077 Paper Slice Evidence Panel proposal-level UI design gate",
+  "action_mode": "design_gate_only_no_ui_no_runtime_truth",
+  "proposal": {
+    "proposal_id": "p009-p077-paper-slice-evidence-panel",
+    "status": "design_gate_ready",
+    "readme": {
+      "path": "D:/Nautilus/nautilus_account_console/docs/proposals/p009-p077-paper-slice-evidence-panel/README.md",
+      "checksum": "sha256:c35044015bc4cb4b0d759e80b06226cb5b4ee3cafaf6c70ea859ed34faa95392"
+    },
+    "phase_plan": {
+      "path": "D:/Nautilus/nautilus_account_console/docs/proposals/p009-p077-paper-slice-evidence-panel/phase-plan.md",
+      "checksum": "sha256:2b3d9b320e11b8114c9eebb119a0ccd488ffb1a547aa8d13dbc9fcac84f68419"
+    },
+    "acceptance": {
+      "path": "D:/Nautilus/nautilus_account_console/docs/proposals/p009-p077-paper-slice-evidence-panel/acceptance.md",
+      "checksum": "sha256:c2479b14417d17258c6359c81524dadf0d90cf1c9d580e9957bcd174dabfdac8"
+    },
+    "ui_design": {
+      "path": "D:/Nautilus/nautilus_account_console/docs/proposals/p009-p077-paper-slice-evidence-panel/ui-design.md",
+      "checksum": "sha256:5986667acf199976890742b2c3919873db5002566e08bd24badc44410f9891f6"
+    },
+    "ui_acceptance": {
+      "path": "D:/Nautilus/nautilus_account_console/docs/proposals/p009-p077-paper-slice-evidence-panel/ui-acceptance.md",
+      "checksum": "sha256:be43275f509f65cb3c18299bb3a047da26b2ade7273b828810c30c20f60dcd95"
+    }
+  },
+  "route_mapping": {
+    "route_matrix": {
+      "path": "D:/Nautilus/nautilus_account_console/docs/acceptance/2026-06-13-account-console-ui-route-coverage-matrix.md",
+      "checksum": "sha256:bf13a5adf7290b90a8520284d4dfe27c7f9139e0871392b1152a8278d0878965"
+    },
+    "owner_map": {
+      "path": "D:/Nautilus/nautilus_account_console/docs/ownership/account-console-owner-map.md",
+      "checksum": "sha256:f42b8b555eb5c9d94a9965a57ded81d8bbd6dc9f37926724eef81f221f27101a"
+    },
+    "parent_routes": [
+      "/accounts/{account_id}/orders/{client_order_id}",
+      "/accounts/{account_id}/evidence"
+    ],
+    "contract_route_identifier": "/orders/p077-paper-slice",
+    "top_level_route_allowed": false
+  },
+  "e91_retry_condition_status": {
+    "proposal_level_ui_design_present": true,
+    "proposal_level_ui_acceptance_present": true,
+    "route_matrix_mapping_present": true,
+    "browser_render_evidence_present": false,
+    "frontend_implementation_started": false,
+    "implementation_closeout_ready": false,
+    "status": "design_gate_ready_browser_and_implementation_still_required"
+  },
+  "boundaries": {
+    "runtime_truth": false,
+    "ledger_truth": false,
+    "ui_truth": false,
+    "paper_ready": false,
+    "live_ready": false,
+    "broker_tradable": false,
+    "admission_truth": false,
+    "capital_truth": false,
+    "paper_send_authorized": false,
+    "paper_send_attempted": false,
+    "native_send_attempted": false,
+    "frontend_code_changed": false,
+    "browser_evidence_claimed": false
+  },
+  "rejection_rules": [
+    "Reject treating P009 design_gate_ready as browser/render implementation evidence.",
+    "Reject adding /orders/p077-paper-slice as a top-level route without a successor route hierarchy acceptance update.",
+    "Reject any order action, Paper retry authorization, broker action, readiness, admission or capital claim.",
+    "Reject using E87/E90 fixture data as runtime truth, ledger truth or Account Console runtime truth."
+  ],
+  "next_action": "Implement the P077 Paper Slice Evidence Panel under Account Workbench only after route mapping is accepted, then collect browser evidence or a typed browser blocker."
+}

@@ -1,0 +1,79 @@
+{
+  "schema_version": "account_health_panel.v1",
+  "workbench": "Daily Closeout",
+  "panel": "Account Health Panel",
+  "route": "/closeout",
+  "fixture_state": "partial",
+  "context": {
+    "trading_day": "2026-06-13",
+    "session_id": "session.demo-20260613",
+    "closeout_run_id": "closeout.run.20260613.partial",
+    "reducer_checkpoint_id": "reducer.checkpoint.20260613.015",
+    "reducer_checkpoint_ts": "2026-06-13T08:29:00Z",
+    "stream_state": "partial",
+    "last_cursor": 803,
+    "source_ref": "fixture://ui/daily-closeout/account-health-partial-evidence.json",
+    "checksum": "sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+  },
+  "summary": {
+    "total_accounts": 2,
+    "closeout_completed": 1,
+    "closeout_blocked": 0,
+    "settlement_blocked": 0,
+    "stale_or_partial": 1,
+    "open_blockers": 1
+  },
+  "filters": {
+    "account_types": ["real_feed_sandbox_paper", "backtest_replay"],
+    "closeout_states": ["complete", "partial"],
+    "settlement_states": ["settled", "partial"],
+    "blocker_severities": ["warning"]
+  },
+  "accounts": [
+    {
+      "account_id": "paper.demo-01",
+      "account_type": "real_feed_sandbox_paper",
+      "owner": "pm-alpha",
+      "closeout_state": "complete",
+      "settlement_state": "settled",
+      "equity_continuity": "continuous",
+      "blocker_count": 0,
+      "source_ref": "readmodel://daily-closeout/2026-06-13/paper.demo-01",
+      "checksum": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+      "closeout_run_id": "closeout.run.20260613.partial",
+      "settlement_run_id": "settlement.run.20260613.001",
+      "equity_curve_artifact_id": "artifact.equity.paper.demo-01.20260613",
+      "latest_blocker_id": null,
+      "last_cursor": 381,
+      "last_checkpoint_ts": "2026-06-13T08:33:20Z",
+      "blockers": []
+    },
+    {
+      "account_id": "replay.demo-06",
+      "account_type": "backtest_replay",
+      "owner": "research-delta",
+      "closeout_state": "partial",
+      "settlement_state": "partial",
+      "equity_continuity": "partial",
+      "blocker_count": 1,
+      "source_ref": "readmodel://daily-closeout/2026-06-13/replay.demo-06",
+      "checksum": "sha256:6666666666666666666666666666666666666666666666666666666666666666",
+      "closeout_run_id": "closeout.run.20260613.partial",
+      "settlement_run_id": "settlement.run.20260613.006",
+      "equity_curve_artifact_id": "artifact.equity.replay.demo-06.20260613",
+      "latest_blocker_id": "blocker.evidence.replay.demo-06.20260613",
+      "last_cursor": 803,
+      "last_checkpoint_ts": "2026-06-13T08:29:00Z",
+      "blockers": [
+        {
+          "blocker_id": "blocker.evidence.replay.demo-06.20260613",
+          "severity": "warning",
+          "kind": "missing_closeout_package_ref",
+          "owner": "ai-repair-review",
+          "next_diagnostic_ref": "evidence://closeout/replay.demo-06/2026-06-13/missing-package-ref",
+          "source_ref": "ledger://closeout/blockers/2026-06-13/replay.demo-06"
+        }
+      ]
+    }
+  ]
+}

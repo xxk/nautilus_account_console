@@ -1,0 +1,51 @@
+{
+  "schema_version": "account_reconcile_panel.v1",
+  "workbench": "Account Workbench",
+  "panel": "Account Reconcile Panel",
+  "route": "/accounts/{account_id}/reconcile",
+  "fixture_state": "empty",
+  "context": {
+    "trading_day": "2026-06-14",
+    "session_id": "account-workbench.fixture.20260614.006",
+    "run_id": "account-reconcile.fixture.empty.001",
+    "reducer_checkpoint_id": "account-reconcile.checkpoint.empty.001",
+    "reducer_checkpoint_ts": "2026-06-14T15:34:16Z",
+    "stream_state": "empty",
+    "projection_owner": "account-console-contracts",
+    "source_authority": "deterministic_fixture"
+  },
+  "account": {
+    "account_id": "acct.demo-19053",
+    "account_alias": "19053",
+    "account_kind": "real_feed_sandbox_paper"
+  },
+  "reconcile_items": [],
+  "blockers": [],
+  "source_refs": [
+    {
+      "kind": "reconcile_projection_empty",
+      "owner": "account-console-contracts",
+      "source_ref": "fixture://account-workbench/reconcile/acct.demo-19053/empty",
+      "checksum": "sha256:b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3",
+      "authority": "deterministic reconcile fixture; not ledger truth"
+    }
+  ],
+  "boundaries": {
+    "read_only_projection": true,
+    "runtime_truth": false,
+    "account_truth": false,
+    "order_truth": false,
+    "ledger_truth": false,
+    "ui_truth": false,
+    "paper_ready": false,
+    "live_ready": false,
+    "broker_tradable": false,
+    "admission_truth": false,
+    "capital_truth": false,
+    "action_controls": false
+  },
+  "rejection_rules": [
+    "Reject empty reconcile projection as proof that no mismatches exist.",
+    "Reject this fixture as account or ledger authority."
+  ]
+}

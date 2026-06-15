@@ -1,0 +1,77 @@
+{
+  "schema_version": "account_reconcile_panel.v1",
+  "workbench": "Account Workbench",
+  "panel": "Account Reconcile Panel",
+  "route": "/accounts/{account_id}/reconcile",
+  "fixture_state": "stale",
+  "context": {
+    "trading_day": "2026-06-14",
+    "session_id": "account-workbench.fixture.20260614.006",
+    "run_id": "account-reconcile.fixture.stale.001",
+    "reducer_checkpoint_id": "account-reconcile.checkpoint.stale.001",
+    "reducer_checkpoint_ts": "2026-06-14T08:00:00Z",
+    "stream_state": "stale",
+    "projection_owner": "account-console-contracts",
+    "source_authority": "typed_blocker"
+  },
+  "account": {
+    "account_id": "acct.demo-19053",
+    "account_alias": "19053",
+    "account_kind": "real_feed_sandbox_paper"
+  },
+  "reconcile_items": [
+    {
+      "item_id": "reconcile.cash.stale.001",
+      "category": "cash",
+      "severity": "warning",
+      "status": "stale",
+      "expected_value": null,
+      "observed_value": null,
+      "delta": null,
+      "tolerance_ref": null,
+      "mismatch_ref": null,
+      "owner": "account-console-contracts",
+      "next_action": "refresh source read model before displaying reconcile status",
+      "source_ref": "fixture://account-workbench/reconcile/acct.demo-19053/stale",
+      "checksum": "sha256:b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7"
+    }
+  ],
+  "blockers": [
+    {
+      "blocker_id": "account-reconcile.stale-stream",
+      "severity": "warning",
+      "kind": "stale_reconcile_projection",
+      "owner": "account-console-contracts",
+      "next_action": "refresh deterministic fixture or source read model",
+      "source_ref": "fixture://account-workbench/reconcile/acct.demo-19053/stale",
+      "checksum": "sha256:b8b8b8b8b8b8b8b8b8b8b8b8b8b8b8b8b8b8b8b8b8b8b8b8b8b8b8b8b8b8b8b8"
+    }
+  ],
+  "source_refs": [
+    {
+      "kind": "reconcile_stale_projection",
+      "owner": "account-console-contracts",
+      "source_ref": "fixture://account-workbench/reconcile/acct.demo-19053/stale",
+      "checksum": "sha256:b9b9b9b9b9b9b9b9b9b9b9b9b9b9b9b9b9b9b9b9b9b9b9b9b9b9b9b9b9b9b9b9",
+      "authority": "typed stale fixture; not reconcile truth"
+    }
+  ],
+  "boundaries": {
+    "read_only_projection": true,
+    "runtime_truth": false,
+    "account_truth": false,
+    "order_truth": false,
+    "ledger_truth": false,
+    "ui_truth": false,
+    "paper_ready": false,
+    "live_ready": false,
+    "broker_tradable": false,
+    "admission_truth": false,
+    "capital_truth": false,
+    "action_controls": false
+  },
+  "rejection_rules": [
+    "Reject stale projection as current reconcile evidence.",
+    "Reject browser state as source refresh proof."
+  ]
+}

@@ -1,0 +1,69 @@
+{
+  "artifact_type": "account_console_p077_e90_ui_route_acceptance_blocker",
+  "schema": "account-console.p077-e90-ui-route-acceptance-blocker.v1",
+  "created_at": "2026-06-14T11:51:11Z",
+  "selected_lane": "ADR0045 Account Console contract-first UI route acceptance check for P077 E90",
+  "action_mode": "typed_blocker_no_ui_no_runtime_truth",
+  "inputs": {
+    "p077_paper_slice_panel_contract": {
+      "path": "D:/Nautilus/nautilus_account_console/contracts/ui/panels/p077_paper_slice_panel.contract.json",
+      "checksum": "sha256:e23fac66f8e774670f13e9f05c5b8686b5dd9fb5cee051408b2355b7d132b8be",
+      "authority": "read-only panel contract for P077 bounded Paper slice projection"
+    },
+    "p077_e87_filled_fixture": {
+      "path": "D:/Nautilus/nautilus_account_console/contracts/ui/fixtures/p077_paper_slice/e87_close_yesterday_filled.json",
+      "checksum": "sha256:07df4d0e1fd5304fda74d8e9aa80ab642fa03040db94b19ef9b0e169d3834b94",
+      "authority": "read-only fixture projection for E87/E88 typed owner refs"
+    },
+    "ui_route_coverage_matrix": {
+      "path": "D:/Nautilus/nautilus_account_console/docs/acceptance/2026-06-13-account-console-ui-route-coverage-matrix.md",
+      "authority": "route implementation must have proposal-level UI design, UI acceptance, matrix update and browser evidence before closeout"
+    },
+    "contract_first_ui_topic": {
+      "path": "D:/Nautilus/nautilus_account_console/docs/topics/contract-first-ui-slice-development.md",
+      "authority": "implementation workflow requires panel-level UI Slice Contract, anti-drift checklist and owner boundary before coding"
+    }
+  },
+  "blocker": {
+    "blocker_id": "account-console.p077.e90.ui-route-acceptance-missing",
+    "kind": "ui_route_acceptance_blocker",
+    "severity": "medium",
+    "owner": "nautilus_account_console",
+    "reason": "E90 provides the required read-only P077 Paper slice contract and fixture, but the UI route or parent Account Workbench panel has not yet been accepted through proposal-level ui-design.md, ui-acceptance.md, route coverage matrix mapping and browser/render evidence.",
+    "retry_condition": "Create or update an Account Console proposal/change for the P077 Paper Slice Evidence Panel under the Account Workbench route hierarchy. It must fill the UI Slice Contract, anti-drift checklist, owner boundary, route matrix row or parent route mapping, and browser/render acceptance before frontend implementation can be accepted."
+  },
+  "route_review": {
+    "contract_route": "/orders/p077-paper-slice",
+    "allowed_parent_candidates": [
+      "/accounts/{account_id}/orders",
+      "/accounts/{account_id}/orders/{client_order_id}",
+      "/accounts/{account_id}/evidence"
+    ],
+    "current_route_status": "not_implemented",
+    "ui_code_changed": false,
+    "browser_evidence_created": false,
+    "proposal_level_ui_design_present": false,
+    "proposal_level_ui_acceptance_present": false,
+    "route_matrix_ready_for_implementation_closeout": false
+  },
+  "boundaries": {
+    "runtime_truth": false,
+    "ledger_truth": false,
+    "ui_truth": false,
+    "paper_ready": false,
+    "live_ready": false,
+    "broker_tradable": false,
+    "admission_truth": false,
+    "capital_truth": false,
+    "paper_send_authorized": false,
+    "paper_send_attempted": false,
+    "native_send_attempted": false
+  },
+  "rejection_rules": [
+    "Reject any UI rendering that treats E90 fixture data as runtime truth, ledger truth, readiness truth, admission truth, broker tradability or capital truth.",
+    "Reject implementing /orders/p077-paper-slice as a new top-level route without route hierarchy acceptance.",
+    "Reject closing the UI lane from contract/fixture evidence alone without browser/render evidence or a typed blocker.",
+    "Reject any order action control, submit/cancel/replace affordance, or wording that implies Paper ready, Live ready, admitted, production ready, capital allocated or can trade."
+  ],
+  "next_action": "Land a proposal-level Account Console UI slice contract for the P077 Paper Slice Evidence Panel, then implement a read-only panel with browser evidence."
+}

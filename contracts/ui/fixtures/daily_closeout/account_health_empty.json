@@ -1,0 +1,33 @@
+{
+  "schema_version": "account_health_panel.v1",
+  "workbench": "Daily Closeout",
+  "panel": "Account Health Panel",
+  "route": "/closeout",
+  "fixture_state": "empty",
+  "context": {
+    "trading_day": "2026-06-13",
+    "session_id": "session.demo-20260613",
+    "closeout_run_id": "closeout.run.20260613.empty",
+    "reducer_checkpoint_id": "reducer.checkpoint.20260613.empty",
+    "reducer_checkpoint_ts": "2026-06-13T08:00:00Z",
+    "stream_state": "empty",
+    "last_cursor": 0,
+    "source_ref": "fixture://ui/daily-closeout/account-health-empty.json",
+    "checksum": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+  },
+  "summary": {
+    "total_accounts": 0,
+    "closeout_completed": 0,
+    "closeout_blocked": 0,
+    "settlement_blocked": 0,
+    "stale_or_partial": 0,
+    "open_blockers": 0
+  },
+  "filters": {
+    "account_types": [],
+    "closeout_states": [],
+    "settlement_states": [],
+    "blocker_severities": []
+  },
+  "accounts": []
+}

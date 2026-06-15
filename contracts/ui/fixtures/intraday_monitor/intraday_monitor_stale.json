@@ -1,0 +1,83 @@
+{
+  "schema_version": "intraday_monitor_panel.v1",
+  "workbench": "Intraday Monitor",
+  "panel": "Intraday Monitor Exception Queue Panel",
+  "route": "/monitor",
+  "fixture_state": "stale",
+  "context": {
+    "trading_day": "2026-06-14",
+    "session_id": "intraday-monitor.fixture.20260614.004",
+    "monitor_checkpoint_id": "intraday-monitor.checkpoint.stale.001",
+    "monitor_checkpoint_ts": "2026-06-14T16:10:00Z",
+    "stream_state": "stale",
+    "projection_owner": "account-console-contracts",
+    "source_authority": "deterministic_fixture"
+  },
+  "lag_summary": {
+    "max_lag_ms": 1536000,
+    "stale_stream_count": 2,
+    "open_incident_count": 1,
+    "blocked_source_count": 0
+  },
+  "exceptions": [
+    {
+      "exception_id": "monitor.exception.stale-stream.001",
+      "kind": "stale_stream",
+      "severity": "high",
+      "owner": "external stream owner",
+      "next_action": "refresh stream cursor artifact",
+      "source_ref": "fixture://intraday-monitor/exceptions/stale-stream-001",
+      "checksum": "sha256:d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1"
+    }
+  ],
+  "streams": [
+    {
+      "stream_id": "stream.order.lifecycle",
+      "state": "stale",
+      "last_event_ts": "2026-06-14T16:10:00Z",
+      "lag_ms": 1536000,
+      "source_ref": "fixture://intraday-monitor/streams/order-lifecycle",
+      "checksum": "sha256:d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2"
+    }
+  ],
+  "incidents": [
+    {
+      "incident_id": "monitor.incident.stale-stream.002",
+      "category": "source_blocker",
+      "severity": "high",
+      "status": "stale",
+      "owner": "external stream owner",
+      "next_action": "publish fresh stream cursor or typed blocker",
+      "source_ref": "fixture://intraday-monitor/incidents/stale-stream-002",
+      "checksum": "sha256:d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3"
+    }
+  ],
+  "blockers": [],
+  "source_refs": [
+    {
+      "kind": "monitor_snapshot",
+      "owner": "account-console-contracts",
+      "source_ref": "fixture://intraday-monitor/stale",
+      "checksum": "sha256:d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4",
+      "authority": "deterministic stale monitor fixture; not runtime authority"
+    }
+  ],
+  "boundaries": {
+    "read_only_projection": true,
+    "runtime_truth": false,
+    "account_truth": false,
+    "order_truth": false,
+    "ledger_truth": false,
+    "ui_truth": false,
+    "paper_ready": false,
+    "live_ready": false,
+    "broker_tradable": false,
+    "admission_truth": false,
+    "capital_truth": false,
+    "action_controls": false
+  },
+  "rejection_rules": [
+    "Reject stale display as runtime repair.",
+    "Reject stale stream count as HFT readiness evidence."
+  ]
+}

@@ -1,0 +1,148 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nautilus.local/contracts/ui/panels/account_order_detail_panel.contract.json",
+  "title": "Account Order Detail Panel Read Model",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "workbench",
+    "panel",
+    "route",
+    "fixture_state",
+    "context",
+    "account",
+    "order",
+    "events",
+    "report_provenance",
+    "blockers",
+    "source_refs",
+    "boundaries",
+    "rejection_rules"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "account_order_detail_panel.v1"
+    },
+    "workbench": {
+      "type": "string",
+      "const": "Account Workbench"
+    },
+    "panel": {
+      "type": "string",
+      "const": "Account Order Detail Panel"
+    },
+    "route": {
+      "type": "string",
+      "const": "/accounts/{account_id}/orders/{client_order_id}"
+    },
+    "fixture_state": {
+      "type": "string",
+      "enum": ["filled_lifecycle", "blocked", "stale"]
+    },
+    "context": {
+      "$ref": "account_orders_panel.contract.json#/$defs/context"
+    },
+    "account": {
+      "$ref": "account_orders_panel.contract.json#/$defs/account"
+    },
+    "order": {
+      "$ref": "account_orders_panel.contract.json#/$defs/order_row"
+    },
+    "events": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/lifecycle_event"
+      }
+    },
+    "report_provenance": {
+      "type": "array",
+      "items": {
+        "$ref": "account_orders_panel.contract.json#/$defs/source_ref"
+      }
+    },
+    "blockers": {
+      "type": "array",
+      "items": {
+        "$ref": "account_orders_panel.contract.json#/$defs/blocker"
+      }
+    },
+    "source_refs": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "account_orders_panel.contract.json#/$defs/source_ref"
+      }
+    },
+    "boundaries": {
+      "$ref": "account_orders_panel.contract.json#/$defs/boundaries"
+    },
+    "rejection_rules": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    }
+  },
+  "$defs": {
+    "lifecycle_event": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "event_id",
+        "event_seq",
+        "event_type",
+        "event_ts",
+        "quantity",
+        "price",
+        "status",
+        "source_ref",
+        "checksum",
+        "authority"
+      ],
+      "properties": {
+        "event_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "event_seq": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "event_type": {
+          "type": "string",
+          "enum": ["accepted", "submitted", "filled", "canceled", "rejected", "unknown"]
+        },
+        "event_ts": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "quantity": {
+          "type": ["number", "null"]
+        },
+        "price": {
+          "type": ["number", "null"]
+        },
+        "status": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "checksum": {
+          "type": "string",
+          "pattern": "^sha256:[a-f0-9]{64}$"
+        },
+        "authority": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    }
+  }
+}

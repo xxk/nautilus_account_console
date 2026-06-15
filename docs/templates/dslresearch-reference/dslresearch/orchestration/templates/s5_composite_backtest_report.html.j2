@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8" />
+    <title>{{ report_title }}</title>
+    <style>
+        body { font-family: Segoe UI, Microsoft YaHei, sans-serif; margin: 24px; color: #1f2328; background: #f6f8fa; }
+        h1, h2, h3 { margin-top: 0; }
+        .card { background: #ffffff; border-radius: 12px; padding: 18px; box-shadow: 0 1px 3px rgba(0,0,0,.08); margin-bottom: 18px; }
+        .meta { color: #57606a; margin-bottom: 16px; line-height: 1.7; }
+        .meta-line { color: #57606a; margin-bottom: 8px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid #d0d7de; vertical-align: top; }
+        th { background: #f6f8fa; }
+        code, pre { background: #f0f3f6; border-radius: 8px; }
+        code { padding: 2px 6px; }
+        pre { padding: 12px; overflow-x: auto; white-space: pre-wrap; }
+        .badge { display: inline-block; border-radius: 999px; padding: 4px 10px; font-size: 12px; font-weight: 600; background: #ddf4ff; color: #0550ae; }
+        .curve-box { margin: 14px 0 18px; }
+        .split-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; }
+        .records-card { margin-top: 18px; }
+        .records-wrap { overflow-x: auto; }
+        .hint { color: #57606a; line-height: 1.7; }
+        ul { margin: 0; padding-left: 20px; }
+        @media (max-width: 900px) { .split-grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <section class="card">
+        <h1>{{ report_title }}</h1>
+        <div class="meta">S5 组合正式回测报告 · 先看结论，再看证据。</div>
+        <div><span class="badge">S5 严肃验收 / Composite Formal Backtest</span></div>
+        <div class="meta-line" style="margin-top: 10px;"><strong>Sharpe：</strong>{{ "%.4f" | format(sharpe_ratio) }} &nbsp;|&nbsp; <strong>最大回撤：</strong>{{ "%.2f" | format(max_drawdown_pct) }}% &nbsp;|&nbsp; <strong>总收益：</strong>{{ "%.2f" | format(total_return_pct) }}% &nbsp;|&nbsp; <strong>成交笔数：</strong>{{ trade_count }} &nbsp;|&nbsp; <strong>组件数：</strong>{{ component_count }}</div>
+        <div class="meta-line"><strong>时间窗口：</strong>{{ start_date }} → {{ end_date }} &nbsp;|&nbsp; <strong>strategy_key：</strong><code>{{ strategy_key }}</code></div>
+        <div class="meta-line"><strong>复跑命令（下一正式动作 / Next Action）：</strong><code>{{ rerun_command }}</code></div>
+        <div class="meta-line"><strong>可回溯锚点 / Traceability</strong></div>
+        {{ traceability_html | safe }}
+    </section>
+    {{ curve_section_html | safe }}
+    {{ standard_output_section_html | safe }}
+    <section class="card">
+        <h2>组件明细 / Component Breakdown</h2>
+        <table>
+            <thead>
+                <tr><th>#</th><th>strategy_key</th><th>factor_op</th><th>weight</th><th>normalized_weight</th><th>sharpe</th><th>drawdown</th><th>total_return</th><th>trades</th><th>component_request_id</th></tr>
+            </thead>
+            <tbody>{{ component_rows_html | safe }}</tbody>
+        </table>
+    </section>
+    <section class="card">
+        <h2>完整配置 / Configuration Details（Evidence Drilldown）</h2>
+        <table>
+            <thead><tr><th>字段</th><th>值</th><th>字段</th><th>值</th></tr></thead>
+            <tbody>
+                <tr><td>request_id</td><td><code>{{ request_id }}</code></td><td>strategy_key</td><td><code>{{ strategy_key }}</code></td></tr>
+                <tr><td>factor_op</td><td><code>{{ factor_op }}</code></td><td>timeframe</td><td><code>{{ timeframe }}</code></td></tr>
+                <tr><td>window</td><td>{{ start_date }} -> {{ end_date }}</td><td>catalog_dir</td><td><code>{{ catalog_dir }}</code></td></tr>
+                <tr><td>backtest_engine</td><td><code>{{ backtest_engine }}</code></td><td>execution_module</td><td><code>{{ execution_module }}</code></td></tr>
+                <tr><td>component_backtest_engine</td><td><code>{{ component_backtest_engine }}</code></td><td>component_execution_module</td><td><code>{{ component_execution_module }}</code></td></tr>
+                <tr><td>strategy_repo</td><td><code>{{ strategy_repo }}</code></td><td>strategy_class</td><td><code>{{ strategy_class }}</code></td></tr>
+                <tr><td>strategy_path</td><td><code>{{ strategy_path }}</code></td><td>strategy_module</td><td><code>{{ strategy_module }}</code></td></tr>
+                <tr><td>component_count</td><td>{{ component_count }}</td><td>trade_count</td><td>{{ trade_count }}</td></tr>
+                <tr><td>sharpe_ratio</td><td>{{ "%.4f" | format(sharpe_ratio) }}</td><td>max_drawdown</td><td>{{ "%.2f" | format(max_drawdown_pct) }}%</td></tr>
+                <tr><td>total_return</td><td>{{ "%.2f" | format(total_return_pct) }}%</td><td>run_duration_ms</td><td>{{ run_duration_ms }}</td></tr>
+                <tr><td>result_uri</td><td colspan="3"><code>{{ result_uri }}</code></td></tr>
+            </tbody>
+        </table>
+    </section>
+    <section class="card">
+        <h2>执行上下文 / Execution Context</h2>
+        <div class="split-grid">
+            <div>
+                <h3>components</h3>
+                <pre>{{ component_definition_json }}</pre>
+            </div>
+            <div>
+                <h3>runner summary</h3>
+                <pre>{{ runner_summary_json }}</pre>
+            </div>
+        </div>
+    </section>
+</body>
+</html>

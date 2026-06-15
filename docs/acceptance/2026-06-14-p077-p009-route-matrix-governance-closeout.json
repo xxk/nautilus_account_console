@@ -1,0 +1,75 @@
+{
+  "schema": "account-console.p077-p009-route-matrix-governance-closeout.v1",
+  "created_at": "2026-06-14T12:20:55.315Z",
+  "action_mode": "governance_route_matrix_closeout_no_runtime_truth",
+  "proposal": {
+    "proposal_id": "p009-p077-paper-slice-evidence-panel",
+    "status": "governance_closeout",
+    "closeout_scope": "route matrix, owner map and P009 acceptance now reflect E93 implementation/browser evidence"
+  },
+  "source_evidence": {
+    "implementation_evidence_ref": "D:/Nautilus/nautilus_account_console/docs/acceptance/2026-06-14-p077-p009-ui-implementation-browser-evidence.json",
+    "implementation_evidence_checksum": "sha256:4fc4cedaa0c6f7bb67ab1e6dca1302ffa51ae9838faff61e7a3eca892ee270ed",
+    "contract_ref": "D:/Nautilus/nautilus_account_console/contracts/ui/panels/p077_paper_slice_panel.contract.json",
+    "contract_checksum": "sha256:e23fac66f8e774670f13e9f05c5b8686b5dd9fb5cee051408b2355b7d132b8be",
+    "fixture_ref": "D:/Nautilus/nautilus_account_console/contracts/ui/fixtures/p077_paper_slice/e87_close_yesterday_filled.json",
+    "fixture_checksum": "sha256:07df4d0e1fd5304fda74d8e9aa80ab642fa03040db94b19ef9b0e169d3834b94"
+  },
+  "route_mapping": {
+    "route_matrix_status": "e93_browser_evidence_recorded",
+    "implemented_route": "/accounts/19053/evidence",
+    "also_supported_context": "/accounts/19053/orders/{client_order_id}",
+    "top_level_route_added": false,
+    "broader_account_workbench_accepted": false,
+    "p077_panel_scope": "read-only Account Workbench evidence/order-detail panel only"
+  },
+  "updated_docs": [
+    "D:/Nautilus/nautilus_account_console/docs/acceptance/2026-06-13-account-console-ui-route-coverage-matrix.md",
+    "D:/Nautilus/nautilus_account_console/docs/ownership/account-console-owner-map.md",
+    "D:/Nautilus/nautilus_account_console/docs/proposals/p009-p077-paper-slice-evidence-panel/acceptance.md",
+    "D:/Nautilus/nautilus_account_console/docs/acceptance/README.md",
+    "D:/Nautilus/nautilus_account_console/scripts/validate_owner_boundaries.py"
+  ],
+  "gates": [
+    {
+      "name": "proposal docs",
+      "status": "passed",
+      "command": "python scripts/check_proposal_docs.py --root .",
+      "summary": "PROPOSAL_DOCS_OK: proposals=5"
+    },
+    {
+      "name": "owner boundary",
+      "status": "passed",
+      "command": "python scripts/validate_owner_boundaries.py",
+      "summary": "owner boundary validation passed"
+    },
+    {
+      "name": "owner-side blocker adoption",
+      "status": "passed",
+      "command": "python D:/Nautilus/global_docs/scripts/check_owner_side_blocker_repair_adoption.py --check-hooks",
+      "summary": "OWNER_SIDE_BLOCKER_REPAIR_ADOPTION_OK: checked_files=8 hooks=checked"
+    }
+  ],
+  "boundaries": {
+    "read_only_projection": true,
+    "runtime_truth": false,
+    "ledger_truth": false,
+    "ui_truth": false,
+    "paper_ready": false,
+    "live_ready": false,
+    "broker_tradable": false,
+    "admission_truth": false,
+    "capital_truth": false,
+    "paper_send_authorized": false,
+    "paper_send_attempted": false,
+    "native_send_attempted": false,
+    "governance_docs_changed": true
+  },
+  "rejection_rules": [
+    "E93 and this closeout prove route governance and browser display only, not source lifecycle truth.",
+    "The broader Account Workbench remains design-gate only until its own implementation/browser evidence lands.",
+    "No Paper or Live order action is authorized or attempted by this closeout.",
+    "The Account Console must not infer readiness, admission, capital, broker or runtime conclusions from the P077 panel."
+  ],
+  "remaining_blockers": []
+}

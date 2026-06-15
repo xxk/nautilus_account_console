@@ -1,0 +1,151 @@
+{
+  "schema": "account-console.p004-phase1-summary-contract-fixtures.v1",
+  "artifact_id": "P004_phase1_summary_contract_fixtures",
+  "created_at": "2026-06-14T14:04:51.490Z",
+  "owner_repo": "D:/Nautilus/nautilus_account_console",
+  "action_mode": "contract_fixture_gate_no_frontend_no_runtime_truth",
+  "proposal": {
+    "proposal_id": "p004-account-workbench-summary-panel",
+    "phase": "phase_1_summary_contract_and_fixture_gate",
+    "status": "contract_fixture_gate_passed",
+    "route_context": "/accounts/{account_id}",
+    "frontend_code_changed": false,
+    "browser_evidence_claimed": false,
+    "top_level_route_added": false,
+    "primary_navigation_entry_added": false
+  },
+  "global_analysis": {
+    "p078_adr0044_a0_a3_foundation_status": "not_selected_this_heartbeat_no_active_foundation_blocker_observed",
+    "p077_timed_paper_loop_status": "running_non_ready_human_review_recommended_after_e105",
+    "adr0045_account_console_contract_first_ui_status": "p009_readonly_status_alignment_exists_p004_summary_contract_fixtures_selected",
+    "current_blockers": [
+      "full_account_console_ui_plan_not_complete",
+      "p004_phase2_summary_ui_not_started",
+      "p004_phase3_to_phase8_not_started_or_not_closed",
+      "no_active_bounded_paper_authorization",
+      "paper_ready_not_claimed",
+      "loop_complete_not_claimed"
+    ],
+    "selected_owner_lane": "nautilus_account_console_p004_phase1_summary_contract_fixtures_no_ui",
+    "sibling_owner_handoff_ready": false,
+    "wait_only_blocker_used": false
+  },
+  "contract": {
+    "path": "D:/Nautilus/nautilus_account_console/contracts/ui/panels/account_summary_panel.contract.json",
+    "checksum": "sha256:68bec7f5b57042c75a5cccb9f250652afd8c555080a1cc6b4bbff2c77b96b046",
+    "schema_version": "account_summary_panel.v1",
+    "authority": "Account Console owner contract for deterministic Account Workbench summary fixtures"
+  },
+  "fixtures": [
+    {
+      "state": "happy_path",
+      "path": "D:/Nautilus/nautilus_account_console/contracts/ui/fixtures/account_workbench/account_summary_happy_path.json",
+      "checksum": "sha256:7a63ce38f144420fe1afe1aa11e37ce5f8b595531ba1c692ce930a346f861fb5"
+    },
+    {
+      "state": "empty",
+      "path": "D:/Nautilus/nautilus_account_console/contracts/ui/fixtures/account_workbench/account_summary_empty.json",
+      "checksum": "sha256:84ff5f5a98d4508188318718d22cc03068c26e44cafcd06e379e13a0bb6bcefe"
+    },
+    {
+      "state": "blocked",
+      "path": "D:/Nautilus/nautilus_account_console/contracts/ui/fixtures/account_workbench/account_summary_blocked.json",
+      "checksum": "sha256:7770bcf5469744e82d4d5b51a41900f014641e6d48dece9cd37ba5ab103b85d7"
+    },
+    {
+      "state": "stale",
+      "path": "D:/Nautilus/nautilus_account_console/contracts/ui/fixtures/account_workbench/account_summary_stale_stream.json",
+      "checksum": "sha256:4ee839a65374917536f010386c4babe98b1d7a6e3907d70e4289b26832c3baf8"
+    },
+    {
+      "state": "partial",
+      "path": "D:/Nautilus/nautilus_account_console/contracts/ui/fixtures/account_workbench/account_summary_partial_evidence.json",
+      "checksum": "sha256:bab7f3d952e6914dda6c9d3a5ce3bffc4c71c7df3b7225e0854527c2b0580f48"
+    }
+  ],
+  "validator_updates": [
+    {
+      "path": "D:/Nautilus/nautilus_account_console/frontend/scripts/validate-account-health-fixtures.mjs",
+      "checksum": "sha256:0e252b1db7cdb41faf9f6f72f802ec6f180a99259fe906ada0c26b419a121c54",
+      "authority": "frontend fixture structural validation and forbidden wording scan"
+    },
+    {
+      "path": "D:/Nautilus/nautilus_account_console/scripts/validate_owner_boundaries.py",
+      "checksum": "sha256:10efe030db9a77a0d72a04f471393e83ffec672c8ae645ef3511b3209f1cce0e",
+      "authority": "owner boundary validation for account summary contract and fixtures"
+    }
+  ],
+  "phase1_exit_evidence": {
+    "contract_includes_account_identity": true,
+    "contract_includes_session_run_trading_day_identity": true,
+    "contract_includes_cash_margin_buying_power_pnl_fees_taxes": true,
+    "contract_includes_latest_settlement_and_carryover_refs": true,
+    "contract_includes_blockers_and_source_refs": true,
+    "contract_excludes_order_entry_and_broker_action_fields": true,
+    "all_fixture_states_exist": true,
+    "fixture_values_are_source_ref_or_blocker_backed": true
+  },
+  "runtime_actions": {
+    "market_query_attempted": false,
+    "account_query_attempted": false,
+    "preflight_attempted": false,
+    "paper_send_attempted": false,
+    "native_send_attempted": false,
+    "live_send_attempted": false,
+    "submit_attempted": false,
+    "cancel_attempted": false,
+    "account_console_mutation_attempted": false
+  },
+  "boundaries": {
+    "read_only_projection": true,
+    "frontend_implementation": false,
+    "browser_evidence": false,
+    "runtime_truth": false,
+    "ledger_truth": false,
+    "ui_truth": false,
+    "paper_ready": false,
+    "live_ready": false,
+    "broker_tradable": false,
+    "admission_truth": false,
+    "capital_truth": false,
+    "action_controls": false,
+    "account_console_runtime_truth": false,
+    "loop_complete": false
+  },
+  "gates": [
+    {
+      "name": "contract json",
+      "status": "passed",
+      "command": "python -m json.tool contracts/ui/panels/account_summary_panel.contract.json"
+    },
+    {
+      "name": "fixture json",
+      "status": "passed",
+      "command": "python -m json.tool contracts/ui/fixtures/account_workbench/account_summary_*.json"
+    },
+    {
+      "name": "owner boundary",
+      "status": "passed",
+      "command": "python scripts/validate_owner_boundaries.py"
+    },
+    {
+      "name": "frontend fixture validation",
+      "status": "passed",
+      "command": "npm test",
+      "result": "account health, account summary and P077 paper slice fixtures plus forbidden scan passed"
+    },
+    {
+      "name": "p004 scoped forbidden scan",
+      "status": "passed",
+      "command": "rg -n \"Paper ready|Live ready|admitted|production ready|capital allocated|can trade|submit order|place order|cancel order|replace order|latest/debug|raw report.*truth|runtime truth|capital truth\" contracts/ui/fixtures/account_workbench contracts/ui/panels/account_summary_panel.contract.json",
+      "result": "no matches"
+    }
+  ],
+  "rejection_rules": [
+    "Reject P004 Phase 1 as frontend implementation, browser evidence, Account Console runtime truth or UI completion.",
+    "Reject these deterministic fixtures as account, broker, settlement, equity, ledger, admission, capital or readiness truth.",
+    "Reject UI text, screenshots, latest/debug paths, stdout, HTML reports and raw report text as replacement truth for source refs.",
+    "Reject any Paper/Live order action, retry authorization, submit, cancel, funding or broker action inferred from this contract fixture gate."
+  ],
+  "next_heartbeat_recommendation": "Continue ADR0045 in Account Console with P004 Phase 2 only after accepting whether to implement the Account Summary UI slice from these fixtures; otherwise proceed to another contract-first gate. Do not claim full Account Console UI completion."
+}

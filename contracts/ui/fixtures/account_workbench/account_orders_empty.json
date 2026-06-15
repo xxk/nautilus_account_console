@@ -1,0 +1,51 @@
+{
+  "schema_version": "account_orders_panel.v1",
+  "workbench": "Account Workbench",
+  "panel": "Account Orders Panel",
+  "route": "/accounts/{account_id}/orders",
+  "fixture_state": "empty",
+  "context": {
+    "trading_day": "2026-06-14",
+    "session_id": "account-workbench.fixture.20260614.003",
+    "run_id": "account-orders.fixture.empty.001",
+    "reducer_checkpoint_id": "account-orders.checkpoint.empty.001",
+    "reducer_checkpoint_ts": "2026-06-14T14:31:38Z",
+    "stream_state": "empty",
+    "projection_owner": "account-console-contracts",
+    "source_authority": "deterministic_fixture"
+  },
+  "account": {
+    "account_id": "acct.demo-empty",
+    "account_alias": "empty",
+    "account_kind": "sandbox_paper"
+  },
+  "orders": [],
+  "blockers": [],
+  "source_refs": [
+    {
+      "kind": "empty_order_projection_fixture",
+      "owner": "account-console-contracts",
+      "source_ref": "fixture://account-workbench/orders/acct.demo-empty/empty",
+      "checksum": "sha256:1212121212121212121212121212121212121212121212121212121212121212",
+      "authority": "deterministic empty fixture only"
+    }
+  ],
+  "boundaries": {
+    "read_only_projection": true,
+    "runtime_truth": false,
+    "account_truth": false,
+    "order_truth": false,
+    "ledger_truth": false,
+    "ui_truth": false,
+    "paper_ready": false,
+    "live_ready": false,
+    "broker_tradable": false,
+    "admission_truth": false,
+    "capital_truth": false,
+    "action_controls": false
+  },
+  "rejection_rules": [
+    "Reject empty display as proof that no broker/runtime orders exist.",
+    "Reject screenshots and browser state as order authority."
+  ]
+}

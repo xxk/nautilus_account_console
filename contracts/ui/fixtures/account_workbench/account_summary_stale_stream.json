@@ -1,0 +1,93 @@
+{
+  "schema_version": "account_summary_panel.v1",
+  "workbench": "Account Workbench",
+  "panel": "Account Summary Panel",
+  "route": "/accounts/{account_id}",
+  "fixture_state": "stale",
+  "context": {
+    "trading_day": "2026-06-14",
+    "session_id": "account-workbench.fixture.20260614.004",
+    "run_id": "account-summary.fixture.stale.001",
+    "reducer_checkpoint_id": "account-summary.checkpoint.stale.001",
+    "reducer_checkpoint_ts": "2026-06-14T13:34:51Z",
+    "stream_state": "stale",
+    "projection_owner": "account-console-contracts",
+    "source_authority": "deterministic_fixture"
+  },
+  "account": {
+    "account_id": "acct.stale-001",
+    "account_alias": "stale-001",
+    "account_kind": "real_feed_sandbox_paper",
+    "portfolio_uid": "portfolio.stale.account-workbench",
+    "display_state": "stale",
+    "base_currency": "CNY"
+  },
+  "balances": {
+    "cash": 500000.0,
+    "frozen_cash": 1200.0,
+    "available_cash": 498800.0,
+    "buying_power": 498800.0
+  },
+  "pnl": {
+    "realized": 0.0,
+    "unrealized": null,
+    "fees": 0.0,
+    "taxes": 0.0
+  },
+  "margin": {
+    "initial_margin": 1200.0,
+    "maintenance_margin": 1000.0,
+    "margin_ratio": 0.0024
+  },
+  "settlement": {
+    "state": "stale",
+    "latest_settlement_ref": "fixture://account-workbench/settlement/acct.stale-001/2026-06-14",
+    "position_carryover_ref": "fixture://account-workbench/carryover/acct.stale-001/2026-06-14"
+  },
+  "positions": [
+    {
+      "instrument": "cu2601",
+      "net_qty": 1,
+      "market_value": null,
+      "source_ref": "fixture://account-workbench/positions/acct.stale-001/cu2601/2026-06-14",
+      "checksum": "sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+    }
+  ],
+  "blockers": [
+    {
+      "blocker_id": "account-summary.stale-stream",
+      "severity": "warning",
+      "kind": "stale_stream",
+      "owner": "account-console-backend",
+      "next_action": "refresh normalized read model checkpoint",
+      "source_ref": "blocker://account-workbench/stale-001/stale-stream",
+      "checksum": "sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    }
+  ],
+  "source_refs": [
+    {
+      "kind": "account_snapshot",
+      "owner": "account-console-contracts",
+      "source_ref": "fixture://account-workbench/snapshots/acct.stale-001/2026-06-14/stale",
+      "checksum": "sha256:1212121212121212121212121212121212121212121212121212121212121212",
+      "authority": "deterministic stale fixture; values must render stale until refreshed"
+    }
+  ],
+  "boundaries": {
+    "read_only_projection": true,
+    "runtime_truth": false,
+    "ledger_truth": false,
+    "ui_truth": false,
+    "paper_ready": false,
+    "live_ready": false,
+    "broker_tradable": false,
+    "admission_truth": false,
+    "capital_truth": false,
+    "action_controls": false
+  },
+  "rejection_rules": [
+    "Reject stale values as current account truth.",
+    "Reject this fixture as runtime, broker, ledger, admission, capital or readiness truth.",
+    "Reject browser-side refresh as source-truth repair without a typed owner artifact."
+  ]
+}

@@ -1,0 +1,70 @@
+{
+  "schema_version": "account_health_panel.v1",
+  "workbench": "Daily Closeout",
+  "panel": "Account Health Panel",
+  "route": "/closeout",
+  "fixture_state": "stale",
+  "context": {
+    "trading_day": "2026-06-13",
+    "session_id": "session.demo-20260613",
+    "closeout_run_id": "closeout.run.20260613.stale",
+    "reducer_checkpoint_id": "reducer.checkpoint.20260613.009",
+    "reducer_checkpoint_ts": "2026-06-13T08:11:00Z",
+    "stream_state": "stale",
+    "last_cursor": 518,
+    "source_ref": "fixture://ui/daily-closeout/account-health-stale-stream.json",
+    "checksum": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+  },
+  "summary": {
+    "total_accounts": 2,
+    "closeout_completed": 1,
+    "closeout_blocked": 0,
+    "settlement_blocked": 0,
+    "stale_or_partial": 1,
+    "open_blockers": 0
+  },
+  "filters": {
+    "account_types": ["real_feed_sandbox_paper", "broker_paper_probe"],
+    "closeout_states": ["complete", "stale"],
+    "settlement_states": ["settled", "stale"],
+    "blocker_severities": ["warning"]
+  },
+  "accounts": [
+    {
+      "account_id": "paper.demo-01",
+      "account_type": "real_feed_sandbox_paper",
+      "owner": "pm-alpha",
+      "closeout_state": "complete",
+      "settlement_state": "settled",
+      "equity_continuity": "continuous",
+      "blocker_count": 0,
+      "source_ref": "readmodel://daily-closeout/2026-06-13/paper.demo-01",
+      "checksum": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+      "closeout_run_id": "closeout.run.20260613.stale",
+      "settlement_run_id": "settlement.run.20260613.001",
+      "equity_curve_artifact_id": "artifact.equity.paper.demo-01.20260613",
+      "latest_blocker_id": null,
+      "last_cursor": 381,
+      "last_checkpoint_ts": "2026-06-13T08:33:20Z",
+      "blockers": []
+    },
+    {
+      "account_id": "probe.demo-05",
+      "account_type": "broker_paper_probe",
+      "owner": "ops-beta",
+      "closeout_state": "stale",
+      "settlement_state": "stale",
+      "equity_continuity": "stale",
+      "blocker_count": 0,
+      "source_ref": "readmodel://daily-closeout/2026-06-13/probe.demo-05",
+      "checksum": "sha256:5555555555555555555555555555555555555555555555555555555555555555",
+      "closeout_run_id": "closeout.run.20260613.stale",
+      "settlement_run_id": "settlement.run.20260613.005",
+      "equity_curve_artifact_id": "artifact.equity.probe.demo-05.20260613",
+      "latest_blocker_id": null,
+      "last_cursor": 518,
+      "last_checkpoint_ts": "2026-06-13T08:11:00Z",
+      "blockers": []
+    }
+  ]
+}

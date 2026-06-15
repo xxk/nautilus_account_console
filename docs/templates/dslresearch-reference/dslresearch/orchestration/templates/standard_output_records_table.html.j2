@@ -1,0 +1,20 @@
+{#- Renders the table view for standard output records.
+    Context variables:
+      header_html      — pre-rendered <th> cells (safe HTML)
+      body_html        — pre-rendered <tr> rows (safe HTML)
+      hidden_context_columns — list of column names hidden by default (may be empty)
+      hidden_label     — comma-joined hidden column names
+      hidden_selectors — CSS selector string for hiding columns (safe, raw CSS)
+      toggle_id        — DOM id for the toggle button
+      table_id         — DOM id for the <table>
+      hidden_columns_label — comma-joined hidden column names (for JS)
+-#}
+{%- if not hidden_context_columns %}
+<div class="records-wrap" style="overflow-x:auto"><table style="font-size:.82rem;table-layout:auto;"><thead><tr>{{ header_html | safe }}</tr></thead><tbody>{{ body_html | safe }}</tbody></table></div>
+{%- else %}
+<div class="hint" style="margin:8px 0 10px;">默认隐藏恒定上下文字段：<code>{{ hidden_label }}</code>，优先把横向空间留给 instrument / side / qty / price 等诊断主字段。</div>
+<button type="button" id="{{ toggle_id }}" style="margin:0 0 10px;padding:6px 10px;border:1px solid #d0d7de;border-radius:8px;background:#fff;cursor:pointer;">显示上下文列 / Show context columns ({{ hidden_label }})</button>
+<style>{{ hidden_selectors | safe }}{display:none;}</style>
+<div class="records-wrap" style="overflow-x:auto"><table id="{{ table_id }}" data-hide-context="true" style="font-size:.82rem;table-layout:auto;"><thead><tr>{{ header_html | safe }}</tr></thead><tbody>{{ body_html | safe }}</tbody></table></div>
+<script>(function(){var button=document.getElementById({{ toggle_id | tojson }});var table=document.getElementById({{ table_id | tojson }});if(!button||!table){return;}var hiddenLabel={{ hidden_columns_label | tojson }};function sync(){var hidden=table.getAttribute("data-hide-context")==="true";button.textContent=(hidden?"显示上下文列 / Show context columns (":"隐藏上下文列 / Hide context columns (")+hiddenLabel+")";}button.addEventListener("click",function(){var hidden=table.getAttribute("data-hide-context")==="true";table.setAttribute("data-hide-context",hidden?"false":"true");sync();});sync();})();</script>
+{%- endif %}

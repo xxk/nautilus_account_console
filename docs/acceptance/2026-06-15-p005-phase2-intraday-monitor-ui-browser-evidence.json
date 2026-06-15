@@ -1,0 +1,114 @@
+{
+  "proposal_id": "p005-intraday-monitor-exception-queue-panel",
+  "phase": "phase2_monitor_ui_slice",
+  "status": "implementation_browser_evidence",
+  "created_at": "2026-06-15T00:43:38+08:00",
+  "route": "/monitor",
+  "scope": {
+    "workbench": "Intraday Monitor",
+    "panel": "Intraday Monitor Exception Queue Panel",
+    "implementation_files": [
+      "frontend/src/App.tsx",
+      "frontend/src/types.ts",
+      "frontend/src/styles.css"
+    ],
+    "contract_refs": [
+      "contracts/ui/panels/intraday_monitor_panel.contract.json"
+    ],
+    "fixture_refs": [
+      "contracts/ui/fixtures/intraday_monitor/intraday_monitor_current.json",
+      "contracts/ui/fixtures/intraday_monitor/intraday_monitor_empty.json",
+      "contracts/ui/fixtures/intraday_monitor/intraday_monitor_blocked.json",
+      "contracts/ui/fixtures/intraday_monitor/intraday_monitor_stale.json",
+      "contracts/ui/fixtures/intraday_monitor/intraday_monitor_partial.json"
+    ]
+  },
+  "browser_evidence": [
+    {
+      "viewport": "desktop",
+      "path": "docs/acceptance/browser-evidence/p005-intraday-monitor-exception-queue-panel/monitor-desktop.png",
+      "sha256": "0806220fb7defc763a7a97f282a022ed62f598050af1c28d098abe7ca6257930",
+      "assertions": {
+        "panel_visible": true,
+        "context_bar": 1,
+        "lag_strip": 1,
+        "exception_queue": 1,
+        "stream_state_list": 1,
+        "boundary_list": 1,
+        "detail_drawer": 1,
+        "source_refs": 1,
+        "rejection_rules": 2,
+        "browser_console_errors": 0
+      }
+    },
+    {
+      "viewport": "tablet",
+      "path": "docs/acceptance/browser-evidence/p005-intraday-monitor-exception-queue-panel/monitor-tablet.png",
+      "sha256": "1bf178407be5f9a4e67aef8817068c1cbe384ec886d6f63efcf780866d028f90",
+      "assertions": {
+        "panel_visible": true,
+        "context_bar": 1,
+        "lag_strip": 1,
+        "exception_queue": 1,
+        "stream_state_list": 1,
+        "boundary_list": 1,
+        "detail_drawer": 1,
+        "source_refs": 1,
+        "rejection_rules": 2,
+        "browser_console_errors": 0
+      }
+    },
+    {
+      "viewport": "mobile",
+      "path": "docs/acceptance/browser-evidence/p005-intraday-monitor-exception-queue-panel/monitor-mobile.png",
+      "sha256": "98e476edf462585006caab85b2bb992fa86640575ee187cdee97e7c6c17b0687",
+      "assertions": {
+        "panel_visible": true,
+        "context_bar": 1,
+        "lag_strip": 1,
+        "exception_queue": 1,
+        "stream_state_list": 1,
+        "boundary_list": 1,
+        "detail_drawer": 1,
+        "source_refs": 1,
+        "rejection_rules": 2,
+        "browser_console_errors": 0
+      }
+    }
+  ],
+  "validation": {
+    "proposal_docs": "python scripts/check_proposal_docs.py --root .",
+    "owner_boundaries": "python scripts/validate_owner_boundaries.py",
+    "frontend_fixture_validator": "frontend/scripts/validate-account-health-fixtures.mjs",
+    "frontend_typecheck": "typescript createProgram diagnostics",
+    "frontend_build": "vite build",
+    "browser_assertions": "Playwright route render checks for P005 stable selectors across desktop, tablet and mobile"
+  },
+  "negative_assertions": {
+    "runtime_truth": false,
+    "stream_truth": false,
+    "scheduler_truth": false,
+    "broker_truth": false,
+    "account_truth": false,
+    "order_truth": false,
+    "ledger_truth": false,
+    "ui_truth": false,
+    "paper_ready": false,
+    "live_ready": false,
+    "china_s2_pass": false,
+    "hft_s3_pass": false,
+    "admission_truth": false,
+    "capital_truth": false,
+    "action_controls": false,
+    "account_console_runtime_truth": false,
+    "account_console_ui_complete": false,
+    "loop_complete": false
+  },
+  "dev_server_for_observation": {
+    "status": "running_for_user_observation",
+    "url": "http://127.0.0.1:4173/monitor",
+    "source": "production build preview",
+    "runtime_truth": false
+  },
+  "next_step": "Future Account Console UI heartbeats should select the next planned route only after its contract/read-model fixtures and acceptance gates exist."
+}

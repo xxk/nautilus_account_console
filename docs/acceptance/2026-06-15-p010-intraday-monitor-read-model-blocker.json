@@ -1,0 +1,61 @@
+{
+  "schema_version": "account_console_ui_blocker.v1",
+  "event_id": "p010-intraday-monitor-read-model-proposal-gate-blocker",
+  "created_at": "2026-06-14T16:31:44Z",
+  "owner": "nautilus_account_console",
+  "selected_lane": "account_console_intraday_monitor_contract_fixture_gate",
+  "route": "/monitor",
+  "parent_workbench": "Intraday Monitor",
+  "route_matrix_ref": "docs/acceptance/2026-06-13-account-console-ui-route-coverage-matrix.md",
+  "route_matrix_status_before": "proposal-required",
+  "decision": "block_ui_implementation_until_contract_read_model_fixtures_and_acceptance_gates_exist",
+  "blocker": {
+    "type": "typed_owner_blocker",
+    "status": "blocked_contract_fixture_gate",
+    "scope": "Account Console Intraday Monitor route planning gate",
+    "reason": "The /monitor primary workbench has route-level acceptance anchors but does not yet have an accepted proposal-level UI design, UI acceptance, read-model contract, deterministic fixtures, or browser acceptance plan. Per ADR-0045 contract-first UI rules, frontend implementation must wait."
+  },
+  "missing_prerequisites": [
+    "proposal-level Intraday Monitor README/phase plan with explicit read-only scope",
+    "proposal-level ui-design.md and ui-acceptance.md for /monitor",
+    "read-model contract under contracts/ui/panels for active issues, stale streams, lag and incidents",
+    "deterministic fixtures under contracts/ui/fixtures/intraday_monitor for current, empty, blocked, stale and partial states",
+    "route coverage matrix update after the proposal gate is accepted",
+    "browser acceptance plan with stable selectors before implementation evidence"
+  ],
+  "actions_taken": {
+    "frontend_route_changed": false,
+    "contract_created": false,
+    "fixture_created": false,
+    "browser_opened": false,
+    "runtime_mutation": false,
+    "account_mutation": false,
+    "order_mutation": false,
+    "ledger_mutation": false,
+    "broker_action": false,
+    "live_action": false,
+    "paper_action": false
+  },
+  "negative_assertions": {
+    "paper_ready": false,
+    "live_ready": false,
+    "broker_tradable": false,
+    "production_ready": false,
+    "admitted": false,
+    "capital_allocated": false,
+    "runtime_truth": false,
+    "account_truth": false,
+    "order_truth": false,
+    "ledger_truth": false,
+    "ui_truth": false,
+    "account_console_runtime_truth": false,
+    "account_console_ui_complete": false,
+    "loop_complete": false
+  },
+  "retry_conditions": [
+    "Open or select a route-specific proposal such as P010 Intraday Monitor with explicit design and acceptance docs.",
+    "Add accepted read-only contracts and deterministic fixtures for active issues, stale streams, lag and incidents.",
+    "Run owner-boundary and proposal-doc gates after the contract/fixture gate is created.",
+    "Only then implement the smallest read-only /monitor UI slice and open the UI for user observation and acceptance."
+  ]
+}

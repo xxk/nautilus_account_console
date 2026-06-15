@@ -1,0 +1,9 @@
+schema_version: 1
+last_updated: '2026-06-13'
+source_pattern: D:\Nautilus\DSLresearch\docs\topics\主题状态注册表_Topic State Registry.yaml
+status: thin_local_kernel
+topics:
+  contract-first-ui-slice-development:
+    canonical_status: active
+    execution_order: 1
+    path: docs/topics/contract-first-ui-slice-development.md

@@ -1,0 +1,73 @@
+{
+  "schema_version": "p077_paper_slice_panel.v1",
+  "workbench": "Order Observation",
+  "panel": "P077 Paper Slice Evidence Panel",
+  "route": "/orders/p077-paper-slice",
+  "fixture_state": "filled_reconciled",
+  "context": {
+    "trading_day": "2026-06-14",
+    "session_id": "p077-t6-e87-close-yesterday-filled",
+    "projection_owner": "account-console-contracts",
+    "producer_owner": "nautilus_ctp_adapter",
+    "source_ref": "D:/Nautilus/nautilus_ctp_adapter/output/reports/p077-paper-lifecycle/20260614T112841Z/p077_t6_e86_filled_close_yesterday_reconciled.json",
+    "checksum": "sha256:cb2d8998f72062e48bada1c663eabc57ca98fe84a806472a2c5fb5e52489368d",
+    "schema_version": "p077.t6.e86-filled-close-yesterday-reconciled.v1",
+    "rejection_rules": [
+      "Do not treat this fixture as CTP runtime, broker, account, fill, position, admission, capital or readiness truth.",
+      "Do not render this fixture as Paper ready, Live ready, broker tradable, admitted, production ready or capital allocated.",
+      "Do not use UI text, screenshots, latest/debug paths or raw report text as replacement truth for the cited source refs and checksums.",
+      "Do not infer a future send authorization from this filled slice; E86 is consumed and active_authorization is false."
+    ]
+  },
+  "slice": {
+    "account_alias": "19053",
+    "instrument": "rb2610",
+    "side": "SELL",
+    "quantity": 1,
+    "position_effect": "CLOSEYESTERDAY",
+    "limit_price": 3158.0,
+    "disposition": "filled",
+    "fill_volume": 1,
+    "trade_price": 3160.0,
+    "pre_position_qty": 5,
+    "post_position_qty": 4,
+    "observed_position_delta": -1,
+    "authorization_consumed": true,
+    "active_authorization": false
+  },
+  "evidence": [
+    {
+      "kind": "ctp_owner_filled_reconciled_aggregate",
+      "owner": "nautilus_ctp_adapter",
+      "source_ref": "D:/Nautilus/nautilus_ctp_adapter/output/reports/p077-paper-lifecycle/20260614T112841Z/p077_t6_e86_filled_close_yesterday_reconciled.json",
+      "checksum": "sha256:cb2d8998f72062e48bada1c663eabc57ca98fe84a806472a2c5fb5e52489368d",
+      "authority": "source-bearing lifecycle, post-snapshot and position-delta reconciliation for this bounded Paper slice only"
+    },
+    {
+      "kind": "p077_governance_handoff_audit",
+      "owner": "nautilus_strategies",
+      "source_ref": "D:/Nautilus/nautilus_strategies/docs/changes/20260614__paper__p077-safer-retry-lane/evidence/20260614T113441Z_e87_post_fill_owner_handoff_audit_no_send.json",
+      "checksum": "sha256:a8df0faca33ce1beac89f2e0068c4a270ed69534c9279361826a36bda7966628",
+      "authority": "governance boundary and no-active-authorization state"
+    },
+    {
+      "kind": "account_console_prior_blocker",
+      "owner": "nautilus_account_console",
+      "source_ref": "D:/Nautilus/nautilus_account_console/docs/acceptance/2026-06-14-p077-e87-account-console-read-model-blocker.json",
+      "checksum": "sha256:a15568a21e1c5f7f60d05882d171936bda657d292bc8488eb25dc861a77cc67b",
+      "authority": "contract/fixture missing blocker superseded by this read-only fixture lane"
+    }
+  ],
+  "boundaries": {
+    "read_only_projection": true,
+    "runtime_truth": false,
+    "ledger_truth": false,
+    "ui_truth": false,
+    "paper_ready": false,
+    "live_ready": false,
+    "broker_tradable": false,
+    "admission_truth": false,
+    "capital_truth": false
+  },
+  "blockers": []
+}

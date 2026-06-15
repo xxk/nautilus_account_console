@@ -1,0 +1,151 @@
+{
+  "schema": "account-console.p004-phase3-orders-contract-fixtures.v1",
+  "created_at": "2026-06-14T14:31:38.477Z",
+  "repository": "D:/Nautilus/nautilus_account_console",
+  "proposal_id": "p004-account-workbench-summary-panel",
+  "phase": "phase_3_orders_and_order_lifecycle_gate",
+  "status": "contract_fixture_gate_passed",
+  "routes": [
+    "/accounts/{account_id}/orders",
+    "/accounts/{account_id}/orders/{client_order_id}"
+  ],
+  "source_evidence": [
+    {
+      "kind": "p004_phase2_summary_ui_browser_evidence",
+      "path": "docs/acceptance/2026-06-14-p004-phase2-summary-ui-browser-evidence.json",
+      "checksum": "sha256:6ad5b945d88b360e419292674bb0df42000a54ecf084e6c47197b974f1fe26c4"
+    },
+    {
+      "kind": "p077_e100_external_owner_lifecycle",
+      "owner": "nautilus_ctp_adapter",
+      "path": "D:/Nautilus/nautilus_ctp_adapter/output/reports/p077-paper-lifecycle/20260614T130516Z/p077_t6_e100_bounded_paper_close_yesterday_filled_reconciled.json",
+      "checksum": "sha256:698340f03f5eb6ca03aa3006d295024850bf2a53a5687dee1178df421c635dbc"
+    }
+  ],
+  "contracts": [
+    {
+      "path": "contracts/ui/panels/account_orders_panel.contract.json",
+      "checksum": "sha256:268ad1de774b0b29c74ec6ab17f6b2848b186d796bf233f80351f80ae86e6a9e"
+    },
+    {
+      "path": "contracts/ui/panels/account_order_detail_panel.contract.json",
+      "checksum": "sha256:3bb983a0b92d318f73465b3655eeffcd913c09b6285e12d5f2731c3cd39273a5"
+    }
+  ],
+  "fixtures": [
+    {
+      "state": "current_orders",
+      "path": "contracts/ui/fixtures/account_workbench/account_orders_current_e100.json",
+      "checksum": "sha256:a56c51e6ebdb99647393c8f745fa8e8c8031b62050b346ab88e49b9ada8d8ad5"
+    },
+    {
+      "state": "empty",
+      "path": "contracts/ui/fixtures/account_workbench/account_orders_empty.json",
+      "checksum": "sha256:c0d04d7c0a0e75dfdefb9448b11fd807d15d7c366ad27d2dd8f6eb98f857b676"
+    },
+    {
+      "state": "blocked_missing_lifecycle",
+      "path": "contracts/ui/fixtures/account_workbench/account_orders_blocked_missing_lifecycle.json",
+      "checksum": "sha256:acb5369896c5c05c84e88cdf01d86d6ae04d7f0c01b2a13aec7bc75b599a7b0f"
+    },
+    {
+      "state": "stale_stream",
+      "path": "contracts/ui/fixtures/account_workbench/account_orders_stale_stream.json",
+      "checksum": "sha256:cfcb0844e3e24b72b27ea64d1f2e49408fe09e919f09da1682b88ee14a22d3f4"
+    },
+    {
+      "state": "filled_lifecycle_detail",
+      "path": "contracts/ui/fixtures/account_workbench/account_order_detail_e100_filled_lifecycle.json",
+      "checksum": "sha256:836ccf06aa8920bccbcac9c6a18479630545259a3e0d2790d03b56022e3d6afe"
+    },
+    {
+      "state": "blocked_missing_events_detail",
+      "path": "contracts/ui/fixtures/account_workbench/account_order_detail_blocked_missing_events.json",
+      "checksum": "sha256:15e83a114aad25672503776aec20d12747998553de52e86818b58786828107d7"
+    }
+  ],
+  "validation_files": [
+    {
+      "path": "frontend/scripts/validate-account-health-fixtures.mjs",
+      "checksum": "sha256:986f3091edf1e372e89748851834b5852f471f712d886052da8ffed366e56a09"
+    },
+    {
+      "path": "scripts/validate_owner_boundaries.py",
+      "checksum": "sha256:ffa9abc4c3cbf2b6061962e2f24174d2a99e880bd18149edd41a1f6dfaa3fa5e"
+    }
+  ],
+  "gates": [
+    {
+      "command": "Get-Content contracts/ui/panels/account_orders_panel.contract.json | ConvertFrom-Json",
+      "result": "pass"
+    },
+    {
+      "command": "Get-Content contracts/ui/panels/account_order_detail_panel.contract.json | ConvertFrom-Json",
+      "result": "pass"
+    },
+    {
+      "command": "node frontend/scripts/validate-account-health-fixtures.mjs",
+      "result": "pass"
+    },
+    {
+      "command": "python scripts/validate_owner_boundaries.py",
+      "result": "pass"
+    },
+    {
+      "command": "python scripts/check_proposal_docs.py --root .",
+      "result": "pass"
+    },
+    {
+      "command": "python -m compileall backend/src",
+      "result": "pass"
+    },
+    {
+      "command": "cargo test --manifest-path hotpath-rs/Cargo.toml",
+      "result": "pass"
+    },
+    {
+      "command": "scoped forbidden wording/action scan over P004 Phase 3 contracts and fixtures",
+      "result": "pass"
+    }
+  ],
+  "accepted_scope": {
+    "orders_contracts": true,
+    "orders_fixtures": true,
+    "order_detail_contracts": true,
+    "order_detail_fixtures": true,
+    "frontend_implementation": false,
+    "browser_evidence": false,
+    "order_ui_complete": false,
+    "account_console_ui_complete": false
+  },
+  "authority_boundary": {
+    "read_only_projection": true,
+    "runtime_truth": false,
+    "account_truth": false,
+    "order_truth": false,
+    "ledger_truth": false,
+    "ui_truth": false,
+    "paper_ready": false,
+    "live_ready": false,
+    "broker_tradable": false,
+    "admission_truth": false,
+    "capital_truth": false,
+    "action_controls": false,
+    "account_console_runtime_truth": false,
+    "loop_complete": false
+  },
+  "runtime_actions": {
+    "paper_order_sent": false,
+    "live_order_sent": false,
+    "broker_action_sent": false,
+    "account_mutation_sent": false,
+    "capital_or_admission_action_sent": false
+  },
+  "rejection_rules": [
+    "Contract and fixture acceptance does not implement the orders UI.",
+    "Fixture final/current order rows are read-only projections and are not Account Console order truth.",
+    "Raw report paths, latest/debug paths, stdout, screenshots and browser state cannot replace official source refs and checksums.",
+    "No direct submit, cancel, replace, broker, funding, admission or capital action is authorized by this artifact."
+  ],
+  "next_allowed_phase": "phase_3_orders_ui_slice_or_smaller_browser_blocker"
+}

@@ -1,0 +1,18 @@
+{%- if not has_findings -%}{%- else -%}
+<section class="card" id="strict-audit-findings">
+<h2>严格审计发现 / Strict Audit Findings</h2>
+<div class="hint">这一区块显示 findings-first 投影；完整结构化状态以 sidecar JSON 为准。</div>
+<div class="meta-line"><strong>审计 verdict：</strong><span class="badge {{ verdict_class }}">{{ overall_verdict }}</span></div>
+<div class="meta-line"><strong>建议复跑命令 / Preferred Rerun：</strong><code>{{ rerun_command }}</code></div>
+<div class="curve-summary-grid">
+<div class="curve-summary-card wide">
+<h3>Failure Findings / 失败发现</h3>
+{{ blocking_html | safe }}
+</div>
+<div class="curve-summary-card wide">
+<h3>Warning Findings / 深读预警</h3>
+{{ warning_html | safe }}
+</div>
+</div>
+</section>
+{%- endif -%}

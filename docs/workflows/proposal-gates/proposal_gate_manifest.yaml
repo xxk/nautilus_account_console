@@ -1,0 +1,247 @@
+---
+schema_id: account_console_proposal_workflow_stage_contract
+schema_version: 1
+source_pattern: DSLresearch/docs/workflows/proposal-gates
+canonical_source: docs/workflows/proposal-gates/proposal_gate_manifest.yaml
+human_board: docs/workflows/proposal-gates/proposal_gate_board.md
+owner: account_console_workflow_governance
+status: accepted_initial_manifest
+scope: account_console_proposal_workflow_stage_contract
+description: >
+  Machine-readable Proposal Workflow Stage Contract for nautilus_account_console.
+  It constrains proposal docs and UI implementation phases without creating a
+  second runtime, account, broker, admission, approval, capital, or browser truth owner.
+
+terminology:
+  stage:
+    expected_cardinality: small_stable_set
+    meaning: "A named workflow phase with an advance Gate, Checks and Proof Items."
+    default_growth_target: false
+  phase_gate:
+    expected_cardinality: small_stable_set
+    meaning: "A phase-boundary decision for whether a proposal may advance."
+    default_growth_target: false
+  check:
+    expected_cardinality: expandable_set
+    meaning: "A concrete condition evaluated inside one Phase Gate."
+    default_growth_target: true
+  proof_item:
+    expected_cardinality: many
+    meaning: "A source artifact, UI evidence, typed blocker, issue row, or command result used by a Check."
+    default_growth_target: true
+  proposal_gate:
+    short_name: P-Gate
+    machine_value: proposal_gate
+    layer: proposal_workflow
+    meaning: "Controls whether a proposal may advance to the next phase."
+    writes_source_truth: false
+    may_read_source_gate_outputs: true
+  source_gate:
+    short_name: S-Gate
+    machine_value: source_gate
+    layer: source_owner_evidence
+    meaning: "Controls contract, fixture, backend, Rust, frontend, browser, or external source evidence within its owner boundary."
+    writes_source_truth: true
+    authority_owner: account_console_owner_map
+  invariant: "P-Gates may require or read S-Gate evidence, but must never write or upgrade source/runtime/account/browser closeout truth."
+
+architecture_principles:
+  gate_check_proof_hierarchy:
+    principle: "Stage is primary; few Phase Gates, many Checks, many Proof Items."
+    gate_creation_rule: "Create a new Gate only when the concern controls a phase transition."
+    default_extension_rule: "Add new concerns as Checks or Proof Items by default."
+    stage_creation_rule: "Create a new Stage only when the workflow gains a durable new phase boundary."
+    anti_drift_signal: gate_explosion_detected
+
+stage_contract:
+  invariant: "Stage is the top-level workflow unit; Gate is the Stage advance verdict."
+  stage_order:
+    - scaffold
+    - workflow_contract
+    - ui_design_acceptance
+    - source_contracts
+    - implementation_evidence
+    - issue_ledger
+    - closeout
+  stages:
+    - stage_id: scaffold
+      advance_gate: PG-S0-SCAFFOLD
+      checks:
+        - proposal_scaffold_required_fragments
+      proof_items:
+        - README.md
+        - phase-plan.md
+        - acceptance.md
+    - stage_id: workflow_contract
+      advance_gate: PG-S1-WORKFLOW-CONTRACT
+      checks:
+        - workflow_contract_boundary
+        - owner_boundary_present
+      proof_items:
+        - workflow_metadata
+        - Owner Boundary
+        - non_goals
+    - stage_id: ui_design_acceptance
+      advance_gate: PG-S2-UI-DESIGN-ACCEPTANCE
+      checks:
+        - ui_design_acceptance_present
+        - route_matrix_mapped
+        - anti_drift_present
+      proof_items:
+        - ui-design.md
+        - ui-acceptance.md
+        - route_coverage_matrix_row
+        - anti_drift_block
+    - stage_id: source_contracts
+      advance_gate: PG-S3-SOURCE-CONTRACTS
+      checks:
+        - source_contracts_or_blockers_present
+        - fixtures_or_blockers_present
+      proof_items:
+        - contracts
+        - fixtures
+        - typed_blockers
+    - stage_id: implementation_evidence
+      advance_gate: PG-S4-IMPLEMENTATION-EVIDENCE
+      checks:
+        - implementation_evidence_present_or_blocked
+        - browser_evidence_present_or_blocked
+      proof_items:
+        - build_or_test_output
+        - browser_screenshots
+        - typed_blockers
+    - stage_id: issue_ledger
+      advance_gate: PG-S5-ISSUE-LEDGER
+      checks:
+        - issue_ledger_mapping_present_when_needed
+      proof_items:
+        - issue-list.md
+        - current_acceptance_landing
+        - next_action
+    - stage_id: closeout
+      advance_gate: PG-S6-CLOSEOUT
+      checks:
+        - local_checks_pass
+        - forbidden_scan_pass
+        - matrix_status_truthful
+      proof_items:
+        - proposal_docs_gate
+        - owner_boundary_validation
+        - forbidden_wording_action_scan
+        - route_coverage_matrix_update
+
+gates:
+  - gate_id: PG-S0-SCAFFOLD
+    gate_type: proposal_gate
+    layer: proposal_workflow
+    writes_source_truth: false
+    evidence_source_layer: proposal_docs
+    phase: scaffold
+    machine_check: proposal_scaffold_required_fragments
+    required_evidence:
+      - README.md
+      - phase-plan.md
+      - acceptance.md
+    fail_signal: missing_proposal_scaffold
+    owner: proposal_scaffold
+    earliest_position: proposal_creation
+
+  - gate_id: PG-S1-WORKFLOW-CONTRACT
+    gate_type: proposal_gate
+    layer: proposal_workflow
+    writes_source_truth: false
+    evidence_source_layer: proposal_docs
+    phase: workflow_contract
+    machine_check: workflow_contract_boundary
+    required_evidence:
+      - workflow_metadata
+      - Owner Boundary
+      - Non-Goals
+    fail_signal: missing_workflow_contract_boundary
+    owner: proposal_docs_gate
+    earliest_position: design_freeze_before_implementation
+
+  - gate_id: PG-S2-UI-DESIGN-ACCEPTANCE
+    gate_type: proposal_gate
+    layer: proposal_workflow
+    writes_source_truth: false
+    evidence_source_layer: proposal_docs
+    phase: ui_design_acceptance
+    machine_check: ui_design_acceptance_present
+    required_evidence:
+      - ui-design.md
+      - ui-acceptance.md
+      - route_coverage_matrix_row
+      - anti_drift_block
+    fail_signal: missing_ui_design_acceptance
+    owner: account_console_ui_architecture
+    earliest_position: before_ui_implementation
+
+  - gate_id: PG-S3-SOURCE-CONTRACTS
+    gate_type: proposal_gate
+    layer: proposal_workflow
+    writes_source_truth: false
+    evidence_source_layer: source_owner_evidence
+    reads_source_gate_outputs: true
+    phase: source_contracts
+    machine_check: source_contracts_or_blockers_present
+    required_evidence:
+      - contracts_or_typed_blockers
+      - fixtures_or_typed_blockers
+    fail_signal: missing_source_contract_or_blocker
+    owner: account_console_contracts
+    earliest_position: before_implementation_closeout
+
+  - gate_id: PG-S4-IMPLEMENTATION-EVIDENCE
+    gate_type: proposal_gate
+    layer: proposal_workflow
+    writes_source_truth: false
+    evidence_source_layer: implementation_owner_evidence
+    reads_source_gate_outputs: true
+    phase: implementation_evidence
+    machine_check: implementation_evidence_present_or_blocked
+    required_evidence:
+      - build_or_test_output_or_blocker
+      - browser_evidence_or_blocker
+    fail_signal: missing_implementation_evidence
+    owner: implementation_owner
+    earliest_position: after_implementation_attempt
+
+  - gate_id: PG-S5-ISSUE-LEDGER
+    gate_type: proposal_gate
+    layer: proposal_workflow
+    writes_source_truth: false
+    evidence_source_layer: proposal_issue_ledger
+    phase: issue_ledger
+    machine_check: issue_ledger_mapping_present_when_needed
+    required_evidence:
+      - issue-list.md_or_not_applicable
+      - current_acceptance_landing
+      - next_action
+    fail_signal: missing_issue_ledger_entry
+    owner: proposal_issue_ledger
+    earliest_position: discovery_time_and_before_closeout
+
+  - gate_id: PG-S6-CLOSEOUT
+    gate_type: proposal_gate
+    layer: proposal_workflow
+    writes_source_truth: false
+    evidence_source_layer: local_gates
+    phase: closeout
+    machine_check: local_checks_pass
+    required_evidence:
+      - proposal_docs_gate
+      - owner_boundary_validation
+      - forbidden_wording_action_scan_when_ui_touched
+      - route_coverage_matrix_update_when_routes_touched
+    fail_signal: closeout_gate_failed
+    owner: local_closeout
+    earliest_position: final_closeout
+
+anti_drift_invariants:
+  - "Human board cannot define a gate absent from this manifest."
+  - "Proposal Gate must not write, mint, upgrade, or infer source/runtime/account/browser closeout truth."
+  - "UI design-gate readiness must remain distinct from browser-verified implementation closeout."
+  - "Missing required proof after its phase must fail or emit a typed blocker."
+  - "Fine-grained validation growth must become Checks or Proof Items unless it creates a real phase boundary."
+  - "Stage is the top-level extension point; Gate is a Stage advance verdict."

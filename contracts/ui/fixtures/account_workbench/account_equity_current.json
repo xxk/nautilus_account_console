@@ -1,0 +1,74 @@
+{
+  "schema_version": "account_equity_panel.v1",
+  "workbench": "Account Workbench",
+  "panel": "Account Equity Panel",
+  "route": "/accounts/{account_id}/equity",
+  "fixture_state": "current_equity",
+  "context": {
+    "trading_day": "2026-06-14",
+    "session_id": "account-workbench.fixture.20260614.005",
+    "run_id": "account-equity.fixture.current.001",
+    "reducer_checkpoint_id": "account-equity.checkpoint.current.001",
+    "reducer_checkpoint_ts": "2026-06-14T15:11:33Z",
+    "stream_state": "healthy",
+    "projection_owner": "account-console-contracts",
+    "source_authority": "deterministic_fixture"
+  },
+  "account": {
+    "account_id": "acct.demo-19053",
+    "account_alias": "19053",
+    "account_kind": "real_feed_sandbox_paper"
+  },
+  "equity_points": [
+    {
+      "point_ts": "2026-06-14T09:00:00Z",
+      "equity": 110822.5,
+      "balance": 98240.5,
+      "available_cash": 85616.5,
+      "margin": 12624.0,
+      "ledger_ref": "fixture://account-workbench/ledger/acct.demo-19053/2026-06-14/point-001",
+      "curve_ref": "fixture://account-workbench/equity/acct.demo-19053/2026-06-14",
+      "source_ref": "fixture://account-workbench/equity/acct.demo-19053/current/point-001",
+      "checksum": "sha256:a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1"
+    },
+    {
+      "point_ts": "2026-06-14T15:00:00Z",
+      "equity": 110864.5,
+      "balance": 98240.5,
+      "available_cash": 85616.5,
+      "margin": 12624.0,
+      "ledger_ref": "fixture://account-workbench/ledger/acct.demo-19053/2026-06-14/point-002",
+      "curve_ref": "fixture://account-workbench/equity/acct.demo-19053/2026-06-14",
+      "source_ref": "fixture://account-workbench/equity/acct.demo-19053/current/point-002",
+      "checksum": "sha256:a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2"
+    }
+  ],
+  "blockers": [],
+  "source_refs": [
+    {
+      "kind": "equity_curve_projection",
+      "owner": "account-console-contracts",
+      "source_ref": "fixture://account-workbench/equity/acct.demo-19053/2026-06-14",
+      "checksum": "sha256:a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3",
+      "authority": "deterministic equity fixture; not ledger truth"
+    }
+  ],
+  "boundaries": {
+    "read_only_projection": true,
+    "runtime_truth": false,
+    "account_truth": false,
+    "order_truth": false,
+    "ledger_truth": false,
+    "ui_truth": false,
+    "paper_ready": false,
+    "live_ready": false,
+    "broker_tradable": false,
+    "admission_truth": false,
+    "capital_truth": false,
+    "action_controls": false
+  },
+  "rejection_rules": [
+    "Reject this fixture as ledger authority.",
+    "Reject chart-only or browser-derived equity as source evidence."
+  ]
+}

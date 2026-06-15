@@ -1,0 +1,13 @@
+<section class="card"{{ section_attr | safe }}>
+<h2>{{ label }}</h2>
+{%- if not has_artifact -%}
+<div class="hint">该阶段没有生成资金曲线产物。这通常表示流程停在更早阶段，或该阶段本轮未执行。</div>
+{%- else -%}
+<div class="meta-line"><strong>回测引擎 / Backtest Engine：</strong><code>{{ backtest_engine }}</code></div>
+<div class="meta-line"><strong>执行模块：</strong><code>{{ execution_module }}</code></div>
+<div class="meta-line"><strong>策略身份 / Strategy Identity：</strong><code>{{ strategy_identity }}</code></div>
+{{ chart_block_html | safe }}
+{{ merged_summary_html | safe }}
+<div class="records-card"><h3>最差 5 个时点 / Worst 5 Periods</h3><table><thead><tr><th>ts</th><th>period_return</th><th>equity</th><th>drawdown</th></tr></thead><tbody>{{ extreme_rows_html | safe }}</tbody></table></div>
+{%- endif -%}
+</section>

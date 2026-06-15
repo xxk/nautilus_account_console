@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>运行入口：{{ display_name }}</title><style>{{ css | safe }}</style></head>
+<body>
+<h1>运行入口 / Run Entry：{{ display_name }} <span class="sp">{{ status }}</span></h1>
+<div class="rl">{{ run_label }}</div>
+<dl class="mg">
+  <dt>Run ID</dt><dd><code>{{ run_id }}</code></dd>
+  <dt>创建时间</dt><dd>{{ created_at }}</dd>
+  <dt>结束时间</dt><dd>{{ finished_at }}</dd>
+</dl>
+<div class="sh">快速指标 / Quick Metrics</div>
+{{ metrics_block | safe }}
+{{ hypo_block | safe }}
+<div class="sh">产物入口 / Artifacts<span class="ev-note">（原始文件，证据层）</span></div>
+<ul class="al-list">
+{{ artifact_items | safe }}
+</ul>
+</body>
+</html>

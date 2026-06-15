@@ -18,13 +18,37 @@ hotpath-rs/     Rust ingest, ledger and stream primitives
 backend/        Python FastAPI API and reducer fixture
 frontend/       Vite/React account console scaffold
 docs/design/    UI design and acceptance gates
+docs/adr/       local architecture decisions and governance rules
+docs/proposals/ proposal templates copied/learned from DSLresearch
+docs/topics/    topic roadmap kernel copied/learned from DSLresearch
+docs/templates/ reference templates copied/learned from DSLresearch
+docs/workflows/ proposal workflow gates copied/adapted from DSLresearch
 .github/        GitHub CI, PR/Issue templates and repo automation
 ```
 
-UI design:
+Architecture and UI design:
 
 ```text
+docs/adr/README.md
+docs/adr/0002-adopt-business-workbench-first-account-console-navigation.md
+docs/adr/0003-adopt-contract-first-ui-slice-development.md
+docs/proposals/README.md
+docs/proposals/p001-daily-closeout-account-health-panel/README.md
+docs/workflows/README.md
+docs/workflows/proposal-gates/README.md
+docs/topics/README.md
+docs/topics/contract-first-ui-slice-development.md
+docs/templates/README.md
+docs/design/README.md
 docs/design/account-console-ui-mvp.md
+docs/design/account-console-capability-ui-design.md
+docs/design/account-console-ui-implementation-design.md
+docs/design/account-console-ui-landing-blueprint.md
+docs/ownership/README.md
+docs/ownership/account-console-owner-map.md
+docs/acceptance/README.md
+docs/acceptance/2026-06-13-account-console-capability-ui-acceptance.md
+docs/acceptance/2026-06-13-account-console-ui-implementation-acceptance.md
 docs/architecture/github-project-architecture.md
 ```
 
@@ -52,6 +76,8 @@ Python:
 
 ```powershell
 python -m compileall backend/src
+python scripts/validate_owner_boundaries.py
+python scripts/check_proposal_docs.py --root .
 ```
 
 Rust:

@@ -1,0 +1,141 @@
+{
+  "schema": "account-console.p004-phase4-positions-contract-fixtures.v1",
+  "created_at": "2026-06-14T14:48:12.067Z",
+  "proposal": {
+    "proposal_id": "p004-account-workbench-summary-panel",
+    "phase": "phase_4_positions_gate",
+    "status": "contract_fixture_gate_passed"
+  },
+  "action_mode": "contract_fixture_gate_only_no_ui_no_runtime_truth",
+  "route": "/accounts/{account_id}/positions",
+  "source_evidence": [
+    {
+      "kind": "p004_phase3_orders_ui_browser_evidence",
+      "path": "docs/acceptance/2026-06-14-p004-phase3-orders-ui-browser-evidence.json",
+      "checksum": "sha256:26181b95bc374b5390b79407835f6c974d7b8a4ce86767dccc1efc58a4314822",
+      "authority": "account-console-acceptance"
+    },
+    {
+      "kind": "p077_e100_external_position_source_context",
+      "path": "D:/Nautilus/nautilus_ctp_adapter/output/reports/p077-paper-lifecycle/20260614T130516Z/p077_t6_e100_bounded_paper_close_yesterday_filled_reconciled.json",
+      "checksum": "sha256:698340f03f5eb6ca03aa3006d295024850bf2a53a5687dee1178df421c635dbc",
+      "authority": "nautilus_ctp_adapter"
+    }
+  ],
+  "contracts": [
+    {
+      "path": "contracts/ui/panels/account_positions_panel.contract.json",
+      "checksum": "sha256:027e43a655de3ee83c84866c1e0d6fdd2582e2b777c76dfe00b2c8e2c0961870",
+      "schema_version": "account_positions_panel.v1"
+    }
+  ],
+  "fixtures": [
+    {
+      "path": "contracts/ui/fixtures/account_workbench/account_positions_current_e100.json",
+      "checksum": "sha256:31ed4a0b2d6e0fb32bddd941568f742c8c381be4192dc6cda9f8833e32688a8a",
+      "fixture_state": "current_positions"
+    },
+    {
+      "path": "contracts/ui/fixtures/account_workbench/account_positions_empty.json",
+      "checksum": "sha256:dcc5c96ee61389f78b10b6648c96bda5e6f5fac04be68818aaf02d072704feac",
+      "fixture_state": "empty"
+    },
+    {
+      "path": "contracts/ui/fixtures/account_workbench/account_positions_blocked_missing_carryover.json",
+      "checksum": "sha256:18e7bf05c5492103b15becdf2080f4088dc78d7135ce61f0a7922358318c7393",
+      "fixture_state": "blocked"
+    },
+    {
+      "path": "contracts/ui/fixtures/account_workbench/account_positions_stale_stream.json",
+      "checksum": "sha256:a9dbaad18c657f1eddc13ead8856c0fbd39ddd7163109283d8742283693bce21",
+      "fixture_state": "stale"
+    },
+    {
+      "path": "contracts/ui/fixtures/account_workbench/account_positions_partial_missing_settlement.json",
+      "checksum": "sha256:71cc7d34bcdf9c4173764444d5692ab909e2a42fb602d0bbc7d16e869d7f155f",
+      "fixture_state": "partial"
+    }
+  ],
+  "validation_files": [
+    {
+      "path": "frontend/scripts/validate-account-health-fixtures.mjs",
+      "checksum": "sha256:53bdde5e47ffa85066a0317e54291bee2b6fd171f9f99bf3d370560d9c792d2a"
+    },
+    {
+      "path": "scripts/validate_owner_boundaries.py",
+      "checksum": "sha256:7caa71c11e6be02c74a8b2958c7a7d05b6376064ebd31e732f44fd20a38f5039"
+    }
+  ],
+  "gates": [
+    {
+      "name": "positions contract and fixtures JSON parse",
+      "status": "passed"
+    },
+    {
+      "name": "frontend fixture validation",
+      "command": "C:/Program Files/QClaw/resources/node/node.exe frontend/scripts/validate-account-health-fixtures.mjs",
+      "status": "passed"
+    },
+    {
+      "name": "owner boundary validation",
+      "command": "python scripts/validate_owner_boundaries.py",
+      "status": "passed"
+    },
+    {
+      "name": "proposal docs",
+      "command": "python scripts/check_proposal_docs.py --root . --proposal-id p004-account-workbench-summary-panel",
+      "status": "passed"
+    },
+    {
+      "name": "backend compileall",
+      "command": "python -m compileall backend/src",
+      "status": "passed"
+    },
+    {
+      "name": "hotpath rust tests",
+      "command": "cargo test --manifest-path hotpath-rs/Cargo.toml",
+      "status": "passed"
+    },
+    {
+      "name": "scoped forbidden wording/action scan",
+      "command": "scoped rg forbidden wording/action scan over positions contract, positions fixtures and this artifact",
+      "status": "passed"
+    }
+  ],
+  "accepted_scope": {
+    "positions_contract": true,
+    "positions_fixtures": true,
+    "frontend_implementation": false,
+    "browser_evidence": false,
+    "positions_ui_complete": false,
+    "account_console_ui_complete": false
+  },
+  "authority_boundary": {
+    "read_only_projection": true,
+    "runtime_truth": false,
+    "account_truth": false,
+    "position_truth": false,
+    "order_truth": false,
+    "ledger_truth": false,
+    "ui_truth": false,
+    "paper_ready": false,
+    "live_ready": false,
+    "broker_tradable": false,
+    "admission_truth": false,
+    "capital_truth": false,
+    "action_controls": false
+  },
+  "runtime_actions": {
+    "paper_send_authorized": false,
+    "paper_send_attempted": false,
+    "native_send_attempted": false,
+    "live_action_attempted": false
+  },
+  "rejection_rules": [
+    "This artifact accepts only the P004 Phase 4 positions contract and deterministic fixture gate.",
+    "The positions route is not implemented or browser-accepted by this artifact.",
+    "The UI must not infer available quantity, carryover, settlement or T+1 state in the browser.",
+    "Fixture rows, source refs, screenshots, source payload excerpts, rolling debug paths, stdout and local tests are not runtime, account, position, order or ledger truth.",
+    "Missing carryover, stale stream or missing settlement must remain typed blocker or partial fixture states until owner evidence exists."
+  ]
+}

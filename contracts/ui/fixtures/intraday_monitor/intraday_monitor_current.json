@@ -1,0 +1,83 @@
+{
+  "schema_version": "intraday_monitor_panel.v1",
+  "workbench": "Intraday Monitor",
+  "panel": "Intraday Monitor Exception Queue Panel",
+  "route": "/monitor",
+  "fixture_state": "current",
+  "context": {
+    "trading_day": "2026-06-14",
+    "session_id": "intraday-monitor.fixture.20260614.001",
+    "monitor_checkpoint_id": "intraday-monitor.checkpoint.current.001",
+    "monitor_checkpoint_ts": "2026-06-14T16:35:36Z",
+    "stream_state": "warning",
+    "projection_owner": "account-console-contracts",
+    "source_authority": "deterministic_fixture"
+  },
+  "lag_summary": {
+    "max_lag_ms": 1280,
+    "stale_stream_count": 1,
+    "open_incident_count": 1,
+    "blocked_source_count": 0
+  },
+  "exceptions": [
+    {
+      "exception_id": "monitor.exception.lag-spike.001",
+      "kind": "lag_spike",
+      "severity": "warning",
+      "owner": "external stream owner",
+      "next_action": "refresh lag probe owner artifact before monitor closeout",
+      "source_ref": "fixture://intraday-monitor/exceptions/lag-spike-001",
+      "checksum": "sha256:a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1"
+    }
+  ],
+  "streams": [
+    {
+      "stream_id": "stream.market.rb2610",
+      "state": "warning",
+      "last_event_ts": "2026-06-14T16:35:20Z",
+      "lag_ms": 1280,
+      "source_ref": "fixture://intraday-monitor/streams/rb2610",
+      "checksum": "sha256:a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2"
+    }
+  ],
+  "incidents": [
+    {
+      "incident_id": "monitor.incident.stale-stream.001",
+      "category": "lag_spike",
+      "severity": "warning",
+      "status": "open",
+      "owner": "external stream owner",
+      "next_action": "inspect stream cursor source ref",
+      "source_ref": "fixture://intraday-monitor/incidents/stale-stream-001",
+      "checksum": "sha256:a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3"
+    }
+  ],
+  "blockers": [],
+  "source_refs": [
+    {
+      "kind": "monitor_snapshot",
+      "owner": "account-console-contracts",
+      "source_ref": "fixture://intraday-monitor/current",
+      "checksum": "sha256:a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4",
+      "authority": "deterministic monitor fixture; not runtime authority"
+    }
+  ],
+  "boundaries": {
+    "read_only_projection": true,
+    "runtime_truth": false,
+    "account_truth": false,
+    "order_truth": false,
+    "ledger_truth": false,
+    "ui_truth": false,
+    "paper_ready": false,
+    "live_ready": false,
+    "broker_tradable": false,
+    "admission_truth": false,
+    "capital_truth": false,
+    "action_controls": false
+  },
+  "rejection_rules": [
+    "Reject monitor display as runtime control authority.",
+    "Reject lag display as HFT readiness or broker tradability proof."
+  ]
+}

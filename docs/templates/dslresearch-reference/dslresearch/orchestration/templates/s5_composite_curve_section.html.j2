@@ -1,0 +1,23 @@
+{%- if state == "no_artifact" -%}
+<section class="card"><h2>组合资金曲线 / Composite Equity Curve</h2><div class="hint">本轮组合正式回测没有生成资金曲线 artifact，无法继续做 S5 曲线诊断。</div></section>
+{%- elif state == "no_points" -%}
+<section class="card"><h2>组合资金曲线 / Composite Equity Curve</h2><div class="hint">本轮组合正式回测没有生成资金曲线 artifact，无法继续做 S5 曲线诊断。</div></section>
+{%- else -%}
+<section class="card"><h2>组合资金曲线 / Composite Equity Curve</h2>
+<div class="meta-line"><strong>回测引擎 / Backtest Engine：</strong><code>{{ backtest_engine }}</code></div>
+<div class="meta-line"><strong>执行模块：</strong><code>{{ execution_module }}</code></div>
+<div class="meta-line"><strong>artifact.stage：</strong><code>{{ artifact_stage }}</code></div>
+<div class="curve-box">{{ equity_curve_svg | safe }}</div>
+<table><thead><tr><th>指标</th><th>值</th><th>指标</th><th>值</th></tr></thead><tbody>
+<tr><td>point_count</td><td>{{ point_count }}</td><td>时间区间</td><td>{{ start_ts }} -> {{ end_ts }}</td></tr>
+<tr><td>start_equity</td><td>{{ "%.4f" | format(start_equity) }}</td><td>end_equity</td><td>{{ "%.4f" | format(end_equity) }}</td></tr>
+<tr><td>total_return</td><td>{{ "%.2f" | format(total_return_pct) }}%</td><td>worst_drawdown</td><td>{{ worst_drawdown_formatted | safe }}</td></tr>
+<tr><td>worst_period_return</td><td>{{ worst_period_formatted | safe }}</td><td>best_period_return</td><td>{{ best_period_formatted | safe }}</td></tr>
+<tr><td>positive/negative/flat</td><td>{{ positive_periods }} / {{ negative_periods }} / {{ flat_periods }} </td><td>result_uri</td><td><code>{{ result_uri }}</code></td></tr>
+</tbody></table>
+<div class="split-grid">
+<div><h3>诊断提示 / Diagnostic Hints</h3><ul>{{ hints_html | safe }}</ul></div>
+<div><h3>最差 5 个时点 / Worst 5 Periods</h3><table><thead><tr><th>ts</th><th>period_return</th><th>equity</th><th>drawdown</th></tr></thead><tbody>{{ extreme_rows_html | safe }}</tbody></table></div>
+</div>
+</section>
+{%- endif -%}

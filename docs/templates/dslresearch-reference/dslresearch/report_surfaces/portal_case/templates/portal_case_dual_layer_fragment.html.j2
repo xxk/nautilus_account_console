@@ -1,0 +1,38 @@
+{% if dual_layer_snapshot %}
+<section class="card snapshot-section" id="dual-layer-snapshot">
+    <p class="section-eyebrow">s5 dual-layer snapshot</p>
+    <h2 class="section-title">{{ dual_layer_snapshot.title }}</h2>
+    <div class="dual-layer-grid" style="margin-top: 12px;">
+    {% for layer in dual_layer_snapshot.layers %}
+        <article class="dual-layer-card {{ layer.class_name }}">
+            <div class="dual-layer-top">
+                <div>
+                    <div class="timeline-key">{{ layer.eyebrow }}</div>
+                    <h3>{{ layer.title }}</h3>
+                </div>
+                <span class="timeline-state">{{ layer.state }}</span>
+            </div>
+            <div class="snapshot-metrics" style="margin-top: 10px;">
+            {% for metric in layer.metrics %}
+                <article class="snapshot-card{% if 'Sharpe' in metric.label %} metric-highlight{% endif %}">
+                    <span class="snapshot-metric-label">{{ metric.label }}</span>
+                    <div class="snapshot-metric-value">
+                    {% if metric.code %}
+                        <code>{{ metric.value }}</code>
+                    {% else %}
+                        {{ metric.value }}
+                    {% endif %}
+                    </div>
+                </article>
+            {% endfor %}
+            </div>
+            <div class="snapshot-links" style="margin-top: 12px;">
+            {% for link in layer.links %}
+                <a class="portal-link {{ link.variant }}" href="{{ link.href }}" title="{{ link.title }}">{{ link.label }}</a>
+            {% endfor %}
+            </div>
+        </article>
+    {% endfor %}
+    </div>
+</section>
+{% endif %}

@@ -1,0 +1,70 @@
+{
+  "schema_version": "approved_execution_ledger.v1",
+  "proposal_id": "p060-case-artifact-store-truth-source-and-writer-retention-governance",
+  "phase_id": "phase_8b_retired_artifact_execution",
+  "ledger_id": "p060-exec-ledger-20260512-sample",
+  "ledger_status": "approved",
+  "created_at": "2026-05-12T18:30:00+08:00",
+  "approved_at": "2026-05-12T19:00:00+08:00",
+  "approved_by": "operator_name",
+  "approval_basis": {
+    "phase_7_migration_ledger_uri": "output/debug/change_evidence/p060-case-artifact-store-truth-source-and-writer-retention-governance/historical_non_case_migration_dry_run_ledger.json",
+    "phase_8_slimming_report_uri": "output/debug/change_evidence/p060-case-artifact-store-truth-source-and-writer-retention-governance/historical_retention_slimming_dry_run_report.json",
+    "approval_note": "Only ledger-listed retired artifacts may be touched during execute mode."
+  },
+  "execution_constraints": {
+    "canonical_cases_root_uri": "\\\\10.168.80.58\\Data\\artifact_store\\DSLReserach\\cases",
+    "require_explicit_execute_flag": true,
+    "allow_directory_rescan": false,
+    "forbid_unlisted_targets": true,
+    "require_inventory_delta": true,
+    "required_replays": [
+      "inventory_delta",
+      "successful_tracer_replay",
+      "formal_case_visibility_replay"
+    ]
+  },
+  "entries": [
+    {
+      "entry_id": "entry-001",
+      "source_kind": "historical_retention_slimming",
+      "source_row_id": "slimming-row-001",
+      "scope_kind": "formal_case_artifact",
+      "action": "delete",
+      "artifact_uri": "\\\\10.168.80.58\\Data\\artifact_store\\DSLReserach\\cases\\20.P47\\thin_trials\\obsolete_retry_payload.json",
+      "artifact_rel_path": "20.P47/thin_trials/obsolete_retry_payload.json",
+      "case_ref": "#20.P47",
+      "storage_token": "20.P47",
+      "protection_status": "not_protected",
+      "reason": "Superseded bronze retry payload already represented by thin summary and slim report disposition delete.",
+      "reviewer_note": "Delete only this file. Do not touch retained_trials, final, reports, or evidence siblings.",
+      "integrity": {
+        "size_bytes": 1048576,
+        "evidence_kind": "sha256",
+        "evidence_value": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "target_uri": null
+    },
+    {
+      "entry_id": "entry-002",
+      "source_kind": "historical_non_case_migration",
+      "source_row_id": "migration-row-002",
+      "scope_kind": "non_case_root",
+      "action": "archive",
+      "artifact_uri": "\\\\10.168.80.58\\Data\\artifact_store\\DSLReserach\\cases\\debug\\legacy_trace_bundle.zip",
+      "artifact_rel_path": "debug/legacy_trace_bundle.zip",
+      "case_ref": null,
+      "storage_token": null,
+      "protection_status": "manual_review_cleared",
+      "reason": "Legacy non-case debug bundle approved for archive out of hot path.",
+      "reviewer_note": "Archive to approved cold path only; no additional debug siblings may be moved unless listed here.",
+      "integrity": {
+        "size_bytes": 2097152,
+        "evidence_kind": "path_size_mtime",
+        "evidence_value": "size=2097152;mtime=2026-05-12T10:15:00+08:00"
+      },
+      "target_uri": "\\\\10.168.80.58\\Data\\artifact_store\\DSLReserach\\cases\\archive\\cold_storage\\legacy_non_case\\legacy_trace_bundle.zip"
+    }
+  ],
+  "notes": "Template example only. Real execution ledgers should be copied from this file into the active Phase 8B child change or approved operator evidence path before execution."
+}

@@ -1,0 +1,80 @@
+{
+  "schema_version": "account_positions_panel.v1",
+  "workbench": "Account Workbench",
+  "panel": "Account Positions Panel",
+  "route": "/accounts/{account_id}/positions",
+  "fixture_state": "blocked",
+  "context": {
+    "trading_day": "2026-06-14",
+    "session_id": "account-workbench.fixture.20260614.004",
+    "run_id": "account-positions.fixture.blocked.001",
+    "reducer_checkpoint_id": "account-positions.checkpoint.blocked.001",
+    "reducer_checkpoint_ts": "2026-06-14T14:48:12Z",
+    "stream_state": "blocked",
+    "projection_owner": "account-console-contracts",
+    "source_authority": "typed_blocker"
+  },
+  "account": {
+    "account_id": "acct.demo-19053",
+    "account_alias": "19053",
+    "account_kind": "real_feed_sandbox_paper"
+  },
+  "positions": [
+    {
+      "account_id": "acct.demo-19053",
+      "instrument": "rb2610",
+      "direction": "LONG",
+      "net_qty": 3,
+      "today_qty": null,
+      "yesterday_qty": null,
+      "available_qty": null,
+      "frozen_qty": null,
+      "average_price": null,
+      "market_price": 3158.0,
+      "market_value": null,
+      "unrealized_pnl": null,
+      "carryover_ref": null,
+      "settlement_ref": "fixture://account-workbench/settlement/acct.demo-19053/2026-06-14",
+      "source_ref": "fixture://account-workbench/positions/acct.demo-19053/rb2610/blocked-missing-carryover",
+      "checksum": "sha256:8383838383838383838383838383838383838383838383838383838383838383"
+    }
+  ],
+  "blockers": [
+    {
+      "blocker_id": "account-console.p004.phase4.position-carryover-ref-missing",
+      "severity": "high",
+      "kind": "missing_position_carryover_ref",
+      "owner": "external strategy/runtime owner",
+      "next_action": "Provide carryover refs before positions UI implementation closeout.",
+      "source_ref": "fixture://account-workbench/blockers/p004/phase4/position-carryover-ref-missing",
+      "checksum": "sha256:8484848484848484848484848484848484848484848484848484848484848484"
+    }
+  ],
+  "source_refs": [
+    {
+      "kind": "typed_blocker",
+      "owner": "account-console-contracts",
+      "source_ref": "fixture://account-workbench/blockers/p004/phase4/position-carryover-ref-missing",
+      "checksum": "sha256:8484848484848484848484848484848484848484848484848484848484848484",
+      "authority": "typed blocker fixture; not position truth"
+    }
+  ],
+  "boundaries": {
+    "read_only_projection": true,
+    "runtime_truth": false,
+    "account_truth": false,
+    "order_truth": false,
+    "ledger_truth": false,
+    "ui_truth": false,
+    "paper_ready": false,
+    "live_ready": false,
+    "broker_tradable": false,
+    "admission_truth": false,
+    "capital_truth": false,
+    "action_controls": false
+  },
+  "rejection_rules": [
+    "Reject missing carryover_ref as acceptable implementation evidence.",
+    "Reject browser-side inference of available, frozen or yesterday quantity."
+  ]
+}

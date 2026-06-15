@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8" />
+    <title>{{ report_title }}</title>
+    <style>
+        body { font-family: Segoe UI, Microsoft YaHei, sans-serif; margin: 24px; color: #1f2328; background: #f6f8fa; }
+        .card { background: #ffffff; border-radius: 12px; padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,.08); margin-bottom: 18px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid #d0d7de; }
+        th { background: #f6f8fa; }
+        code { background: #f0f3f6; padding: 2px 6px; border-radius: 6px; }
+        img { max-width: 100%; border: 1px solid #d0d7de; border-radius: 8px; background: #fff; }
+        .plot { margin-bottom: 20px; }
+        .hint { color: #57606a; line-height: 1.8; }
+    </style>
+</head>
+<body>
+    <h1>{{ report_title }}</h1>
+    <div class="card hint">
+        <div><strong>下一动作 / Next Action — 这个报告如何使用？</strong></div>
+        <div>1. 先看 mean_ic 和 ic_ir，确认因子方向稳定，不要只盯单次收益。</div>
+        <div>2. 再看 top-bottom spread、quantile returns 和 monthly IC heatmap，判断分层区分度与时间稳定性。</div>
+        <div>3. 若启用了 group-neutral 或 by-group，再看分组摘要，确认 alpha 不是被单一 group 偏置出来的。</div>
+        <div>4. 最后看 turnover 与 rank autocorrelation，避免拿到高换手、低稳定性的脆弱因子。</div>
+        <div style="margin-top: 8px;"><strong>输入文件：</strong><code>{{ input_file }}</code> &nbsp;|&nbsp; <strong>样本规模：</strong>{{ row_count }} rows / {{ asset_count }} assets / {{ date_count }} dates</div>
+        <div><strong>稳定性摘要：</strong>rank autocorrelation={{ mean_rank_autocorrelation }}, top turnover={{ mean_top_quantile_turnover }}, bottom turnover={{ mean_bottom_quantile_turnover }}</div>
+        {{ group_lines | safe }}
+    </div>
+    <div class="card">
+        <div><strong>可回溯锚点 / Traceability</strong></div>
+        {{ traceability_html | safe }}
+    </div>
+    <div class="card">
+        <table>
+            <thead>
+                <tr><th>horizon</th><th>mean_ic</th><th>ic_ir</th><th>top-bottom spread</th></tr>
+            </thead>
+            <tbody>{{ metric_rows | safe }}</tbody>
+        </table>
+    </div>
+    <div class="card">
+        <h2>By-Group Mean IC</h2>
+        <table>
+            <thead><tr><th>horizon</th><th>group</th><th>mean_ic</th></tr></thead>
+            <tbody>{{ by_group_rows | safe }}</tbody>
+        </table>
+    </div>
+    <div class="card">
+        <div><strong>报告生成模块：</strong><code>dslresearch build-alphalens-report</code></div>
+        <div><strong>分析引擎：</strong><code>Alphalens Reloaded</code></div>
+        <div><strong>职责边界：</strong>当前报告是 DSLResearch 对 Alphalens 分析结果的产物封装，不是回测执行模块，也不替代 vectorbt、NautilusTrader 或 RealDataGateway。</div>
+    </div>
+    <div class="card">{{ plot_items | safe }}</div>
+</body>
+</html>

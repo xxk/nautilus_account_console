@@ -1,0 +1,141 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nautilus.local/contracts/ui/panels/intraday_monitor_panel.contract.json",
+  "title": "Intraday Monitor Panel Read Model",
+  "$comment": "Read-only monitor projection; exception, lag, stream and incident rows are display evidence only and never runtime, stream, account, order, ledger, broker or readiness authority.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "workbench",
+    "panel",
+    "route",
+    "fixture_state",
+    "context",
+    "lag_summary",
+    "exceptions",
+    "streams",
+    "incidents",
+    "blockers",
+    "source_refs",
+    "boundaries",
+    "rejection_rules"
+  ],
+  "properties": {
+    "schema_version": { "type": "string", "const": "intraday_monitor_panel.v1" },
+    "workbench": { "type": "string", "const": "Intraday Monitor" },
+    "panel": { "type": "string", "const": "Intraday Monitor Exception Queue Panel" },
+    "route": { "type": "string", "const": "/monitor" },
+    "fixture_state": {
+      "type": "string",
+      "enum": ["current", "empty", "blocked", "stale", "partial"]
+    },
+    "context": { "$ref": "#/$defs/context" },
+    "lag_summary": { "$ref": "#/$defs/lag_summary" },
+    "exceptions": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/exception" }
+    },
+    "streams": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/stream_state" }
+    },
+    "incidents": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/incident" }
+    },
+    "blockers": {
+      "type": "array",
+      "items": { "$ref": "account_orders_panel.contract.json#/$defs/blocker" }
+    },
+    "source_refs": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "account_orders_panel.contract.json#/$defs/source_ref" }
+    },
+    "boundaries": { "$ref": "account_orders_panel.contract.json#/$defs/boundaries" },
+    "rejection_rules": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string", "minLength": 1 }
+    }
+  },
+  "$defs": {
+    "checksum": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" },
+    "context": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "trading_day",
+        "session_id",
+        "monitor_checkpoint_id",
+        "monitor_checkpoint_ts",
+        "stream_state",
+        "projection_owner",
+        "source_authority"
+      ],
+      "properties": {
+        "trading_day": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" },
+        "session_id": { "type": "string", "minLength": 1 },
+        "monitor_checkpoint_id": { "type": "string", "minLength": 1 },
+        "monitor_checkpoint_ts": { "type": "string", "format": "date-time" },
+        "stream_state": { "type": "string", "enum": ["healthy", "blocked", "stale", "partial", "empty", "warning"] },
+        "projection_owner": { "type": "string", "const": "account-console-contracts" },
+        "source_authority": { "type": "string", "enum": ["deterministic_fixture", "normalized_read_model", "typed_blocker"] }
+      }
+    },
+    "lag_summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["max_lag_ms", "stale_stream_count", "open_incident_count", "blocked_source_count"],
+      "properties": {
+        "max_lag_ms": { "type": ["number", "null"] },
+        "stale_stream_count": { "type": "integer", "minimum": 0 },
+        "open_incident_count": { "type": "integer", "minimum": 0 },
+        "blocked_source_count": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "exception": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["exception_id", "kind", "severity", "owner", "next_action", "source_ref", "checksum"],
+      "properties": {
+        "exception_id": { "type": "string", "minLength": 1 },
+        "kind": { "type": "string", "enum": ["stale_stream", "lag_spike", "incident", "source_blocker", "reconcile_gap"] },
+        "severity": { "type": "string", "enum": ["info", "warning", "high", "critical"] },
+        "owner": { "type": "string", "minLength": 1 },
+        "next_action": { "type": "string", "minLength": 1 },
+        "source_ref": { "type": "string", "minLength": 1 },
+        "checksum": { "$ref": "#/$defs/checksum" }
+      }
+    },
+    "stream_state": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["stream_id", "state", "last_event_ts", "lag_ms", "source_ref", "checksum"],
+      "properties": {
+        "stream_id": { "type": "string", "minLength": 1 },
+        "state": { "type": "string", "enum": ["healthy", "warning", "blocked", "stale", "partial", "empty"] },
+        "last_event_ts": { "type": ["string", "null"], "format": "date-time" },
+        "lag_ms": { "type": ["number", "null"] },
+        "source_ref": { "type": "string", "minLength": 1 },
+        "checksum": { "$ref": "#/$defs/checksum" }
+      }
+    },
+    "incident": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["incident_id", "category", "severity", "status", "owner", "next_action", "source_ref", "checksum"],
+      "properties": {
+        "incident_id": { "type": "string", "minLength": 1 },
+        "category": { "type": "string", "enum": ["outage", "stale_order", "reconcile_gap", "writer_failure", "source_blocker", "lag_spike"] },
+        "severity": { "type": "string", "enum": ["info", "warning", "high", "critical"] },
+        "status": { "type": "string", "enum": ["open", "blocked", "stale", "partial"] },
+        "owner": { "type": "string", "minLength": 1 },
+        "next_action": { "type": "string", "minLength": 1 },
+        "source_ref": { "type": "string", "minLength": 1 },
+        "checksum": { "$ref": "#/$defs/checksum" }
+      }
+    }
+  }
+}

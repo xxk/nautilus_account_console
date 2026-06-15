@@ -1,0 +1,78 @@
+{
+  "schema_version": "account_evidence_panel.v1",
+  "workbench": "Account Workbench",
+  "panel": "Account Evidence Panel",
+  "route": "/accounts/{account_id}/evidence",
+  "fixture_state": "blocked",
+  "context": {
+    "trading_day": "2026-06-14",
+    "session_id": "account-workbench.fixture.20260614.007",
+    "run_id": "account-evidence.fixture.blocked.001",
+    "reducer_checkpoint_id": "account-evidence.checkpoint.blocked.001",
+    "reducer_checkpoint_ts": "2026-06-14T15:58:26Z",
+    "stream_state": "blocked",
+    "projection_owner": "account-console-contracts",
+    "source_authority": "typed_blocker"
+  },
+  "account": {
+    "account_id": "acct.demo-19053",
+    "account_alias": "19053",
+    "account_kind": "real_feed_sandbox_paper"
+  },
+  "evidence_packages": [
+    {
+      "package_id": "evidence.owner-blocker.missing-schema",
+      "kind": "owner_blocker",
+      "status": "blocked",
+      "owner": "external evidence owner",
+      "schema_ref": "missing",
+      "schema_version_ref": "missing",
+      "checksum": "sha256:e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5",
+      "run_id": null,
+      "session_id": "account-workbench.fixture.20260614.007",
+      "trading_day": "2026-06-14",
+      "source_ref": "fixture://account-workbench/evidence/acct.demo-19053/blocked/missing-schema",
+      "normalized_ref": null,
+      "raw_payload_ref": null,
+      "next_action": "publish typed schema ref and checksum before rendering evidence as current"
+    }
+  ],
+  "blockers": [
+    {
+      "blocker_id": "account-evidence.missing-schema-ref",
+      "severity": "high",
+      "kind": "missing_schema_ref",
+      "owner": "external evidence owner",
+      "next_action": "publish typed schema ref and checksum or typed blocker",
+      "source_ref": "fixture://account-workbench/evidence/acct.demo-19053/blocked/missing-schema",
+      "checksum": "sha256:e6e6e6e6e6e6e6e6e6e6e6e6e6e6e6e6e6e6e6e6e6e6e6e6e6e6e6e6e6e6e6e6"
+    }
+  ],
+  "source_refs": [
+    {
+      "kind": "evidence_blocked_projection",
+      "owner": "account-console-contracts",
+      "source_ref": "fixture://account-workbench/evidence/acct.demo-19053/blocked",
+      "checksum": "sha256:e7e7e7e7e7e7e7e7e7e7e7e7e7e7e7e7e7e7e7e7e7e7e7e7e7e7e7e7e7e7e7e7",
+      "authority": "typed blocker fixture; not evidence truth"
+    }
+  ],
+  "boundaries": {
+    "read_only_projection": true,
+    "runtime_truth": false,
+    "account_truth": false,
+    "order_truth": false,
+    "ledger_truth": false,
+    "ui_truth": false,
+    "paper_ready": false,
+    "live_ready": false,
+    "broker_tradable": false,
+    "admission_truth": false,
+    "capital_truth": false,
+    "action_controls": false
+  },
+  "rejection_rules": [
+    "Reject missing schema_ref as valid current evidence.",
+    "Reject blocked evidence projection as Account Workbench closeout evidence."
+  ]
+}

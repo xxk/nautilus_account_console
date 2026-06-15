@@ -155,3 +155,10 @@ The next UI change should add:
 6. Playwright screenshot and non-overlap checks once Node/npm is available.
 7. Browser backpressure test against synthetic streamed events.
 8. Deep links from `/accounts/{account_id}/orders/{client_order_id}` into the selected-order report panel.
+
+The broader capability design and UI acceptance baseline are:
+
+```text
+docs/design/account-console-capability-ui-design.md
+docs/acceptance/2026-06-13-account-console-capability-ui-acceptance.md
+```

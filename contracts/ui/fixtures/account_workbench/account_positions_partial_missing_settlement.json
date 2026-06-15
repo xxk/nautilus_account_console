@@ -1,0 +1,80 @@
+{
+  "schema_version": "account_positions_panel.v1",
+  "workbench": "Account Workbench",
+  "panel": "Account Positions Panel",
+  "route": "/accounts/{account_id}/positions",
+  "fixture_state": "partial",
+  "context": {
+    "trading_day": "2026-06-14",
+    "session_id": "account-workbench.fixture.20260614.004",
+    "run_id": "account-positions.fixture.partial.001",
+    "reducer_checkpoint_id": "account-positions.checkpoint.partial.001",
+    "reducer_checkpoint_ts": "2026-06-14T14:48:12Z",
+    "stream_state": "partial",
+    "projection_owner": "account-console-contracts",
+    "source_authority": "typed_blocker"
+  },
+  "account": {
+    "account_id": "acct.demo-19053",
+    "account_alias": "19053",
+    "account_kind": "real_feed_sandbox_paper"
+  },
+  "positions": [
+    {
+      "account_id": "acct.demo-19053",
+      "instrument": "rb2610",
+      "direction": "LONG",
+      "net_qty": 3,
+      "today_qty": 0,
+      "yesterday_qty": 3,
+      "available_qty": 3,
+      "frozen_qty": 0,
+      "average_price": 3156.0,
+      "market_price": 3158.0,
+      "market_value": 9474.0,
+      "unrealized_pnl": null,
+      "carryover_ref": "fixture://account-workbench/carryover/acct.demo-19053/rb2610/2026-06-14",
+      "settlement_ref": null,
+      "source_ref": "fixture://account-workbench/positions/acct.demo-19053/rb2610/partial-missing-settlement",
+      "checksum": "sha256:8686868686868686868686868686868686868686868686868686868686868686"
+    }
+  ],
+  "blockers": [
+    {
+      "blocker_id": "account-console.p004.phase4.position-settlement-ref-missing",
+      "severity": "warning",
+      "kind": "missing_position_settlement_ref",
+      "owner": "external strategy/runtime owner",
+      "next_action": "Provide settlement refs before accepting PnL and market value continuity.",
+      "source_ref": "fixture://account-workbench/blockers/p004/phase4/position-settlement-ref-missing",
+      "checksum": "sha256:8787878787878787878787878787878787878787878787878787878787878787"
+    }
+  ],
+  "source_refs": [
+    {
+      "kind": "typed_blocker",
+      "owner": "account-console-contracts",
+      "source_ref": "fixture://account-workbench/blockers/p004/phase4/position-settlement-ref-missing",
+      "checksum": "sha256:8787878787878787878787878787878787878787878787878787878787878787",
+      "authority": "partial fixture; not settlement or position truth"
+    }
+  ],
+  "boundaries": {
+    "read_only_projection": true,
+    "runtime_truth": false,
+    "account_truth": false,
+    "order_truth": false,
+    "ledger_truth": false,
+    "ui_truth": false,
+    "paper_ready": false,
+    "live_ready": false,
+    "broker_tradable": false,
+    "admission_truth": false,
+    "capital_truth": false,
+    "action_controls": false
+  },
+  "rejection_rules": [
+    "Reject partial fixture as settlement-backed position truth.",
+    "Reject browser-side inference of PnL continuity."
+  ]
+}

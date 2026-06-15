@@ -1,0 +1,87 @@
+{
+  "proposal_id": "p004-account-workbench-summary-panel",
+  "phase": "phase7_evidence",
+  "status": "implementation_browser_evidence",
+  "created_at": "2026-06-15T00:06:31+08:00",
+  "route": "/accounts/acct.demo-19053/evidence",
+  "scope": {
+    "workbench": "Account Workbench",
+    "panel": "Account Evidence Panel",
+    "implementation_files": [
+      "frontend/src/App.tsx",
+      "frontend/src/types.ts"
+    ],
+    "contract_refs": [
+      "contracts/ui/panels/account_evidence_panel.contract.json"
+    ],
+    "fixture_refs": [
+      "contracts/ui/fixtures/account_workbench/account_evidence_current.json",
+      "contracts/ui/fixtures/account_workbench/account_evidence_empty.json",
+      "contracts/ui/fixtures/account_workbench/account_evidence_blocked_missing_schema.json",
+      "contracts/ui/fixtures/account_workbench/account_evidence_stale_stream.json",
+      "contracts/ui/fixtures/account_workbench/account_evidence_partial_missing_raw_payload.json"
+    ]
+  },
+  "browser_evidence": [
+    {
+      "viewport": "desktop",
+      "path": "docs/acceptance/browser-evidence/p004-phase7-evidence-panel/evidence-desktop.png",
+      "sha256": "7d75399540f3f46aeca80d8e17759e5c12ce67a7308c508c5ab1a4bf462a6650",
+      "assertions": {
+        "panel_visible": true,
+        "evidence_package_rows": 2,
+        "source_refs": 1,
+        "forbidden_action_buttons": 0
+      }
+    },
+    {
+      "viewport": "tablet",
+      "path": "docs/acceptance/browser-evidence/p004-phase7-evidence-panel/evidence-tablet.png",
+      "sha256": "c0d41c476cf7b2b886549c95a2a27fb1e4301020ff10f81713a4187b24a9deb0",
+      "assertions": {
+        "panel_visible": true,
+        "evidence_package_rows": 2,
+        "source_refs": 1,
+        "forbidden_action_buttons": 0
+      }
+    },
+    {
+      "viewport": "mobile",
+      "path": "docs/acceptance/browser-evidence/p004-phase7-evidence-panel/evidence-mobile.png",
+      "sha256": "f9936267b000cbe91a5ad6dc2e07bf20b281ddace3d977f52ae33e0060558873",
+      "assertions": {
+        "panel_visible": true,
+        "evidence_package_rows": 2,
+        "source_refs": 1,
+        "forbidden_action_buttons": 0
+      }
+    }
+  ],
+  "validation": {
+    "proposal_docs": "python scripts/check_proposal_docs.py --root . --proposal-id p004-account-workbench-summary-panel",
+    "owner_boundaries": "python scripts/validate_owner_boundaries.py",
+    "backend_compileall": "python -m compileall backend/src",
+    "rust_hotpath": "cargo test --manifest-path hotpath-rs/Cargo.toml",
+    "frontend_fixture_validator": "frontend/scripts/validate-account-health-fixtures.mjs",
+    "frontend_typecheck": "typescript createProgram diagnostics",
+    "frontend_build": "vite build",
+    "browser_assertions": "Playwright route render checks for panel, packages, source refs and forbidden action buttons"
+  },
+  "negative_assertions": {
+    "runtime_truth": false,
+    "account_truth": false,
+    "evidence_truth": false,
+    "order_truth": false,
+    "ledger_truth": false,
+    "ui_truth": false,
+    "paper_ready": false,
+    "live_ready": false,
+    "broker_tradable": false,
+    "admission_truth": false,
+    "capital_truth": false,
+    "action_controls": false,
+    "account_console_runtime_truth": false,
+    "account_console_ui_complete": false
+  },
+  "next_step": "P004 Phase 8 implementation/governance closeout remains required before Account Console UI completion can be claimed."
+}

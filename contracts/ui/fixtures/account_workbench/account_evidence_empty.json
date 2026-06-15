@@ -1,0 +1,51 @@
+{
+  "schema_version": "account_evidence_panel.v1",
+  "workbench": "Account Workbench",
+  "panel": "Account Evidence Panel",
+  "route": "/accounts/{account_id}/evidence",
+  "fixture_state": "empty",
+  "context": {
+    "trading_day": "2026-06-14",
+    "session_id": "account-workbench.fixture.20260614.007",
+    "run_id": "account-evidence.fixture.empty.001",
+    "reducer_checkpoint_id": "account-evidence.checkpoint.empty.001",
+    "reducer_checkpoint_ts": "2026-06-14T15:58:26Z",
+    "stream_state": "empty",
+    "projection_owner": "account-console-contracts",
+    "source_authority": "deterministic_fixture"
+  },
+  "account": {
+    "account_id": "acct.demo-19053",
+    "account_alias": "19053",
+    "account_kind": "real_feed_sandbox_paper"
+  },
+  "evidence_packages": [],
+  "blockers": [],
+  "source_refs": [
+    {
+      "kind": "evidence_empty_projection",
+      "owner": "account-console-contracts",
+      "source_ref": "fixture://account-workbench/evidence/acct.demo-19053/empty",
+      "checksum": "sha256:e4e4e4e4e4e4e4e4e4e4e4e4e4e4e4e4e4e4e4e4e4e4e4e4e4e4e4e4e4e4e4e4",
+      "authority": "deterministic empty fixture; not evidence absence authority"
+    }
+  ],
+  "boundaries": {
+    "read_only_projection": true,
+    "runtime_truth": false,
+    "account_truth": false,
+    "order_truth": false,
+    "ledger_truth": false,
+    "ui_truth": false,
+    "paper_ready": false,
+    "live_ready": false,
+    "broker_tradable": false,
+    "admission_truth": false,
+    "capital_truth": false,
+    "action_controls": false
+  },
+  "rejection_rules": [
+    "Reject empty evidence projection as proof that no external evidence exists.",
+    "Reject empty evidence projection as closeout readiness."
+  ]
+}

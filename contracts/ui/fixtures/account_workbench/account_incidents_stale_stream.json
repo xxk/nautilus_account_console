@@ -1,0 +1,73 @@
+{
+  "schema_version": "account_incidents_panel.v1",
+  "workbench": "Account Workbench",
+  "panel": "Account Incidents Panel",
+  "route": "/accounts/{account_id}/incidents",
+  "fixture_state": "stale",
+  "context": {
+    "trading_day": "2026-06-14",
+    "session_id": "account-workbench.fixture.20260614.006",
+    "run_id": "account-incidents.fixture.stale.001",
+    "reducer_checkpoint_id": "account-incidents.checkpoint.stale.001",
+    "reducer_checkpoint_ts": "2026-06-14T08:00:00Z",
+    "stream_state": "stale",
+    "projection_owner": "account-console-contracts",
+    "source_authority": "typed_blocker"
+  },
+  "account": {
+    "account_id": "acct.demo-19053",
+    "account_alias": "19053",
+    "account_kind": "real_feed_sandbox_paper"
+  },
+  "incidents": [
+    {
+      "incident_id": "incident.outage.stale.001",
+      "category": "outage",
+      "severity": "warning",
+      "status": "stale",
+      "owner": "account-console-contracts",
+      "next_action": "refresh incident projection before operator review",
+      "repair_ref": "fixture://account-workbench/incidents/acct.demo-19053/stale/repair-001",
+      "source_ref": "fixture://account-workbench/incidents/acct.demo-19053/stale/outage",
+      "checksum": "sha256:d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1"
+    }
+  ],
+  "blockers": [
+    {
+      "blocker_id": "account-incidents.stale-stream",
+      "severity": "warning",
+      "kind": "stale_incident_projection",
+      "owner": "account-console-contracts",
+      "next_action": "refresh deterministic fixture or source read model",
+      "source_ref": "fixture://account-workbench/incidents/acct.demo-19053/stale",
+      "checksum": "sha256:d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2"
+    }
+  ],
+  "source_refs": [
+    {
+      "kind": "incident_stale_projection",
+      "owner": "account-console-contracts",
+      "source_ref": "fixture://account-workbench/incidents/acct.demo-19053/stale",
+      "checksum": "sha256:d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3",
+      "authority": "typed stale fixture; not incident truth"
+    }
+  ],
+  "boundaries": {
+    "read_only_projection": true,
+    "runtime_truth": false,
+    "account_truth": false,
+    "order_truth": false,
+    "ledger_truth": false,
+    "ui_truth": false,
+    "paper_ready": false,
+    "live_ready": false,
+    "broker_tradable": false,
+    "admission_truth": false,
+    "capital_truth": false,
+    "action_controls": false
+  },
+  "rejection_rules": [
+    "Reject stale incident projection as current incident state.",
+    "Reject screenshots as incident source refresh proof."
+  ]
+}

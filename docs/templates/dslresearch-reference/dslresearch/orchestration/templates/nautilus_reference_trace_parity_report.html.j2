@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8" />
+    <title>{{ report_title }}</title>
+    <style>
+        body { font-family: Segoe UI, Microsoft YaHei, sans-serif; margin: 24px; color: #1f2328; background: #f6f8fa; }
+        h1, h2, h3 { margin-top: 0; }
+        .card { background: #ffffff; border-radius: 12px; padding: 18px; box-shadow: 0 1px 3px rgba(0,0,0,.08); margin-bottom: 18px; }
+        .meta { color: #57606a; line-height: 1.7; }
+        .badge { display: inline-block; border-radius: 999px; padding: 4px 10px; font-size: 12px; font-weight: 600; }
+        .badge.pass { background: #dafbe1; color: #116329; }
+        .badge.fail { background: #ffebe9; color: #cf222e; }
+        .badge.info { background: #ddf4ff; color: #0969da; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid #d0d7de; vertical-align: top; }
+        th { background: #f6f8fa; }
+        code { background: #f0f3f6; border-radius: 8px; padding: 2px 6px; }
+        .hint { color: #57606a; line-height: 1.7; }
+    </style>
+</head>
+<body>
+    <section class="card">
+        <h1>{{ report_title }}</h1>
+        <div class="meta">该报告验证 Nautilus (event-driven) 与 Reference (DSLReserach internal) 的<strong>信号层</strong>一致性。执行层（period_return、trade_count）差异仅供参考，不影响 verdict。</div>
+        <div>
+            <span class="badge {{ signal_verdict }}">signal_parity_verdict={{ signal_verdict }}</span>
+            <span class="badge info">execution_layer=informational</span>
+        </div>
+    </section>
+    <section class="card">
+        <h2>概览 / Overview</h2>
+        <table>
+            <thead><tr><th>字段</th><th>值</th><th>字段</th><th>值</th></tr></thead>
+            <tbody>
+                <tr><td>request_id</td><td><code>{{ request_id }}</code></td><td>strategy_key</td><td><code>{{ strategy_key }}</code></td></tr>
+                <tr><td>factor_type</td><td><code>{{ factor_op }}</code></td><td>timeframe</td><td><code>{{ timeframe }}</code></td></tr>
+                <tr><td>window</td><td>{{ start_date }} → {{ end_date }}</td><td>catalog_dir</td><td><code>{{ catalog_dir }}</code></td></tr>
+                <tr><td>point_count</td><td>{{ point_count }}</td><td>mismatch_count (all)</td><td>{{ mismatch_count }}</td></tr>
+                <tr><td>tolerance</td><td>{{ "%.10f" | format(tolerance) }}</td><td>trade_count_diff (info only)</td><td>{{ trade_count_diff }}</td></tr>
+            </tbody>
+        </table>
+    </section>
+    <section class="card">
+        <h2>Signal Layer（决定 verdict）</h2>
+        <table>
+            <thead><tr><th>指标</th><th>值</th></tr></thead>
+            <tbody>
+                <tr><td>max_abs_factor_diff</td><td>{{ "%.10f" | format(max_abs_factor_diff) }}</td></tr>
+                <tr><td>max_abs_signal_diff</td><td>{{ "%.10f" | format(max_abs_signal_diff) }}</td></tr>
+                <tr><td>max_abs_position_diff</td><td>{{ "%.10f" | format(max_abs_position_diff) }}</td></tr>
+            </tbody>
+        </table>
+    </section>
+    <section class="card">
+        <h2>Execution Layer（仅供参考 / Informational Only）</h2>
+        <table>
+            <thead><tr><th>指标</th><th>值</th><th>说明</th></tr></thead>
+            <tbody>
+                <tr><td>max_abs_period_return_diff</td><td>{{ "%.10f" | format(max_abs_period_return_diff) }}</td><td>vectorbt=向量计算 vs Nautilus=事件驱动，执行层差异不影响 verdict</td></tr>
+                <tr><td>trade_count_diff</td><td>{{ trade_count_diff }}</td><td>事件驱动引擎的成交计数可能不同</td></tr>
+            </tbody>
+        </table>
+    </section>
+    <section class="card">
+        <h2>运行摘要 / Run Summary</h2>
+        <table>
+            <thead><tr><th>stage</th><th>execution_module</th><th>backtest_engine</th><th>trade_count</th><th>sharpe</th><th>drawdown</th><th>total_return</th></tr></thead>
+            <tbody>
+                <tr><td>nautilus</td><td><code>{{ nautilus_execution_module }}</code></td><td><code>{{ nautilus_backtest_engine }}</code></td><td>{{ nautilus_trade_count }}</td><td>{{ "%.4f" | format(nautilus_sharpe) }}</td><td>{{ "%.2f" | format(nautilus_max_drawdown) }}%%</td><td>{{ "%.2f" | format(nautilus_total_return) }}%%</td></tr>
+                <tr><td>reference</td><td><code>{{ reference_execution_module }}</code></td><td><code>{{ reference_backtest_engine }}</code></td><td>{{ reference_trade_count }}</td><td>{{ "%.4f" | format(reference_sharpe) }}</td><td>{{ "%.2f" | format(reference_max_drawdown) }}%%</td><td>{{ "%.2f" | format(reference_total_return) }}%%</td></tr>
+            </tbody>
+        </table>
+    </section>
+    <section class="card">
+        <h2>快速复核 / Quick Checks</h2>
+        <div class="hint">1. 若 mismatch_count > 0 且含 signal 字段 → 检查策略 factor 计算是否一致。2. 若仅 execution layer 差异 → 正常，不同引擎执行模型不同。3. child #5 只消费 signal_parity=pass 的结果。</div>
+        <div><strong>复跑命令：</strong><code>{{ rerun_command }}</code></div>
+    </section>
+    <section class="card">
+        <h2>Mismatch Top 50</h2>
+        <table>
+            <thead><tr><th>index</th><th>ts</th><th>field</th><th>nautilus</th><th>reference</th><th>abs_diff</th></tr></thead>
+            <tbody>{{ mismatch_rows_html | safe }}</tbody>
+        </table>
+    </section>
+</body>
+</html>

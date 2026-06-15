@@ -1,0 +1,149 @@
+{
+  "schema": "account-console.p004-phase5-settlement-equity-contract-fixtures.v1",
+  "created_at": "2026-06-14T15:11:33.153Z",
+  "proposal": {
+    "proposal_id": "p004-account-workbench-summary-panel",
+    "phase": "phase_5_settlement_equity_gate",
+    "status": "contract_fixture_gate_passed"
+  },
+  "action_mode": "contract_fixture_gate_only_no_ui_no_runtime_truth",
+  "routes": [
+    "/accounts/{account_id}/settlement",
+    "/accounts/{account_id}/equity"
+  ],
+  "source_evidence": [
+    {
+      "kind": "p004_phase4_positions_ui_browser_evidence",
+      "path": "docs/acceptance/2026-06-14-p004-phase4-positions-ui-browser-evidence.json",
+      "checksum": "sha256:10fc038c361f025400bc2b71fde886fdfa0fa6f93c6aebd35f35aae904a413ab",
+      "authority": "account-console-acceptance"
+    }
+  ],
+  "contracts": [
+    {
+      "path": "contracts/ui/panels/account_settlement_panel.contract.json",
+      "checksum": "sha256:0fdbc74950bbd0a268dabd2b22c534e1dfe1f16c8cee477a6a1c15bb5d12abf2",
+      "schema_version": "account_settlement_panel.v1"
+    },
+    {
+      "path": "contracts/ui/panels/account_equity_panel.contract.json",
+      "checksum": "sha256:1bb819793f553f4991310c0ba209f54eb6e5738d3755a095d68eae8217a8746e",
+      "schema_version": "account_equity_panel.v1"
+    }
+  ],
+  "fixtures": [
+    {
+      "path": "contracts/ui/fixtures/account_workbench/account_settlement_current.json",
+      "checksum": "sha256:66749be0fc738f856f053cf7161290b786ecb24a392c872f419dd81b4cb1e0d0",
+      "fixture_state": "current_settlement"
+    },
+    {
+      "path": "contracts/ui/fixtures/account_workbench/account_settlement_empty.json",
+      "checksum": "sha256:a7ad133abea0397cb129cd40a56690bbb95b7219dfaa45221cf04ddf15e4518f",
+      "fixture_state": "empty"
+    },
+    {
+      "path": "contracts/ui/fixtures/account_workbench/account_settlement_blocked_missing_current.json",
+      "checksum": "sha256:4d25c9258b00aea7ee928c4b5fa93887fe4353ddee7fea596a4b99085896920e",
+      "fixture_state": "blocked"
+    },
+    {
+      "path": "contracts/ui/fixtures/account_workbench/account_settlement_stale_stream.json",
+      "checksum": "sha256:a35be9038094b2a961011ae959cefeb5442eb8b47c990f445690da5e14bf900e",
+      "fixture_state": "stale"
+    },
+    {
+      "path": "contracts/ui/fixtures/account_workbench/account_settlement_partial_missing_carryover.json",
+      "checksum": "sha256:0911ad76b5d4e6e2913df7dd00f6a94c47da7bd3515c5726f0588a298116b012",
+      "fixture_state": "partial"
+    },
+    {
+      "path": "contracts/ui/fixtures/account_workbench/account_equity_current.json",
+      "checksum": "sha256:b8887768e725e032a0b8e61b26b2ce1cad3f3c36dc25e6275fd040eabeeb5e4d",
+      "fixture_state": "current_equity"
+    },
+    {
+      "path": "contracts/ui/fixtures/account_workbench/account_equity_empty.json",
+      "checksum": "sha256:48660e175fe8ac1bef1d91e85c7f0e2d989b625369f3f2948e34a4477d17dc04",
+      "fixture_state": "empty"
+    },
+    {
+      "path": "contracts/ui/fixtures/account_workbench/account_equity_blocked_missing_ledger.json",
+      "checksum": "sha256:87f67b119f1ecb3ae0e8c870e2f83aca52c72cfce2aedaa28f68ef52883682ad",
+      "fixture_state": "blocked"
+    },
+    {
+      "path": "contracts/ui/fixtures/account_workbench/account_equity_stale_stream.json",
+      "checksum": "sha256:6e481884752e1c1a5789babae8d0b2fe2c7bf463a266f11049935ac992115f62",
+      "fixture_state": "stale"
+    },
+    {
+      "path": "contracts/ui/fixtures/account_workbench/account_equity_partial_missing_curve.json",
+      "checksum": "sha256:f09c848f97c014624e9af7427fa4940bac28bfcd1272701b9bcd73bb00482d76",
+      "fixture_state": "partial"
+    }
+  ],
+  "validation_files": [
+    {
+      "path": "frontend/scripts/validate-account-health-fixtures.mjs",
+      "checksum": "sha256:f1cc36efc231c7e4cd3e3d33096d35b3e46a4d0bfa669be730521d2c1dcab321"
+    },
+    {
+      "path": "scripts/validate_owner_boundaries.py",
+      "checksum": "sha256:1ed2e5e656025bd449a231a4fd021bc690b9e3f5edd180ad392df6f17b8d05f6"
+    }
+  ],
+  "gates": [
+    {
+      "name": "phase5 contracts and fixtures JSON parse",
+      "status": "passed"
+    },
+    {
+      "name": "frontend fixture validation",
+      "command": "C:/Program Files/QClaw/resources/node/node.exe frontend/scripts/validate-account-health-fixtures.mjs",
+      "status": "passed"
+    },
+    {
+      "name": "owner boundary validation",
+      "command": "python scripts/validate_owner_boundaries.py",
+      "status": "passed"
+    }
+  ],
+  "accepted_scope": {
+    "settlement_contract": true,
+    "settlement_fixtures": true,
+    "equity_contract": true,
+    "equity_fixtures": true,
+    "frontend_implementation": false,
+    "browser_evidence": false,
+    "settlement_equity_ui_complete": false,
+    "account_console_ui_complete": false
+  },
+  "authority_boundary": {
+    "read_only_projection": true,
+    "runtime_truth": false,
+    "account_truth": false,
+    "position_truth": false,
+    "order_truth": false,
+    "ledger_truth": false,
+    "ui_truth": false,
+    "paper_ready": false,
+    "live_ready": false,
+    "broker_tradable": false,
+    "admission_truth": false,
+    "capital_truth": false,
+    "action_controls": false
+  },
+  "runtime_actions": {
+    "paper_send_authorized": false,
+    "paper_send_attempted": false,
+    "native_send_attempted": false,
+    "live_action_attempted": false
+  },
+  "rejection_rules": [
+    "This artifact accepts only the P004 Phase 5 settlement/equity contracts and deterministic fixture gate.",
+    "The settlement and equity routes are not implemented or browser-accepted by this artifact.",
+    "The UI must not infer settlement success, carryover continuity or equity curve values from charts, browser state, source payload excerpts, rolling debug paths, stdout or screenshots.",
+    "Missing settlement refs, carryover refs, ledger refs or curve refs must remain typed blocker or partial fixture states until owner evidence exists."
+  ]
+}

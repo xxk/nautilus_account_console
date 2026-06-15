@@ -1,0 +1,715 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Nautilus Account Console UI Landing Preview</title>
+  <style>
+    :root {
+      color: #172026;
+      background: #eef2f4;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-width: 320px;
+    }
+
+    code {
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      overflow-wrap: anywhere;
+    }
+
+    .shell {
+      display: grid;
+      grid-template-columns: 248px minmax(0, 1fr);
+      min-height: 100vh;
+    }
+
+    .nav {
+      background: #182329;
+      color: #fff;
+      padding: 18px 14px;
+    }
+
+    .brand {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.16);
+      display: grid;
+      gap: 4px;
+      padding: 0 4px 14px;
+      margin-bottom: 14px;
+    }
+
+    .brand strong {
+      font-size: 17px;
+    }
+
+    .brand span {
+      color: #a9b7c0;
+      font-size: 13px;
+    }
+
+    .nav-list {
+      display: grid;
+      gap: 6px;
+    }
+
+    .nav-item {
+      align-items: center;
+      border-radius: 6px;
+      color: #d8e0e5;
+      display: grid;
+      font-size: 14px;
+      gap: 10px;
+      grid-template-columns: 18px 1fr;
+      min-height: 38px;
+      padding: 9px 10px;
+    }
+
+    .nav-item.active {
+      background: #25444d;
+      color: #fff;
+      box-shadow: inset 3px 0 0 #49a391;
+    }
+
+    .workspace {
+      min-width: 0;
+      padding: 22px;
+    }
+
+    .topbar {
+      align-items: center;
+      display: flex;
+      gap: 16px;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+
+    .topbar h1 {
+      font-size: 24px;
+      letter-spacing: 0;
+      margin: 0;
+    }
+
+    .topbar p {
+      color: #5b6770;
+      margin: 6px 0 0;
+    }
+
+    .context-actions {
+      align-items: center;
+      display: flex;
+      gap: 10px;
+    }
+
+    .pill {
+      align-items: center;
+      border: 1px solid #cbd5dc;
+      border-radius: 6px;
+      display: inline-flex;
+      font-size: 13px;
+      font-weight: 700;
+      gap: 7px;
+      min-height: 34px;
+      padding: 7px 10px;
+      white-space: nowrap;
+    }
+
+    .pill.healthy {
+      background: #e7f7ef;
+      border-color: #92d7ad;
+      color: #146c3f;
+    }
+
+    .pill.partial {
+      background: #eef3f7;
+      border-color: #b9c7d1;
+      color: #385262;
+    }
+
+    .pill.stale {
+      background: #fff7e6;
+      border-color: #f0c36a;
+      color: #7b4b00;
+    }
+
+    .checkpoint {
+      background: #fff;
+      border: 1px solid #d9e1e6;
+      border-radius: 8px;
+      display: grid;
+      gap: 12px;
+      grid-template-columns: 1.2fr 1fr 0.8fr 1.4fr;
+      margin-bottom: 16px;
+      padding: 12px;
+    }
+
+    .ref {
+      min-width: 0;
+    }
+
+    .ref span {
+      color: #66747d;
+      display: block;
+      font-size: 12px;
+      margin-bottom: 4px;
+    }
+
+    .ref code {
+      color: #24343c;
+      display: block;
+      font-size: 12px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .layout {
+      display: grid;
+      gap: 16px;
+      grid-template-columns: minmax(0, 1fr) 360px;
+    }
+
+    .panel,
+    .drawer {
+      background: #fff;
+      border: 1px solid #d9e1e6;
+      border-radius: 8px;
+      min-width: 0;
+      padding: 16px;
+    }
+
+    .panel-head {
+      align-items: center;
+      display: flex;
+      gap: 12px;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .panel-head h2,
+    .drawer h3 {
+      font-size: 16px;
+      letter-spacing: 0;
+      margin: 0;
+    }
+
+    .panel-head p {
+      color: #66747d;
+      margin: 4px 0 0;
+    }
+
+    .toolbar {
+      align-items: end;
+      display: grid;
+      gap: 10px;
+      grid-template-columns: repeat(4, minmax(130px, 1fr));
+      margin-bottom: 14px;
+    }
+
+    label {
+      color: #42515c;
+      display: grid;
+      font-size: 12px;
+      font-weight: 700;
+      gap: 6px;
+    }
+
+    select {
+      appearance: none;
+      background: #fff;
+      border: 1px solid #cbd5dc;
+      border-radius: 6px;
+      color: #172026;
+      min-height: 34px;
+      padding: 6px 28px 6px 8px;
+    }
+
+    .metrics {
+      display: grid;
+      gap: 10px;
+      grid-template-columns: repeat(6, minmax(88px, 1fr));
+      margin-bottom: 14px;
+    }
+
+    .metric {
+      border: 1px solid #d9e1e6;
+      border-radius: 6px;
+      min-height: 74px;
+      padding: 10px;
+    }
+
+    .metric span {
+      color: #66747d;
+      display: block;
+      font-size: 12px;
+      margin-bottom: 8px;
+    }
+
+    .metric strong {
+      display: block;
+      font-size: 20px;
+      text-align: right;
+    }
+
+    .table-wrap {
+      border: 1px solid #d9e1e6;
+      border-radius: 6px;
+      max-height: 492px;
+      overflow: auto;
+    }
+
+    table {
+      border-collapse: collapse;
+      font-size: 13px;
+      min-width: 940px;
+      width: 100%;
+    }
+
+    th,
+    td {
+      border-bottom: 1px solid #edf1f4;
+      padding: 10px;
+      text-align: left;
+      vertical-align: middle;
+    }
+
+    th {
+      background: #f6f8fa;
+      color: #42515c;
+      font-size: 12px;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+
+    tbody tr.selected {
+      background: #eef8f6;
+      box-shadow: inset 3px 0 0 #248277;
+    }
+
+    tbody tr.blocked {
+      background: #fffafa;
+    }
+
+    .account-link {
+      color: #125f8a;
+      font-weight: 800;
+    }
+
+    .state {
+      border: 1px solid;
+      border-radius: 6px;
+      display: inline-flex;
+      font-size: 12px;
+      font-weight: 800;
+      justify-content: center;
+      min-width: 76px;
+      padding: 4px 7px;
+      text-transform: lowercase;
+    }
+
+    .state.healthy {
+      background: #e7f7ef;
+      border-color: #92d7ad;
+      color: #146c3f;
+    }
+
+    .state.blocked {
+      background: #fdecea;
+      border-color: #f1a29b;
+      color: #8d251d;
+    }
+
+    .state.stale {
+      background: #fff7e6;
+      border-color: #f0c36a;
+      color: #7b4b00;
+    }
+
+    .state.partial {
+      background: #eef3f7;
+      border-color: #b9c7d1;
+      color: #385262;
+    }
+
+    .drawer {
+      align-self: start;
+      max-height: calc(100vh - 44px);
+      overflow: auto;
+      position: sticky;
+      top: 22px;
+    }
+
+    .drawer-section {
+      border-bottom: 1px solid #edf1f4;
+      padding-bottom: 14px;
+    }
+
+    .drawer-section + .drawer-section {
+      padding-top: 14px;
+    }
+
+    .kv {
+      display: grid;
+      gap: 10px;
+      margin: 12px 0 0;
+    }
+
+    .kv div {
+      min-width: 0;
+    }
+
+    .kv dt {
+      color: #66747d;
+      font-size: 12px;
+    }
+
+    .kv dd {
+      margin: 2px 0 0;
+      overflow-wrap: anywhere;
+    }
+
+    .blocker {
+      border: 1px solid #e4b6b2;
+      border-radius: 6px;
+      margin-top: 10px;
+      padding: 10px;
+    }
+
+    .blocker-head {
+      align-items: center;
+      display: flex;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .copy {
+      align-items: center;
+      display: grid;
+      gap: 6px;
+      grid-template-columns: minmax(0, 1fr) 28px;
+    }
+
+    .copy code {
+      font-size: 12px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .copy button {
+      background: #fff;
+      border: 1px solid #cbd5dc;
+      border-radius: 6px;
+      color: #42515c;
+      height: 28px;
+      width: 28px;
+    }
+
+    @media (max-width: 1100px) {
+      .shell {
+        grid-template-columns: 1fr;
+      }
+
+      .brand {
+        display: none;
+      }
+
+      .nav-list {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+
+      .checkpoint,
+      .toolbar,
+      .metrics,
+      .layout {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .drawer {
+        max-height: none;
+        position: static;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .workspace {
+        padding: 14px;
+      }
+
+      .nav-list,
+      .checkpoint,
+      .toolbar,
+      .metrics,
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .topbar {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .context-actions {
+        align-items: stretch;
+        flex-direction: column;
+        width: 100%;
+      }
+
+      .pill {
+        justify-content: center;
+      }
+
+      .panel-head {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      table {
+        min-width: 0;
+      }
+
+      thead {
+        display: none;
+      }
+
+      table,
+      tbody,
+      tr,
+      td {
+        display: block;
+        width: 100%;
+      }
+
+      tr {
+        border-bottom: 1px solid #d9e1e6;
+        padding: 10px;
+      }
+
+      td {
+        border-bottom: 0;
+        padding: 6px 0;
+      }
+
+      td::before {
+        color: #66747d;
+        content: attr(data-label);
+        display: block;
+        font-size: 11px;
+        font-weight: 800;
+        margin-bottom: 2px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <aside class="nav" aria-label="Primary workbenches">
+      <div class="brand">
+        <strong>Nautilus</strong>
+        <span>Account Console</span>
+      </div>
+      <nav class="nav-list">
+        <div class="nav-item active"><span>DC</span><span>Daily Closeout</span></div>
+        <div class="nav-item"><span>IM</span><span>Intraday Monitor</span></div>
+        <div class="nav-item"><span>AW</span><span>Account Workbench</span></div>
+        <div class="nav-item"><span>AA</span><span>Allocation Admin</span></div>
+        <div class="nav-item"><span>RR</span><span>Risk And Reconcile</span></div>
+        <div class="nav-item"><span>EV</span><span>Evidence Explorer</span></div>
+        <div class="nav-item"><span>SO</span><span>Stream Ops</span></div>
+      </nav>
+    </aside>
+
+    <section class="workspace">
+      <header class="topbar">
+        <div>
+          <h1>Daily Closeout</h1>
+          <p>2026-06-14 · session.paper-sandbox.042 · closeout.run.20260614.001</p>
+        </div>
+        <div class="context-actions">
+          <span class="pill partial">sandbox paper</span>
+          <span class="pill healthy">stream healthy</span>
+        </div>
+      </header>
+
+      <section class="checkpoint" aria-label="Source checkpoint">
+        <div class="ref">
+          <span>Reducer checkpoint</span>
+          <code>reducer.closeout.20260614.seq.000284</code>
+        </div>
+        <div class="ref">
+          <span>Checkpoint time</span>
+          <code>2026-06-14T13:57:22Z</code>
+        </div>
+        <div class="ref">
+          <span>Last cursor</span>
+          <code>ledger:0000000000029441</code>
+        </div>
+        <div class="ref">
+          <span>Source ref</span>
+          <code>artifact://closeout/account-health/20260614/summary.json</code>
+        </div>
+      </section>
+
+      <section class="layout">
+        <section class="panel">
+          <div class="panel-head">
+            <div>
+              <h2>Account Health Panel</h2>
+              <p>Daily Closeout · read-only projection · refs visible</p>
+            </div>
+            <span class="state partial">partial</span>
+          </div>
+
+          <section class="toolbar" aria-label="Filters">
+            <label>Fixture state
+              <select>
+                <option>partial</option>
+                <option>healthy</option>
+                <option>blocked</option>
+                <option>stale</option>
+              </select>
+            </label>
+            <label>Account type
+              <select>
+                <option>all</option>
+                <option>broker paper probe</option>
+                <option>real-feed sandbox</option>
+              </select>
+            </label>
+            <label>Closeout
+              <select>
+                <option>all</option>
+                <option>complete</option>
+                <option>blocked</option>
+              </select>
+            </label>
+            <label>Settlement
+              <select>
+                <option>all</option>
+                <option>complete</option>
+                <option>blocked</option>
+              </select>
+            </label>
+          </section>
+
+          <section class="metrics" aria-label="Summary metrics">
+            <div class="metric"><span>Total accounts</span><strong>8</strong></div>
+            <div class="metric"><span>Closeout complete</span><strong>5</strong></div>
+            <div class="metric"><span>Closeout blocked</span><strong>2</strong></div>
+            <div class="metric"><span>Settlement blocked</span><strong>1</strong></div>
+            <div class="metric"><span>Stale or partial</span><strong>3</strong></div>
+            <div class="metric"><span>Open blockers</span><strong>4</strong></div>
+          </section>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Account</th>
+                  <th>Type</th>
+                  <th>Owner</th>
+                  <th>Closeout</th>
+                  <th>Settlement</th>
+                  <th>Equity</th>
+                  <th>Blockers</th>
+                  <th>Source</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="selected">
+                  <td data-label="Account"><span class="account-link">paper.demo-01</span></td>
+                  <td data-label="Type">real-feed sandbox</td>
+                  <td data-label="Owner">ops.closeout</td>
+                  <td data-label="Closeout"><span class="state healthy">complete</span></td>
+                  <td data-label="Settlement"><span class="state partial">partial</span></td>
+                  <td data-label="Equity"><span class="state healthy">healthy</span></td>
+                  <td data-label="Blockers">1</td>
+                  <td data-label="Source"><code>artifact://closeout/paper.demo-01.json</code></td>
+                </tr>
+                <tr class="blocked">
+                  <td data-label="Account"><span class="account-link">paper.demo-02</span></td>
+                  <td data-label="Type">broker paper probe</td>
+                  <td data-label="Owner">risk.reconcile</td>
+                  <td data-label="Closeout"><span class="state blocked">blocked</span></td>
+                  <td data-label="Settlement"><span class="state blocked">blocked</span></td>
+                  <td data-label="Equity"><span class="state partial">partial</span></td>
+                  <td data-label="Blockers">2</td>
+                  <td data-label="Source"><code>artifact://closeout/paper.demo-02.json</code></td>
+                </tr>
+                <tr>
+                  <td data-label="Account"><span class="account-link">paper.demo-03</span></td>
+                  <td data-label="Type">sandbox</td>
+                  <td data-label="Owner">pm.review</td>
+                  <td data-label="Closeout"><span class="state healthy">complete</span></td>
+                  <td data-label="Settlement"><span class="state healthy">complete</span></td>
+                  <td data-label="Equity"><span class="state healthy">healthy</span></td>
+                  <td data-label="Blockers">0</td>
+                  <td data-label="Source"><code>artifact://closeout/paper.demo-03.json</code></td>
+                </tr>
+                <tr>
+                  <td data-label="Account"><span class="account-link">paper.demo-04</span></td>
+                  <td data-label="Type">backtest replay</td>
+                  <td data-label="Owner">platform.stream</td>
+                  <td data-label="Closeout"><span class="state stale">stale</span></td>
+                  <td data-label="Settlement"><span class="state partial">partial</span></td>
+                  <td data-label="Equity"><span class="state partial">partial</span></td>
+                  <td data-label="Blockers">1</td>
+                  <td data-label="Source"><code>artifact://closeout/paper.demo-04.json</code></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <aside class="drawer" aria-label="Detail and evidence drawer">
+          <section class="drawer-section">
+            <h3>paper.demo-01</h3>
+            <dl class="kv">
+              <div><dt>Owner</dt><dd>ops.closeout</dd></div>
+              <div><dt>Last cursor</dt><dd><code>ledger:0000000000029441</code></dd></div>
+              <div><dt>Checkpoint</dt><dd><code>2026-06-14T13:57:22Z</code></dd></div>
+              <div><dt>Checksum</dt><dd><code>sha256:9f2c...a431</code></dd></div>
+            </dl>
+          </section>
+
+          <section class="drawer-section">
+            <h3>Blockers</h3>
+            <article class="blocker">
+              <div class="blocker-head">
+                <span class="state partial">partial</span>
+                <strong>missing settlement carryover ref</strong>
+              </div>
+              <dl class="kv">
+                <div><dt>Owner</dt><dd>settlement.reducer</dd></div>
+                <div><dt>Next diagnostic</dt><dd><code>diagnostic://settlement/paper.demo-01/carryover</code></dd></div>
+                <div><dt>Source</dt><dd><code>artifact://blockers/settlement-carryover.json</code></dd></div>
+              </dl>
+            </article>
+          </section>
+
+          <section class="drawer-section">
+            <h3>Evidence</h3>
+            <dl class="kv">
+              <div><dt>Closeout run</dt><dd class="copy"><code>closeout.run.20260614.001</code><button>cp</button></dd></div>
+              <div><dt>Settlement run</dt><dd class="copy"><code>settlement.run.20260614.004</code><button>cp</button></dd></div>
+              <div><dt>Equity artifact</dt><dd class="copy"><code>artifact://equity/paper.demo-01.curve.json</code><button>cp</button></dd></div>
+              <div><dt>Schema</dt><dd class="copy"><code>contracts/ui/panels/account_health_panel.contract.json</code><button>cp</button></dd></div>
+            </dl>
+          </section>
+        </aside>
+      </section>
+    </section>
+  </main>
+</body>
+</html>

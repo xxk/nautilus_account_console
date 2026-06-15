@@ -1,0 +1,73 @@
+{
+  "schema_version": "account_incidents_panel.v1",
+  "workbench": "Account Workbench",
+  "panel": "Account Incidents Panel",
+  "route": "/accounts/{account_id}/incidents",
+  "fixture_state": "partial",
+  "context": {
+    "trading_day": "2026-06-14",
+    "session_id": "account-workbench.fixture.20260614.006",
+    "run_id": "account-incidents.fixture.partial.001",
+    "reducer_checkpoint_id": "account-incidents.checkpoint.partial.001",
+    "reducer_checkpoint_ts": "2026-06-14T15:34:16Z",
+    "stream_state": "partial",
+    "projection_owner": "account-console-contracts",
+    "source_authority": "typed_blocker"
+  },
+  "account": {
+    "account_id": "acct.demo-19053",
+    "account_alias": "19053",
+    "account_kind": "real_feed_sandbox_paper"
+  },
+  "incidents": [
+    {
+      "incident_id": "incident.writer-failure.partial.001",
+      "category": "writer_failure",
+      "severity": "critical",
+      "status": "partial",
+      "owner": "external writer owner",
+      "next_action": "publish repair ref before incident closeout",
+      "repair_ref": null,
+      "source_ref": "fixture://account-workbench/incidents/acct.demo-19053/partial/writer-failure",
+      "checksum": "sha256:d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4"
+    }
+  ],
+  "blockers": [
+    {
+      "blocker_id": "account-incidents.missing-repair-ref",
+      "severity": "critical",
+      "kind": "missing_repair_ref",
+      "owner": "external writer owner",
+      "next_action": "publish repair ref or typed blocker",
+      "source_ref": "fixture://account-workbench/incidents/acct.demo-19053/partial/writer-failure",
+      "checksum": "sha256:d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5"
+    }
+  ],
+  "source_refs": [
+    {
+      "kind": "incident_partial_projection",
+      "owner": "account-console-contracts",
+      "source_ref": "fixture://account-workbench/incidents/acct.demo-19053/partial",
+      "checksum": "sha256:d6d6d6d6d6d6d6d6d6d6d6d6d6d6d6d6d6d6d6d6d6d6d6d6d6d6d6d6d6d6d6d6",
+      "authority": "typed partial fixture; not incident truth"
+    }
+  ],
+  "boundaries": {
+    "read_only_projection": true,
+    "runtime_truth": false,
+    "account_truth": false,
+    "order_truth": false,
+    "ledger_truth": false,
+    "ui_truth": false,
+    "paper_ready": false,
+    "live_ready": false,
+    "broker_tradable": false,
+    "admission_truth": false,
+    "capital_truth": false,
+    "action_controls": false
+  },
+  "rejection_rules": [
+    "Reject partial incident projection as repaired or closed.",
+    "Reject missing repair_ref as acceptable closeout evidence."
+  ]
+}

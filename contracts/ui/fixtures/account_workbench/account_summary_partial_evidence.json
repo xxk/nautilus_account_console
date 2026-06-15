@@ -1,0 +1,92 @@
+{
+  "schema_version": "account_summary_panel.v1",
+  "workbench": "Account Workbench",
+  "panel": "Account Summary Panel",
+  "route": "/accounts/{account_id}",
+  "fixture_state": "partial",
+  "context": {
+    "trading_day": "2026-06-14",
+    "session_id": "account-workbench.fixture.20260614.005",
+    "run_id": "account-summary.fixture.partial.001",
+    "reducer_checkpoint_id": "account-summary.checkpoint.partial.001",
+    "reducer_checkpoint_ts": "2026-06-14T14:04:51Z",
+    "stream_state": "partial",
+    "projection_owner": "account-console-contracts",
+    "source_authority": "deterministic_fixture"
+  },
+  "account": {
+    "account_id": "acct.partial-001",
+    "account_alias": "partial-001",
+    "account_kind": "backtest_replay",
+    "portfolio_uid": "portfolio.partial.account-workbench",
+    "display_state": "partial",
+    "base_currency": "CNY"
+  },
+  "balances": {
+    "cash": 250000.0,
+    "frozen_cash": null,
+    "available_cash": null,
+    "buying_power": null
+  },
+  "pnl": {
+    "realized": 12.0,
+    "unrealized": null,
+    "fees": null,
+    "taxes": null
+  },
+  "margin": {
+    "initial_margin": null,
+    "maintenance_margin": null,
+    "margin_ratio": null
+  },
+  "settlement": {
+    "state": "partial",
+    "latest_settlement_ref": "fixture://account-workbench/settlement/acct.partial-001/2026-06-14",
+    "position_carryover_ref": null
+  },
+  "positions": [],
+  "blockers": [
+    {
+      "blocker_id": "account-summary.partial-carryover",
+      "severity": "warning",
+      "kind": "missing_position_carryover_ref",
+      "owner": "external-position-owner",
+      "next_action": "provide typed carryover artifact ref and checksum",
+      "source_ref": "blocker://account-workbench/partial-001/missing-carryover-ref",
+      "checksum": "sha256:3434343434343434343434343434343434343434343434343434343434343434"
+    }
+  ],
+  "source_refs": [
+    {
+      "kind": "account_snapshot",
+      "owner": "account-console-contracts",
+      "source_ref": "fixture://account-workbench/snapshots/acct.partial-001/2026-06-14/partial",
+      "checksum": "sha256:5656565656565656565656565656565656565656565656565656565656565656",
+      "authority": "deterministic partial fixture; missing refs must render partial"
+    },
+    {
+      "kind": "typed_blocker",
+      "owner": "account-console-contracts",
+      "source_ref": "blocker://account-workbench/partial-001/missing-carryover-ref",
+      "checksum": "sha256:3434343434343434343434343434343434343434343434343434343434343434",
+      "authority": "typed blocker fixture for missing carryover ref"
+    }
+  ],
+  "boundaries": {
+    "read_only_projection": true,
+    "runtime_truth": false,
+    "ledger_truth": false,
+    "ui_truth": false,
+    "paper_ready": false,
+    "live_ready": false,
+    "broker_tradable": false,
+    "admission_truth": false,
+    "capital_truth": false,
+    "action_controls": false
+  },
+  "rejection_rules": [
+    "Reject partial values as complete account truth.",
+    "Reject this fixture as runtime, broker, ledger, admission, capital or readiness truth.",
+    "Reject missing carryover refs being inferred by frontend code."
+  ]
+}

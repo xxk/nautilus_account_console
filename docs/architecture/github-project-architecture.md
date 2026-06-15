@@ -22,8 +22,13 @@ It is intentionally separate from strategy/runtime repositories:
 | `hotpath-rs/` | Rust event ingest, ledger and batching primitives | `rust` |
 | `backend/` | Python FastAPI control/query API and reducer integration | `python` |
 | `frontend/` | TypeScript/Vite account console UI | `frontend` |
+| `docs/adr/` | local architecture decisions and governance rules | docs review |
+| `docs/proposals/` | proposal templates and future proposal work items | docs review |
+| `docs/topics/` | long-running topic roadmap kernel and topic status registry | docs review |
+| `docs/templates/` | reference templates copied/learned from DSLresearch | docs review |
 | `docs/design/` | UI and interaction design | docs review |
 | `docs/acceptance/` | self-acceptance and successor gates | docs review |
+| `docs/ownership/` | owner authority map and anti-second-implementation rules | docs review |
 | `.github/` | CI, issue templates, PR template and repo automation | GitHub native |
 
 ## 3. CI Contract
@@ -79,6 +84,12 @@ Every feature must declare:
 
 After the repository is created, replace `@OWNER/...` with real users or teams.
 
+The authority owner map is canonical even before GitHub team names are known:
+
+```text
+docs/ownership/account-console-owner-map.md
+```
+
 Recommended team split:
 
 | Layer | Suggested team |
@@ -88,6 +99,7 @@ Recommended team split:
 | `backend/` | account-console-backend |
 | `frontend/` | account-console-frontend |
 | `docs/` | account-console-docs |
+| `docs/ownership/` | account-console-architecture |
 
 ## 7. Publish Steps
 
@@ -106,4 +118,3 @@ If using GitHub CLI:
 ```powershell
 gh repo create <owner>/nautilus_account_console --private --source . --remote origin --push
 ```
-

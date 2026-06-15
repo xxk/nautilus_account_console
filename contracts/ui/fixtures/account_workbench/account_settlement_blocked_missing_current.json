@@ -1,0 +1,76 @@
+{
+  "schema_version": "account_settlement_panel.v1",
+  "workbench": "Account Workbench",
+  "panel": "Account Settlement Panel",
+  "route": "/accounts/{account_id}/settlement",
+  "fixture_state": "blocked",
+  "context": {
+    "trading_day": "2026-06-14",
+    "session_id": "account-workbench.fixture.20260614.005",
+    "run_id": "account-settlement.fixture.blocked.001",
+    "reducer_checkpoint_id": "account-settlement.checkpoint.blocked.001",
+    "reducer_checkpoint_ts": "2026-06-14T15:11:33Z",
+    "stream_state": "blocked",
+    "projection_owner": "account-console-contracts",
+    "source_authority": "typed_blocker"
+  },
+  "account": {
+    "account_id": "acct.demo-19053",
+    "account_alias": "19053",
+    "account_kind": "real_feed_sandbox_paper"
+  },
+  "settlement": {
+    "trading_day": "2026-06-14",
+    "settlement_state": "blocked",
+    "previous_settlement_ref": "fixture://account-workbench/settlement/acct.demo-19053/2026-06-13",
+    "current_settlement_ref": null,
+    "position_carryover_ref": "fixture://account-workbench/carryover/acct.demo-19053/2026-06-14",
+    "cash": null,
+    "frozen_cash": null,
+    "margin": null,
+    "realized_pnl": null,
+    "unrealized_pnl": null,
+    "fees": null,
+    "taxes": null,
+    "source_ref": "fixture://account-workbench/settlement/acct.demo-19053/blocked-missing-current",
+    "checksum": "sha256:9393939393939393939393939393939393939393939393939393939393939393"
+  },
+  "blockers": [
+    {
+      "blocker_id": "account-console.p004.phase5.current-settlement-ref-missing",
+      "severity": "high",
+      "kind": "missing_current_settlement_ref",
+      "owner": "external settlement owner",
+      "next_action": "Provide current settlement artifact or typed owner blocker before settlement UI closeout.",
+      "source_ref": "fixture://account-workbench/blockers/p004/phase5/current-settlement-ref-missing",
+      "checksum": "sha256:9494949494949494949494949494949494949494949494949494949494949494"
+    }
+  ],
+  "source_refs": [
+    {
+      "kind": "typed_blocker",
+      "owner": "account-console-contracts",
+      "source_ref": "fixture://account-workbench/blockers/p004/phase5/current-settlement-ref-missing",
+      "checksum": "sha256:9494949494949494949494949494949494949494949494949494949494949494",
+      "authority": "typed blocker fixture; not settlement truth"
+    }
+  ],
+  "boundaries": {
+    "read_only_projection": true,
+    "runtime_truth": false,
+    "account_truth": false,
+    "order_truth": false,
+    "ledger_truth": false,
+    "ui_truth": false,
+    "paper_ready": false,
+    "live_ready": false,
+    "broker_tradable": false,
+    "admission_truth": false,
+    "capital_truth": false,
+    "action_controls": false
+  },
+  "rejection_rules": [
+    "Reject blocked fixture as successful settlement.",
+    "Reject browser-side settlement repair or inference."
+  ]
+}

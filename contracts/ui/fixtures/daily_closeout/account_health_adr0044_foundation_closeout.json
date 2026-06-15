@@ -1,0 +1,52 @@
+{
+  "schema_version": "account_health_panel.v1",
+  "workbench": "Daily Closeout",
+  "panel": "Account Health Panel",
+  "route": "/closeout",
+  "fixture_state": "happy_path",
+  "context": {
+    "trading_day": "2026-06-13",
+    "session_id": "a1-ledger-foundation-session-001",
+    "closeout_run_id": "p078-foundation-closeout-20260613",
+    "reducer_checkpoint_id": "adr0044.p078.foundation.closeout",
+    "reducer_checkpoint_ts": "2026-06-13T14:07:17Z",
+    "stream_state": "healthy",
+    "last_cursor": 4,
+    "source_ref": "D:/Nautilus/nautilus_strategies/output/adr0044/foundation_closeout/p078_foundation_closeout_evidence_summary.json",
+    "checksum": "sha256:7f3f9b310d5f2703f17398f5bedaad2c7f9d015dc33fdabc159c67560a7bf6a1"
+  },
+  "summary": {
+    "total_accounts": 1,
+    "closeout_completed": 1,
+    "closeout_blocked": 0,
+    "settlement_blocked": 0,
+    "stale_or_partial": 0,
+    "open_blockers": 0
+  },
+  "filters": {
+    "account_types": ["real_feed_sandbox_paper"],
+    "closeout_states": ["complete"],
+    "settlement_states": ["settled"],
+    "blocker_severities": []
+  },
+  "accounts": [
+    {
+      "account_id": "paper-account-alpha",
+      "account_type": "real_feed_sandbox_paper",
+      "owner": "strategies.vnpy_portfolio",
+      "closeout_state": "complete",
+      "settlement_state": "settled",
+      "equity_continuity": "continuous",
+      "blocker_count": 0,
+      "source_ref": "D:/Nautilus/nautilus_strategies/output/adr0044/a3_account_ledger/a3_account_ledger_evidence_summary.json",
+      "checksum": "sha256:68e0f972bb26c6207f3652a7d1124aa0828d7c996c2cadcf647316c41a8dfcd9",
+      "closeout_run_id": "p078-foundation-closeout-20260613",
+      "settlement_run_id": "a3-account-conservation-run-001",
+      "equity_curve_artifact_id": "D:/Nautilus/nautilus_strategies/output/adr0044/a3_account_ledger/paper_equity_curve.json",
+      "latest_blocker_id": null,
+      "last_cursor": 4,
+      "last_checkpoint_ts": "2026-06-13T14:00:17Z",
+      "blockers": []
+    }
+  ]
+}

@@ -1,0 +1,78 @@
+{
+  "schema_version": "account_evidence_panel.v1",
+  "workbench": "Account Workbench",
+  "panel": "Account Evidence Panel",
+  "route": "/accounts/{account_id}/evidence",
+  "fixture_state": "partial",
+  "context": {
+    "trading_day": "2026-06-14",
+    "session_id": "account-workbench.fixture.20260614.007",
+    "run_id": "account-evidence.fixture.partial.001",
+    "reducer_checkpoint_id": "account-evidence.checkpoint.partial.001",
+    "reducer_checkpoint_ts": "2026-06-14T15:58:26Z",
+    "stream_state": "partial",
+    "projection_owner": "account-console-contracts",
+    "source_authority": "typed_blocker"
+  },
+  "account": {
+    "account_id": "acct.demo-19053",
+    "account_alias": "19053",
+    "account_kind": "real_feed_sandbox_paper"
+  },
+  "evidence_packages": [
+    {
+      "package_id": "evidence.paper-slice.partial",
+      "kind": "paper_slice",
+      "status": "partial",
+      "owner": "account-console-contracts",
+      "schema_ref": "contracts/ui/panels/p077_paper_slice_panel.contract.json",
+      "schema_version_ref": "p077_paper_slice_panel.v1",
+      "checksum": "sha256:eb2eb2eb2eb2eb2eb2eb2eb2eb2eb2eb2eb2eb2eb2eb2eb2eb2eb2eb2eb2eb2e",
+      "run_id": "p077-paper-slice.fixture.e100-e102.001",
+      "session_id": "p077.paper.lifecycle.e100",
+      "trading_day": "2026-06-14",
+      "source_ref": "fixture://account-workbench/evidence/acct.demo-19053/partial/paper-slice",
+      "normalized_ref": "contracts/ui/fixtures/p077_paper_slice/e100_close_yesterday_filled_e102_closeout.json",
+      "raw_payload_ref": null,
+      "next_action": "use normalized P077 slice refs only; raw payload remains unavailable in this projection"
+    }
+  ],
+  "blockers": [
+    {
+      "blocker_id": "account-evidence.missing-raw-payload-ref",
+      "severity": "warning",
+      "kind": "missing_raw_payload_ref",
+      "owner": "account-console-contracts",
+      "next_action": "keep raw payload drawer disabled until typed raw payload ref exists",
+      "source_ref": "fixture://account-workbench/evidence/acct.demo-19053/partial/paper-slice",
+      "checksum": "sha256:ec3ec3ec3ec3ec3ec3ec3ec3ec3ec3ec3ec3ec3ec3ec3ec3ec3ec3ec3ec3ec3e"
+    }
+  ],
+  "source_refs": [
+    {
+      "kind": "evidence_partial_projection",
+      "owner": "account-console-contracts",
+      "source_ref": "fixture://account-workbench/evidence/acct.demo-19053/partial",
+      "checksum": "sha256:ed4ed4ed4ed4ed4ed4ed4ed4ed4ed4ed4ed4ed4ed4ed4ed4ed4ed4ed4ed4ed4e",
+      "authority": "typed partial fixture; not raw payload authority"
+    }
+  ],
+  "boundaries": {
+    "read_only_projection": true,
+    "runtime_truth": false,
+    "account_truth": false,
+    "order_truth": false,
+    "ledger_truth": false,
+    "ui_truth": false,
+    "paper_ready": false,
+    "live_ready": false,
+    "broker_tradable": false,
+    "admission_truth": false,
+    "capital_truth": false,
+    "action_controls": false
+  },
+  "rejection_rules": [
+    "Reject missing raw payload ref as raw evidence availability.",
+    "Reject normalized paper slice evidence as Paper readiness or broker tradability."
+  ]
+}

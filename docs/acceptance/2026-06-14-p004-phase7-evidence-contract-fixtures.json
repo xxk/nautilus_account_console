@@ -1,0 +1,90 @@
+{
+  "schema_version": "account_console_acceptance_evidence.v1",
+  "evidence_id": "p004_phase7_evidence_contract_fixtures_20260614",
+  "status": "contract_fixture_gate_passed",
+  "proposal_id": "p004-account-workbench-summary-panel",
+  "phase": "phase7_evidence",
+  "created_at": "2026-06-14T15:58:26Z",
+  "scope": {
+    "owner_repo": "D:/Nautilus/nautilus_account_console",
+    "route": "/accounts/{account_id}/evidence",
+    "panel": "Account Evidence Panel",
+    "implementation_ui": false,
+    "browser_evidence": false
+  },
+  "contract": {
+    "path": "contracts/ui/panels/account_evidence_panel.contract.json",
+    "title": "Account Evidence Panel Read Model",
+    "schema_version": "account_evidence_panel.v1",
+    "sha256": "82c00c03ab20cff110a8fb666e18fb18b60a1eff337002a2e319c2b2022c2521"
+  },
+  "fixtures": [
+    {
+      "path": "contracts/ui/fixtures/account_workbench/account_evidence_current.json",
+      "fixture_state": "current_evidence",
+      "sha256": "96f5569475e6ecf86ce7401234e90119c15428a7bdb485036559ec4746202368"
+    },
+    {
+      "path": "contracts/ui/fixtures/account_workbench/account_evidence_empty.json",
+      "fixture_state": "empty",
+      "sha256": "c5cbbcbfaca4eec070079c499799d253007a6d409c541d142da27a76f02b735e"
+    },
+    {
+      "path": "contracts/ui/fixtures/account_workbench/account_evidence_blocked_missing_schema.json",
+      "fixture_state": "blocked",
+      "sha256": "fd34c95d0cb9c7ce66e09f8762fcc7022904aa6cc9054aabd4425fcccd1c8925"
+    },
+    {
+      "path": "contracts/ui/fixtures/account_workbench/account_evidence_stale_stream.json",
+      "fixture_state": "stale",
+      "sha256": "471b446c5da56761d025a36019c18ea6c4f01a2f7b93907e4a560369a27c91c2"
+    },
+    {
+      "path": "contracts/ui/fixtures/account_workbench/account_evidence_partial_missing_raw_payload.json",
+      "fixture_state": "partial",
+      "sha256": "7a6a51dafba5037f59deda326909de4af2c2a88f23adbbb579aa16a71de2347a"
+    }
+  ],
+  "required_fields": [
+    "package_id",
+    "kind",
+    "status",
+    "owner",
+    "schema_ref",
+    "schema_version_ref",
+    "checksum",
+    "run_id",
+    "session_id",
+    "trading_day",
+    "source_ref",
+    "normalized_ref",
+    "raw_payload_ref",
+    "next_action"
+  ],
+  "validation": {
+    "json_parse": "passed",
+    "frontend_fixture_validator_updated": true,
+    "owner_boundary_validator_updated": true,
+    "ui_implementation_started": false,
+    "browser_evidence_created": false
+  },
+  "negative_assertions": {
+    "runtime_truth": false,
+    "account_truth": false,
+    "evidence_truth": false,
+    "order_truth": false,
+    "ledger_truth": false,
+    "ui_truth": false,
+    "paper_ready": false,
+    "live_ready": false,
+    "broker_tradable": false,
+    "admission_truth": false,
+    "capital_truth": false,
+    "action_truth": false,
+    "account_console_ui_complete": false
+  },
+  "next_required_work": [
+    "P004 Phase 7 read-only Account Evidence UI implementation and browser evidence.",
+    "P004 Phase 8 workbench closeout after evidence UI/browser evidence exists."
+  ]
+}

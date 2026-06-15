@@ -1,0 +1,770 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Nautilus Account Console Order Observation Terminal Preview</title>
+  <style>
+    :root {
+      --line: #aeb8bd;
+      --soft-line: #d4dde2;
+      --bg: #edf2f4;
+      --panel: #fbfdfb;
+      --head: #e8eef0;
+      --tab: #f6f8f8;
+      --active: #dcefea;
+      --ink: #172026;
+      --muted: #66747d;
+      --red: #c82922;
+      --green: #087d4f;
+      --blue: #0b5d8b;
+      --amber: #f0c000;
+      --teal: #248277;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      background: #dfe6e9;
+      color: var(--ink);
+      font-family: "Microsoft YaHei UI", "SimSun", "Segoe UI", sans-serif;
+      font-size: 13px;
+      margin: 0;
+    }
+
+    .app-shell {
+      display: grid;
+      grid-template-columns: 248px minmax(0, 1fr);
+      min-height: 100vh;
+    }
+
+    .primary-nav {
+      background: #172026;
+      color: #fff;
+      min-width: 0;
+      padding: 18px 14px;
+    }
+
+    .brand-lockup {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.16);
+      display: grid;
+      gap: 3px;
+      margin-bottom: 16px;
+      padding: 0 4px 14px;
+    }
+
+    .brand-lockup strong {
+      font-size: 17px;
+    }
+
+    .brand-lockup span {
+      color: #a9b7c0;
+      font-size: 13px;
+    }
+
+    .primary-nav nav {
+      display: grid;
+      gap: 6px;
+    }
+
+    .nav-item {
+      align-items: center;
+      border-radius: 6px;
+      color: #d8e0e5;
+      display: grid;
+      gap: 10px;
+      grid-template-columns: 22px minmax(0, 1fr);
+      min-height: 38px;
+      padding: 9px 10px;
+    }
+
+    .nav-item.active {
+      background: #24414b;
+      color: #fff;
+      box-shadow: inset 3px 0 0 #49a391;
+    }
+
+    .nav-code {
+      color: #b9c7d1;
+      font-weight: 700;
+    }
+
+    code {
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 12px;
+    }
+
+    .terminal {
+      background: var(--bg);
+      border: 1px solid #1d2a30;
+      min-height: 100vh;
+      overflow: hidden;
+    }
+
+    .titlebar {
+      align-items: center;
+      background: #14242b;
+      border-bottom: 1px solid #263a42;
+      color: #fff;
+      display: flex;
+      gap: 8px;
+      height: 31px;
+      padding: 0 9px;
+    }
+
+    .logo {
+      color: #49a391;
+      font-size: 19px;
+      font-weight: 900;
+      transform: skew(-12deg);
+    }
+
+    .title {
+      font-size: 13px;
+      font-weight: 700;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .contextbar {
+      align-items: center;
+      background: #f9fbfb;
+      border-bottom: 1px solid var(--soft-line);
+      display: flex;
+      gap: 12px;
+      height: 28px;
+      padding: 0 9px;
+      white-space: nowrap;
+    }
+
+    .contextbar span {
+      font-size: 13px;
+    }
+
+    .contextbar strong {
+      color: var(--blue);
+    }
+
+    .tabs {
+      align-items: center;
+      background: #f9fbfb;
+      border-bottom: 1px solid var(--soft-line);
+      display: flex;
+      min-height: 28px;
+      overflow-x: auto;
+      white-space: nowrap;
+    }
+
+    .ops-strip {
+      background: #fbfdfb;
+      border-bottom: 1px solid var(--soft-line);
+      display: grid;
+      grid-template-columns: repeat(5, minmax(110px, 1fr));
+    }
+
+    .ops-card {
+      border-right: 1px solid var(--soft-line);
+      display: grid;
+      gap: 2px;
+      min-height: 38px;
+      padding: 4px 8px;
+    }
+
+    .ops-card span {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .ops-card strong {
+      font-family: Arial, sans-serif;
+      font-size: 16px;
+      text-align: right;
+    }
+
+    .tab {
+      border-right: 1px solid var(--soft-line);
+      font-size: 14px;
+      padding: 5px 10px;
+    }
+
+    .tab.active {
+      background: var(--active);
+      color: #0d665b;
+      font-weight: 700;
+    }
+
+    .grid-table {
+      border-collapse: collapse;
+      table-layout: fixed;
+      width: 100%;
+    }
+
+    th,
+    td {
+      border-right: 1px solid var(--soft-line);
+      border-bottom: 1px solid var(--soft-line);
+      height: 25px;
+      overflow: hidden;
+      padding: 2px 6px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    th {
+      background: var(--head);
+      color: #24343c;
+      font-weight: 400;
+      text-align: center;
+    }
+
+    .num { text-align: right; }
+    .red { color: var(--red); }
+    .green { color: var(--green); }
+    .blue { color: var(--blue); }
+
+    .workarea {
+      display: grid;
+      grid-template-columns: 274px minmax(0, 1fr);
+      min-height: 286px;
+    }
+
+    .left-panel,
+    .right-panel,
+    .bottom-panel {
+      background: var(--panel);
+      border-right: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      min-width: 0;
+    }
+
+    .pane-tabs {
+      align-items: center;
+      background: #f3f6f6;
+      border-bottom: 1px solid var(--soft-line);
+      display: flex;
+      gap: 2px;
+      height: 27px;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+
+    .pane-tab {
+      border-right: 1px solid var(--soft-line);
+      color: #6b7276;
+      padding: 5px 8px;
+    }
+
+    .pane-tab.active {
+      background: #fff;
+      color: #0d665b;
+      font-weight: 700;
+    }
+
+    .readonly-form {
+      display: grid;
+      gap: 6px;
+      padding: 8px;
+    }
+
+    .account-stack {
+      border: 1px solid var(--soft-line);
+      display: grid;
+      gap: 1px;
+      margin-bottom: 6px;
+    }
+
+    .account-card {
+      background: #fff;
+      border-left: 3px solid transparent;
+      display: grid;
+      gap: 3px;
+      grid-template-columns: minmax(0, 1fr) auto;
+      padding: 6px 7px;
+    }
+
+    .account-card.active {
+      background: #eef8f6;
+      border-left-color: var(--teal);
+    }
+
+    .account-card strong {
+      color: var(--blue);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .account-card small {
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .account-card .state {
+      font-weight: 700;
+      text-align: right;
+    }
+
+    .account-card .state.partial {
+      color: var(--blue);
+    }
+
+    .account-card .state.healthy {
+      color: var(--green);
+    }
+
+    .account-card .state.stale {
+      color: #875900;
+    }
+
+    .account-card .state.blocked {
+      color: var(--red);
+    }
+
+    .form-row {
+      align-items: center;
+      display: grid;
+      gap: 6px;
+      grid-template-columns: 34px minmax(0, 1fr);
+    }
+
+    .form-row label {
+      font-weight: 700;
+    }
+
+    .field {
+      background: #fff;
+      border: 1px solid #9ba3a8;
+      min-height: 27px;
+      padding: 4px 6px;
+    }
+
+    .radio-line {
+      display: flex;
+      gap: 10px;
+      margin: 3px 0;
+    }
+
+    .dot {
+      border: 1px solid #66818d;
+      border-radius: 50%;
+      display: inline-block;
+      height: 13px;
+      margin-right: 3px;
+      vertical-align: -2px;
+      width: 13px;
+    }
+
+    .dot.on {
+      background: radial-gradient(circle at center, var(--teal) 0 35%, #fff 38%);
+    }
+
+    .notice {
+      background: #fff8e5;
+      border: 1px solid #e5c45e;
+      color: #6f4f00;
+      font-size: 12px;
+      line-height: 1.35;
+      margin-top: 4px;
+      padding: 6px;
+    }
+
+    .mirror-box {
+      border: 1px solid #8e979d;
+      display: grid;
+      gap: 4px;
+      margin-top: 6px;
+      padding: 8px;
+    }
+
+    .mirror-box strong {
+      font-size: 20px;
+      text-align: right;
+    }
+
+    .readonly-tag {
+      background: #edf3f6;
+      border: 1px solid #9eb3c1;
+      color: #264f66;
+      font-weight: 700;
+      padding: 5px;
+      text-align: center;
+    }
+
+    .split-bottom {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      min-height: 188px;
+    }
+
+    .statusbar {
+      align-items: center;
+      background: #f9fbfb;
+      border-top: 1px solid var(--soft-line);
+      color: #044f9f;
+      display: flex;
+      font-weight: 700;
+      gap: 16px;
+      height: 24px;
+      overflow: hidden;
+      padding: 0 8px;
+      white-space: nowrap;
+    }
+
+    .statusbar .time {
+      color: #000;
+      margin-right: 16px;
+    }
+
+    .evidence {
+      background: #fffdf2;
+      border-top: 1px solid var(--soft-line);
+      color: #3e464b;
+      display: grid;
+      gap: 4px;
+      padding: 7px 9px;
+    }
+
+    .priority-row td {
+      background: #fff8e5;
+    }
+
+    .muted-cell {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    @media (max-width: 900px) {
+      .app-shell {
+        grid-template-columns: 1fr;
+      }
+
+      .brand-lockup {
+        display: none;
+      }
+
+      .primary-nav {
+        padding: 12px;
+      }
+
+      .primary-nav nav {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+
+      .ops-strip {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .workarea,
+      .split-bottom {
+        grid-template-columns: 1fr;
+      }
+
+      .left-panel {
+        border-right: 0;
+      }
+    }
+
+    @media (max-width: 520px) {
+      body { font-size: 12px; }
+
+      .primary-nav nav {
+        grid-template-columns: 1fr;
+      }
+
+      .titlebar,
+      .contextbar {
+        height: auto;
+        min-height: 28px;
+        overflow-x: auto;
+      }
+
+      .grid-table {
+        min-width: 760px;
+      }
+
+      .ops-strip {
+        grid-template-columns: 1fr;
+      }
+
+      .scroll-x {
+        overflow-x: auto;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app-shell">
+    <aside class="primary-nav" aria-label="Primary workbenches" data-testid="account-console-primary-nav">
+      <div class="brand-lockup">
+        <strong>Nautilus</strong>
+        <span>Account Console</span>
+      </div>
+      <nav>
+        <div class="nav-item"><span class="nav-code">DC</span><span>Daily Closeout</span></div>
+        <div class="nav-item"><span class="nav-code">IM</span><span>Intraday Monitor</span></div>
+        <div class="nav-item active"><span class="nav-code">AW</span><span>Account Workbench</span></div>
+        <div class="nav-item"><span class="nav-code">AA</span><span>Allocation Admin</span></div>
+        <div class="nav-item"><span class="nav-code">RR</span><span>Risk And Reconcile</span></div>
+        <div class="nav-item"><span class="nav-code">EV</span><span>Evidence Explorer</span></div>
+        <div class="nav-item"><span class="nav-code">SO</span><span>Stream Ops</span></div>
+      </nav>
+    </aside>
+
+    <section class="terminal" data-testid="account-orders-panel">
+    <header class="titlebar">
+      <span class="logo">N</span>
+      <span class="title">Nautilus Account Console - Order Observation - Account Workbench - paper.demo-01</span>
+    </header>
+
+    <section class="contextbar" aria-label="Account context">
+      <span><strong>Account Workbench</strong></span>
+      <span>paper.demo-01</span>
+      <span>group: paper-sandbox / 3 accounts</span>
+      <span>2026-06-14</span>
+      <span>session.paper-sandbox.042</span>
+      <span>Orders / exception-first</span>
+      <span>read model + event ledger</span>
+    </section>
+
+    <section class="tabs" aria-label="MVP route tabs">
+      <span class="tab active">异常订单观察 MVP</span>
+      <span class="tab">Account Workbench</span>
+      <span class="tab">Evidence refs</span>
+    </section>
+
+    <section class="scroll-x" aria-label="Operational summary">
+      <div class="ops-strip">
+        <div class="ops-card"><span>账户数</span><strong>3</strong></div>
+        <div class="ops-card"><span>未完成订单</span><strong>3</strong></div>
+        <div class="ops-card"><span>部分成交</span><strong class="blue">1</strong></div>
+        <div class="ops-card"><span>stale / lag</span><strong class="red">1</strong></div>
+        <div class="ops-card"><span>report gap</span><strong class="blue">1</strong></div>
+      </div>
+    </section>
+
+    <section class="workarea">
+      <aside class="left-panel">
+        <div class="pane-tabs">
+          <span class="pane-tab active">账户观察</span>
+          <span class="pane-tab">只读筛选</span>
+        </div>
+        <div class="readonly-form">
+          <div class="account-stack" aria-label="Account observation list" data-testid="account-observation-list">
+            <div class="account-card active">
+              <strong>paper.demo-01</strong>
+              <span class="state partial">partial</span>
+              <small>orders 3 · gap 1 · lag 0.4s</small>
+              <small class="num">2,556,211</small>
+            </div>
+            <div class="account-card">
+              <strong>paper.demo-02</strong>
+              <span class="state blocked">blocked</span>
+              <small>orders 1 · stale 1 · lag 12.8s</small>
+              <small class="num">1,844,020</small>
+            </div>
+            <div class="account-card">
+              <strong>paper.demo-03</strong>
+              <span class="state healthy">healthy</span>
+              <small>orders 0 · lag 0.2s</small>
+              <small class="num">3,102,904</small>
+            </div>
+          </div>
+          <div class="form-row">
+            <label>合约</label>
+            <div class="field"><strong>MA009</strong> <span class="muted-cell">selected from order row</span></div>
+          </div>
+          <div class="form-row">
+            <label>状态</label>
+            <div class="radio-line">
+              <span><span class="dot on"></span>异常优先</span>
+              <span><span class="dot"></span>全部</span>
+            </div>
+          </div>
+          <div class="mirror-box">
+            <span>当前选择订单</span>
+            <strong>C-0001</strong>
+            <div class="readonly-tag">只读观察 · 不可执行</div>
+          </div>
+          <div class="notice">
+            账户切换只改变观察上下文；交易执行、账户生命周期和资金分配能力不在本项目内。
+          </div>
+        </div>
+      </aside>
+
+      <section class="right-panel">
+        <div class="pane-tabs">
+          <span class="pane-tab active">异常优先(F2)</span>
+          <span class="pane-tab">全部投影</span>
+        </div>
+        <div class="scroll-x">
+          <table class="grid-table">
+            <thead>
+              <tr>
+                <th>订单号</th>
+                <th>合约</th>
+                <th>买卖</th>
+                <th>开平</th>
+                <th>委托价</th>
+                <th>委托量</th>
+                <th>成交量</th>
+                <th>未成交</th>
+                <th>状态</th>
+                <th>最新事件</th>
+                <th>处置线索</th>
+                <th>来源</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="priority-row" data-testid="account-orders-row">
+                <td><strong class="blue">C-0001</strong></td>
+                <td>MA009</td>
+                <td class="green">卖</td>
+                <td>开仓</td>
+                <td class="num">1796</td>
+                <td class="num">10</td>
+                <td class="num">6</td>
+                <td class="num">4</td>
+                <td>部分成交</td>
+                <td data-testid="account-orders-latest-event-ref"><code>order.event.000057</code></td>
+                <td class="blue">report gap</td>
+                <td data-testid="account-order-evidence-ref"><code>artifact://orders/C-0001/current.json</code></td>
+              </tr>
+              <tr class="priority-row" data-testid="account-orders-row">
+                <td><strong class="blue">C-0004</strong></td>
+                <td>ag2412</td>
+                <td class="green">卖</td>
+                <td>开仓</td>
+                <td class="num">5050</td>
+                <td class="num">6</td>
+                <td class="num">1</td>
+                <td class="num">5</td>
+                <td>stale</td>
+                <td><code>order.event.000066</code></td>
+                <td class="red">cursor lag</td>
+                <td><code>artifact://orders/C-0002/current.json</code></td>
+              </tr>
+              <tr data-testid="account-orders-row">
+                <td><strong class="blue">C-0002</strong></td>
+                <td>rb2010</td>
+                <td class="red">买</td>
+                <td>平仓</td>
+                <td class="num">3744</td>
+                <td class="num">5</td>
+                <td class="num">5</td>
+                <td class="num">0</td>
+                <td>完成</td>
+                <td><code>order.event.000061</code></td>
+                <td class="muted-cell">matched</td>
+                <td><code>artifact://orders/C-0004/current.json</code></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="evidence">
+          <div>Account Workbench / paper.demo-01 / Orders / C-0001</div>
+          <div>order_read_model_ref=<code>orders.current.paper.demo-01.seq.000772</code> · cursor=<code>ledger:0000000000031148</code> · evidence only</div>
+        </div>
+      </section>
+    </section>
+
+    <section class="split-bottom">
+      <section class="bottom-panel">
+        <div class="pane-tabs">
+          <span class="pane-tab active">订单事件链</span>
+        </div>
+        <div class="scroll-x">
+          <table class="grid-table">
+            <thead>
+              <tr>
+                <th>序号</th>
+                <th>时间</th>
+                <th>事件</th>
+                <th>事件ID</th>
+                <th>游标</th>
+                <th>状态</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr data-testid="account-order-lifecycle-event">
+                <td>000052</td>
+                <td>09:30:01.114</td>
+                <td>submitted event observed</td>
+                <td><code>order.event.000052</code></td>
+                <td><code>ledger:0000000000031121</code></td>
+                <td class="green">matched</td>
+              </tr>
+              <tr data-testid="account-order-lifecycle-event">
+                <td>000053</td>
+                <td>09:30:01.327</td>
+                <td>accepted projection</td>
+                <td><code>order.event.000053</code></td>
+                <td><code>ledger:0000000000031128</code></td>
+                <td class="green">matched</td>
+              </tr>
+              <tr data-testid="account-order-lifecycle-event">
+                <td>000057</td>
+                <td>09:30:02.804</td>
+                <td>partial fill event</td>
+                <td><code>fill.event.000021</code></td>
+                <td><code>ledger:0000000000031148</code></td>
+                <td class="blue">partial</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="bottom-panel">
+        <div class="pane-tabs">
+          <span class="pane-tab active">证据 refs</span>
+        </div>
+        <div class="scroll-x">
+          <table class="grid-table">
+            <thead>
+              <tr>
+                <th>证据类型</th>
+                <th>引用</th>
+                <th>用途</th>
+                <th>Checksum</th>
+              </tr>
+            </thead>
+            <tbody data-testid="account-order-report-provenance">
+              <tr>
+                <td>FillReport</td>
+                <td><code>report://fills/F-000021</code></td>
+                <td>fill provenance</td>
+                <td><code>sha256:b417...019c</code></td>
+              </tr>
+              <tr>
+                <td>OrderStatusReport</td>
+                <td><code>report://orders/C-0001/status/000057</code></td>
+                <td>status provenance</td>
+                <td><code>sha256:9f2c...a431</code></td>
+              </tr>
+              <tr>
+                <td>Schema</td>
+                <td><code>contracts/order_event.schema.json</code></td>
+                <td>event contract</td>
+                <td><code>source-backed</code></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </section>
+
+    <footer class="statusbar">
+      <span class="time">09:30:02</span>
+      <span>中金所:行情连接</span>
+      <span>★</span>
+      <span>09:30:55</span>
+      <span>|</span>
+      <span>stream healthy</span>
+      <span>|</span>
+      <span>read-only order observation</span>
+    </footer>
+    </section>
+  </main>
+</body>
+</html>

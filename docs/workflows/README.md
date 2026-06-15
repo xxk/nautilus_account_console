@@ -1,0 +1,30 @@
+# Workflow Reading Guide / 工作流阅读指南
+
+- Updated: 2026-06-14
+- Project: `nautilus_account_console`
+
+This directory defines local workflow constraints for proposal-bound Account Console work.
+
+本目录约束 Account Console 的 proposal 推进方式。
+
+## Authorized Machine Contract
+
+| Path | Role |
+| --- | --- |
+| [proposal-gates/proposal_gate_manifest.yaml](./proposal-gates/proposal_gate_manifest.yaml) | machine-readable Proposal Workflow Stage Contract |
+| [proposal-gates/proposal_gate_board.md](./proposal-gates/proposal_gate_board.md) | human-readable projection of the same stages and gates |
+
+## Boundary
+
+1. Workflow gates are Proposal Gates. They may block proposal advancement but cannot write runtime, broker, account, admission, approval, capital or trading-readiness truth.
+2. UI/browser evidence proves rendering only. It never proves account, order, fill, position, settlement, equity, broker, admission or capital truth.
+3. Missing required proof after its phase must become a typed blocker, not a warning-only note.
+4. Proposal phases must keep design-gate readiness separate from implementation/browser-verified closeout.
+5. This workflow does not replace proposal-local `acceptance.md`, `phase-plan.md`, `ui-design.md`, `ui-acceptance.md` or issue/blocker ledgers.
+
+## Local Gate Command
+
+```powershell
+python scripts\check_proposal_docs.py --root .
+python scripts\check_proposal_docs.py --root . --proposal-id p004-account-workbench-summary-panel
+```

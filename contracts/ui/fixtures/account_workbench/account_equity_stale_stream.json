@@ -1,0 +1,61 @@
+{
+  "schema_version": "account_equity_panel.v1",
+  "workbench": "Account Workbench",
+  "panel": "Account Equity Panel",
+  "route": "/accounts/{account_id}/equity",
+  "fixture_state": "stale",
+  "context": {
+    "trading_day": "2026-06-14",
+    "session_id": "account-workbench.fixture.20260614.005",
+    "run_id": "account-equity.fixture.stale.001",
+    "reducer_checkpoint_id": "account-equity.checkpoint.stale.001",
+    "reducer_checkpoint_ts": "2026-06-14T15:11:33Z",
+    "stream_state": "stale",
+    "projection_owner": "account-console-contracts",
+    "source_authority": "typed_blocker"
+  },
+  "account": {
+    "account_id": "acct.demo-19053",
+    "account_alias": "19053",
+    "account_kind": "real_feed_sandbox_paper"
+  },
+  "equity_points": [],
+  "blockers": [
+    {
+      "blocker_id": "account-console.p004.phase5.equity-stream-stale",
+      "severity": "warning",
+      "kind": "stale_equity_stream",
+      "owner": "external ledger owner",
+      "next_action": "Refresh ledger-derived equity stream or keep stale blocker visible.",
+      "source_ref": "fixture://account-workbench/blockers/p004/phase5/equity-stream-stale",
+      "checksum": "sha256:a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7"
+    }
+  ],
+  "source_refs": [
+    {
+      "kind": "typed_blocker",
+      "owner": "account-console-contracts",
+      "source_ref": "fixture://account-workbench/blockers/p004/phase5/equity-stream-stale",
+      "checksum": "sha256:a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7",
+      "authority": "stale-state fixture only"
+    }
+  ],
+  "boundaries": {
+    "read_only_projection": true,
+    "runtime_truth": false,
+    "account_truth": false,
+    "order_truth": false,
+    "ledger_truth": false,
+    "ui_truth": false,
+    "paper_ready": false,
+    "live_ready": false,
+    "broker_tradable": false,
+    "admission_truth": false,
+    "capital_truth": false,
+    "action_controls": false
+  },
+  "rejection_rules": [
+    "Reject stale equity fixture as current equity state.",
+    "Reject stale fixture as permission to call runtime or broker."
+  ]
+}

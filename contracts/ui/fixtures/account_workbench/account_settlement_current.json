@@ -1,0 +1,66 @@
+{
+  "schema_version": "account_settlement_panel.v1",
+  "workbench": "Account Workbench",
+  "panel": "Account Settlement Panel",
+  "route": "/accounts/{account_id}/settlement",
+  "fixture_state": "current_settlement",
+  "context": {
+    "trading_day": "2026-06-14",
+    "session_id": "account-workbench.fixture.20260614.005",
+    "run_id": "account-settlement.fixture.current.001",
+    "reducer_checkpoint_id": "account-settlement.checkpoint.current.001",
+    "reducer_checkpoint_ts": "2026-06-14T15:11:33Z",
+    "stream_state": "healthy",
+    "projection_owner": "account-console-contracts",
+    "source_authority": "deterministic_fixture"
+  },
+  "account": {
+    "account_id": "acct.demo-19053",
+    "account_alias": "19053",
+    "account_kind": "real_feed_sandbox_paper"
+  },
+  "settlement": {
+    "trading_day": "2026-06-14",
+    "settlement_state": "settled",
+    "previous_settlement_ref": "fixture://account-workbench/settlement/acct.demo-19053/2026-06-13",
+    "current_settlement_ref": "fixture://account-workbench/settlement/acct.demo-19053/2026-06-14",
+    "position_carryover_ref": "fixture://account-workbench/carryover/acct.demo-19053/2026-06-14",
+    "cash": 98240.5,
+    "frozen_cash": 0.0,
+    "margin": 12624.0,
+    "realized_pnl": 0.0,
+    "unrealized_pnl": 42.0,
+    "fees": 7.5,
+    "taxes": 0.0,
+    "source_ref": "fixture://account-workbench/settlement/acct.demo-19053/current",
+    "checksum": "sha256:9191919191919191919191919191919191919191919191919191919191919191"
+  },
+  "blockers": [],
+  "source_refs": [
+    {
+      "kind": "settlement_projection",
+      "owner": "account-console-contracts",
+      "source_ref": "fixture://account-workbench/settlement/acct.demo-19053/current",
+      "checksum": "sha256:9191919191919191919191919191919191919191919191919191919191919191",
+      "authority": "deterministic settlement fixture; not account or ledger truth"
+    }
+  ],
+  "boundaries": {
+    "read_only_projection": true,
+    "runtime_truth": false,
+    "account_truth": false,
+    "order_truth": false,
+    "ledger_truth": false,
+    "ui_truth": false,
+    "paper_ready": false,
+    "live_ready": false,
+    "broker_tradable": false,
+    "admission_truth": false,
+    "capital_truth": false,
+    "action_controls": false
+  },
+  "rejection_rules": [
+    "Reject this fixture as settlement or ledger authority.",
+    "Reject successful day close display without current_settlement_ref and position_carryover_ref."
+  ]
+}

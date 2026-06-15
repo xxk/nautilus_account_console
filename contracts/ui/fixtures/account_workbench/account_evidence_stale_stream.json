@@ -1,0 +1,78 @@
+{
+  "schema_version": "account_evidence_panel.v1",
+  "workbench": "Account Workbench",
+  "panel": "Account Evidence Panel",
+  "route": "/accounts/{account_id}/evidence",
+  "fixture_state": "stale",
+  "context": {
+    "trading_day": "2026-06-14",
+    "session_id": "account-workbench.fixture.20260614.007",
+    "run_id": "account-evidence.fixture.stale.001",
+    "reducer_checkpoint_id": "account-evidence.checkpoint.stale.001",
+    "reducer_checkpoint_ts": "2026-06-14T15:48:26Z",
+    "stream_state": "stale",
+    "projection_owner": "account-console-contracts",
+    "source_authority": "typed_blocker"
+  },
+  "account": {
+    "account_id": "acct.demo-19053",
+    "account_alias": "19053",
+    "account_kind": "real_feed_sandbox_paper"
+  },
+  "evidence_packages": [
+    {
+      "package_id": "evidence.settlement.stale",
+      "kind": "settlement",
+      "status": "stale",
+      "owner": "external settlement owner",
+      "schema_ref": "contracts/ui/panels/account_settlement_panel.contract.json",
+      "schema_version_ref": "account_settlement_panel.v1",
+      "checksum": "sha256:e8e8e8e8e8e8e8e8e8e8e8e8e8e8e8e8e8e8e8e8e8e8e8e8e8e8e8e8e8e8e8e8",
+      "run_id": "account-settlement.fixture.current.001",
+      "session_id": "account-workbench.fixture.20260614.005",
+      "trading_day": "2026-06-14",
+      "source_ref": "fixture://account-workbench/evidence/acct.demo-19053/stale/settlement",
+      "normalized_ref": "contracts/ui/fixtures/account_workbench/account_settlement_current.json",
+      "raw_payload_ref": null,
+      "next_action": "refresh evidence package stream before accepting latest projection"
+    }
+  ],
+  "blockers": [
+    {
+      "blocker_id": "account-evidence.stale-stream",
+      "severity": "warning",
+      "kind": "stale_evidence_stream",
+      "owner": "external settlement owner",
+      "next_action": "refresh evidence reducer checkpoint",
+      "source_ref": "fixture://account-workbench/evidence/acct.demo-19053/stale",
+      "checksum": "sha256:e9e9e9e9e9e9e9e9e9e9e9e9e9e9e9e9e9e9e9e9e9e9e9e9e9e9e9e9e9e9e9e9"
+    }
+  ],
+  "source_refs": [
+    {
+      "kind": "evidence_stale_projection",
+      "owner": "account-console-contracts",
+      "source_ref": "fixture://account-workbench/evidence/acct.demo-19053/stale",
+      "checksum": "sha256:ea1ea1ea1ea1ea1ea1ea1ea1ea1ea1ea1ea1ea1ea1ea1ea1ea1ea1ea1ea1ea1e",
+      "authority": "typed stale fixture; not latest evidence authority"
+    }
+  ],
+  "boundaries": {
+    "read_only_projection": true,
+    "runtime_truth": false,
+    "account_truth": false,
+    "order_truth": false,
+    "ledger_truth": false,
+    "ui_truth": false,
+    "paper_ready": false,
+    "live_ready": false,
+    "broker_tradable": false,
+    "admission_truth": false,
+    "capital_truth": false,
+    "action_controls": false
+  },
+  "rejection_rules": [
+    "Reject stale checkpoint as latest evidence.",
+    "Reject stale evidence package as source closeout."
+  ]
+}

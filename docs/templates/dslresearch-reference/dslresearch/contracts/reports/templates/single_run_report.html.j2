@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{ metadata.title }} — Single-Run Report</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<style>
+:root {
+    --bg: #ffffff;
+    --bg-alt: #f8f9fa;
+    --text: #212529;
+    --text-muted: #6c757d;
+    --border: #dee2e6;
+    --positive: #198754;
+    --negative: #dc3545;
+    --warning: #fd7e14;
+    --neutral: #6c757d;
+    --accent: #0d6efd;
+    --card-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg-alt); color: var(--text); line-height: 1.5; }
+.container { max-width: 1200px; margin: 0 auto; padding: 24px 16px; }
+
+/* Header */
+.report-header { margin-bottom: 24px; padding-bottom: 16px; border-bottom: 2px solid var(--border); }
+.report-header h1 { font-size: 1.5rem; font-weight: 600; }
+.report-header .meta { font-size: 0.85rem; color: var(--text-muted); margin-top: 4px; }
+
+/* Cards Grid */
+.cards-section { margin-bottom: 24px; }
+.cards-section h2 { font-size: 1.1rem; font-weight: 600; margin-bottom: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
+.metric-card { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 16px; box-shadow: var(--card-shadow); }
+.metric-card .label { font-size: 0.78rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.03em; }
+.metric-card .value { font-size: 1.35rem; font-weight: 700; margin-top: 4px; }
+.metric-card .value.positive { color: var(--positive); }
+.metric-card .value.negative { color: var(--negative); }
+.metric-card .value.warning { color: var(--warning); }
+.metric-card .value.neutral { color: var(--text); }
+
+/* Chart Container */
+.chart-section { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 20px; margin-bottom: 24px; box-shadow: var(--card-shadow); }
+.chart-section h2 { font-size: 1.1rem; font-weight: 600; margin-bottom: 16px; }
+.chart-wrapper { position: relative; height: 300px; }
+
+/* Heatmap */
+.heatmap-section { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 20px; margin-bottom: 24px; box-shadow: var(--card-shadow); }
+.heatmap-section h2 { font-size: 1.1rem; font-weight: 600; margin-bottom: 16px; }
+.heatmap-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; text-align: center; }
+.heatmap-table th { padding: 6px 8px; background: var(--bg-alt); font-weight: 600; border: 1px solid var(--border); }
+.heatmap-table td { padding: 6px 8px; border: 1px solid var(--border); }
+.heatmap-table td.hm-pos { background: rgba(25,135,84,0.15); color: var(--positive); }
+.heatmap-table td.hm-neg { background: rgba(220,53,69,0.15); color: var(--negative); }
+.heatmap-table td.hm-zero { background: var(--bg); color: var(--text-muted); }
+.heatmap-table td.hm-na { background: var(--bg); color: var(--text-muted); }
+
+/* Panels */
+.panel { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 20px; margin-bottom: 24px; box-shadow: var(--card-shadow); }
+.panel h2 { font-size: 1.1rem; font-weight: 600; margin-bottom: 16px; }
+.panel table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+.panel table th, .panel table td { padding: 8px 12px; text-align: left; border-bottom: 1px solid var(--border); }
+.panel table th { background: var(--bg-alt); font-weight: 600; }
+
+/* Audit */
+.audit-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.78rem; font-weight: 600; }
+.audit-badge.pass { background: rgba(25,135,84,0.15); color: var(--positive); }
+.audit-badge.fail { background: rgba(220,53,69,0.15); color: var(--negative); }
+
+/* Config */
+.config-block { margin-bottom: 12px; }
+.config-block h3 { font-size: 0.95rem; font-weight: 600; margin-bottom: 6px; }
+.config-block pre { background: var(--bg-alt); padding: 12px; border-radius: 6px; font-size: 0.82rem; overflow-x: auto; white-space: pre-wrap; word-break: break-all; }
+
+/* Artifacts */
+.artifacts-list { list-style: none; }
+.artifacts-list li { padding: 6px 0; }
+.artifacts-list a { color: var(--accent); text-decoration: none; }
+.artifacts-list a:hover { text-decoration: underline; }
+
+/* Footer */
+.report-footer { text-align: center; font-size: 0.78rem; color: var(--text-muted); margin-top: 32px; padding-top: 16px; border-top: 1px solid var(--border); }
+</style>
+</head>
+<body>
+<div class="container">
+
+<!-- Header -->
+<header class="report-header">
+    <h1>{{ metadata.title }}</h1>
+    <div class="meta">
+        {{ metadata.report_type | replace("_", " ") | title }}
+        {% if metadata.engine_name %} · {{ metadata.engine_name }}{% endif %}
+        · Generated {{ metadata.generated_at[:19] }}
+        · Schema v{{ metadata.schema_version }}
+    </div>
+</header>
+
+<!-- Summary Cards -->
+<section id="summary-cards" class="cards-section">
+    <h2>Summary</h2>
+    <div class="cards-grid">
+    {% for card in summary_cards %}
+        <div class="metric-card" title="{{ card.tooltip }}">
+            <div class="label">{{ card.label }}</div>
+            <div class="value {{ card.severity }}">{{ card.value }}</div>
+        </div>
+    {% endfor %}
+    </div>
+</section>
+
+<!-- Risk Cards -->
+<section id="risk-cards" class="cards-section">
+    <h2>Risk Metrics</h2>
+    <div class="cards-grid">
+    {% for card in risk_cards %}
+        <div class="metric-card" title="{{ card.tooltip }}">
+            <div class="label">{{ card.label }}</div>
+            <div class="value {{ card.severity }}">{{ card.value }}</div>
+        </div>
+    {% endfor %}
+    </div>
+</section>
+
+<!-- Cumulative Returns Chart -->
+{% if "cumulative_returns" in chart_series %}
+<section id="chart-cumulative-returns" class="chart-section">
+    <h2>Cumulative Returns</h2>
+    <div class="chart-wrapper">
+        <canvas id="canvas-cumulative-returns"></canvas>
+    </div>
+</section>
+{% endif %}
+
+<!-- Drawdown Chart -->
+{% if "drawdown" in chart_series %}
+<section id="chart-drawdown" class="chart-section">
+    <h2>Drawdown</h2>
+    <div class="chart-wrapper">
+        <canvas id="canvas-drawdown"></canvas>
+    </div>
+</section>
+{% endif %}
+
+<!-- Monthly Heatmap -->
+{% if monthly_heatmap and monthly_heatmap.years | length > 0 %}
+<section id="heatmap" class="heatmap-section">
+    <h2>Monthly Returns</h2>
+    <table class="heatmap-table">
+        <thead>
+            <tr>
+                <th>Year</th>
+                {% for m in monthly_heatmap.months %}
+                <th>{{ m }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for i in range(monthly_heatmap.years | length) %}
+            <tr>
+                <td><strong>{{ monthly_heatmap.years[i] }}</strong></td>
+                {% for v in monthly_heatmap.values[i] %}
+                {% if v is none %}
+                <td class="hm-na">—</td>
+                {% elif v > 0 %}
+                <td class="hm-pos">{{ "%.2f" | format(v * 100) }}%</td>
+                {% elif v < 0 %}
+                <td class="hm-neg">{{ "%.2f" | format(v * 100) }}%</td>
+                {% else %}
+                <td class="hm-zero">0.00%</td>
+                {% endif %}
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
+{% endif %}
+
+<!-- Audit Panel -->
+{% if audit_panel %}
+<section id="audit-panel" class="panel">
+    <h2>Audit
+        <span class="audit-badge {{ 'pass' if audit_panel.overall_passed else 'fail' }}">
+            {{ "PASS" if audit_panel.overall_passed else "FAIL" }}
+        </span>
+    </h2>
+    <table>
+        <thead>
+            <tr><th>Check</th><th>Severity</th><th>Status</th><th>Message</th></tr>
+        </thead>
+        <tbody>
+        {% for c in audit_panel.checks %}
+            <tr>
+                <td>{{ c.check }}</td>
+                <td>{{ c.severity }}</td>
+                <td>{{ "✅" if c.passed else "❌" }}</td>
+                <td>{{ c.message }}{% if c.detail %} — {{ c.detail }}{% endif %}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</section>
+{% endif %}
+
+<!-- Config Panel -->
+{% if config_panel %}
+<section id="config-panel" class="panel">
+    <h2>Configuration</h2>
+    {% for section in config_panel.sections %}
+    <div class="config-block">
+        <h3>{{ section.title }}</h3>
+        <pre>{{ section.content | tojson(indent=2) }}</pre>
+    </div>
+    {% endfor %}
+</section>
+{% endif %}
+
+<!-- Trades Panel -->
+{% if trades_panel %}
+<section id="trades-panel" class="panel">
+    <h2>Trades ({{ trades_panel.total_count }}{% if trades_panel.truncated %}, truncated{% endif %})</h2>
+    <table>
+        <thead>
+            <tr>
+            {% for col in trades_panel.columns %}
+                <th>{{ col }}</th>
+            {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+        {% for row in trades_panel.rows %}
+            <tr>
+            {% for col in trades_panel.columns %}
+                <td>{{ row[col] if row[col] is defined else "" }}</td>
+            {% endfor %}
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</section>
+{% endif %}
+
+<!-- Long/Short Panel -->
+{% if long_short_panel %}
+<section id="long-short-panel" class="chart-section">
+    <h2>Long / Short NAV</h2>
+    <div class="chart-wrapper">
+        <canvas id="canvas-long-short"></canvas>
+    </div>
+</section>
+{% endif %}
+
+<!-- Artifacts Panel -->
+{% if artifacts_panel %}
+<section id="artifacts-panel" class="panel">
+    <h2>Artifacts</h2>
+    <ul class="artifacts-list">
+    {% for item in artifacts_panel.items %}
+        <li><a href="{{ item.uri }}">{{ item.label }}</a></li>
+    {% endfor %}
+    </ul>
+</section>
+{% endif %}
+
+<!-- Footer -->
+<footer class="report-footer">
+    Unified Backtest Report · Single Run · Schema v{{ schema_version }}
+</footer>
+
+</div>
+
+<!-- Chart.js Initialization -->
+<script>
+const CHART_COLORS = [
+    'rgba(13,110,253,0.85)',
+    'rgba(108,117,125,0.65)',
+    'rgba(25,135,84,0.75)',
+    'rgba(220,53,69,0.75)',
+    'rgba(255,193,7,0.75)',
+];
+const CHART_BORDERS = [
+    'rgb(13,110,253)',
+    'rgb(108,117,125)',
+    'rgb(25,135,84)',
+    'rgb(220,53,69)',
+    'rgb(255,193,7)',
+];
+
+function makeLineChart(canvasId, chartData) {
+    const ctx = document.getElementById(canvasId);
+    if (!ctx || !chartData) return;
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: chartData.labels,
+            datasets: chartData.datasets.map(function(ds, i) {
+                return {
+                    label: ds.label,
+                    data: ds.data,
+                    borderColor: CHART_BORDERS[i % CHART_BORDERS.length],
+                    backgroundColor: CHART_COLORS[i % CHART_COLORS.length],
+                    borderWidth: 1.5,
+                    pointRadius: 0,
+                    fill: i === 0 && chartData.datasets.length === 1
+                };
+            })
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: { legend: { position: 'top' } },
+            scales: {
+                x: { ticks: { maxTicksAuto: true, maxRotation: 45 } },
+                y: { beginAtZero: false }
+            }
+        }
+    });
+}
+
+{% if "cumulative_returns" in chart_series %}
+makeLineChart('canvas-cumulative-returns', {{ chart_series["cumulative_returns"] | tojson }});
+{% endif %}
+
+{% if "drawdown" in chart_series %}
+makeLineChart('canvas-drawdown', {{ chart_series["drawdown"] | tojson }});
+{% endif %}
+
+{% if long_short_panel %}
+makeLineChart('canvas-long-short', {{ long_short_panel.chart | tojson }});
+{% endif %}
+</script>
+</body>
+</html>

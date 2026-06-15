@@ -24,8 +24,19 @@
 - [ ] Does not treat raw report messages as account truth
 - [ ] Does not expose submit/cancel/replace trading actions
 - [ ] Does not claim Paper ready, Live ready, capital allocated or can trade
+- [ ] Declares producer/verifier/projection/UI/approval owners when touching contracts, read models, backend, frontend or acceptance
+- [ ] Does not create a second implementation path for runtime, ledger, account, closeout, settlement, broker, admission, approval or capital truth
+
+## Owner Boundary
+
+- Producer owner:
+- Verifier owner:
+- Projection owner:
+- UI/report owner:
+- Approval owner, or `none`:
+- Canonical contract/source refs:
+- Second implementation paths rejected:
 
 ## Evidence
 
 -
-

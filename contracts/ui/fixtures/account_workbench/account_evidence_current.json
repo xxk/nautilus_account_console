@@ -1,0 +1,108 @@
+{
+  "schema_version": "account_evidence_panel.v1",
+  "workbench": "Account Workbench",
+  "panel": "Account Evidence Panel",
+  "route": "/accounts/{account_id}/evidence",
+  "fixture_state": "current_evidence",
+  "context": {
+    "trading_day": "2026-06-14",
+    "session_id": "account-workbench.fixture.20260614.007",
+    "run_id": "account-evidence.fixture.current.001",
+    "reducer_checkpoint_id": "account-evidence.checkpoint.current.001",
+    "reducer_checkpoint_ts": "2026-06-14T15:58:26Z",
+    "stream_state": "healthy",
+    "projection_owner": "account-console-contracts",
+    "source_authority": "deterministic_fixture"
+  },
+  "account": {
+    "account_id": "acct.demo-19053",
+    "account_alias": "19053",
+    "account_kind": "real_feed_sandbox_paper"
+  },
+  "evidence_packages": [
+    {
+      "package_id": "evidence.p077.close-yesterday.e100-e102",
+      "kind": "paper_slice_closeout",
+      "status": "current",
+      "owner": "nautilus_ctp_adapter",
+      "schema_ref": "contracts/ui/panels/p077_paper_slice_panel.contract.json",
+      "schema_version_ref": "p077_paper_slice_panel.v1",
+      "checksum": "sha256:698340f03f5eb6ca03aa3006d295024850bf2a53a5687dee1178df421c635dbc",
+      "run_id": "p077-t6-e100-e102-close-yesterday-filled",
+      "session_id": "p077-t6-e100-e102-close-yesterday-filled",
+      "trading_day": "2026-06-14",
+      "source_ref": "D:/Nautilus/nautilus_ctp_adapter/output/reports/p077-paper-lifecycle/20260614T130516Z/p077_t6_e100_bounded_paper_close_yesterday_filled_reconciled.json",
+      "normalized_ref": "contracts/ui/fixtures/p077_paper_slice/e100_close_yesterday_filled_e102_closeout.json",
+      "raw_payload_ref": null,
+      "next_action": "open the P077 read-only fixture only as source-linked evidence; do not infer retry authorization or readiness"
+    },
+    {
+      "package_id": "evidence.order-lifecycle.e100",
+      "kind": "order_lifecycle",
+      "status": "current",
+      "owner": "account-console-contracts",
+      "schema_ref": "contracts/ui/panels/account_order_detail_panel.contract.json",
+      "schema_version_ref": "account_order_detail_panel.v1",
+      "checksum": "sha256:e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1",
+      "run_id": "account-order-detail.fixture.e100.001",
+      "session_id": "account-workbench.fixture.20260614.003",
+      "trading_day": "2026-06-14",
+      "source_ref": "fixture://account-workbench/orders/acct.demo-19053/e100/lifecycle",
+      "normalized_ref": "contracts/ui/fixtures/account_workbench/account_order_detail_e100_filled_lifecycle.json",
+      "raw_payload_ref": "fixture://account-workbench/raw/order-report/e100",
+      "next_action": "open normalized lifecycle projection before inspecting raw payload"
+    },
+    {
+      "package_id": "evidence.reconcile.mismatch",
+      "kind": "reconcile",
+      "status": "current",
+      "owner": "account-console-contracts",
+      "schema_ref": "contracts/ui/panels/account_reconcile_panel.contract.json",
+      "schema_version_ref": "account_reconcile_panel.v1",
+      "checksum": "sha256:e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2",
+      "run_id": "account-reconcile.fixture.mismatch.001",
+      "session_id": "account-workbench.fixture.20260614.006",
+      "trading_day": "2026-06-14",
+      "source_ref": "fixture://account-workbench/reconcile/acct.demo-19053/mismatch",
+      "normalized_ref": "contracts/ui/fixtures/account_workbench/account_reconcile_mismatch.json",
+      "raw_payload_ref": null,
+      "next_action": "review owner mismatch ref; this evidence package does not repair mismatch"
+    }
+  ],
+  "blockers": [],
+  "source_refs": [
+    {
+      "kind": "p077_owner_slice_projection",
+      "owner": "account-console-contracts",
+      "source_ref": "contracts/ui/fixtures/p077_paper_slice/e100_close_yesterday_filled_e102_closeout.json",
+      "checksum": "sha256:4c751c917bf63811055cda2de52343731a4f6e22360c923945539d79bcc27cb0",
+      "authority": "deterministic P077 evidence package projection; not runtime, order, account, ledger, readiness or retry authority"
+    },
+    {
+      "kind": "evidence_package_projection",
+      "owner": "account-console-contracts",
+      "source_ref": "fixture://account-workbench/evidence/acct.demo-19053/current",
+      "checksum": "sha256:e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3",
+      "authority": "deterministic evidence fixture; not runtime authority"
+    }
+  ],
+  "boundaries": {
+    "read_only_projection": true,
+    "runtime_truth": false,
+    "account_truth": false,
+    "order_truth": false,
+    "ledger_truth": false,
+    "ui_truth": false,
+    "paper_ready": false,
+    "live_ready": false,
+    "broker_tradable": false,
+    "admission_truth": false,
+    "capital_truth": false,
+    "action_controls": false
+  },
+  "rejection_rules": [
+    "Reject raw payload refs as source truth unless a normalized package ref is also present.",
+    "Reject evidence package display as runtime, ledger, account, reconcile or incident authority.",
+    "Reject P077 evidence package display as Paper readiness, broker tradability, retry authorization or loop completion."
+  ]
+}

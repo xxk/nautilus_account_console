@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nautilus.local/contracts/ui/panels/account_settlement_panel.contract.json",
+  "title": "Account Settlement Panel Read Model",
+  "$comment": "Read-only settlement projection; action_controls and all runtime/account/order/ledger/trading readiness boundaries remain false through account_orders_panel boundaries.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "workbench",
+    "panel",
+    "route",
+    "fixture_state",
+    "context",
+    "account",
+    "settlement",
+    "blockers",
+    "source_refs",
+    "boundaries",
+    "rejection_rules"
+  ],
+  "properties": {
+    "schema_version": { "type": "string", "const": "account_settlement_panel.v1" },
+    "workbench": { "type": "string", "const": "Account Workbench" },
+    "panel": { "type": "string", "const": "Account Settlement Panel" },
+    "route": { "type": "string", "const": "/accounts/{account_id}/settlement" },
+    "fixture_state": {
+      "type": "string",
+      "enum": ["current_settlement", "empty", "blocked", "stale", "partial"]
+    },
+    "context": { "$ref": "account_orders_panel.contract.json#/$defs/context" },
+    "account": { "$ref": "account_orders_panel.contract.json#/$defs/account" },
+    "settlement": { "$ref": "#/$defs/settlement_row" },
+    "blockers": {
+      "type": "array",
+      "items": { "$ref": "account_orders_panel.contract.json#/$defs/blocker" }
+    },
+    "source_refs": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "account_orders_panel.contract.json#/$defs/source_ref" }
+    },
+    "boundaries": { "$ref": "account_orders_panel.contract.json#/$defs/boundaries" },
+    "rejection_rules": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string", "minLength": 1 }
+    }
+  },
+  "$defs": {
+    "checksum": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" },
+    "money_value": { "type": ["number", "null"] },
+    "settlement_row": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "trading_day",
+        "settlement_state",
+        "previous_settlement_ref",
+        "current_settlement_ref",
+        "position_carryover_ref",
+        "cash",
+        "frozen_cash",
+        "margin",
+        "realized_pnl",
+        "unrealized_pnl",
+        "fees",
+        "taxes",
+        "source_ref",
+        "checksum"
+      ],
+      "properties": {
+        "trading_day": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" },
+        "settlement_state": {
+          "type": "string",
+          "enum": ["settled", "blocked", "stale", "partial", "missing"]
+        },
+        "previous_settlement_ref": { "type": ["string", "null"] },
+        "current_settlement_ref": { "type": ["string", "null"] },
+        "position_carryover_ref": { "type": ["string", "null"] },
+        "cash": { "$ref": "#/$defs/money_value" },
+        "frozen_cash": { "$ref": "#/$defs/money_value" },
+        "margin": { "$ref": "#/$defs/money_value" },
+        "realized_pnl": { "$ref": "#/$defs/money_value" },
+        "unrealized_pnl": { "$ref": "#/$defs/money_value" },
+        "fees": { "$ref": "#/$defs/money_value" },
+        "taxes": { "$ref": "#/$defs/money_value" },
+        "source_ref": { "type": "string", "minLength": 1 },
+        "checksum": { "$ref": "#/$defs/checksum" }
+      }
+    }
+  }
+}

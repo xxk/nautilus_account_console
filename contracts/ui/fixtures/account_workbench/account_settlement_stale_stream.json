@@ -1,0 +1,76 @@
+{
+  "schema_version": "account_settlement_panel.v1",
+  "workbench": "Account Workbench",
+  "panel": "Account Settlement Panel",
+  "route": "/accounts/{account_id}/settlement",
+  "fixture_state": "stale",
+  "context": {
+    "trading_day": "2026-06-14",
+    "session_id": "account-workbench.fixture.20260614.005",
+    "run_id": "account-settlement.fixture.stale.001",
+    "reducer_checkpoint_id": "account-settlement.checkpoint.stale.001",
+    "reducer_checkpoint_ts": "2026-06-14T15:11:33Z",
+    "stream_state": "stale",
+    "projection_owner": "account-console-contracts",
+    "source_authority": "typed_blocker"
+  },
+  "account": {
+    "account_id": "acct.demo-19053",
+    "account_alias": "19053",
+    "account_kind": "real_feed_sandbox_paper"
+  },
+  "settlement": {
+    "trading_day": "2026-06-14",
+    "settlement_state": "stale",
+    "previous_settlement_ref": "fixture://account-workbench/settlement/acct.demo-19053/2026-06-13",
+    "current_settlement_ref": "fixture://account-workbench/settlement/acct.demo-19053/2026-06-14",
+    "position_carryover_ref": "fixture://account-workbench/carryover/acct.demo-19053/2026-06-14",
+    "cash": 98240.5,
+    "frozen_cash": 0.0,
+    "margin": 12624.0,
+    "realized_pnl": 0.0,
+    "unrealized_pnl": 42.0,
+    "fees": 7.5,
+    "taxes": 0.0,
+    "source_ref": "fixture://account-workbench/settlement/acct.demo-19053/stale",
+    "checksum": "sha256:9595959595959595959595959595959595959595959595959595959595959595"
+  },
+  "blockers": [
+    {
+      "blocker_id": "account-console.p004.phase5.settlement-stream-stale",
+      "severity": "warning",
+      "kind": "stale_settlement_stream",
+      "owner": "external settlement owner",
+      "next_action": "Refresh settlement read model or keep the stale blocker visible.",
+      "source_ref": "fixture://account-workbench/blockers/p004/phase5/settlement-stream-stale",
+      "checksum": "sha256:9696969696969696969696969696969696969696969696969696969696969696"
+    }
+  ],
+  "source_refs": [
+    {
+      "kind": "typed_blocker",
+      "owner": "account-console-contracts",
+      "source_ref": "fixture://account-workbench/blockers/p004/phase5/settlement-stream-stale",
+      "checksum": "sha256:9696969696969696969696969696969696969696969696969696969696969696",
+      "authority": "stale-state fixture only"
+    }
+  ],
+  "boundaries": {
+    "read_only_projection": true,
+    "runtime_truth": false,
+    "account_truth": false,
+    "order_truth": false,
+    "ledger_truth": false,
+    "ui_truth": false,
+    "paper_ready": false,
+    "live_ready": false,
+    "broker_tradable": false,
+    "admission_truth": false,
+    "capital_truth": false,
+    "action_controls": false
+  },
+  "rejection_rules": [
+    "Reject stale settlement fixture as current settlement state.",
+    "Reject stale fixture as permission to call runtime or broker."
+  ]
+}

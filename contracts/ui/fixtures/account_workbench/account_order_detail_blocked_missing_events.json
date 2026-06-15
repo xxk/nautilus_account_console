@@ -1,0 +1,79 @@
+{
+  "schema_version": "account_order_detail_panel.v1",
+  "workbench": "Account Workbench",
+  "panel": "Account Order Detail Panel",
+  "route": "/accounts/{account_id}/orders/{client_order_id}",
+  "fixture_state": "blocked",
+  "context": {
+    "trading_day": "2026-06-14",
+    "session_id": "account-workbench.fixture.20260614.003",
+    "run_id": "account-order-detail.fixture.blocked.001",
+    "reducer_checkpoint_id": "account-order-detail.checkpoint.blocked.001",
+    "reducer_checkpoint_ts": "2026-06-14T14:31:38Z",
+    "stream_state": "blocked",
+    "projection_owner": "account-console-contracts",
+    "source_authority": "typed_blocker"
+  },
+  "account": {
+    "account_id": "acct.demo-19053",
+    "account_alias": "19053",
+    "account_kind": "real_feed_sandbox_paper"
+  },
+  "order": {
+    "account_id": "acct.demo-19053",
+    "client_order_id": "p077-e100-rb2610-closeyesterday",
+    "instrument": "rb2610",
+    "side": "SELL",
+    "offset": "CLOSEYESTERDAY",
+    "order_type": "LIMIT",
+    "limit_price": 3158.0,
+    "quantity": 1,
+    "filled_quantity": null,
+    "remaining_quantity": null,
+    "status": "blocked",
+    "lifecycle_ref": null,
+    "report_provenance_ref": null,
+    "source_ref": "fixture://account-workbench/orders/p077-e100-rb2610-closeyesterday/detail-blocked",
+    "checksum": "sha256:6767676767676767676767676767676767676767676767676767676767676767"
+  },
+  "events": [],
+  "report_provenance": [],
+  "blockers": [
+    {
+      "blocker_id": "account-console.p004.phase3.official-events-missing",
+      "severity": "high",
+      "kind": "missing_official_order_events",
+      "owner": "external strategy/runtime owner",
+      "next_action": "Provide official order event sequence and report provenance refs before order detail UI closeout.",
+      "source_ref": "fixture://account-workbench/blockers/p004/phase3/official-events-missing",
+      "checksum": "sha256:7878787878787878787878787878787878787878787878787878787878787878"
+    }
+  ],
+  "source_refs": [
+    {
+      "kind": "typed_blocker",
+      "owner": "account-console-contracts",
+      "source_ref": "fixture://account-workbench/blockers/p004/phase3/official-events-missing",
+      "checksum": "sha256:7878787878787878787878787878787878787878787878787878787878787878",
+      "authority": "typed blocker fixture; not lifecycle truth"
+    }
+  ],
+  "boundaries": {
+    "read_only_projection": true,
+    "runtime_truth": false,
+    "account_truth": false,
+    "order_truth": false,
+    "ledger_truth": false,
+    "ui_truth": false,
+    "paper_ready": false,
+    "live_ready": false,
+    "broker_tradable": false,
+    "admission_truth": false,
+    "capital_truth": false,
+    "action_controls": false
+  },
+  "rejection_rules": [
+    "Reject this fixture as implementation-ready order detail evidence.",
+    "Reject missing official events as passable lifecycle evidence."
+  ]
+}

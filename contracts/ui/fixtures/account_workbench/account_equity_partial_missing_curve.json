@@ -1,0 +1,73 @@
+{
+  "schema_version": "account_equity_panel.v1",
+  "workbench": "Account Workbench",
+  "panel": "Account Equity Panel",
+  "route": "/accounts/{account_id}/equity",
+  "fixture_state": "partial",
+  "context": {
+    "trading_day": "2026-06-14",
+    "session_id": "account-workbench.fixture.20260614.005",
+    "run_id": "account-equity.fixture.partial.001",
+    "reducer_checkpoint_id": "account-equity.checkpoint.partial.001",
+    "reducer_checkpoint_ts": "2026-06-14T15:11:33Z",
+    "stream_state": "partial",
+    "projection_owner": "account-console-contracts",
+    "source_authority": "typed_blocker"
+  },
+  "account": {
+    "account_id": "acct.demo-19053",
+    "account_alias": "19053",
+    "account_kind": "real_feed_sandbox_paper"
+  },
+  "equity_points": [
+    {
+      "point_ts": "2026-06-14T15:00:00Z",
+      "equity": 110864.5,
+      "balance": 98240.5,
+      "available_cash": 85616.5,
+      "margin": 12624.0,
+      "ledger_ref": "fixture://account-workbench/ledger/acct.demo-19053/2026-06-14/point-002",
+      "curve_ref": null,
+      "source_ref": "fixture://account-workbench/equity/acct.demo-19053/partial-missing-curve",
+      "checksum": "sha256:a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8"
+    }
+  ],
+  "blockers": [
+    {
+      "blocker_id": "account-console.p004.phase5.equity-curve-ref-missing",
+      "severity": "warning",
+      "kind": "missing_equity_curve_ref",
+      "owner": "external ledger owner",
+      "next_action": "Provide equity curve ref before accepting curve continuity.",
+      "source_ref": "fixture://account-workbench/blockers/p004/phase5/equity-curve-ref-missing",
+      "checksum": "sha256:a9a9a9a9a9a9a9a9a9a9a9a9a9a9a9a9a9a9a9a9a9a9a9a9a9a9a9a9a9a9a9a9"
+    }
+  ],
+  "source_refs": [
+    {
+      "kind": "typed_blocker",
+      "owner": "account-console-contracts",
+      "source_ref": "fixture://account-workbench/blockers/p004/phase5/equity-curve-ref-missing",
+      "checksum": "sha256:a9a9a9a9a9a9a9a9a9a9a9a9a9a9a9a9a9a9a9a9a9a9a9a9a9a9a9a9a9a9a9a9",
+      "authority": "partial fixture; not equity truth"
+    }
+  ],
+  "boundaries": {
+    "read_only_projection": true,
+    "runtime_truth": false,
+    "account_truth": false,
+    "order_truth": false,
+    "ledger_truth": false,
+    "ui_truth": false,
+    "paper_ready": false,
+    "live_ready": false,
+    "broker_tradable": false,
+    "admission_truth": false,
+    "capital_truth": false,
+    "action_controls": false
+  },
+  "rejection_rules": [
+    "Reject partial equity fixture as curve continuity pass.",
+    "Reject browser chart as equity source authority."
+  ]
+}

@@ -1,0 +1,66 @@
+{
+  "schema_version": "account_settlement_panel.v1",
+  "workbench": "Account Workbench",
+  "panel": "Account Settlement Panel",
+  "route": "/accounts/{account_id}/settlement",
+  "fixture_state": "empty",
+  "context": {
+    "trading_day": "2026-06-14",
+    "session_id": "account-workbench.fixture.20260614.005",
+    "run_id": "account-settlement.fixture.empty.001",
+    "reducer_checkpoint_id": "account-settlement.checkpoint.empty.001",
+    "reducer_checkpoint_ts": "2026-06-14T15:11:33Z",
+    "stream_state": "empty",
+    "projection_owner": "account-console-contracts",
+    "source_authority": "deterministic_fixture"
+  },
+  "account": {
+    "account_id": "acct.demo-empty",
+    "account_alias": "empty",
+    "account_kind": "sandbox_paper"
+  },
+  "settlement": {
+    "trading_day": "2026-06-14",
+    "settlement_state": "missing",
+    "previous_settlement_ref": null,
+    "current_settlement_ref": null,
+    "position_carryover_ref": null,
+    "cash": null,
+    "frozen_cash": null,
+    "margin": null,
+    "realized_pnl": null,
+    "unrealized_pnl": null,
+    "fees": null,
+    "taxes": null,
+    "source_ref": "fixture://account-workbench/settlement/empty",
+    "checksum": "sha256:9292929292929292929292929292929292929292929292929292929292929292"
+  },
+  "blockers": [],
+  "source_refs": [
+    {
+      "kind": "empty_settlement_projection",
+      "owner": "account-console-contracts",
+      "source_ref": "fixture://account-workbench/settlement/empty",
+      "checksum": "sha256:9292929292929292929292929292929292929292929292929292929292929292",
+      "authority": "empty fixture only"
+    }
+  ],
+  "boundaries": {
+    "read_only_projection": true,
+    "runtime_truth": false,
+    "account_truth": false,
+    "order_truth": false,
+    "ledger_truth": false,
+    "ui_truth": false,
+    "paper_ready": false,
+    "live_ready": false,
+    "broker_tradable": false,
+    "admission_truth": false,
+    "capital_truth": false,
+    "action_controls": false
+  },
+  "rejection_rules": [
+    "Reject empty settlement fixture as day close success.",
+    "Reject missing refs as silently healthy state."
+  ]
+}

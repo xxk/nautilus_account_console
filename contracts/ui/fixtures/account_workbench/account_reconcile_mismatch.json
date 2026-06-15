@@ -1,0 +1,77 @@
+{
+  "schema_version": "account_reconcile_panel.v1",
+  "workbench": "Account Workbench",
+  "panel": "Account Reconcile Panel",
+  "route": "/accounts/{account_id}/reconcile",
+  "fixture_state": "mismatch",
+  "context": {
+    "trading_day": "2026-06-14",
+    "session_id": "account-workbench.fixture.20260614.006",
+    "run_id": "account-reconcile.fixture.mismatch.001",
+    "reducer_checkpoint_id": "account-reconcile.checkpoint.mismatch.001",
+    "reducer_checkpoint_ts": "2026-06-14T15:34:16Z",
+    "stream_state": "blocked",
+    "projection_owner": "account-console-contracts",
+    "source_authority": "typed_blocker"
+  },
+  "account": {
+    "account_id": "acct.demo-19053",
+    "account_alias": "19053",
+    "account_kind": "real_feed_sandbox_paper"
+  },
+  "reconcile_items": [
+    {
+      "item_id": "reconcile.position.001",
+      "category": "position",
+      "severity": "high",
+      "status": "mismatch",
+      "expected_value": 1.0,
+      "observed_value": 0.0,
+      "delta": -1.0,
+      "tolerance_ref": "fixture://account-workbench/reconcile/tolerance/position-zero",
+      "mismatch_ref": "fixture://account-workbench/reconcile/mismatch/acct.demo-19053/position-001",
+      "owner": "external position/reconcile owner",
+      "next_action": "repair or re-run owner reconcile evidence before accepting closeout",
+      "source_ref": "fixture://account-workbench/reconcile/acct.demo-19053/mismatch/position",
+      "checksum": "sha256:b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4"
+    }
+  ],
+  "blockers": [
+    {
+      "blocker_id": "account-reconcile.position-mismatch",
+      "severity": "high",
+      "kind": "position_reconcile_gap",
+      "owner": "external position/reconcile owner",
+      "next_action": "produce owner reconcile pass artifact or typed blocker",
+      "source_ref": "fixture://account-workbench/reconcile/mismatch/acct.demo-19053/position-001",
+      "checksum": "sha256:b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5"
+    }
+  ],
+  "source_refs": [
+    {
+      "kind": "reconcile_mismatch_projection",
+      "owner": "account-console-contracts",
+      "source_ref": "fixture://account-workbench/reconcile/acct.demo-19053/mismatch",
+      "checksum": "sha256:b6b6b6b6b6b6b6b6b6b6b6b6b6b6b6b6b6b6b6b6b6b6b6b6b6b6b6b6b6b6b6b6",
+      "authority": "typed blocker fixture; not reconcile truth"
+    }
+  ],
+  "boundaries": {
+    "read_only_projection": true,
+    "runtime_truth": false,
+    "account_truth": false,
+    "order_truth": false,
+    "ledger_truth": false,
+    "ui_truth": false,
+    "paper_ready": false,
+    "live_ready": false,
+    "broker_tradable": false,
+    "admission_truth": false,
+    "capital_truth": false,
+    "action_controls": false
+  },
+  "rejection_rules": [
+    "Reject mismatch display that hides owner, severity or next_action refs.",
+    "Reject this fixture as proof of official mismatch resolution."
+  ]
+}

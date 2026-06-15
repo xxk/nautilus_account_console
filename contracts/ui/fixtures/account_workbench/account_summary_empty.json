@@ -1,0 +1,75 @@
+{
+  "schema_version": "account_summary_panel.v1",
+  "workbench": "Account Workbench",
+  "panel": "Account Summary Panel",
+  "route": "/accounts/{account_id}",
+  "fixture_state": "empty",
+  "context": {
+    "trading_day": "2026-06-14",
+    "session_id": "account-workbench.fixture.20260614.002",
+    "run_id": "account-summary.fixture.empty.001",
+    "reducer_checkpoint_id": "account-summary.checkpoint.empty.001",
+    "reducer_checkpoint_ts": "2026-06-14T14:04:51Z",
+    "stream_state": "empty",
+    "projection_owner": "account-console-contracts",
+    "source_authority": "deterministic_fixture"
+  },
+  "account": {
+    "account_id": "acct.empty-000",
+    "account_alias": "empty-000",
+    "account_kind": "sandbox_paper",
+    "portfolio_uid": "portfolio.empty.account-workbench",
+    "display_state": "empty",
+    "base_currency": "CNY"
+  },
+  "balances": {
+    "cash": null,
+    "frozen_cash": null,
+    "available_cash": null,
+    "buying_power": null
+  },
+  "pnl": {
+    "realized": null,
+    "unrealized": null,
+    "fees": null,
+    "taxes": null
+  },
+  "margin": {
+    "initial_margin": null,
+    "maintenance_margin": null,
+    "margin_ratio": null
+  },
+  "settlement": {
+    "state": "missing",
+    "latest_settlement_ref": null,
+    "position_carryover_ref": null
+  },
+  "positions": [],
+  "blockers": [],
+  "source_refs": [
+    {
+      "kind": "empty_fixture",
+      "owner": "account-console-contracts",
+      "source_ref": "fixture://account-workbench/snapshots/acct.empty-000/2026-06-14/empty",
+      "checksum": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "authority": "deterministic empty fixture; missing values must render empty, not healthy"
+    }
+  ],
+  "boundaries": {
+    "read_only_projection": true,
+    "runtime_truth": false,
+    "ledger_truth": false,
+    "ui_truth": false,
+    "paper_ready": false,
+    "live_ready": false,
+    "broker_tradable": false,
+    "admission_truth": false,
+    "capital_truth": false,
+    "action_controls": false
+  },
+  "rejection_rules": [
+    "Reject empty fields as zero balances or successful settlement.",
+    "Reject this fixture as runtime, broker, ledger, admission, capital or readiness truth.",
+    "Reject UI text, screenshots, floating recent paths and diagnostic payload text as replacement truth for source refs."
+  ]
+}

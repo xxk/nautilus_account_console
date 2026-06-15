@@ -1,0 +1,887 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8" />
+    <title>{{ report_title }}</title>
+    <script src="/static/vendor/htmx-2.0.4.min.js"></script>
+    <script>
+        document.addEventListener("htmx:beforeRequest", function (event) {
+            const source = event.detail && event.detail.elt;
+            if (!(source instanceof HTMLElement) || source.id !== "portal-live-watch") {
+                return;
+            }
+            const selection = window.getSelection();
+            if (!selection || selection.isCollapsed) {
+                return;
+            }
+            event.preventDefault();
+        });
+    </script>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; }
+        body { margin: 20px 24px; background: #f4f6f9; color: #1a1e24; font-family: Segoe UI, Microsoft YaHei, sans-serif; }
+        .shell { max-width: 1280px; margin: 0 auto; }
+        .hero, .card { background: #fff; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+        .hero { padding: 16px 20px; margin-bottom: 12px; }
+        h1 { margin: 0 0 6px; font-size: 1.35rem; line-height: 1.25; }
+        h2 { margin: 0 0 6px; }
+        .portal-prefix, .section-eyebrow { font-size: .72rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: #64748b; margin: 0 0 3px; }
+        .lead, .meta, .boundary { color: #64748b; line-height: 1.65; font-size: .88rem; }
+        .hero-identity { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 8px; }
+        .hero-identity .identity-chip { display: inline-flex; align-items: center; gap: 8px; padding: 4px 10px; border-radius: 999px; background: #f8fafc; border: 1px solid #d0d7de; }
+        .hero-identity .identity-label { color: #64748b; font-size: .72rem; font-weight: 700; letter-spacing: .04em; text-transform: lowercase; }
+        .hero-identity strong { color: #1f2328; font-size: .82rem; }
+        .hero-identity code { background: transparent; padding: 0; font-size: .82rem; }
+        .snapshot-metrics, .focus-grid, .timeline-grid, .chart-grid, .attempt-grid, .dual-layer-grid, .subtrack-grid, .recommendation-grid, .action-center-grid, .timeline-stack { display: grid; gap: 10px; }
+        .snapshot-metrics { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); }
+        .focus-grid { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+        .timeline-grid { grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+        .timeline-stack { grid-template-columns: 1fr; }
+        .chart-grid { grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); }
+        .attempt-grid { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+        .dual-layer-grid { grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); }
+        .subtrack-grid { grid-template-columns: 1fr; margin: 10px 0; }
+        .recommendation-grid { grid-template-columns: minmax(0, 1.4fr) minmax(320px, .9fr); margin-bottom: 12px; }
+        .action-center-grid { grid-template-columns: 1fr; gap: 8px; }
+        .focus-panel, .timeline-card, .snapshot-card, .chart-card, .action-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px 14px; }
+        .attempt-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px 14px; }
+        .dual-layer-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px 16px; }
+        .recommendation-card, .action-center-card { background: #fff; border: 1px solid #d0dff0; border-radius: 12px; padding: 16px 18px; box-shadow: 0 4px 12px rgba(9,105,218,.05); }
+        .recommendation-card { background: linear-gradient(135deg, #fefce8 0, #eff6ff 100%); }
+        .audit-card { background: #fff; border: 1px solid #dfe7f0; }
+        .audit-top { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
+        .audit-heading-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+        .audit-status { display: inline-flex; align-items: center; padding: 5px 10px; border-radius: 999px; border: 1px solid #d0d7de; font-size: .74rem; font-weight: 700; }
+        .audit-status.verdict-pass { background: #dcfce7; color: #166534; border-color: #86efac; }
+        .audit-status.verdict-fail { background: #fee2e2; color: #991b1b; border-color: #fca5a5; }
+        .audit-status.verdict-pending { background: #fef3c7; color: #92400e; border-color: #fcd34d; }
+        .audit-status.verdict { background: #eef2f6; color: #44505c; }
+        .audit-rules { margin-top: 14px; border-top: 1px solid #eef2f6; }
+        .audit-rule-row { display: grid; grid-template-columns: 72px minmax(180px, 240px) minmax(180px, 1fr) minmax(260px, 1.3fr); gap: 12px; align-items: start; padding: 10px 0; border-bottom: 1px solid #eef2f6; }
+        .audit-rule-row.fail { background: #fff7f7; }
+        .audit-rule-status { display: inline-flex; align-items: center; justify-content: center; min-width: 56px; padding: 3px 8px; border-radius: 999px; font-size: .72rem; font-weight: 800; letter-spacing: .04em; }
+        .audit-rule-status.pass { background: #dcfce7; color: #166534; }
+        .audit-rule-status.fail { background: #fee2e2; color: #991b1b; }
+        .audit-rule-label { color: #1f2328; font-weight: 700; }
+        .audit-rule-value { color: #1f2328; font-variant-numeric: tabular-nums; }
+        .audit-rule-detail { color: #64748b; line-height: 1.55; }
+        .audit-rule-row.fail .audit-rule-label,
+        .audit-rule-row.fail .audit-rule-value,
+        .audit-rule-row.fail .audit-rule-detail { color: #991b1b; }
+        .audit-meta-line { margin-top: 10px; color: #64748b; line-height: 1.6; font-size: .82rem; }
+        .action-center-card.primary { border-color: rgba(9, 105, 218, .22); }
+        .subtrack-card { background: #fbfdff; border: 1px solid #d8e6f8; border-radius: 12px; padding: 12px 14px; }
+        .subtrack-card.final { background: #f8fbff; border-color: #c9dfff; }
+        .subtrack-top { display: flex; justify-content: space-between; gap: 10px; align-items: flex-start; margin-bottom: 8px; }
+        .subtrack-top strong { display: block; color: #1f2328; }
+        .subtrack-eyebrow { color: #57606a; font-size: .74rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; margin-bottom: 4px; }
+        .subtrack-summary { color: #57606a; line-height: 1.65; margin: 0; }
+        .dual-layer-card.warm { background: linear-gradient(135deg, #fefce8 0, #fff 100%); border-color: #fde68a; }
+        .dual-layer-card.cool { background: linear-gradient(135deg, #eff6ff 0, #fff 100%); border-color: #93c5fd; }
+        .dual-layer-card.verdict-pass { border-color: #86efac; background: linear-gradient(135deg, #f0fdf4 0, #fff 100%); }
+        .dual-layer-card.verdict-fail { border-color: #fca5a5; background: linear-gradient(135deg, #fef2f2 0, #fff 100%); }
+        .dual-layer-top { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; margin-bottom: 12px; }
+        .dual-layer-top h3 { margin: 4px 0 0; font-size: 1.05rem; }
+        .attempt-card strong { display: block; margin-bottom: 8px; color: #1f2328; }
+        .attempt-meta { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+        .attempt-meta span { display: inline-flex; align-items: center; padding: 4px 9px; border-radius: 999px; background: #eef2f6; border: 1px solid #d0d7de; font-size: .75rem; color: #44505c; font-weight: 600; }
+        .attempt-meta .status-success { background: #d9f2e3; color: #146c2e; border-color: #9ed8b0; }
+        .attempt-meta .status-failed { background: #fde6e7; color: #b42318; border-color: #f5b4b8; }
+        .attempt-meta .status-partial { background: #fff3d6; color: #8a4b00; border-color: #f1c27b; }
+        .route-card, .boundary-card, .focus-guide, .snapshot-section, .action-card { background: linear-gradient(135deg, #fffdf6 0, #f7fbff 100%); }
+        .action-card-label { display: block; margin-bottom: 8px; color: #57606a; font-size: .78rem; letter-spacing: .04em; text-transform: uppercase; }
+        .focus-panel code { background: #f0f3f6; padding: 2px 6px; border-radius: 6px; }
+        .action-matrix { display: grid; gap: 10px; margin-top: 18px; }
+        .action-row, .focus-actions, .focus-metrics, .timeline-row, .timeline-evidence, .snapshot-links { display: flex; flex-wrap: wrap; gap: 8px; }
+        .portal-link { display: inline-flex; align-items: center; justify-content: center; min-height: 34px; padding: 6px 12px; border-radius: 8px; border: 1px solid rgba(59,130,246,.18); background: #fff; color: #2563eb; text-decoration: none; font-weight: 600; font-size: .86rem; transition: filter .1s, box-shadow .1s; }
+        .portal-form { margin: 0; }
+        button.portal-link { cursor: pointer; font: inherit; }
+        .portal-link.primary { background: #2563eb; color: #fff; border-color: #2563eb; }
+        .portal-link.secondary { background: #f8fafc; color: #1e40af; border-color: #d0d7de; }
+        .portal-link.muted { background: #f1f5f9; color: #64748b; border-color: #d0d7de; }
+        .portal-link.disabled { color: #98a2ad; background: #eef2f6; border-style: dashed; border-color: #d0d7de; pointer-events: none; }
+        button.portal-link[disabled] { color: #98a2ad; background: #eef2f6; border-style: dashed; border-color: #d0d7de; cursor: default; }
+        .portal-link:hover { text-decoration: none; filter: brightness(.98); }
+        .portal-link.disabled:hover { filter: none; }
+        .card { padding: 18px 20px; margin-bottom: 16px; }
+        .focus-panel strong { display: block; color: #1f2328; margin-bottom: 8px; }
+        .focus-panel p { margin: 0; color: #57606a; line-height: 1.75; }
+        .focus-panel.warm { background: linear-gradient(135deg, #fffdf6 0, #ffffff 100%); }
+        .focus-panel.cool { background: linear-gradient(135deg, #f7fbff 0, #ffffff 100%); }
+        .focus-metrics span { display: inline-flex; align-items: center; padding: 4px 9px; border-radius: 999px; background: #eef2f6; border: 1px solid #d0d7de; font-size: .75rem; color: #44505c; font-weight: 600; }
+        .timeline-card { position: relative; overflow: hidden; transition: transform .14s, box-shadow .14s; }
+        .timeline-card::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: #d0d7de; }
+        .timeline-card.ready { border-color: #3b82f6; }
+        .timeline-card.ready::before { background: linear-gradient(180deg, #2563eb, #60a5fa); }
+        .timeline-card.waiting { border-style: dashed; border-color: #d4d4d8; }
+        .timeline-card.waiting::before { background: linear-gradient(180deg, #d97706, #fcd34d); }
+        .timeline-card.done { border-color: #22c55e; }
+        .timeline-card.done::before { background: linear-gradient(180deg, #16a34a, #86efac); }
+        .timeline-card.current { box-shadow: 0 4px 10px rgba(9,105,218,.08); }
+        .timeline-top { display: flex; justify-content: space-between; gap: 10px; align-items: flex-start; margin-bottom: 10px; }
+        .timeline-key { color: #0969da; font-size: .75rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+        .timeline-top h3 { margin: 4px 0 0; font-size: 1rem; }
+        .timeline-state { display: inline-flex; align-items: center; padding: 4px 8px; border-radius: 999px; background: #eef2f6; color: #44505c; font-size: .72rem; font-weight: 700; }
+        .timeline-card.ready .timeline-state { background: #dbeafe; color: #1d4ed8; }
+        .timeline-card.waiting .timeline-state { background: #fef3c7; color: #92400e; }
+        .timeline-card.done .timeline-state { background: #dcfce7; color: #166534; }
+        .stage-accordion.done { border-color: #86efac; }
+        .stage-accordion.done > summary { background: linear-gradient(135deg, #f0fdf4 0, #fff 100%); }
+        .timeline-hint { color: #64748b; font-size: .84rem; line-height: 1.7; margin: 0; min-height: 72px; }
+        .snapshot-section { border: 1px solid rgba(9, 105, 218, .14); }
+        .snapshot-summary { margin-bottom: 14px; }
+        .chart-card h3 { margin-top: 0; font-size: .98rem; }
+        .snapshot-metric-label { display: block; color: #64748b; font-size: .74rem; margin-bottom: 4px; letter-spacing: .02em; }
+        .snapshot-metric-value { font-weight: 800; color: #1a1e24; line-height: 1.5; font-size: 1.05rem; font-variant-numeric: tabular-nums; }
+        .snapshot-metric-value code { background: #f0f3f6; padding: 2px 6px; border-radius: 6px; }
+        .snapshot-metric-value.positive { color: #16a34a; }
+        .snapshot-metric-value.negative { color: #dc2626; }
+        .snapshot-card.metric-highlight { border-left: 3px solid #3b82f6; }
+        .section-title { margin: 0 0 8px; font-size: 1.05rem; }
+        .bridge-output { margin-top: 10px; padding: 10px 12px; background: #f8fafc; color: #1a1e24; border: 1px solid #e2e8f0; border-radius: 8px; overflow-x: auto; white-space: pre-wrap; line-height: 1.55; font-size: .82rem; }
+        .bridge-output code { color: inherit; background: transparent; white-space: pre-wrap; word-break: break-word; font-size: .8rem; }
+        .bridge-status { margin-top: 8px; color: #64748b; line-height: 1.6; font-size: .84rem; }
+        .bridge-status strong { color: #1f2328; }
+        .recommendation-top, .action-center-top, .stage-summary-top { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
+        .recommendation-top h2, .action-center-top h2 { margin: 2px 0 6px; }
+        .activity-chip, .stage-summary-meta span { display: inline-flex; align-items: center; padding: 5px 10px; border-radius: 999px; background: #eef2f6; border: 1px solid #d0d7de; font-size: .74rem; color: #44505c; font-weight: 700; }
+        .activity-chip { background: #dbeafe; color: #1d4ed8; border-color: #bfdbfe; }
+        .recommendation-grid code { background: #f0f3f6; padding: 2px 6px; border-radius: 6px; }
+        .action-helper { margin-top: 8px; color: #64748b; line-height: 1.55; font-size: .82rem; }
+        .status-panel { margin-top: 10px; padding: 10px 12px; border-radius: 8px; background: #f8fafc; border: 1px solid #e2e8f0; }
+        .status-panel strong { display: block; margin-bottom: 6px; color: #1f2328; }
+        .live-refresh-note { margin-top: 12px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+        .live-refresh-note span { display: inline-flex; align-items: center; padding: 5px 10px; border-radius: 999px; background: #eef2f6; border: 1px solid #d0d7de; font-size: .74rem; color: #44505c; font-weight: 700; }
+        .live-refresh-note .active { background: #d9f2e3; color: #146c2e; border-color: #9ed8b0; }
+        .live-watch { margin-top: 10px; color: #57606a; font-size: .82rem; line-height: 1.6; }
+        .live-presence-bar { margin-top: 10px; display: flex; align-items: center; gap: 10px; padding: 8px 14px; border-radius: 8px; border: 1px solid rgba(22,163,74,.18); background: linear-gradient(135deg, #f0fdf4 0, #fefce8 100%); }
+        .live-presence-badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; border: 1px solid #86efac; background: #dcfce7; color: #166534; font-size: .72rem; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; white-space: nowrap; }
+        .live-presence-dot { width: 8px; height: 8px; border-radius: 999px; background: #16a34a; box-shadow: 0 0 0 0 rgba(22,163,74,.42); animation: live-presence-pulse 1.8s ease-out infinite; }
+        .live-presence-meta { display: flex; flex-wrap: wrap; gap: 8px; color: #64748b; font-size: .78rem; }
+        .live-presence-meta span { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 999px; background: rgba(255,255,255,.7); border: 1px solid #e2e8f0; }
+        @keyframes live-presence-pulse {
+            0% { box-shadow: 0 0 0 0 rgba(26,127,55,.42); }
+            70% { box-shadow: 0 0 0 12px rgba(26,127,55,0); }
+            100% { box-shadow: 0 0 0 0 rgba(26,127,55,0); }
+        }
+        .htmx-indicator { display: none; margin-left: 8px; font-size: .78rem; font-weight: 700; }
+        .htmx-request .htmx-indicator, .htmx-request.htmx-indicator { display: inline-flex; }
+        .stage-accordion { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; overflow: hidden; transition: box-shadow .15s, border-color .15s; }
+        .stage-accordion[open] { box-shadow: 0 4px 12px rgba(9,105,218,.06); border-color: #3b82f6; }
+        .stage-accordion.current { border-color: #3b82f6; border-width: 2px; }
+        .stage-accordion.waiting { border-style: dashed; border-color: #d4d4d8; }
+        .stage-accordion > summary { list-style: none; cursor: pointer; padding: 14px 16px; transition: background .12s; }
+        .stage-accordion > summary:hover { background: #f8fafc; }
+        .stage-accordion > summary::-webkit-details-marker { display: none; }
+        .stage-summary-copy h3 { margin: 4px 0 0; font-size: 1rem; }
+        .stage-summary-copy p { margin: 8px 0 0; color: #64748b; font-size: .84rem; line-height: 1.7; }
+        .stage-summary-meta { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
+        .stage-body { padding: 0 18px 16px; }
+        .evidence-toggle { margin-top: 12px; }
+        .evidence-toggle > summary { cursor: pointer; color: #24507a; font-weight: 700; }
+        .attempt-links-toggle { margin-top: 10px; }
+        .attempt-links-toggle > summary { cursor: pointer; color: #24507a; font-weight: 700; }
+        @media (max-width: 900px) {
+            .recommendation-grid { grid-template-columns: 1fr; }
+            .audit-rule-row { grid-template-columns: 1fr; gap: 6px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="shell">
+        <section class="hero">
+            <p class="portal-prefix">portal case view</p>
+            <h1>{{ case_ref or title }}</h1>
+            <div class="hero-identity">
+                {% if case_ref %}
+                <span class="identity-chip"><span class="identity-label">case_ref</span><strong>{{ case_ref }}</strong></span>
+                {% endif %}
+                {% if case_id %}
+                <span class="identity-chip"><span class="identity-label">case-id</span><code>{{ case_id }}</code></span>
+                {% endif %}
+            </div>
+            {% if live_refresh %}
+            <div class="live-presence-bar" aria-label="live presence signal">
+                <span class="live-presence-badge"><span class="live-presence-dot"></span>live</span>
+                <div class="live-presence-meta">
+                    <span>Live Surface / 当前Live状态</span>
+                    <span>SSR on request</span>
+                    <span>live auto refresh</span>
+                    <span>HTMX auto refresh</span>
+                    <span>SSR · 每 {{ live_refresh.interval_seconds }}s 自动刷新</span>
+                    <span>{{ live_refresh.last_refreshed_at }}</span>
+                </div>
+            </div>
+            <div
+                id="portal-live-watch"
+                class="live-watch"
+                data-surface-token="{{ live_refresh.token }}"
+                hx-get="{{ live_refresh.poll_url }}?token={{ live_refresh.token }}"
+                hx-trigger="every {{ live_refresh.interval_seconds }}s"
+                hx-swap="outerHTML"
+                style="display: none;"
+            >armed</div>
+            {% endif %}
+            <div class="action-matrix">
+            {% for group in action_groups %}
+                <section class="action-card {{ group.class_name }}">
+                    <div class="action-card-label">{{ group.label }}</div>
+                    <div class="action-row">
+                    {% for link in group.links %}
+                        {% if link.href %}
+                        <a class="portal-link {{ link.variant }}" href="{{ link.href }}" title="{{ link.title }}"{% if link.legacy_label %} aria-label="{{ link.legacy_label }}"{% endif %}{% if link.testid %} data-testid="{{ link.testid }}"{% endif %}>{{ link.label }}</a>
+                        {% else %}
+                        <span class="portal-link {{ link.variant }} disabled">{{ link.label }}</span>
+                        {% endif %}
+                    {% endfor %}
+                    </div>
+                </section>
+            {% endfor %}
+            {% if verifier_run_controls %}
+                <section class="action-card secondary-group" data-testid="portal-case-verifier-run-controls">
+                    <div class="action-card-label">Verifier Actions</div>
+                    <div class="action-row">
+                        <a
+                            class="portal-link primary"
+                            data-testid="portal-case-run-verifier"
+                            href="{{ verifier_run_controls.href }}"
+                        >{{ verifier_run_controls.run_label }}</a>
+                        {% if verifier_run_controls.latest_verifier_run_id %}
+                        <a
+                            class="portal-link secondary"
+                            data-testid="portal-case-reverify"
+                            href="{{ verifier_run_controls.href }}"
+                        >{{ verifier_run_controls.reverify_label }}</a>
+                        {% endif %}
+                    </div>
+                </section>
+            {% endif %}
+            </div>
+        </section>
+
+        <section class="recommendation-grid">
+            <article class="recommendation-card">
+                <div class="recommendation-top">
+                    <div>
+                        <p class="section-eyebrow">recommended action</p>
+                        <h2>{{ recommended_action.title }}</h2>
+                    </div>
+                    <span class="activity-chip">{{ recommended_action.current_stage }}</span>
+                </div>
+                <div class="boundary" style="font-size: .84rem;">{{ recommended_action.summary }}</div>
+                {% if recommended_action.surface_hint %}
+                <div class="hint" style="margin-top: 10px;">{{ recommended_action.surface_hint }}</div>
+                {% endif %}
+                <div class="bridge-output"><code>{{ recommended_action.next_action }}</code></div>
+                <div class="focus-metrics" style="margin-top: 12px;">
+                    <span>{{ recommended_action.current_blocker }}</span>
+                    <span>{{ recommended_action.latest_activity }}</span>
+                </div>
+                {% if recommended_action.execution_action and recommended_action.execution_action.available %}
+                <div class="action-row" style="margin-top: 14px;">
+                    <form
+                        class="portal-form"
+                        hx-post="{{ recommended_action.execution_action.endpoint }}"
+                        hx-target="#portal-recommended-action-status-panel"
+                        hx-swap="innerHTML"
+                        hx-confirm="确认执行当前推荐的正式动作吗？"
+                    >
+                        <input type="hidden" name="case_id" value="{{ case_id }}" />
+                        <input type="hidden" name="action_id" value="{{ recommended_action.execution_action.action_id }}" />
+                        <button
+                            type="submit"
+                            class="portal-link primary"
+                            id="portal-recommended-action-trigger"
+                        >{{ recommended_action.execution_action.button_label }}<span class="htmx-indicator">提交中...</span></button>
+                    </form>
+                </div>
+                <div id="portal-recommended-action-status-panel" class="status-panel">
+                    <strong>推荐动作状态 / Recommended Action Status</strong>
+                    <div class="bridge-status">等待执行；提交后会在这里显示 queued / running / succeeded / failed。</div>
+                </div>
+                {% endif %}
+                <div class="snapshot-links" style="margin-top: 14px;">
+                    {% if recommended_action.primary_link and recommended_action.primary_link.href %}
+                    <a class="portal-link primary" href="{{ recommended_action.primary_link.href }}" title="{{ recommended_action.primary_link.title }}">{{ recommended_action.primary_link.label }}</a>
+                    {% endif %}
+                    {% for link in recommended_action.supporting_links %}
+                        {% if link.href %}
+                        <a class="portal-link {{ link.variant }}" href="{{ link.href }}" title="{{ link.title }}">{{ link.label }}</a>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </article>
+
+            <article class="recommendation-card">
+                <div class="action-center-top">
+                    <div>
+                        <p class="section-eyebrow">action center</p>
+                        <h2>Action Center / 当前操作</h2>
+                    </div>
+                </div>
+                <div class="boundary" style="font-size: .84rem;">把推进当前 case 的操作集中处理。</div>
+                <div class="action-center-grid" style="margin-top: 14px;">
+                    {% if autopilot_lane %}
+                    <section class="action-center-card primary" id="supervised-autopilot-lane">
+                        <div class="action-card-label">supervised autopilot lane</div>
+                        <h3 class="section-title">按当前建议执行 / Run Recommended Action</h3>
+                        <div class="boundary">{{ autopilot_lane.summary }}</div>
+                        <div class="action-row" style="margin-top: 14px;">
+                        {% if autopilot_lane.available %}
+                            <form
+                                class="portal-form"
+                                hx-post="{{ autopilot_lane.endpoint }}"
+                                hx-target="#portal-autopilot-status-panel"
+                                hx-swap="innerHTML"
+                                data-autopilot-kind="{{ autopilot_lane.kind }}"
+                                hx-confirm="确认让服务端按当前 case 状态挑选推荐动作吗？该动作只会在 localhost 受监管通道内执行。"
+                            >
+                                <input type="hidden" name="case_id" value="{{ case_id }}" />
+                                <button
+                                    type="submit"
+                                    class="portal-link primary"
+                                    id="portal-autopilot-trigger"
+                                    data-autopilot-kind="{{ autopilot_lane.kind }}"
+                                >{{ autopilot_lane.button_label }}<span class="htmx-indicator">执行中...</span></button>
+                            </form>
+                        {% else %}
+                            <span class="portal-link primary disabled">{{ autopilot_lane.button_label }}</span>
+                        {% endif %}
+                        </div>
+                        <div class="action-helper"><strong>说明：</strong>{{ autopilot_lane.message }}</div>
+                        <div class="bridge-output"><code>{{ autopilot_lane.command_preview }}</code></div>
+                        {% if autopilot_lane.available %}
+                        <div id="portal-autopilot-status-panel" class="status-panel">
+                            <strong>Autopilot 状态 / Autopilot Status</strong>
+                            <div class="bridge-status" id="portal-autopilot-status">等待推荐动作；提交后会在这里显示 queued / running / succeeded / failed。</div>
+                        </div>
+                        {% endif %}
+                    </section>
+                    {% endif %}
+
+                    {% if execution_bridge %}
+                    <section class="action-center-card primary" id="execution-bridge">
+                        <div class="action-card-label">local execution bridge</div>
+                        <h3 class="section-title">一键触发 / One-Click Trigger</h3>
+                        <div class="boundary">{{ execution_bridge.summary }}</div>
+                        <div class="action-row" style="margin-top: 14px;">
+                        {% if execution_bridge.available %}
+                            <form
+                                class="portal-form"
+                                hx-post="{{ execution_bridge.endpoint }}"
+                                hx-target="#portal-exec-status-panel"
+                                hx-swap="innerHTML"
+                                hx-confirm="确认触发当前 case 的正式 CLI 吗？执行将在本机 live Dev Home 中启动。"
+                            >
+                                <input type="hidden" name="case_id" value="{{ case_id }}" />
+                                <input type="hidden" name="action_id" value="{{ execution_bridge.action_id }}" />
+                                <button
+                                    type="submit"
+                                    class="portal-link primary"
+                                    id="portal-exec-trigger"
+                                >{{ execution_bridge.button_label }}<span class="htmx-indicator">提交中...</span></button>
+                            </form>
+                        {% else %}
+                            <span class="portal-link primary disabled">{{ execution_bridge.button_label }}</span>
+                        {% endif %}
+                        </div>
+                        <div class="action-helper"><strong>说明：</strong>{{ execution_bridge.message }}</div>
+                        <div class="bridge-output"><code>{{ execution_bridge.command_preview }}</code></div>
+                        {% if execution_bridge.available %}
+                        <div id="portal-exec-status-panel" class="status-panel">
+                            <strong>执行状态 / Execution Status</strong>
+                            <div class="bridge-status" id="portal-exec-status">等待执行；提交后会在这里显示 running / succeeded / failed。</div>
+                        </div>
+                        {% endif %}
+                    </section>
+                    {% endif %}
+
+                    {% if case_lifecycle %}
+                    <section class="action-center-card" id="case-lifecycle">
+                        <div class="action-card-label">case lifecycle</div>
+                        <h3 class="section-title">退场状态 / Archive Or Delete</h3>
+                        <div class="boundary">{{ case_lifecycle.summary }}</div>
+                        <div class="action-row" style="margin-top: 14px;">
+                            <form
+                                class="portal-form"
+                                action="{{ case_lifecycle.endpoint }}"
+                                method="post"
+                                hx-post="{{ case_lifecycle.endpoint }}"
+                                hx-target="#portal-case-lifecycle-panel"
+                                hx-swap="innerHTML"
+                                hx-confirm="确认把当前 case 标记为 archived 吗？这不会删除磁盘上的 input/output。"
+                            >
+                                <input type="hidden" name="case_id" value="{{ case_id }}" />
+                                <input type="hidden" name="state" value="archived" />
+                                <button
+                                    type="submit"
+                                    class="portal-link secondary"
+                                    id="portal-case-archive-trigger"
+                                >{{ case_lifecycle.archive_label }}<span class="htmx-indicator">切换中...</span></button>
+                            </form>
+                            {% if case_lifecycle.delete_enabled %}
+                            <form
+                                class="portal-form"
+                                action="{{ case_lifecycle.endpoint }}"
+                                method="post"
+                                hx-post="{{ case_lifecycle.endpoint }}"
+                                hx-target="#portal-case-lifecycle-panel"
+                                hx-swap="innerHTML"
+                                hx-confirm="确认把当前 case 标记为 deleted 吗？这会把 input package 移入 input/_archive/<case-id>，不会清理 output/ledger。"
+                            >
+                                <input type="hidden" name="case_id" value="{{ case_id }}" />
+                                <input type="hidden" name="state" value="deleted" />
+                                <button
+                                    type="submit"
+                                    class="portal-link primary"
+                                    id="portal-case-delete-trigger"
+                                >{{ case_lifecycle.delete_label }}<span class="htmx-indicator">退场中...</span></button>
+                            </form>
+                            {% else %}
+                            <span class="portal-link primary disabled" id="portal-case-delete-disabled">{{ case_lifecycle.delete_label }}</span>
+                            {% endif %}
+                        </div>
+                        <div class="action-helper"><strong>当前状态：</strong>lifecycle_state={{ case_lifecycle.lifecycle_state }}</div>
+                        <div class="action-helper"><strong>说明：</strong>{{ case_lifecycle.message }}</div>
+                        <div class="bridge-output"><code>{{ case_lifecycle.command_preview }}</code></div>
+                        <div id="portal-case-lifecycle-panel" class="status-panel">
+                            <strong>状态切换 / Lifecycle Status</strong>
+                            {% if case_lifecycle.lifecycle_state == "archived" %}
+                            <div class="bridge-status lifecycle-success" id="portal-case-lifecycle-status" data-testid="portal-case-lifecycle-success" data-lifecycle-state="archived">
+                                <strong>归档成功 / Archived</strong>
+                                已从默认 Home discoverability 退场；这一步不是物理删除。可继续使用 Mark Deleted 或下方 Purge。
+                            </div>
+                            {% elif case_lifecycle.lifecycle_state == "deleted" %}
+                            <div class="bridge-status lifecycle-success" id="portal-case-lifecycle-status" data-testid="portal-case-lifecycle-success" data-lifecycle-state="deleted">
+                                <strong>标记删除成功 / Marked Deleted</strong>
+                                已标记为 deleted 并退出默认 Home discoverability；物理清理仍需使用下方 Purge。
+                            </div>
+                            {% else %}
+                            <div class="bridge-status" id="portal-case-lifecycle-status">先 archive，再 delete；成功后页面会自动刷新，Purge 卡也会同步切换到可执行状态。</div>
+                            {% endif %}
+                        </div>
+                    </section>
+                    {% endif %}
+
+                    {% if case_purge %}
+                    <section class="action-center-card" id="case-purge">
+                        <div class="action-card-label">case purge</div>
+                        <h3 class="section-title">物理清理 / Physical Purge</h3>
+                        <div class="boundary">{{ case_purge.summary }}</div>
+                        <div class="action-row" style="margin-top: 14px;">
+                            <form
+                                class="portal-form"
+                                hx-post="{{ case_purge.endpoint }}"
+                                hx-target="#portal-case-purge-panel"
+                                hx-swap="innerHTML"
+                            >
+                                <input type="hidden" name="case_id" value="{{ case_id }}" />
+                                <input type="hidden" name="mode" value="dry_run" />
+                                <button
+                                    type="submit"
+                                    class="portal-link secondary"
+                                    id="portal-case-purge-dry-run-trigger"
+                                >{{ case_purge.button_label }}<span class="htmx-indicator">预览中...</span></button>
+                            </form>
+                            {% if case_purge.execute_allowed %}
+                            <form
+                                class="portal-form"
+                                hx-post="{{ case_purge.endpoint }}"
+                                hx-target="#portal-case-purge-panel"
+                                hx-swap="innerHTML"
+                                hx-confirm="确认物理删除当前 case 吗？这会删除专属 artifact 与 ledger/index 相关记录；共享 owner 资产会跳过。"
+                            >
+                                <input type="hidden" name="case_id" value="{{ case_id }}" />
+                                <input type="hidden" name="mode" value="execute" />
+                                <button
+                                    type="submit"
+                                    class="portal-link primary"
+                                    id="portal-case-physical-delete-trigger"
+                                >{{ case_purge.physical_delete_label }}<span class="htmx-indicator">删除中...</span></button>
+                            </form>
+                            {% else %}
+                            <span class="portal-link primary disabled" id="portal-case-physical-delete-disabled">物理删除 / Physical Delete</span>
+                            {% endif %}
+                        </div>
+                        <div class="action-helper"><strong>当前状态：</strong>lifecycle_state={{ case_purge.lifecycle_state }}{% if not case_purge.execute_allowed %}；需先 archived/deleted 才能 execute{% endif %}</div>
+                        <div class="action-helper"><strong>说明：</strong>{{ case_purge.message }}</div>
+                        <div class="bridge-output"><code>{{ case_purge.command_preview }}</code></div>
+                        <div id="portal-case-purge-panel" class="status-panel">
+                            <strong>Purge 预览 / Purge Preview</strong>
+                            <div class="bridge-status" id="portal-case-purge-status">先执行 dry-run 预览；确认共享资产不会被误删后，再在这里执行物理 purge。</div>
+                        </div>
+                    </section>
+                    {% endif %}
+
+                    {% if report_refresh %}
+                    <section class="action-center-card" id="report-refresh">
+                        <div class="action-card-label">acceptance report refresh</div>
+                        <h3 class="section-title">刷新报告 / Refresh Report</h3>
+                        <div class="boundary">{{ report_refresh.summary }}</div>
+                        <div class="action-row" style="margin-top: 14px;">
+                        {% if report_refresh.available %}
+                            <form
+                                class="portal-form"
+                                hx-post="{{ report_refresh.endpoint }}"
+                                hx-target="#portal-report-refresh-status-panel"
+                                hx-swap="innerHTML"
+                                data-acceptance-id="{{ report_refresh.acceptance_id }}"
+                            >
+                                <input type="hidden" name="acceptance_id" value="{{ report_refresh.acceptance_id }}" />
+                                <button
+                                    type="submit"
+                                    class="portal-link secondary"
+                                    id="portal-report-refresh-trigger"
+                                    data-acceptance-id="{{ report_refresh.acceptance_id }}"
+                                >{{ report_refresh.button_label }}<span class="htmx-indicator">刷新中...</span></button>
+                            </form>
+                        {% else %}
+                            <span class="portal-link secondary disabled">{{ report_refresh.button_label }}</span>
+                        {% endif %}
+                        </div>
+                        <div class="action-helper"><strong>说明：</strong>{{ report_refresh.message }}</div>
+                        <div class="bridge-output"><code>{{ report_refresh.command_preview }}</code></div>
+                        {% if report_refresh.available %}
+                        <div id="portal-report-refresh-status-panel" class="status-panel">
+                            <strong>刷新状态 / Refresh Status</strong>
+                            <div class="bridge-status" id="portal-report-refresh-status">等待刷新；提交后会在这里显示 running / succeeded / failed。</div>
+                        </div>
+                        {% endif %}
+                    </section>
+                    {% endif %}
+                </div>
+            </article>
+        </section>
+
+        {% if claim_proof_card %}
+        <section
+            class="card audit-card"
+            id="claim-proof-summary"
+            data-testid="portal-case-claim-proof-summary"
+            data-research-completion-status="{{ claim_proof_card.research_completion.status }}"
+            data-claim-status="{{ claim_proof_card.research_completion.claim_status }}"
+            data-conflict-status="{{ claim_proof_card.research_completion.conflict_status }}"
+        >
+            <div class="audit-top">
+                <div>
+                    <p class="section-eyebrow">{{ claim_proof_card.eyebrow }}</p>
+                    <h2 class="section-title">{{ claim_proof_card.title }}</h2>
+                </div>
+                <span class="audit-status {{ claim_proof_card.status_class }}">{{ claim_proof_card.status_label }}</span>
+            </div>
+            <div class="boundary">{{ claim_proof_card.summary }}</div>
+            <div class="audit-rules" role="table" aria-label="claim proof rows">
+            {% for row in claim_proof_card.rows %}
+                <div
+                    class="audit-rule-row {{ row.row_class }}"
+                    role="row"
+                    data-testid="portal-case-claim-proof-{{ row.label|string|lower|replace(' ', '-') }}"
+                    data-claim-proof-status="{{ row.status }}"
+                    data-claim-status="{{ row.claim_status }}"
+                    data-conflict-status="{{ row.conflict_status }}"
+                    data-primary-blocker-check-id="{{ row.primary_blocker_check_id }}"
+                    data-primary-blocker-rule-id="{{ row.primary_blocker_rule_id }}"
+                    data-primary-blocker-evidence-ref="{{ row.primary_blocker_evidence_ref }}"
+                >
+                    <div role="cell"><span class="audit-rule-status {{ row.row_class }}">{{ row.status }}</span></div>
+                    <div class="audit-rule-label" role="cell">{{ row.label }}</div>
+                    <div class="audit-rule-value" role="cell">{{ row.owner }}</div>
+                    <div class="audit-rule-detail" role="cell">
+                        Proof: {{ row.proof_summary }}
+                        {% if row.primary_blocker and row.primary_blocker != "none" %}
+                        · Blocker: {{ row.primary_blocker }}
+                        · Next: {{ row.next_action }}
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+            </div>
+        </section>
+        {% endif %}
+
+        {% if research_quality_analysis_card %}
+        <section
+            class="card audit-card"
+            id="research-quality-analysis"
+            data-testid="portal-case-research-quality-analysis"
+            data-analysis-status="{{ research_quality_analysis_card.status }}"
+            data-typed-blocker-count="{{ research_quality_analysis_card.typed_blockers|length }}"
+        >
+            <div class="audit-top">
+                <div>
+                    <p class="section-eyebrow">{{ research_quality_analysis_card.eyebrow }}</p>
+                    <h2 class="section-title">{{ research_quality_analysis_card.title }}</h2>
+                </div>
+                <span class="audit-status {{ research_quality_analysis_card.status_class }}">{{ research_quality_analysis_card.status }}</span>
+            </div>
+            <div class="boundary" data-testid="portal-case-research-quality-boundary">{{ research_quality_analysis_card.boundary }}</div>
+            <div class="boundary">{{ research_quality_analysis_card.summary }}</div>
+            {% if research_quality_analysis_card.typed_blockers %}
+            <div class="audit-rules" data-testid="portal-case-research-quality-typed-blockers">
+                {% for blocker in research_quality_analysis_card.typed_blockers %}
+                <code>{{ blocker }}</code>
+                {% endfor %}
+            </div>
+            {% endif %}
+            <div class="audit-rules" role="table" aria-label="research quality analysis artifacts" data-testid="portal-case-research-quality-artifacts">
+            {% for artifact in research_quality_analysis_card.artifacts %}
+                <div
+                    class="audit-rule-row {% if artifact.typed_blockers %}fail{% else %}pass{% endif %}"
+                    role="row"
+                    data-testid="portal-case-research-quality-artifact"
+                    data-analysis-kind="{{ artifact.analysis_kind }}"
+                    data-analysis-status="{{ artifact.status }}"
+                >
+                    <div role="cell"><span class="audit-rule-status {% if artifact.typed_blockers %}fail{% else %}pass{% endif %}">{{ artifact.status }}</span></div>
+                    <div class="audit-rule-label" role="cell">{{ artifact.analysis_kind }}</div>
+                    <div class="audit-rule-value" role="cell"><code>{{ artifact.file_name }}</code></div>
+                    <div class="audit-rule-detail" role="cell">
+                        artifact_class={{ artifact.artifact_class }}; candidate_count={{ artifact.candidate_count }}; not_owner_decision={{ artifact.not_owner_decision }}
+                        {% for blocker in artifact.typed_blockers %}
+                        · blocker={{ blocker }}
+                        {% endfor %}
+                        {% if artifact.evidence_href %}
+                        · <a href="{{ artifact.evidence_href }}" title="{{ artifact.evidence_ref }}">Open evidence</a>
+                        {% else %}
+                        · evidence={{ artifact.evidence_ref }}
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+            </div>
+        </section>
+        {% endif %}
+
+        {% if assurance_overview_card %}
+        <section class="card audit-card" id="assurance-overview-card">
+            <div class="audit-top">
+                <div>
+                    <p class="section-eyebrow">{{ assurance_overview_card.eyebrow }}</p>
+                    <h2 class="section-title">{{ assurance_overview_card.title }}</h2>
+                </div>
+                <span class="audit-status {{ assurance_overview_card.status_class }}">{{ assurance_overview_card.status_label }}</span>
+            </div>
+            <div class="boundary">{{ assurance_overview_card.summary }}</div>
+            <div class="audit-rules" role="table" aria-label="assurance overview rows">
+            {% for row in assurance_overview_card.rows %}
+                <div class="audit-rule-row {{ row.status }}" role="row">
+                    <div role="cell"><span class="audit-rule-status {{ row.status }}">{{ row.status_label }}</span></div>
+                    <div class="audit-rule-label" role="cell">{{ row.label }}</div>
+                    <div class="audit-rule-value" role="cell">{{ row.value }}</div>
+                    <div class="audit-rule-detail" role="cell">{{ row.detail }}</div>
+                </div>
+            {% endfor %}
+            </div>
+            {% if assurance_overview_card.meta_line %}
+            <div class="audit-meta-line">{{ assurance_overview_card.meta_line }}</div>
+            {% endif %}
+        </section>
+        {% endif %}
+
+        <section class="card focus-guide">
+            <h2 class="section-title">阅读建议 / Suggested Reading</h2>
+            <div class="focus-grid">
+            {% for panel in focus_panels %}
+                <article class="focus-panel {{ panel.class_name }}">
+                    <strong>{{ panel.title }}</strong>
+                    <p>{% if panel.code %}<code>{{ panel.body }}</code>{% else %}{{ panel.body }}{% endif %}</p>
+                    {% if panel.links %}
+                    <div class="focus-actions">
+                    {% for link in panel.links %}
+                        {% if link.href %}
+                        <a class="portal-link {{ link.variant }}" href="{{ link.href }}" title="{{ link.title }}">{{ link.label }}</a>
+                        {% else %}
+                        <span class="portal-link {{ link.variant }} disabled">{{ link.label }}</span>
+                        {% endif %}
+                    {% endfor %}
+                    </div>
+                    {% endif %}
+                    {% if panel.metrics %}
+                    <div class="focus-metrics">
+                    {% for metric in panel.metrics %}
+                        <span>{{ metric }}</span>
+                    {% endfor %}
+                    </div>
+                    {% endif %}
+                </article>
+            {% endfor %}
+            </div>
+        </section>
+
+        {% if dual_layer_snapshot_fragment_html %}
+        {{ dual_layer_snapshot_fragment_html | safe }}
+        {% elif dual_layer_snapshot %}
+        {% include "portal_case_dual_layer_fragment.html.j2" %}
+        {% elif dual_layer_snapshot_fragment %}
+        <section
+            class="card snapshot-section"
+            id="dual-layer-snapshot"
+            hx-get="{{ dual_layer_snapshot_fragment.href }}"
+            hx-trigger="load"
+            hx-swap="outerHTML"
+        >
+            <p class="section-eyebrow">s5 dual-layer snapshot</p>
+            <h2 class="section-title">{{ dual_layer_snapshot_fragment.title }}</h2>
+            <div class="boundary">{{ dual_layer_snapshot_fragment.summary }}</div>
+            <div class="timeline-meta">
+                <span class="timeline-state">后台补充中 / Loading</span>
+                <span class="htmx-indicator">加载中...</span>
+            </div>
+        </section>
+        {% endif %}
+
+        {% if backtest_snapshot %}
+        <section class="card snapshot-section" id="backtest-snapshot">
+            <p class="section-eyebrow">portal case first slice</p>
+            <h2 class="section-title">{{ backtest_snapshot.title }}</h2>
+            <div class="boundary snapshot-summary">{{ backtest_snapshot.summary }}</div>
+            <div class="snapshot-metrics">
+            {% for metric in backtest_snapshot.metrics %}
+                <article class="snapshot-card">
+                    <span class="snapshot-metric-label">{{ metric.label }}</span>
+                    <div class="snapshot-metric-value">
+                    {% if metric.code %}
+                        <code>{{ metric.value }}</code>
+                    {% else %}
+                        {{ metric.value }}
+                    {% endif %}
+                    </div>
+                </article>
+            {% endfor %}
+            </div>
+            <div class="snapshot-links" style="margin-top: 14px; margin-bottom: 14px;">
+            {% for link in backtest_snapshot.links %}
+                <a class="portal-link {{ link.variant }}" href="{{ link.href }}" title="{{ link.title }}">{{ link.label }}</a>
+            {% endfor %}
+            </div>
+            <div class="chart-grid">
+            {% for chart in backtest_snapshot.charts %}
+                <article class="chart-card">
+                    <h3>{{ chart.title }}</h3>
+                    {{ chart.html | safe }}
+                </article>
+            {% endfor %}
+            </div>
+        </section>
+        {% endif %}
+
+        {% if run_attempts %}
+        <section class="card">
+            <p class="section-eyebrow">research execution trail</p>
+            <h2 class="section-title">{{ run_attempts.title }}</h2>
+            <div class="boundary">{{ run_attempts.summary }}</div>
+            <div class="attempt-grid" style="margin-top: 14px;">
+            {% for attempt in run_attempts.attempts %}
+                <article class="attempt-card">
+                    <strong>{{ attempt.display_name }}</strong>
+                    <div class="attempt-meta">
+                        <span class="{{ attempt.status_class }}">{{ attempt.status_label }}</span>
+                        <span>{{ attempt.finished_at }}</span>
+                        {% if attempt.request_id %}<span>request_id={{ attempt.request_id }}</span>{% endif %}
+                        <span>{{ attempt.run_dir_name }}</span>
+                    </div>
+                    <div class="timeline-evidence">
+                    {% for link in attempt.links %}
+                        <a class="portal-link {{ link.variant }}" href="{{ link.href }}" title="{{ link.title }}">{{ link.label }}</a>
+                    {% endfor %}
+                    </div>
+                </article>
+            {% endfor %}
+            </div>
+            {% if run_attempts.history_link %}
+            <div class="snapshot-links" style="margin-top: 12px;">
+                <a class="portal-link {{ run_attempts.history_link.variant }}" href="{{ run_attempts.history_link.href }}" title="{{ run_attempts.history_link.title }}">{{ run_attempts.history_link.label }}</a>
+            </div>
+            {% endif %}
+            {% if run_attempts.hidden_count %}
+            <div class="boundary" style="margin-top: 12px;">还有 {{ run_attempts.hidden_count }} 次更早尝试未展开；portal 只保留 recent preview，不把页面变成完整 run index。</div>
+            {% endif %}
+        </section>
+        {% endif %}
+
+        <section class="card">
+            <h2 class="section-title">阶段轨道 / Stage Track</h2>
+            <div class="boundary" style="font-size: .84rem;">当前阶段展开，其余折叠。</div>
+            <div class="timeline-stack" style="margin-top: 14px;">
+            {% for stage in stage_cards %}
+                <details class="stage-accordion {{ stage.class_names }}"{% if stage.expanded %} open{% endif %}>
+                    <summary>
+                        <div class="stage-summary-top">
+                            <div class="stage-summary-copy">
+                                <div class="timeline-key">{{ stage.key }}</div>
+                                <h3>{{ stage.label }}</h3>
+                                <p>{{ stage.hint }}</p>
+                            </div>
+                            <div class="stage-summary-meta">
+                                <span>{{ stage.state }}</span>
+                                {% for badge in stage.summary_badges %}
+                                <span>{{ badge }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </summary>
+                    <div class="stage-body">
+                        {% if stage.subtracks %}
+                        <div class="subtrack-grid">
+                        {% for track in stage.subtracks %}
+                            <article class="subtrack-card {{ 'final' if 'final' in track.eyebrow else 'prescreen' }}">
+                                <div class="subtrack-top">
+                                    <div>
+                                        <div class="subtrack-eyebrow">{{ track.eyebrow }}</div>
+                                        <strong>{{ track.label }}</strong>
+                                    </div>
+                                    <span class="timeline-state">{{ track.state }}</span>
+                                </div>
+                                <p class="subtrack-summary">{{ track.summary }}</p>
+                                <div class="timeline-row" style="margin-top: 10px;">
+                                {% if track.primary %}
+                                    <a class="portal-link {{ track.primary.variant }}" href="{{ track.primary.href }}" title="{{ track.primary.title }}">{{ track.primary.label }}</a>
+                                {% else %}
+                                    <span class="portal-link disabled">waiting for checkpoint</span>
+                                {% endif %}
+                                </div>
+                                {% if track.evidence %}
+                                <details class="evidence-toggle">
+                                    <summary>查看辅助证据 / Show Supporting Evidence</summary>
+                                    <div class="timeline-evidence" style="margin-top: 10px;">
+                                    {% for link in track.evidence %}
+                                        <a class="portal-link {{ link.variant }}" href="{{ link.href }}" title="{{ link.title }}">{{ link.label }}</a>
+                                    {% endfor %}
+                                    </div>
+                                </details>
+                                {% endif %}
+                            </article>
+                        {% endfor %}
+                        </div>
+                        {% endif %}
+                        <div class="timeline-row">
+                        {% if stage.primary and stage.primary.href %}
+                            <a class="portal-link {{ stage.primary.variant }}" href="{{ stage.primary.href }}" title="{{ stage.primary.title or stage.primary.label }}">{{ stage.primary.label }}</a>
+                        {% elif stage.primary %}
+                            <span class="portal-link {{ stage.primary.variant }} disabled" title="{{ stage.primary.title or stage.primary.label }}">{{ stage.primary.label }}</span>
+                        {% else %}
+                            <span class="portal-link disabled">waiting for primary report</span>
+                        {% endif %}
+                        </div>
+                        {% if stage.evidence %}
+                        <details class="evidence-toggle">
+                            <summary>查看辅助证据 / Show Supporting Evidence</summary>
+                            <div class="timeline-evidence" style="margin-top: 10px;">
+                            {% for link in stage.evidence %}
+                                {% if link.href %}
+                                <a class="portal-link {{ link.variant }}" href="{{ link.href }}" title="{{ link.title }}">{{ link.label }}</a>
+                                {% else %}
+                                <span class="portal-link {{ link.variant }} disabled">{{ link.label }}</span>
+                                {% endif %}
+                            {% endfor %}
+                            </div>
+                        </details>
+                        {% endif %}
+                    </div>
+                </details>
+            {% endfor %}
+            </div>
+        </section>
+    </div>
+</body>
+</html>

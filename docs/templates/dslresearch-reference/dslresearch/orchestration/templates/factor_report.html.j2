@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8" />
+    <title>{{ report_title }}</title>
+    <style>
+        body { font-family: Segoe UI, Microsoft YaHei, sans-serif; margin: 24px; color: #1f2328; background: #f6f8fa; }
+        h1 { margin-bottom: 8px; }
+        .meta { color: #57606a; margin-bottom: 20px; }
+        .card { background: white; border-radius: 12px; padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,.08); margin-bottom: 18px; }
+        .hint { color: #57606a; line-height: 1.7; }
+        .hint strong { color: #1f2328; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid #d0d7de; vertical-align: top; }
+        th { background: #f6f8fa; }
+        tr.pass td { background: #e7f5e7; }
+        tr.inconclusive td { background: #fff8c5; }
+        tr.fail td { background: #fdecec; }
+        code { background: #f0f3f6; padding: 2px 6px; border-radius: 6px; }
+        .curve-meta { color: #57606a; font-size: 12px; margin-top: 4px; }
+    </style>
+</head>
+<body>
+    <h1>{{ report_title }}</h1>
+    <div class="meta">总记录: {{ total_rows }} 条，通过候选: {{ pass_rows }} 条，失败: {{ fail_rows }} 条，待复核: {{ inconclusive_rows }} 条</div>
+    <div class="card hint">
+        <div><strong>报告视角 / Scope</strong></div>
+        <div>{{ scope_text }}</div>
+        <div style="margin-top: 8px;"><strong>排序规则 / Sort Order</strong></div>
+        <div>通过项优先，其次按 <code>final_sharpe</code> 与 <code>prescreen_sharpe</code> 从高到低排序，方便先看 case 级 study winner，再看失败证据。</div>
+        {{ no_pass_note | safe }}
+    </div>
+    <div class="card hint">
+        <div><strong>下一动作 / Next Action</strong></div>
+        <div>1. 先看 <code>verdict</code> 和 <code>final_sharpe</code>，优先筛选真正通过双层验收的策略。</div>
+        <div>2. 再看 <code>reason_summary</code> 与 <code>equity_curve</code>，确认收益曲线是否平稳，而不是只盯一个 Sharpe 数字。</div>
+        <div>3. <code>equity_curve</code> 默认优先展示 <code>final_result_uri</code>；若该记录没有 final 结果，才回退展示 <code>prescreen_result_uri</code>。曲线下方已明确标注这条资金曲线对应的研发流阶段与执行模块。</div>
+        <div>4. 若要继续复核，优先复制 <code>acceptance_id</code>，执行 <code>dslresearch rerun-acceptance-candidate --acceptance-id &lt;id&gt;</code>；若同一 <code>strategy_key</code> 只有一条记录，也可用 <code>--strategy-key</code>。</div>
+        <div style="margin-top: 8px;"><strong>执行模块：</strong><code>{{ execution_module }}</code> — {{ execution_note }}</div>
+    </div>
+    <div class="card hint">
+        <div><strong>可回溯锚点 / Traceability</strong></div>
+        {{ traceability_html | safe }}
+    </div>
+    <div class="card">
+        <table>
+            <thead>
+                <tr>
+                    <th>research_id</th>
+                    <th>acceptance_id</th>
+                    <th>strategy_key</th>
+                    <th>prescreen_sharpe</th>
+                    <th>final_sharpe</th>
+                    <th>verdict</th>
+                    <th>reason_summary</th>
+                    <th>equity_curve</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{ table_rows_html | safe }}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

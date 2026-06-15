@@ -5,9 +5,13 @@ __pycache__/
 target/
 node_modules/
 dist/
+frontend/dist/
+frontend/dist-*/
+frontend/tsconfig.tsbuildinfo
+docs/acceptance/browser-evidence/frontend-test-output/
+docs/acceptance/browser-evidence/*/test-output/
 .env
 .env.*
 *.log
 *.sqlite
 *.db
-

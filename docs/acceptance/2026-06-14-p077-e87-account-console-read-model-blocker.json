@@ -1,0 +1,70 @@
+{
+  "artifact_type": "account_console_p077_e87_read_model_handoff_blocker",
+  "schema": "account-console.p077-e87-read-model-handoff-blocker.v1",
+  "created_at": "2026-06-14T11:41:11Z",
+  "owner_repo": "D:/Nautilus/nautilus_account_console",
+  "selected_lane": "ADR0045 Account Console contract-first read-model handoff check for P077 E87/E88",
+  "action_mode": "typed_blocker_no_ui_no_runtime_truth",
+  "source_evidence": {
+    "p077_e88_governance_handoff_audit": {
+      "path": "D:/Nautilus/nautilus_strategies/docs/changes/20260614__paper__p077-safer-retry-lane/evidence/20260614T113441Z_e87_post_fill_owner_handoff_audit_no_send.json",
+      "sha256": "sha256:a8df0faca33ce1beac89f2e0068c4a270ed69534c9279361826a36bda7966628"
+    },
+    "ctp_e87_filled_reconciled_aggregate": {
+      "path": "D:/Nautilus/nautilus_ctp_adapter/output/reports/p077-paper-lifecycle/20260614T112841Z/p077_t6_e86_filled_close_yesterday_reconciled.json",
+      "sha256": "sha256:cb2d8998f72062e48bada1c663eabc57ca98fe84a806472a2c5fb5e52489368d"
+    }
+  },
+  "handoff_request": {
+    "account_alias": "19053",
+    "instrument": "rb2610",
+    "bounded_paper_slice": "SELL CLOSEYESTERDAY 1",
+    "owner_truth_status": "filled_position_delta_reconciled_in_ctp_owner_artifact",
+    "requested_projection": "read_only_order_lifecycle_or_paper_slice_observation_fixture"
+  },
+  "blocker": {
+    "type": "missing_account_console_order_lifecycle_read_model_contract",
+    "status": "blocked",
+    "reason": "Account Console currently has daily closeout/account health panel fixtures, but no accepted order lifecycle or bounded Paper slice read-model contract that can project P077 E87/E88 typed refs without inventing UI/runtime truth.",
+    "retry_condition": "Create an Account Console-owned read-only order lifecycle or bounded Paper slice panel contract and fixture shape that requires source_ref, checksum, schema_version, producer_owner, projection_owner and rejection rules before any UI route renders E87/E88."
+  },
+  "existing_contracts_reviewed": {
+    "account_health_panel_contract": "contracts/ui/panels/account_health_panel.contract.json",
+    "account_health_fixtures_dir": "contracts/ui/fixtures/daily_closeout",
+    "fit_for_p077_e87_order_lifecycle_projection": false
+  },
+  "owner_boundary": {
+    "account_console_may_define_read_model_contracts_and_fixtures": true,
+    "account_console_may_render_projection_after_contract_fixture": true,
+    "account_console_must_not_write_ctp_lifecycle_truth": true,
+    "account_console_must_not_write_position_or_fill_truth": true,
+    "account_console_must_not_assert_paper_ready": true,
+    "account_console_must_not_assert_live_ready": true,
+    "account_console_must_not_assert_broker_tradable": true,
+    "account_console_must_not_assert_admission_or_capital_truth": true
+  },
+  "this_artifact_actions": {
+    "market_query": false,
+    "account_query": false,
+    "paper_send": false,
+    "native_send": false,
+    "live_send": false,
+    "submit": false,
+    "cancel": false,
+    "ui_mutation": false,
+    "frontend_route_change": false,
+    "runtime_truth_write": false,
+    "ledger_truth_write": false,
+    "new_read_model_contract": false,
+    "new_fixture_projection": false
+  },
+  "acceptance_claims": {
+    "account_console_handoff_ready": false,
+    "account_console_runtime_truth": false,
+    "paper_ready": false,
+    "live_ready": false,
+    "production_ready": false,
+    "capital_allocated": false,
+    "loop_complete": false
+  }
+}

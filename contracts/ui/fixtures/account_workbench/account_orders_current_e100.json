@@ -1,0 +1,71 @@
+{
+  "schema_version": "account_orders_panel.v1",
+  "workbench": "Account Workbench",
+  "panel": "Account Orders Panel",
+  "route": "/accounts/{account_id}/orders",
+  "fixture_state": "current_orders",
+  "context": {
+    "trading_day": "2026-06-14",
+    "session_id": "account-workbench.fixture.20260614.003",
+    "run_id": "account-orders.fixture.e100-current.001",
+    "reducer_checkpoint_id": "account-orders.checkpoint.e100.001",
+    "reducer_checkpoint_ts": "2026-06-14T14:31:38Z",
+    "stream_state": "healthy",
+    "projection_owner": "account-console-contracts",
+    "source_authority": "deterministic_fixture"
+  },
+  "account": {
+    "account_id": "acct.demo-19053",
+    "account_alias": "19053",
+    "account_kind": "real_feed_sandbox_paper"
+  },
+  "orders": [
+    {
+      "account_id": "acct.demo-19053",
+      "client_order_id": "p077-e100-rb2610-closeyesterday",
+      "instrument": "rb2610",
+      "side": "SELL",
+      "offset": "CLOSEYESTERDAY",
+      "order_type": "LIMIT",
+      "limit_price": 3158.0,
+      "quantity": 1,
+      "filled_quantity": 1,
+      "remaining_quantity": 0,
+      "status": "filled",
+      "lifecycle_ref": "fixture://account-workbench/orders/p077-e100-rb2610-closeyesterday/lifecycle",
+      "report_provenance_ref": "D:/Nautilus/nautilus_ctp_adapter/output/reports/p077-paper-lifecycle/20260614T130516Z/p077_t6_e100_bounded_paper_close_yesterday_filled_reconciled.json",
+      "source_ref": "D:/Nautilus/nautilus_ctp_adapter/output/reports/p077-paper-lifecycle/20260614T130516Z/p077_t6_e100_bounded_paper_close_yesterday_filled_reconciled.json",
+      "checksum": "sha256:698340f03f5eb6ca03aa3006d295024850bf2a53a5687dee1178df421c635dbc"
+    }
+  ],
+  "blockers": [],
+  "source_refs": [
+    {
+      "kind": "filled_reconciled_order_lifecycle",
+      "owner": "nautilus_ctp_adapter",
+      "source_ref": "D:/Nautilus/nautilus_ctp_adapter/output/reports/p077-paper-lifecycle/20260614T130516Z/p077_t6_e100_bounded_paper_close_yesterday_filled_reconciled.json",
+      "checksum": "sha256:698340f03f5eb6ca03aa3006d295024850bf2a53a5687dee1178df421c635dbc",
+      "authority": "external owner artifact projected read-only; not order truth inside Account Console"
+    }
+  ],
+  "boundaries": {
+    "read_only_projection": true,
+    "runtime_truth": false,
+    "account_truth": false,
+    "order_truth": false,
+    "ledger_truth": false,
+    "ui_truth": false,
+    "paper_ready": false,
+    "live_ready": false,
+    "broker_tradable": false,
+    "admission_truth": false,
+    "capital_truth": false,
+    "action_controls": false
+  },
+  "rejection_rules": [
+    "Reject this fixture as Account Console order truth; it is a read-only projection of an external owner artifact.",
+    "Reject final row status as lifecycle truth unless the order detail fixture provides official event refs.",
+    "Reject UI text, screenshots, latest/debug paths and raw report text as replacement order authority.",
+    "Reject any submit, cancel, replace, broker or funding action from this fixture."
+  ]
+}

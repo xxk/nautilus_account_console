@@ -1,0 +1,51 @@
+{
+  "schema_version": "account_equity_panel.v1",
+  "workbench": "Account Workbench",
+  "panel": "Account Equity Panel",
+  "route": "/accounts/{account_id}/equity",
+  "fixture_state": "empty",
+  "context": {
+    "trading_day": "2026-06-14",
+    "session_id": "account-workbench.fixture.20260614.005",
+    "run_id": "account-equity.fixture.empty.001",
+    "reducer_checkpoint_id": "account-equity.checkpoint.empty.001",
+    "reducer_checkpoint_ts": "2026-06-14T15:11:33Z",
+    "stream_state": "empty",
+    "projection_owner": "account-console-contracts",
+    "source_authority": "deterministic_fixture"
+  },
+  "account": {
+    "account_id": "acct.demo-empty",
+    "account_alias": "empty",
+    "account_kind": "sandbox_paper"
+  },
+  "equity_points": [],
+  "blockers": [],
+  "source_refs": [
+    {
+      "kind": "empty_equity_projection",
+      "owner": "account-console-contracts",
+      "source_ref": "fixture://account-workbench/equity/empty",
+      "checksum": "sha256:a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4",
+      "authority": "empty fixture only"
+    }
+  ],
+  "boundaries": {
+    "read_only_projection": true,
+    "runtime_truth": false,
+    "account_truth": false,
+    "order_truth": false,
+    "ledger_truth": false,
+    "ui_truth": false,
+    "paper_ready": false,
+    "live_ready": false,
+    "broker_tradable": false,
+    "admission_truth": false,
+    "capital_truth": false,
+    "action_controls": false
+  },
+  "rejection_rules": [
+    "Reject empty equity fixture as ledger continuity.",
+    "Reject missing equity points as silently healthy state."
+  ]
+}

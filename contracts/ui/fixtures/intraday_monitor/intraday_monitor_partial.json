@@ -1,0 +1,83 @@
+{
+  "schema_version": "intraday_monitor_panel.v1",
+  "workbench": "Intraday Monitor",
+  "panel": "Intraday Monitor Exception Queue Panel",
+  "route": "/monitor",
+  "fixture_state": "partial",
+  "context": {
+    "trading_day": "2026-06-14",
+    "session_id": "intraday-monitor.fixture.20260614.005",
+    "monitor_checkpoint_id": "intraday-monitor.checkpoint.partial.001",
+    "monitor_checkpoint_ts": "2026-06-14T16:35:36Z",
+    "stream_state": "partial",
+    "projection_owner": "account-console-contracts",
+    "source_authority": "deterministic_fixture"
+  },
+  "lag_summary": {
+    "max_lag_ms": null,
+    "stale_stream_count": 0,
+    "open_incident_count": 1,
+    "blocked_source_count": 0
+  },
+  "exceptions": [
+    {
+      "exception_id": "monitor.exception.partial-lag.001",
+      "kind": "incident",
+      "severity": "warning",
+      "owner": "external monitor source owner",
+      "next_action": "provide lag probe checksum before browser implementation closeout",
+      "source_ref": "fixture://intraday-monitor/exceptions/partial-lag-001",
+      "checksum": "sha256:e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1"
+    }
+  ],
+  "streams": [
+    {
+      "stream_id": "stream.market.rb2610",
+      "state": "partial",
+      "last_event_ts": "2026-06-14T16:35:20Z",
+      "lag_ms": null,
+      "source_ref": "fixture://intraday-monitor/streams/rb2610-partial",
+      "checksum": "sha256:e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2"
+    }
+  ],
+  "incidents": [
+    {
+      "incident_id": "monitor.incident.partial-lag.001",
+      "category": "lag_spike",
+      "severity": "warning",
+      "status": "partial",
+      "owner": "external monitor source owner",
+      "next_action": "publish missing lag checksum",
+      "source_ref": "fixture://intraday-monitor/incidents/partial-lag-001",
+      "checksum": "sha256:e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3"
+    }
+  ],
+  "blockers": [],
+  "source_refs": [
+    {
+      "kind": "monitor_snapshot",
+      "owner": "account-console-contracts",
+      "source_ref": "fixture://intraday-monitor/partial",
+      "checksum": "sha256:e4e4e4e4e4e4e4e4e4e4e4e4e4e4e4e4e4e4e4e4e4e4e4e4e4e4e4e4e4e4e4e4",
+      "authority": "deterministic partial monitor fixture; not runtime authority"
+    }
+  ],
+  "boundaries": {
+    "read_only_projection": true,
+    "runtime_truth": false,
+    "account_truth": false,
+    "order_truth": false,
+    "ledger_truth": false,
+    "ui_truth": false,
+    "paper_ready": false,
+    "live_ready": false,
+    "broker_tradable": false,
+    "admission_truth": false,
+    "capital_truth": false,
+    "action_controls": false
+  },
+  "rejection_rules": [
+    "Reject partial fixture as complete monitor evidence.",
+    "Reject missing lag value as healthy stream proof."
+  ]
+}

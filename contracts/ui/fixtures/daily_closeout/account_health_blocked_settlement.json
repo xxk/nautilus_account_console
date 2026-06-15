@@ -1,0 +1,106 @@
+{
+  "schema_version": "account_health_panel.v1",
+  "workbench": "Daily Closeout",
+  "panel": "Account Health Panel",
+  "route": "/closeout",
+  "fixture_state": "blocked",
+  "context": {
+    "trading_day": "2026-06-13",
+    "session_id": "session.demo-20260613",
+    "closeout_run_id": "closeout.run.20260613.blocked",
+    "reducer_checkpoint_id": "reducer.checkpoint.20260613.017",
+    "reducer_checkpoint_ts": "2026-06-13T08:41:00Z",
+    "stream_state": "warning",
+    "last_cursor": 951,
+    "source_ref": "fixture://ui/daily-closeout/account-health-blocked-settlement.json",
+    "checksum": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+  },
+  "summary": {
+    "total_accounts": 3,
+    "closeout_completed": 1,
+    "closeout_blocked": 2,
+    "settlement_blocked": 2,
+    "stale_or_partial": 0,
+    "open_blockers": 2
+  },
+  "filters": {
+    "account_types": ["real_feed_sandbox_paper", "broker_paper_probe"],
+    "closeout_states": ["complete", "blocked"],
+    "settlement_states": ["settled", "blocked"],
+    "blocker_severities": ["high", "critical"]
+  },
+  "accounts": [
+    {
+      "account_id": "paper.demo-01",
+      "account_type": "real_feed_sandbox_paper",
+      "owner": "pm-alpha",
+      "closeout_state": "complete",
+      "settlement_state": "settled",
+      "equity_continuity": "continuous",
+      "blocker_count": 0,
+      "source_ref": "readmodel://daily-closeout/2026-06-13/paper.demo-01",
+      "checksum": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+      "closeout_run_id": "closeout.run.20260613.blocked",
+      "settlement_run_id": "settlement.run.20260613.001",
+      "equity_curve_artifact_id": "artifact.equity.paper.demo-01.20260613",
+      "latest_blocker_id": null,
+      "last_cursor": 381,
+      "last_checkpoint_ts": "2026-06-13T08:33:20Z",
+      "blockers": []
+    },
+    {
+      "account_id": "paper.demo-03",
+      "account_type": "real_feed_sandbox_paper",
+      "owner": "pm-gamma",
+      "closeout_state": "blocked",
+      "settlement_state": "blocked",
+      "equity_continuity": "gap",
+      "blocker_count": 1,
+      "source_ref": "readmodel://daily-closeout/2026-06-13/paper.demo-03",
+      "checksum": "sha256:3333333333333333333333333333333333333333333333333333333333333333",
+      "closeout_run_id": "closeout.run.20260613.blocked",
+      "settlement_run_id": "settlement.run.20260613.003",
+      "equity_curve_artifact_id": "artifact.equity.paper.demo-03.20260613",
+      "latest_blocker_id": "blocker.settlement.paper.demo-03.20260613",
+      "last_cursor": 884,
+      "last_checkpoint_ts": "2026-06-13T08:39:14Z",
+      "blockers": [
+        {
+          "blocker_id": "blocker.settlement.paper.demo-03.20260613",
+          "severity": "critical",
+          "kind": "settlement_carryover_gap",
+          "owner": "ops-settlement",
+          "next_diagnostic_ref": "evidence://settlement/paper.demo-03/2026-06-13/carryover-gap",
+          "source_ref": "ledger://settlement/blockers/2026-06-13/paper.demo-03"
+        }
+      ]
+    },
+    {
+      "account_id": "probe.demo-04",
+      "account_type": "broker_paper_probe",
+      "owner": "ops-beta",
+      "closeout_state": "blocked",
+      "settlement_state": "blocked",
+      "equity_continuity": "continuous",
+      "blocker_count": 1,
+      "source_ref": "readmodel://daily-closeout/2026-06-13/probe.demo-04",
+      "checksum": "sha256:4444444444444444444444444444444444444444444444444444444444444444",
+      "closeout_run_id": "closeout.run.20260613.blocked",
+      "settlement_run_id": "settlement.run.20260613.004",
+      "equity_curve_artifact_id": "artifact.equity.probe.demo-04.20260613",
+      "latest_blocker_id": "blocker.settlement.probe.demo-04.20260613",
+      "last_cursor": 951,
+      "last_checkpoint_ts": "2026-06-13T08:41:00Z",
+      "blockers": [
+        {
+          "blocker_id": "blocker.settlement.probe.demo-04.20260613",
+          "severity": "high",
+          "kind": "missing_settlement_artifact",
+          "owner": "ops-settlement",
+          "next_diagnostic_ref": "evidence://settlement/probe.demo-04/2026-06-13/missing-artifact",
+          "source_ref": "ledger://settlement/blockers/2026-06-13/probe.demo-04"
+        }
+      ]
+    }
+  ]
+}

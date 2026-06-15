@@ -30,6 +30,9 @@ jobs:
       - name: Test backend
         run: python -m pytest backend/tests
 
+      - name: Validate owner boundaries
+        run: python scripts/validate_owner_boundaries.py
+
   rust:
     name: Rust hotpath
     runs-on: ubuntu-latest
@@ -63,6 +66,10 @@ jobs:
         working-directory: frontend
         run: npm run build
 
+      - name: Validate frontend fixtures
+        working-directory: frontend
+        run: npm run test
+
   boundary:
     name: Read-only boundary scan
     runs-on: ubuntu-latest
@@ -76,4 +83,3 @@ jobs:
       - name: Scan implementation for forbidden UI/runtime claims
         run: |
           ! rg -n "Paper ready|Live ready|admitted|production ready|capital allocated|can trade|place order|latest/|debug/|raw report.*truth|runtime truth|capital truth|submit order|cancel order|replace order" frontend/src backend/src hotpath-rs/crates
-

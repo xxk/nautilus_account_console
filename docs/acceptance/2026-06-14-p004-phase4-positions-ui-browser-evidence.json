@@ -1,0 +1,146 @@
+{
+  "schema": "account-console.p004-phase4-positions-ui-browser-evidence.v1",
+  "created_at": "2026-06-14T15:01:51.888Z",
+  "proposal": {
+    "proposal_id": "p004-account-workbench-summary-panel",
+    "phase": "phase_4_positions_ui",
+    "status": "implementation_browser_evidence"
+  },
+  "action_mode": "read_only_ui_implementation_no_runtime_truth",
+  "route": "/accounts/{account_id}/positions",
+  "implemented_route": "/accounts/acct.demo-19053/positions",
+  "source_evidence": [
+    {
+      "kind": "p004_phase4_positions_contract_fixtures",
+      "path": "docs/acceptance/2026-06-14-p004-phase4-positions-contract-fixtures.json",
+      "checksum": "sha256:631949614834dbb31b918e381da06c772a5579a8572fd8670c540eb8596b6c91",
+      "authority": "account-console-acceptance"
+    }
+  ],
+  "frontend_files": [
+    {
+      "path": "frontend/src/App.tsx",
+      "checksum": "sha256:0681ba3f3c912e2fe5ec0af8795391fe9b063fc3cfb06b0fdca7caf14de07e66"
+    },
+    {
+      "path": "frontend/src/types.ts",
+      "checksum": "sha256:099da639ddd0d7810ae7b360d83e483e410dfe8630cda0f168766bc8a29ce3e2"
+    },
+    {
+      "path": "frontend/src/styles.css",
+      "checksum": "sha256:02ec81b8ab465f373d2d8dd50b5eba93f8d75698cdc51bb98fb269a864912721"
+    },
+    {
+      "path": "frontend/tests/e2e/account-positions-panel.spec.ts",
+      "checksum": "sha256:47e86d0cc66f7d776fbb78f8e49b6f6bf46385826cbddbf388c8530606a8401c"
+    }
+  ],
+  "browser_evidence": {
+    "status": "passed",
+    "viewports": ["desktop", "tablet", "mobile"],
+    "states": ["current_positions", "blocked", "partial", "stale_checked_no_screenshot"],
+    "screenshots": [
+      {
+        "viewport": "desktop",
+        "state": "current_positions",
+        "path": "docs/acceptance/browser-evidence/p004-account-workbench-positions-panel/desktop-positions-current.png",
+        "checksum": "sha256:85b3ad62dd5f6951417e876c59bf71735431c0bca3aaa4946036efd7079f26ff"
+      },
+      {
+        "viewport": "desktop",
+        "state": "blocked",
+        "path": "docs/acceptance/browser-evidence/p004-account-workbench-positions-panel/desktop-positions-blocked.png",
+        "checksum": "sha256:375a2a91950a84fbcdf528dfb1f5e446a0106f19a6ed2df833facfacef1b6647"
+      },
+      {
+        "viewport": "desktop",
+        "state": "partial",
+        "path": "docs/acceptance/browser-evidence/p004-account-workbench-positions-panel/desktop-positions-partial.png",
+        "checksum": "sha256:b5a9db11ef14f53a1d5640899dd0742d2759f65b6e732eec904a91e800758fe1"
+      },
+      {
+        "viewport": "tablet",
+        "state": "current_positions",
+        "path": "docs/acceptance/browser-evidence/p004-account-workbench-positions-panel/tablet-positions-current.png",
+        "checksum": "sha256:003788d82b2901eb9a918dc7850966f34119ef8e117ffe534e8e66c169b755b4"
+      },
+      {
+        "viewport": "tablet",
+        "state": "blocked",
+        "path": "docs/acceptance/browser-evidence/p004-account-workbench-positions-panel/tablet-positions-blocked.png",
+        "checksum": "sha256:c5486c2327c5396a723ea7d052c9c0b4fa1f991bf81f0efab4e070717ca01757"
+      },
+      {
+        "viewport": "tablet",
+        "state": "partial",
+        "path": "docs/acceptance/browser-evidence/p004-account-workbench-positions-panel/tablet-positions-partial.png",
+        "checksum": "sha256:2b21370b2d33f3b46177c378522fdd65c420559ed5f3630bdb1ef831a58b7144"
+      },
+      {
+        "viewport": "mobile",
+        "state": "current_positions",
+        "path": "docs/acceptance/browser-evidence/p004-account-workbench-positions-panel/mobile-positions-current.png",
+        "checksum": "sha256:290b5ca7172e2b4529c477de60cbe880b815ac1e22797ee100c2a6e6ac73982a"
+      },
+      {
+        "viewport": "mobile",
+        "state": "blocked",
+        "path": "docs/acceptance/browser-evidence/p004-account-workbench-positions-panel/mobile-positions-blocked.png",
+        "checksum": "sha256:0820647b1e593b250e244262eecb7d6ae98b75adf55ef3afa5b7d95f0b8245e7"
+      },
+      {
+        "viewport": "mobile",
+        "state": "partial",
+        "path": "docs/acceptance/browser-evidence/p004-account-workbench-positions-panel/mobile-positions-partial.png",
+        "checksum": "sha256:4a338a5eb544e4f36edbd2742c8aaa5a1a35a443f62aebcd703057e75b1922c2"
+      }
+    ]
+  },
+  "gates": [
+    {
+      "name": "frontend build",
+      "command": "node node_modules/typescript/bin/tsc -b && node node_modules/vite/bin/vite.js build",
+      "status": "passed"
+    },
+    {
+      "name": "positions frontend e2e",
+      "command": "node node_modules/@playwright/test/cli.js test account-positions-panel.spec.ts",
+      "status": "passed"
+    }
+  ],
+  "accepted_scope": {
+    "positions_contract": true,
+    "positions_fixtures": true,
+    "positions_ui": true,
+    "browser_evidence": true,
+    "account_console_ui_complete": false
+  },
+  "authority_boundary": {
+    "read_only_projection": true,
+    "runtime_truth": false,
+    "account_truth": false,
+    "position_truth": false,
+    "order_truth": false,
+    "ledger_truth": false,
+    "ui_truth": false,
+    "paper_ready": false,
+    "live_ready": false,
+    "broker_tradable": false,
+    "admission_truth": false,
+    "capital_truth": false,
+    "action_controls": false
+  },
+  "runtime_actions": {
+    "paper_send_authorized": false,
+    "paper_send_attempted": false,
+    "native_send_attempted": false,
+    "live_action_attempted": false
+  },
+  "rejection_rules": [
+    "This artifact accepts only the P004 Phase 4 read-only positions UI and browser rendering evidence.",
+    "Screenshots prove rendering only and do not prove account, position, order, ledger or runtime authority.",
+    "The UI must not infer available quantity, carryover, settlement or T+1 state in the browser.",
+    "No account mutation, broker action, readiness, admission, capital or trading authority is created."
+  ]
+}
+

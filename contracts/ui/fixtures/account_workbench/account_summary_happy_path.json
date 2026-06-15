@@ -1,0 +1,90 @@
+{
+  "schema_version": "account_summary_panel.v1",
+  "workbench": "Account Workbench",
+  "panel": "Account Summary Panel",
+  "route": "/accounts/{account_id}",
+  "fixture_state": "happy_path",
+  "context": {
+    "trading_day": "2026-06-14",
+    "session_id": "account-workbench.fixture.20260614.001",
+    "run_id": "account-summary.fixture.happy-path.001",
+    "reducer_checkpoint_id": "account-summary.checkpoint.001",
+    "reducer_checkpoint_ts": "2026-06-14T14:04:51Z",
+    "stream_state": "healthy",
+    "projection_owner": "account-console-contracts",
+    "source_authority": "deterministic_fixture"
+  },
+  "account": {
+    "account_id": "acct.demo-19053",
+    "account_alias": "19053",
+    "account_kind": "real_feed_sandbox_paper",
+    "portfolio_uid": "portfolio.demo.account-workbench",
+    "display_state": "healthy",
+    "base_currency": "CNY"
+  },
+  "balances": {
+    "cash": 1000000.0,
+    "frozen_cash": 0.0,
+    "available_cash": 998000.0,
+    "buying_power": 998000.0
+  },
+  "pnl": {
+    "realized": 158.0,
+    "unrealized": 42.0,
+    "fees": 2.4,
+    "taxes": 0.0
+  },
+  "margin": {
+    "initial_margin": 2000.0,
+    "maintenance_margin": 1800.0,
+    "margin_ratio": 0.002
+  },
+  "settlement": {
+    "state": "settled",
+    "latest_settlement_ref": "fixture://account-workbench/settlement/acct.demo-19053/2026-06-14",
+    "position_carryover_ref": "fixture://account-workbench/carryover/acct.demo-19053/2026-06-14"
+  },
+  "positions": [
+    {
+      "instrument": "rb2610",
+      "net_qty": 3,
+      "market_value": 9474.0,
+      "source_ref": "fixture://account-workbench/positions/acct.demo-19053/rb2610/2026-06-14",
+      "checksum": "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+    }
+  ],
+  "blockers": [],
+  "source_refs": [
+    {
+      "kind": "account_snapshot",
+      "owner": "account-console-contracts",
+      "source_ref": "fixture://account-workbench/snapshots/acct.demo-19053/2026-06-14/happy",
+      "checksum": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "authority": "deterministic account summary fixture; not runtime/account truth"
+    },
+    {
+      "kind": "settlement",
+      "owner": "account-console-contracts",
+      "source_ref": "fixture://account-workbench/settlement/acct.demo-19053/2026-06-14",
+      "checksum": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "authority": "deterministic settlement fixture reference"
+    }
+  ],
+  "boundaries": {
+    "read_only_projection": true,
+    "runtime_truth": false,
+    "ledger_truth": false,
+    "ui_truth": false,
+    "paper_ready": false,
+    "live_ready": false,
+    "broker_tradable": false,
+    "admission_truth": false,
+    "capital_truth": false,
+    "action_controls": false
+  },
+  "rejection_rules": [
+    "Reject this fixture as runtime, broker, ledger, admission, capital or readiness truth.",
+    "Reject UI text, screenshots, floating recent paths and diagnostic payload text as replacement truth for source refs.",
+    "Reject any submit, cancel, replace, funding or broker action inferred from this fixture."
+  ]
+}

@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8" />
+    <title>{{ report_title }}</title>
+    <style>
+        body { font-family: Segoe UI, Microsoft YaHei, sans-serif; margin: 24px; color: #1f2328; background: #f6f8fa; }
+        h1, h2, h3 { margin-top: 0; }
+        .card { background: #ffffff; border-radius: 12px; padding: 18px; box-shadow: 0 1px 3px rgba(0,0,0,.08); margin-bottom: 18px; }
+        .meta { color: #57606a; margin-bottom: 16px; line-height: 1.7; }
+        .meta-line { color: #57606a; margin-bottom: 8px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid #d0d7de; vertical-align: top; }
+        th { background: #f6f8fa; }
+        code, pre { background: #f0f3f6; border-radius: 8px; }
+        code { padding: 2px 6px; }
+        pre { padding: 12px; overflow-x: auto; white-space: pre-wrap; }
+        .badge { display: inline-block; border-radius: 999px; padding: 4px 10px; font-size: 12px; font-weight: 600; }
+        .badge.pass { background: #dafbe1; color: #116329; }
+        .badge.fail { background: #ffebe9; color: #cf222e; }
+        .badge.inconclusive { background: #fff8c5; color: #9a6700; }
+        .curve-box { margin: 14px 0 18px; }
+        .split-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; }
+        .curve-summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin: 18px 0; }
+        .curve-summary-card { background: #fbfcfe; border: 1px solid #d0d7de; border-radius: 12px; padding: 14px 16px; }
+        .curve-summary-card.emphasis { background: linear-gradient(180deg, #fffef6 0%, #fbfcfe 100%); }
+        .curve-summary-card.wide { grid-column: 1 / -1; }
+        .summary-metric-list { margin: 0; }
+        .summary-metric-row { display: grid; grid-template-columns: minmax(120px, 160px) minmax(0, 1fr); gap: 12px; align-items: start; padding-top: 10px; margin-top: 10px; border-top: 1px solid #e6ebf1; }
+        .summary-metric-row:first-child { border-top: none; margin-top: 0; padding-top: 0; }
+        .summary-metric-row dt { color: #57606a; font-weight: 600; }
+        .summary-metric-row dd { margin: 0; line-height: 1.7; word-break: break-word; }
+        .trace-pills { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+        .trace-pill { display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 999px; background: #eef2f6; color: #44505c; font-size: 13px; }
+        .trace-pill strong { color: #57606a; font-size: 12px; }
+        .trace-code-label { color: #57606a; margin-top: 12px; margin-bottom: 8px; font-weight: 600; }
+        .trace-code { display: block; padding: 10px 12px; white-space: pre-wrap; word-break: break-all; }
+        .hint { color: #57606a; line-height: 1.7; }
+        .phase-divider { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 14px; align-items: center; margin: 24px 0 18px; color: #57606a; }
+        .phase-divider::before, .phase-divider::after { content: ""; height: 2px; border-radius: 999px; background: linear-gradient(90deg, rgba(31,35,40,0.08), rgba(31,35,40,0.24)); }
+        .phase-divider-label { display: inline-flex; align-items: center; gap: 10px; padding: 8px 14px; border-radius: 999px; background: linear-gradient(180deg, #fff7d6 0%, #fff1b8 100%); border: 1px solid #e2c96c; color: #7a5d00; font-size: 13px; font-weight: 700; letter-spacing: 0.02em; text-transform: uppercase; }
+        .phase-divider-label strong { color: #5c4600; }
+        .final-gate-zone { margin-bottom: 18px; }
+        .final-gate-zone-banner { display: flex; align-items: center; gap: 12px; margin: 0 0 14px; padding: 12px 16px; border-radius: 14px; border: 1px solid #e7b25a; background: linear-gradient(135deg, #fff4cf 0%, #ffe6b3 45%, #ffd59a 100%); box-shadow: 0 8px 24px rgba(153, 89, 0, 0.10); color: #6a4700; }
+        .final-gate-zone-badge { display: inline-flex; align-items: center; padding: 5px 10px; border-radius: 999px; background: rgba(255, 255, 255, 0.72); border: 1px solid rgba(153, 89, 0, 0.18); font-size: 12px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; }
+        .final-gate-zone-text { display: flex; flex-direction: column; gap: 2px; }
+        .final-gate-zone-title { font-size: 15px; font-weight: 800; color: #5c3c00; }
+        .final-gate-zone-subtitle { font-size: 13px; color: #7a5d00; }
+        ul { margin: 0; padding-left: 20px; }
+        @media (max-width: 900px) { .split-grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <section class="card">
+        <h1>{{ report_title }}</h1>
+        <div class="meta">S5 严肃验收诊断报告 · 先看结论，再看证据。</div>
+        <div><span class="badge {{ record.verdict }}">verdict={{ record.verdict }}</span></div>
+        <div class="meta-line" style="margin-top: 10px;"><strong>页面摘要 / Summary：</strong>{{ page_summary }}</div>
+        <div class="meta-line"><strong>页面生成时间 / Generated At：</strong>{{ generated_at_text }}</div>
+        <div class="meta-line"><strong>复跑命令（下一正式动作 / Next Action）：</strong><code>{{ rerun_command }}</code></div>
+        <div class="meta-line"><strong>接受标识：</strong><code>{{ record.acceptance_id }}</code> &nbsp;|&nbsp; <strong>研究标识：</strong><code>{{ record.research_id }}</code> &nbsp;|&nbsp; <strong>策略键：</strong><code>{{ record.strategy_key }}</code></div>
+        <div class="meta-line"><strong>最终 Sharpe：</strong>{{ "%.4f"|format(record.final_sharpe) }} &nbsp;|&nbsp; <strong>初筛 Sharpe：</strong>{{ "%.4f"|format(record.prescreen_sharpe) }} &nbsp;|&nbsp; <strong>最终成交：</strong>{{ record.final_trade_count }} &nbsp;|&nbsp; <strong>时间窗口：</strong>{{ start_date }} → {{ end_date }}</div>
+        <div class="meta-line"><strong>可回溯锚点 / Traceability</strong></div>
+        {{ traceability_html | safe }}
+    </section>
+    {{ quick_checks_section_html | safe }}
+    {{ prescreen_curve_section_html | safe }}
+    <section class="phase-divider" id="final-gate-phase-divider" aria-label="Phase Boundary Between Prescreen And Final Gate">
+        <div class="phase-divider-label">
+            <span>Phase Boundary</span>
+            <strong>Prescreen -> Final Gate</strong>
+        </div>
+    </section>
+    <section class="final-gate-zone" id="final-gate-zone">
+        <div class="final-gate-zone-banner" id="final-gate-zone-banner">
+            <span class="final-gate-zone-badge">Formal Review</span>
+            <div class="final-gate-zone-text">
+                <div class="final-gate-zone-title">Final Gate Review Zone</div>
+                <div class="final-gate-zone-subtitle">以下内容属于正式复核与审计，不再是 prescreen 预检信息。</div>
+            </div>
+        </div>
+        {{ final_curve_section_html | safe }}
+        {{ strict_audit_section_html | safe }}
+    </section>
+    {{ standard_output_section_html | safe }}
+    <section class="card">
+        <h2>完整配置 / Configuration Details（Evidence Drilldown）</h2>
+        <table>
+            <thead><tr><th>字段</th><th>值</th><th>字段</th><th>值</th></tr></thead>
+            <tbody>
+                <tr><td>acceptance_id</td><td><code>{{ record.acceptance_id }}</code></td><td>research_id</td><td><code>{{ record.research_id }}</code></td></tr>
+                <tr><td>strategy_key</td><td><code>{{ record.strategy_key }}</code></td><td>market</td><td><code>{{ market }}</code></td></tr>
+                <tr><td>backtest_engine</td><td><code>{{ final_backtest_engine }}</code></td><td>final_stage_module</td><td><code>{{ final_execution_module }}</code></td></tr>
+                <tr><td>strategy_repo</td><td><code>{{ record.strategy_repo or '-' }}</code></td><td>strategy_class</td><td><code>{{ record.strategy_class or '-' }}</code></td></tr>
+                <tr><td>strategy_path</td><td><code>{{ record.strategy_repo_relative_path or '-' }}</code></td><td>strategy_module</td><td><code>{{ record.strategy_module or '-' }}</code></td></tr>
+                <tr><td>audit_result_uri</td><td colspan="3"><code>{{ record.audit_result_uri or '-' }}</code></td></tr>
+                <tr><td>factor_op</td><td><code>{{ factor_op }}</code></td><td>timeframe</td><td><code>{{ timeframe }}</code></td></tr>
+                <tr><td>window</td><td>{{ start_date }} -> {{ end_date }}</td><td>catalog_dir</td><td><code>{{ catalog_dir }}</code></td></tr>
+                <tr><td>prescreen_sharpe</td><td>{{ "%.4f"|format(record.prescreen_sharpe) }}</td><td>final_sharpe</td><td>{{ "%.4f"|format(record.final_sharpe) }}</td></tr>
+                <tr><td>prescreen_trade_count</td><td>{{ record.prescreen_trade_count }}</td><td>final_trade_count</td><td>{{ record.final_trade_count }}</td></tr>
+                <tr><td>reason_summary</td><td colspan="3">{{ record.reason_summary }}</td></tr>
+            </tbody>
+        </table>
+    </section>
+    <section class="card">
+        <h2>执行上下文 / Execution Context</h2>
+        <div class="split-grid">
+            <div>
+                <h3>backtest_request.params_json</h3>
+                <pre>{{ request_json }}</pre>
+            </div>
+            <div>
+                <h3>replay_context</h3>
+                <pre>{{ replay_json }}</pre>
+            </div>
+        </div>
+    </section>
+</body>
+</html>

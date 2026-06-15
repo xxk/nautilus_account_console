@@ -1,0 +1,85 @@
+{
+  "schema_version": "account_summary_panel.v1",
+  "workbench": "Account Workbench",
+  "panel": "Account Summary Panel",
+  "route": "/accounts/{account_id}",
+  "fixture_state": "blocked",
+  "context": {
+    "trading_day": "2026-06-14",
+    "session_id": "account-workbench.fixture.20260614.003",
+    "run_id": "account-summary.fixture.blocked.001",
+    "reducer_checkpoint_id": "account-summary.checkpoint.blocked.001",
+    "reducer_checkpoint_ts": "2026-06-14T14:04:51Z",
+    "stream_state": "blocked",
+    "projection_owner": "account-console-contracts",
+    "source_authority": "typed_blocker"
+  },
+  "account": {
+    "account_id": "acct.blocked-001",
+    "account_alias": "blocked-001",
+    "account_kind": "broker_paper_probe",
+    "portfolio_uid": "portfolio.blocked.account-workbench",
+    "display_state": "blocked",
+    "base_currency": "CNY"
+  },
+  "balances": {
+    "cash": null,
+    "frozen_cash": null,
+    "available_cash": null,
+    "buying_power": null
+  },
+  "pnl": {
+    "realized": null,
+    "unrealized": null,
+    "fees": null,
+    "taxes": null
+  },
+  "margin": {
+    "initial_margin": null,
+    "maintenance_margin": null,
+    "margin_ratio": null
+  },
+  "settlement": {
+    "state": "blocked",
+    "latest_settlement_ref": null,
+    "position_carryover_ref": null
+  },
+  "positions": [],
+  "blockers": [
+    {
+      "blocker_id": "account-summary.missing-settlement-ref",
+      "severity": "high",
+      "kind": "missing_settlement_ref",
+      "owner": "external-settlement-owner",
+      "next_action": "provide typed settlement artifact ref and checksum",
+      "source_ref": "blocker://account-workbench/blocked-001/missing-settlement-ref",
+      "checksum": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+    }
+  ],
+  "source_refs": [
+    {
+      "kind": "typed_blocker",
+      "owner": "account-console-contracts",
+      "source_ref": "blocker://account-workbench/blocked-001/missing-settlement-ref",
+      "checksum": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+      "authority": "typed blocker fixture; must render blocked and cannot invent settlement"
+    }
+  ],
+  "boundaries": {
+    "read_only_projection": true,
+    "runtime_truth": false,
+    "ledger_truth": false,
+    "ui_truth": false,
+    "paper_ready": false,
+    "live_ready": false,
+    "broker_tradable": false,
+    "admission_truth": false,
+    "capital_truth": false,
+    "action_controls": false
+  },
+  "rejection_rules": [
+    "Reject blocked state as successful settlement or account health.",
+    "Reject this fixture as runtime, broker, ledger, admission, capital or readiness truth.",
+    "Reject any browser-side calculation that fills missing settlement or carryover refs."
+  ]
+}

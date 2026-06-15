@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8" />
+    <title>{{ report_title }}</title>
+    <style>
+        body { font-family: Segoe UI, Microsoft YaHei, sans-serif; margin: 24px; color: #1f2328; background: #f6f8fa; }
+        h1, h2 { margin-top: 0; }
+        .card { background: #ffffff; border-radius: 12px; padding: 18px; box-shadow: 0 1px 3px rgba(0,0,0,.08); margin-bottom: 18px; }
+        .meta { color: #57606a; line-height: 1.7; }
+        .badge { display: inline-block; border-radius: 999px; padding: 4px 10px; font-size: 12px; font-weight: 600; }
+        .badge.pass { background: #dafbe1; color: #116329; }
+        .badge.fail { background: #ffebe9; color: #cf222e; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid #d0d7de; vertical-align: top; }
+        th { background: #f6f8fa; }
+        code { background: #f0f3f6; border-radius: 8px; padding: 2px 6px; }
+        .hint { color: #57606a; line-height: 1.7; }
+    </style>
+</head>
+<body>
+    <section class="card">
+        <h1>{{ report_title }}</h1>
+        <div class="meta">该报告用于 child #3 的 trace-first parity 验收。它不比较摘要指标是否"看起来差不多"，而是对统一 schema 的逐点 trace 做正式 diff。</div>
+        <div><span class="badge {{ parity_verdict }}">parity_verdict={{ parity_verdict }}</span></div>
+        <table>
+            <thead><tr><th>字段</th><th>值</th><th>字段</th><th>值</th></tr></thead>
+            <tbody>
+                <tr><td>request_id</td><td><code>{{ request_id }}</code></td><td>strategy_key</td><td><code>{{ strategy_key }}</code></td></tr>
+                <tr><td>factor_type</td><td><code>{{ factor_op }}</code></td><td>timeframe</td><td><code>{{ timeframe }}</code></td></tr>
+                <tr><td>window</td><td>{{ start_date }} -> {{ end_date }}</td><td>catalog_dir</td><td><code>{{ catalog_dir }}</code></td></tr>
+                <tr><td>point_count</td><td>{{ point_count }}</td><td>mismatch_count</td><td>{{ mismatch_count }}</td></tr>
+                <tr><td>tolerance</td><td>{{ "%.10f" | format(tolerance) }}</td><td>trade_count_diff</td><td>{{ trade_count_diff }}</td></tr>
+                <tr><td>vectorbt_sample_fingerprint</td><td><code>{{ vectorbt_sample_fingerprint }}</code></td><td>reference_sample_fingerprint</td><td><code>{{ reference_sample_fingerprint }}</code></td></tr>
+                <tr><td>vectorbt_trace_uri</td><td><code>{{ vectorbt_trace_uri }}</code></td><td>reference_trace_uri</td><td><code>{{ reference_trace_uri }}</code></td></tr>
+            </tbody>
+        </table>
+    </section>
+    <section class="card">
+        <h2>快速复核动作 / Quick Checks</h2>
+        <div class="hint">1. 若 sample fingerprint 不同，先停，说明 golden sample 已漂移。2. 若指纹相同但 mismatch_count > 0，说明 vectorbt 与 reference 信号语义仍不一致。3. child #4 只能消费 parity=pass 的结果。</div>
+        <div><strong>复跑命令：</strong><code>{{ rerun_command }}</code></div>
+        <div><strong>可回溯锚点 / Traceability</strong></div>
+        {{ traceability_html | safe }}
+    </section>
+    <section class="card">
+        <h2>运行摘要 / Run Summary</h2>
+        <table>
+            <thead><tr><th>stage</th><th>execution_module</th><th>backtest_engine</th><th>trade_count</th><th>sharpe</th><th>drawdown</th><th>total_return</th></tr></thead>
+            <tbody>
+                <tr><td>vectorbt</td><td><code>{{ vectorbt_execution_module }}</code></td><td><code>{{ vectorbt_backtest_engine }}</code></td><td>{{ vectorbt_trade_count }}</td><td>{{ "%.4f" | format(vectorbt_sharpe) }}</td><td>{{ "%.2f" | format(vectorbt_max_drawdown) }}%</td><td>{{ "%.2f" | format(vectorbt_total_return) }}%</td></tr>
+                <tr><td>reference</td><td><code>{{ reference_execution_module }}</code></td><td><code>{{ reference_backtest_engine }}</code></td><td>{{ reference_trade_count }}</td><td>{{ "%.4f" | format(reference_sharpe) }}</td><td>{{ "%.2f" | format(reference_max_drawdown) }}%</td><td>{{ "%.2f" | format(reference_total_return) }}%</td></tr>
+            </tbody>
+        </table>
+        <table>
+            <thead><tr><th>指标</th><th>值</th><th>指标</th><th>值</th></tr></thead>
+            <tbody>
+                <tr><td>max_abs_factor_diff</td><td>{{ "%.10f" | format(max_abs_factor_diff) }}</td><td>max_abs_signal_diff</td><td>{{ "%.10f" | format(max_abs_signal_diff) }}</td></tr>
+                <tr><td>max_abs_position_diff</td><td>{{ "%.10f" | format(max_abs_position_diff) }}</td><td>max_abs_period_return_diff</td><td>{{ "%.10f" | format(max_abs_period_return_diff) }}</td></tr>
+                <tr><td>vectorbt_trace_fingerprint</td><td><code>{{ vectorbt_trace_fingerprint }}</code></td><td>reference_trace_fingerprint</td><td><code>{{ reference_trace_fingerprint }}</code></td></tr>
+            </tbody>
+        </table>
+    </section>
+    <section class="card">
+        <h2>Mismatch Top 50</h2>
+        <table>
+            <thead><tr><th>index</th><th>ts</th><th>field</th><th>vectorbt</th><th>reference</th><th>abs_diff</th></tr></thead>
+            <tbody>{{ mismatch_rows_html | safe }}</tbody>
+        </table>
+    </section>
+</body>
+</html>
