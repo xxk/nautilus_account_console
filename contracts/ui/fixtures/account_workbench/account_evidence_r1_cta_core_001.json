@@ -1,0 +1,84 @@
+{
+  "schema_version": "account_evidence_panel.v1",
+  "workbench": "Account Workbench",
+  "panel": "Account Evidence Panel",
+  "route": "/accounts/{account_id}/evidence",
+  "fixture_state": "current_evidence",
+  "context": {
+    "trading_day": "2026-06-15",
+    "session_id": "r1-p079-cta-core-001-dev-ctp-paper-19053-v1",
+    "run_id": "r1:p079:cta-core-001:dev-ctp-paper-19053:stage1:v1",
+    "reducer_checkpoint_id": "p079.phase6.account-evidence.r1-cta-core-001.001",
+    "reducer_checkpoint_ts": "2026-06-15T21:05:00+08:00",
+    "stream_state": "healthy",
+    "projection_owner": "account-console-contracts",
+    "source_authority": "typed_r1_phase2_closeout_refs"
+  },
+  "account": {
+    "account_id": "acct.r1-cta-core-001-19053",
+    "account_alias": "19053",
+    "account_kind": "real_feed_sandbox_paper"
+  },
+  "evidence_packages": [
+    {
+      "package_id": "p079.phase2.signal-to-paper-position.closeout",
+      "kind": "r1_phase2_tracer_closeout",
+      "status": "current",
+      "owner": "nautilus_strategies",
+      "schema_ref": "docs/changes/20260615__paper__p079-cta-core-signal-to-paper-position-tracer/evidence/20260615T205500_phase2_closeout_summary.json",
+      "schema_version_ref": "p079-phase2-closeout-summary-v1",
+      "checksum": "sha256:2d0f80a42d0e0a130aa5476e4d09bd150450897c05d04ca0b0ab1dc02f95f2a7",
+      "run_id": "r1:p079:cta-core-001:dev-ctp-paper-19053:stage1:v1",
+      "session_id": "r1-p079-cta-core-001-dev-ctp-paper-19053-v1",
+      "trading_day": "2026-06-15",
+      "source_ref": "docs/changes/20260615__paper__p079-cta-core-signal-to-paper-position-tracer/evidence/20260615T205500_phase2_closeout_summary.json",
+      "normalized_ref": "contracts/ui/fixtures/account_workbench/account_evidence_r1_cta_core_001.json",
+      "raw_payload_ref": null,
+      "next_action": "render read-only source refs in Account Console"
+    },
+    {
+      "package_id": "p079.phase6.account-console.projection-contract",
+      "kind": "account_console_projection_contract",
+      "status": "current",
+      "owner": "nautilus_strategies",
+      "schema_ref": "docs/changes/20260615__paper__p079-account-console-ui-acceptance-bridge/evidence/account_console_r1_projection_fixture_contract.json",
+      "schema_version_ref": "p079-account-console-r1-projection-fixture-contract-v1",
+      "checksum": "sha256:adbf2f21d5752a1085d523b690c142cf93b91a0fda822e794ff2a57420f7ab5f",
+      "run_id": "r1:p079:cta-core-001:dev-ctp-paper-19053:stage1:v1",
+      "session_id": "r1-p079-cta-core-001-dev-ctp-paper-19053-v1",
+      "trading_day": "2026-06-15",
+      "source_ref": "docs/changes/20260615__paper__p079-account-console-ui-acceptance-bridge/evidence/account_console_r1_projection_fixture_contract.json",
+      "normalized_ref": "contracts/ui/fixtures/account_workbench/account_evidence_r1_cta_core_001.json",
+      "raw_payload_ref": null,
+      "next_action": "use as Account Console read-model fixture source only"
+    }
+  ],
+  "blockers": [],
+  "source_refs": [
+    {
+      "kind": "account_console_projection_contract",
+      "owner": "nautilus_strategies",
+      "source_ref": "docs/changes/20260615__paper__p079-account-console-ui-acceptance-bridge/evidence/account_console_r1_projection_fixture_contract.json",
+      "checksum": "sha256:adbf2f21d5752a1085d523b690c142cf93b91a0fda822e794ff2a57420f7ab5f",
+      "authority": "R1 projection contract displayed read-only"
+    }
+  ],
+  "boundaries": {
+    "read_only_projection": true,
+    "runtime_truth": false,
+    "account_truth": false,
+    "order_truth": false,
+    "ledger_truth": false,
+    "ui_truth": false,
+    "paper_ready": false,
+    "live_ready": false,
+    "broker_tradable": false,
+    "admission_truth": false,
+    "capital_truth": false,
+    "action_controls": false
+  },
+  "rejection_rules": [
+    "Reject evidence package display as runtime, ledger, account, reconcile or incident authority.",
+    "Reject route text, browser state and fixture labels as replacement source authority."
+  ]
+}

@@ -1,0 +1,89 @@
+{
+  "schema_version": "account_positions_panel.v1",
+  "workbench": "Account Workbench",
+  "panel": "Account Positions Panel",
+  "route": "/accounts/{account_id}/positions",
+  "fixture_state": "current_positions",
+  "context": {
+    "trading_day": "2026-06-15",
+    "session_id": "r1-p079-cta-core-001-dev-ctp-paper-19053-v1",
+    "run_id": "r1:p079:cta-core-001:dev-ctp-paper-19053:stage1:v1",
+    "reducer_checkpoint_id": "p079.phase6.account-positions.r1-cta-core-001.001",
+    "reducer_checkpoint_ts": "2026-06-15T21:05:00+08:00",
+    "stream_state": "healthy",
+    "projection_owner": "account-console-contracts",
+    "source_authority": "typed_r1_phase2_position_refs"
+  },
+  "account": {
+    "account_id": "acct.r1-cta-core-001-19053",
+    "account_alias": "19053",
+    "account_kind": "real_feed_sandbox_paper"
+  },
+  "positions": [
+    {
+      "account_id": "acct.r1-cta-core-001-19053",
+      "instrument": "IC",
+      "direction": "LONG",
+      "net_qty": 1,
+      "today_qty": 1,
+      "yesterday_qty": 0,
+      "available_qty": 1,
+      "frozen_qty": 0,
+      "average_price": 0.0,
+      "market_price": 0.0,
+      "market_value": 0.0,
+      "unrealized_pnl": 0.0,
+      "carryover_ref": "D:/Nautilus/Data/artifact_store/nautilus_strategies/research_lifecycle/cta_core_001/paper_runtime/p079_actual_position/paper_actual_position.json",
+      "settlement_ref": "D:/Nautilus/Data/artifact_store/nautilus_strategies/research_lifecycle/cta_core_001/paper_runtime/p079_target_vs_actual_reconcile/target_vs_actual_reconcile.json",
+      "source_ref": "D:/Nautilus/Data/artifact_store/nautilus_strategies/research_lifecycle/cta_core_001/paper_runtime/p079_actual_position/paper_actual_position.json",
+      "checksum": "sha256:927774103987d5d36d9fff864950e9f64a3ec9aa75bfecd48d00d33b8cfa7cd3"
+    },
+    {
+      "account_id": "acct.r1-cta-core-001-19053",
+      "instrument": "IF",
+      "direction": "SHORT",
+      "net_qty": -1,
+      "today_qty": -1,
+      "yesterday_qty": 0,
+      "available_qty": -1,
+      "frozen_qty": 0,
+      "average_price": 0.0,
+      "market_price": 0.0,
+      "market_value": 0.0,
+      "unrealized_pnl": 0.0,
+      "carryover_ref": "D:/Nautilus/Data/artifact_store/nautilus_strategies/research_lifecycle/cta_core_001/paper_runtime/p079_actual_position/paper_actual_position.json",
+      "settlement_ref": "D:/Nautilus/Data/artifact_store/nautilus_strategies/research_lifecycle/cta_core_001/paper_runtime/p079_target_vs_actual_reconcile/target_vs_actual_reconcile.json",
+      "source_ref": "D:/Nautilus/Data/artifact_store/nautilus_strategies/research_lifecycle/cta_core_001/paper_runtime/p079_actual_position/paper_actual_position.json",
+      "checksum": "sha256:927774103987d5d36d9fff864950e9f64a3ec9aa75bfecd48d00d33b8cfa7cd3"
+    }
+  ],
+  "blockers": [],
+  "source_refs": [
+    {
+      "kind": "paper_actual_position",
+      "owner": "10.168.80.58 dev_ctp_paper_19053 execution side",
+      "source_ref": "D:/Nautilus/Data/artifact_store/nautilus_strategies/research_lifecycle/cta_core_001/paper_runtime/p079_actual_position/paper_actual_position.json",
+      "checksum": "sha256:927774103987d5d36d9fff864950e9f64a3ec9aa75bfecd48d00d33b8cfa7cd3",
+      "authority": "external owner artifact projected read-only"
+    }
+  ],
+  "boundaries": {
+    "read_only_projection": true,
+    "runtime_truth": false,
+    "account_truth": false,
+    "order_truth": false,
+    "ledger_truth": false,
+    "ui_truth": false,
+    "paper_ready": false,
+    "live_ready": false,
+    "broker_tradable": false,
+    "admission_truth": false,
+    "capital_truth": false,
+    "action_controls": false
+  },
+  "rejection_rules": [
+    "Reject this fixture as Account Console position truth; it is a read-only projection.",
+    "Reject browser calculations of carryover, settlement or available quantity as source authority.",
+    "Reject screenshots, rolling debug paths and raw report text as replacement position authority."
+  ]
+}

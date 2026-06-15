@@ -241,7 +241,8 @@ export type AccountSummaryFixtureState =
   | "empty"
   | "blocked"
   | "stale"
-  | "partial";
+  | "partial"
+  | "r1_cta_core_001";
 
 export interface AccountSummaryContext {
   trading_day: string;
@@ -434,7 +435,8 @@ export type AccountPositionsFixtureState =
   | "empty"
   | "blocked"
   | "stale"
-  | "partial";
+  | "partial"
+  | "r1_cta_core_001";
 
 export interface AccountPositionRow {
   account_id: string;
@@ -548,7 +550,8 @@ export type AccountReconcileFixtureState =
   | "empty"
   | "mismatch"
   | "stale"
-  | "partial";
+  | "partial"
+  | "r1_cta_core_001";
 
 export interface AccountReconcileItem {
   item_id: string;
@@ -620,7 +623,8 @@ export type AccountEvidenceFixtureState =
   | "empty"
   | "blocked"
   | "stale"
-  | "partial";
+  | "partial"
+  | "r1_cta_core_001";
 
 export interface AccountEvidencePackage {
   package_id: string;

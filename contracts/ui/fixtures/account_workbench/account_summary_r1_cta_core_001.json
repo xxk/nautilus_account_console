@@ -1,0 +1,97 @@
+{
+  "schema_version": "account_summary_panel.v1",
+  "workbench": "Account Workbench",
+  "panel": "Account Summary Panel",
+  "route": "/accounts/{account_id}",
+  "fixture_state": "happy_path",
+  "context": {
+    "trading_day": "2026-06-15",
+    "session_id": "r1-p079-cta-core-001-dev-ctp-paper-19053-v1",
+    "run_id": "r1:p079:cta-core-001:dev-ctp-paper-19053:stage1:v1",
+    "reducer_checkpoint_id": "p079.phase6.account-summary.r1-cta-core-001.001",
+    "reducer_checkpoint_ts": "2026-06-15T21:05:00+08:00",
+    "stream_state": "healthy",
+    "projection_owner": "account-console-contracts",
+    "source_authority": "normalized_read_model"
+  },
+  "account": {
+    "account_id": "acct.r1-cta-core-001-19053",
+    "account_alias": "19053",
+    "account_kind": "real_feed_sandbox_paper",
+    "portfolio_uid": "CTA-CORE-001",
+    "display_state": "healthy",
+    "base_currency": "CNY"
+  },
+  "balances": {
+    "cash": 0.0,
+    "frozen_cash": 0.0,
+    "available_cash": 0.0,
+    "buying_power": 0.0
+  },
+  "pnl": {
+    "realized": 0.0,
+    "unrealized": 0.0,
+    "fees": 0.0,
+    "taxes": 0.0
+  },
+  "margin": {
+    "initial_margin": 0.0,
+    "maintenance_margin": 0.0,
+    "margin_ratio": 0.0
+  },
+  "settlement": {
+    "state": "not_projected_in_r1_fixture",
+    "latest_settlement_ref": "docs/changes/20260615__paper__p079-account-console-ui-acceptance-bridge/evidence/account_console_r1_projection_fixture_contract.json",
+    "position_carryover_ref": "D:/Nautilus/Data/artifact_store/nautilus_strategies/research_lifecycle/cta_core_001/paper_runtime/p079_actual_position/paper_actual_position.json"
+  },
+  "positions": [
+    {
+      "instrument": "IC",
+      "net_qty": 1,
+      "market_value": 0.0,
+      "source_ref": "D:/Nautilus/Data/artifact_store/nautilus_strategies/research_lifecycle/cta_core_001/paper_runtime/p079_actual_position/paper_actual_position.json",
+      "checksum": "sha256:927774103987d5d36d9fff864950e9f64a3ec9aa75bfecd48d00d33b8cfa7cd3"
+    },
+    {
+      "instrument": "IF",
+      "net_qty": -1,
+      "market_value": 0.0,
+      "source_ref": "D:/Nautilus/Data/artifact_store/nautilus_strategies/research_lifecycle/cta_core_001/paper_runtime/p079_actual_position/paper_actual_position.json",
+      "checksum": "sha256:927774103987d5d36d9fff864950e9f64a3ec9aa75bfecd48d00d33b8cfa7cd3"
+    }
+  ],
+  "blockers": [],
+  "source_refs": [
+    {
+      "kind": "r1_phase2_closeout",
+      "owner": "nautilus_strategies",
+      "source_ref": "docs/changes/20260615__paper__p079-cta-core-signal-to-paper-position-tracer/evidence/20260615T205500_phase2_closeout_summary.json",
+      "checksum": "sha256:2d0f80a42d0e0a130aa5476e4d09bd150450897c05d04ca0b0ab1dc02f95f2a7",
+      "authority": "R1 Phase 2 tracer closeout projected read-only"
+    },
+    {
+      "kind": "paper_request",
+      "owner": "nautilus_strategies",
+      "source_ref": "docs/changes/20260615__paper__p079-cta-core-signal-to-paper-position-tracer/evidence/paper_request.json",
+      "checksum": "sha256:ae4ae2862d43c05071e78eb7958fe9a2e51703dec94364fb83008805be4665ef",
+      "authority": "request artifact projected read-only; request is not result"
+    }
+  ],
+  "boundaries": {
+    "read_only_projection": true,
+    "runtime_truth": false,
+    "ledger_truth": false,
+    "ui_truth": false,
+    "paper_ready": false,
+    "live_ready": false,
+    "broker_tradable": false,
+    "admission_truth": false,
+    "capital_truth": false,
+    "action_controls": false
+  },
+  "rejection_rules": [
+    "Reject this fixture as runtime, ledger, account, allocation or execution permission truth.",
+    "Reject route text, screenshots, browser state, floating recent paths and diagnostic payload text as replacement truth.",
+    "Reject any order or funding action inferred from this fixture."
+  ]
+}

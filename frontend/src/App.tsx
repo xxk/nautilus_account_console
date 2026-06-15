@@ -23,6 +23,7 @@ import accountSummaryBlockedFixture from "../../contracts/ui/fixtures/account_wo
 import accountSummaryEmptyFixture from "../../contracts/ui/fixtures/account_workbench/account_summary_empty.json";
 import accountSummaryHappyFixture from "../../contracts/ui/fixtures/account_workbench/account_summary_happy_path.json";
 import accountSummaryPartialFixture from "../../contracts/ui/fixtures/account_workbench/account_summary_partial_evidence.json";
+import accountSummaryR1CtaCoreFixture from "../../contracts/ui/fixtures/account_workbench/account_summary_r1_cta_core_001.json";
 import accountSummaryStaleFixture from "../../contracts/ui/fixtures/account_workbench/account_summary_stale_stream.json";
 import accountOrderDetailBlockedFixture from "../../contracts/ui/fixtures/account_workbench/account_order_detail_blocked_missing_events.json";
 import accountOrderDetailFilledFixture from "../../contracts/ui/fixtures/account_workbench/account_order_detail_e100_filled_lifecycle.json";
@@ -34,6 +35,7 @@ import accountPositionsBlockedFixture from "../../contracts/ui/fixtures/account_
 import accountPositionsCurrentFixture from "../../contracts/ui/fixtures/account_workbench/account_positions_current_e100.json";
 import accountPositionsEmptyFixture from "../../contracts/ui/fixtures/account_workbench/account_positions_empty.json";
 import accountPositionsPartialFixture from "../../contracts/ui/fixtures/account_workbench/account_positions_partial_missing_settlement.json";
+import accountPositionsR1CtaCoreFixture from "../../contracts/ui/fixtures/account_workbench/account_positions_r1_cta_core_001.json";
 import accountPositionsStaleFixture from "../../contracts/ui/fixtures/account_workbench/account_positions_stale_stream.json";
 import accountSettlementBlockedFixture from "../../contracts/ui/fixtures/account_workbench/account_settlement_blocked_missing_current.json";
 import accountSettlementCurrentFixture from "../../contracts/ui/fixtures/account_workbench/account_settlement_current.json";
@@ -54,11 +56,13 @@ import accountEvidenceBlockedFixture from "../../contracts/ui/fixtures/account_w
 import accountEvidenceCurrentFixture from "../../contracts/ui/fixtures/account_workbench/account_evidence_current.json";
 import accountEvidenceEmptyFixture from "../../contracts/ui/fixtures/account_workbench/account_evidence_empty.json";
 import accountEvidencePartialFixture from "../../contracts/ui/fixtures/account_workbench/account_evidence_partial_missing_raw_payload.json";
+import accountEvidenceR1CtaCoreFixture from "../../contracts/ui/fixtures/account_workbench/account_evidence_r1_cta_core_001.json";
 import accountEvidenceStaleFixture from "../../contracts/ui/fixtures/account_workbench/account_evidence_stale_stream.json";
 import accountReconcileEmptyFixture from "../../contracts/ui/fixtures/account_workbench/account_reconcile_empty.json";
 import accountReconcileMatchedFixture from "../../contracts/ui/fixtures/account_workbench/account_reconcile_matched.json";
 import accountReconcileMismatchFixture from "../../contracts/ui/fixtures/account_workbench/account_reconcile_mismatch.json";
 import accountReconcilePartialFixture from "../../contracts/ui/fixtures/account_workbench/account_reconcile_partial_missing_tolerance.json";
+import accountReconcileR1CtaCoreFixture from "../../contracts/ui/fixtures/account_workbench/account_reconcile_r1_cta_core_001.json";
 import accountReconcileStaleFixture from "../../contracts/ui/fixtures/account_workbench/account_reconcile_stale_stream.json";
 import intradayMonitorBlockedFixture from "../../contracts/ui/fixtures/intraday_monitor/intraday_monitor_blocked.json";
 import intradayMonitorCurrentFixture from "../../contracts/ui/fixtures/intraday_monitor/intraday_monitor_current.json";
@@ -128,7 +132,8 @@ const accountSummaryFixtureMap: Record<AccountSummaryFixtureState, AccountSummar
   empty: accountSummaryEmptyFixture as AccountSummaryPanelReadModel,
   blocked: accountSummaryBlockedFixture as AccountSummaryPanelReadModel,
   stale: accountSummaryStaleFixture as AccountSummaryPanelReadModel,
-  partial: accountSummaryPartialFixture as AccountSummaryPanelReadModel
+  partial: accountSummaryPartialFixture as AccountSummaryPanelReadModel,
+  r1_cta_core_001: accountSummaryR1CtaCoreFixture as AccountSummaryPanelReadModel
 };
 
 const accountSummaryFixtureLabels: Record<AccountSummaryFixtureState, string> = {
@@ -136,7 +141,8 @@ const accountSummaryFixtureLabels: Record<AccountSummaryFixtureState, string> = 
   empty: "empty",
   blocked: "blocked",
   stale: "stale",
-  partial: "partial"
+  partial: "partial",
+  r1_cta_core_001: "R1 CTA-CORE-001"
 };
 
 const accountOrdersFixtureMap: Record<AccountOrdersFixtureState, AccountOrdersPanelReadModel> = {
@@ -170,7 +176,8 @@ const accountPositionsFixtureMap: Record<AccountPositionsFixtureState, AccountPo
   empty: accountPositionsEmptyFixture as AccountPositionsPanelReadModel,
   blocked: accountPositionsBlockedFixture as AccountPositionsPanelReadModel,
   stale: accountPositionsStaleFixture as AccountPositionsPanelReadModel,
-  partial: accountPositionsPartialFixture as AccountPositionsPanelReadModel
+  partial: accountPositionsPartialFixture as AccountPositionsPanelReadModel,
+  r1_cta_core_001: accountPositionsR1CtaCoreFixture as AccountPositionsPanelReadModel
 };
 
 const accountPositionsFixtureLabels: Record<AccountPositionsFixtureState, string> = {
@@ -178,7 +185,8 @@ const accountPositionsFixtureLabels: Record<AccountPositionsFixtureState, string
   empty: "empty",
   blocked: "blocked",
   stale: "stale",
-  partial: "partial"
+  partial: "partial",
+  r1_cta_core_001: "R1 CTA-CORE-001"
 };
 
 const accountSettlementFixtureMap: Record<AccountSettlementFixtureState, AccountSettlementPanelReadModel> = {
@@ -218,7 +226,8 @@ const accountReconcileFixtureMap: Record<AccountReconcileFixtureState, AccountRe
   empty: accountReconcileEmptyFixture as AccountReconcilePanelReadModel,
   mismatch: accountReconcileMismatchFixture as AccountReconcilePanelReadModel,
   stale: accountReconcileStaleFixture as AccountReconcilePanelReadModel,
-  partial: accountReconcilePartialFixture as AccountReconcilePanelReadModel
+  partial: accountReconcilePartialFixture as AccountReconcilePanelReadModel,
+  r1_cta_core_001: accountReconcileR1CtaCoreFixture as AccountReconcilePanelReadModel
 };
 
 const accountReconcileFixtureLabels: Record<AccountReconcileFixtureState, string> = {
@@ -226,7 +235,8 @@ const accountReconcileFixtureLabels: Record<AccountReconcileFixtureState, string
   empty: "empty",
   mismatch: "mismatch",
   stale: "stale",
-  partial: "partial"
+  partial: "partial",
+  r1_cta_core_001: "R1 CTA-CORE-001"
 };
 
 const accountIncidentsFixtureMap: Record<AccountIncidentsFixtureState, AccountIncidentsPanelReadModel> = {
@@ -250,7 +260,8 @@ const accountEvidenceFixtureMap: Record<AccountEvidenceFixtureState, AccountEvid
   empty: accountEvidenceEmptyFixture as AccountEvidencePanelReadModel,
   blocked: accountEvidenceBlockedFixture as AccountEvidencePanelReadModel,
   stale: accountEvidenceStaleFixture as AccountEvidencePanelReadModel,
-  partial: accountEvidencePartialFixture as AccountEvidencePanelReadModel
+  partial: accountEvidencePartialFixture as AccountEvidencePanelReadModel,
+  r1_cta_core_001: accountEvidenceR1CtaCoreFixture as AccountEvidencePanelReadModel
 };
 
 const accountEvidenceFixtureLabels: Record<AccountEvidenceFixtureState, string> = {
@@ -258,7 +269,8 @@ const accountEvidenceFixtureLabels: Record<AccountEvidenceFixtureState, string> 
   empty: "empty",
   blocked: "blocked",
   stale: "stale",
-  partial: "partial"
+  partial: "partial",
+  r1_cta_core_001: "R1 CTA-CORE-001"
 };
 
 const intradayMonitorFixtureMap: Record<IntradayMonitorFixtureState, IntradayMonitorPanelReadModel> = {
@@ -924,7 +936,7 @@ function AccountSummaryPanel({
             {fixture.positions.length > 0 ? (
               <div className="position-list">
                 {fixture.positions.map((position) => (
-                  <article className="position-item" key={position.checksum}>
+                  <article className="position-item" key={`${position.instrument}-${position.checksum}`}>
                     <strong>{position.instrument}</strong>
                     <span>Net {position.net_qty ?? "missing"}</span>
                     <span>{formatMoney(position.market_value, fixture.account.base_currency)}</span>
@@ -1205,7 +1217,7 @@ function AccountPositionsPanel({
           {fixture.positions.length > 0 ? (
             <div className="order-list">
               {fixture.positions.map((position) => (
-                <PositionRowCard position={position} key={position.checksum} />
+                <PositionRowCard position={position} key={`${position.account_id}-${position.instrument}-${position.checksum}`} />
               ))}
             </div>
           ) : (
@@ -1555,7 +1567,7 @@ function AccountReconcilePanel({
           {fixture.reconcile_items.length > 0 ? (
             <div className="order-list">
               {fixture.reconcile_items.map((item) => (
-                <ReconcileItemCard item={item} key={item.checksum} />
+                <ReconcileItemCard item={item} key={`${item.item_id}-${item.checksum}`} />
               ))}
             </div>
           ) : (

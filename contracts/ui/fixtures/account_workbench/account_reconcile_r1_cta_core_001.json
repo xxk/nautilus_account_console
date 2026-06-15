@@ -1,0 +1,82 @@
+{
+  "schema_version": "account_reconcile_panel.v1",
+  "workbench": "Account Workbench",
+  "panel": "Account Reconcile Panel",
+  "route": "/accounts/{account_id}/reconcile",
+  "fixture_state": "matched",
+  "context": {
+    "trading_day": "2026-06-15",
+    "session_id": "r1-p079-cta-core-001-dev-ctp-paper-19053-v1",
+    "run_id": "r1:p079:cta-core-001:dev-ctp-paper-19053:stage1:v1",
+    "reducer_checkpoint_id": "p079.phase6.account-reconcile.r1-cta-core-001.001",
+    "reducer_checkpoint_ts": "2026-06-15T21:05:00+08:00",
+    "stream_state": "healthy",
+    "projection_owner": "account-console-contracts",
+    "source_authority": "typed_r1_phase2_reconcile_refs"
+  },
+  "account": {
+    "account_id": "acct.r1-cta-core-001-19053",
+    "account_alias": "19053",
+    "account_kind": "real_feed_sandbox_paper"
+  },
+  "reconcile_items": [
+    {
+      "item_id": "p079.target-vs-actual.ic",
+      "category": "position_weight",
+      "severity": "info",
+      "status": "matched",
+      "expected_value": 1.0,
+      "observed_value": 1.0,
+      "delta": 0.0,
+      "tolerance_ref": "docs/changes/20260615__paper__p079-account-console-ui-acceptance-bridge/evidence/account_console_r1_projection_fixture_contract.json",
+      "mismatch_ref": null,
+      "owner": "10.168.80.58 dev_ctp_paper_19053 execution side",
+      "next_action": "display source refs only",
+      "source_ref": "D:/Nautilus/Data/artifact_store/nautilus_strategies/research_lifecycle/cta_core_001/paper_runtime/p079_target_vs_actual_reconcile/target_vs_actual_reconcile.json",
+      "checksum": "sha256:de5cb5b049ee39b13bfaa148b637240196111455a3ec0b95c8b9d7247bd5185a"
+    },
+    {
+      "item_id": "p079.target-vs-actual.if",
+      "category": "position_weight",
+      "severity": "info",
+      "status": "matched",
+      "expected_value": -1.0,
+      "observed_value": -1.0,
+      "delta": 0.0,
+      "tolerance_ref": "docs/changes/20260615__paper__p079-account-console-ui-acceptance-bridge/evidence/account_console_r1_projection_fixture_contract.json",
+      "mismatch_ref": null,
+      "owner": "10.168.80.58 dev_ctp_paper_19053 execution side",
+      "next_action": "display source refs only",
+      "source_ref": "D:/Nautilus/Data/artifact_store/nautilus_strategies/research_lifecycle/cta_core_001/paper_runtime/p079_target_vs_actual_reconcile/target_vs_actual_reconcile.json",
+      "checksum": "sha256:de5cb5b049ee39b13bfaa148b637240196111455a3ec0b95c8b9d7247bd5185a"
+    }
+  ],
+  "blockers": [],
+  "source_refs": [
+    {
+      "kind": "target_vs_actual_reconcile",
+      "owner": "10.168.80.58 dev_ctp_paper_19053 execution side",
+      "source_ref": "D:/Nautilus/Data/artifact_store/nautilus_strategies/research_lifecycle/cta_core_001/paper_runtime/p079_target_vs_actual_reconcile/target_vs_actual_reconcile.json",
+      "checksum": "sha256:de5cb5b049ee39b13bfaa148b637240196111455a3ec0b95c8b9d7247bd5185a",
+      "authority": "external owner artifact projected read-only"
+    }
+  ],
+  "boundaries": {
+    "read_only_projection": true,
+    "runtime_truth": false,
+    "account_truth": false,
+    "order_truth": false,
+    "ledger_truth": false,
+    "ui_truth": false,
+    "paper_ready": false,
+    "live_ready": false,
+    "broker_tradable": false,
+    "admission_truth": false,
+    "capital_truth": false,
+    "action_controls": false
+  },
+  "rejection_rules": [
+    "Reject this fixture as reconcile authority.",
+    "Reject styling-only mismatch handling without owner and next_action refs."
+  ]
+}
