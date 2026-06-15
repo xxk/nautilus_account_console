@@ -1,0 +1,77 @@
+{
+  "schema_version": "account_source_artifact.v1",
+  "artifact_id": "source.ctp.live.025292.20260615.sample",
+  "account_id": "acct.ctp.live.025292",
+  "display_alias": "025292",
+  "source_owner": "nautilus_ctp_adapter",
+  "source_kind": "ctp_trader_api",
+  "source_mode": "live_observation",
+  "account_domain": "live",
+  "observation_mode": "snapshot",
+  "event_stream": "not_implemented",
+  "trading_day": "2026-06-15",
+  "query_window_id": "ctp025292.sample.window.001",
+  "query_started_at": "2026-06-15T00:00:00Z",
+  "query_completed_at": "2026-06-15T00:00:01Z",
+  "observed_at": "2026-06-15T00:00:01Z",
+  "source_ref": "contracts/source_artifacts/samples/ctp_live_025292_sample_source.json",
+  "source_checksum": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+  "balances": [
+    {
+      "currency": "CNY",
+      "equity": 1000000.0,
+      "available_cash": 900000.0,
+      "margin_used": 100000.0,
+      "withdraw_quota": 800000.0,
+      "frozen_margin": 0.0,
+      "frozen_cash": 0.0,
+      "position_profit": 0.0,
+      "close_profit": 0.0,
+      "commission": 0.0
+    }
+  ],
+  "positions": [
+    {
+      "instrument": "rb2610",
+      "exchange": "SHFE",
+      "direction": "long",
+      "position_date": "today",
+      "total_qty": 1,
+      "today_qty": 1,
+      "yesterday_qty": 0,
+      "available_qty": 1,
+      "frozen_qty": 0,
+      "position_cost": 3500.0,
+      "average_price": 3500.0,
+      "market_value": 3500.0,
+      "unrealized_pnl": 0.0
+    }
+  ],
+  "orders": [
+    {
+      "client_order_id": "ctp-live-025292-sample-order-001",
+      "venue_order_id": "ctp-live-sample-order-001",
+      "exchange": "SHFE",
+      "instrument": "rb2610",
+      "direction": "buy",
+      "offset": "open",
+      "hedge_flag": "speculation",
+      "limit_price": 3500.0,
+      "total_volume": 1,
+      "traded_volume": 0,
+      "remaining_volume": 1,
+      "order_status": "submitted",
+      "submit_status": "accepted",
+      "insert_time": "00:00:00",
+      "update_time": "00:00:01"
+    }
+  ],
+  "fills": [],
+  "source_health": {
+    "state": "ready",
+    "lag_ms": 0,
+    "observation_mode": "snapshot",
+    "event_stream": "not_implemented"
+  },
+  "blockers": []
+}

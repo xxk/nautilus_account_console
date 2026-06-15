@@ -1,6 +1,6 @@
 # ADR Index / ADR 索引
 
-- Updated: 2026-06-13
+- Updated: 2026-06-15
 - Project: `nautilus_account_console`
 - Template: [ADR模板 / ADR Template](ADR模板_ADR%20Template.md)
 
@@ -11,6 +11,7 @@
 | [ADR-0001](0001-dslresearch-first-doc-template-and-gate-capability-backfill.md) | DSLresearch-first doc template and Gate capability backfill | When this repo lacks a documentation template or Gate/check capability, use `docs/templates/dslresearch-reference/` or inspect `D:\Nautilus\DSLresearch` first, then adapt the matching pattern to this repo's read-only account-console boundary. |
 | [ADR-0002](0002-adopt-business-workbench-first-account-console-navigation.md) | Business workbench first account console navigation | Organize Account Console UI by Daily Closeout, Intraday Monitor, Account Workbench, Allocation Admin, Risk And Reconcile, Evidence Explorer and Stream Ops first; artifact routes are drill-downs, not the primary business model. |
 | [ADR-0003](0003-adopt-contract-first-ui-slice-development.md) | Contract-first UI slice development | Future UI work must use contract-first panel slices; detailed implementation method, slice queue and change acceptance live in topic/proposal docs. |
+| [ADR-0004](0004-adopt-account-mirror-observation-and-command-plane.md) | Account Capability Fabric with mirror readback | Account Console binds account identity to explicit observation, command, risk/approval, reconciliation and evidence capabilities; Account Mirror remains read-only and future commands must reconcile through mirror readback. |
 
 ## Usage Rules
 

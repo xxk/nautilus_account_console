@@ -1,4 +1,12 @@
-import type { AccountSnapshot, OrderEvent, OrderExecutionReports } from "./types";
+import type {
+  AccountSnapshot,
+  MirrorAccountProjection,
+  MirrorEvidenceResponse,
+  MirrorListResponse,
+  MirrorSourceHealthResponse,
+  OrderEvent,
+  OrderExecutionReports
+} from "./types";
 
 const API_BASE = "";
 
@@ -27,6 +35,38 @@ export async function fetchOrderExecutionReports(
   );
   if (!response.ok) {
     throw new Error(`execution reports request failed: ${response.status}`);
+  }
+  return response.json();
+}
+
+export async function fetchMirrorAccounts(): Promise<MirrorListResponse> {
+  const response = await fetch(`${API_BASE}/api/mirror/accounts`);
+  if (!response.ok) {
+    throw new Error(`mirror accounts request failed: ${response.status}`);
+  }
+  return response.json();
+}
+
+export async function fetchMirrorAccount(accountId: string): Promise<MirrorAccountProjection> {
+  const response = await fetch(`${API_BASE}/api/mirror/accounts/${encodeURIComponent(accountId)}`);
+  if (!response.ok) {
+    throw new Error(`mirror account request failed: ${response.status}`);
+  }
+  return response.json();
+}
+
+export async function fetchMirrorSourceHealth(accountId: string): Promise<MirrorSourceHealthResponse> {
+  const response = await fetch(`${API_BASE}/api/mirror/accounts/${encodeURIComponent(accountId)}/source-health`);
+  if (!response.ok) {
+    throw new Error(`mirror source health request failed: ${response.status}`);
+  }
+  return response.json();
+}
+
+export async function fetchMirrorEvidence(accountId: string): Promise<MirrorEvidenceResponse> {
+  const response = await fetch(`${API_BASE}/api/mirror/accounts/${encodeURIComponent(accountId)}/evidence`);
+  if (!response.ok) {
+    throw new Error(`mirror evidence request failed: ${response.status}`);
   }
   return response.json();
 }

@@ -61,6 +61,96 @@ export interface OrderExecutionReports {
   reports: OrderEvent[];
 }
 
+export interface MirrorCapabilityState {
+  enabled: boolean;
+  mirror_state?: string | null;
+  mode?: string | null;
+}
+
+export interface MirrorCapabilities {
+  observation: MirrorCapabilityState;
+  command: MirrorCapabilityState;
+}
+
+export interface MirrorAccountSummary {
+  account_id: string;
+  display_alias: string;
+  source_kind: string;
+  source_mode: string;
+  account_domain: string;
+  mirror_state: string;
+  command_enabled: boolean;
+  command_mode: string;
+  balance_count: number;
+  position_count: number;
+  order_count: number;
+  fill_count: number;
+  blocker_count: number;
+  projection_checkpoint_id: string;
+  projection_checksum: string;
+  source_ref: string;
+  source_checksum: string;
+}
+
+export interface MirrorListResponse {
+  schema_version: "account_mirror_list.v1";
+  accounts: MirrorAccountSummary[];
+}
+
+export interface MirrorAccountProjection {
+  schema_version: "account_mirror_projection.v1";
+  account_id: string;
+  display_alias: string;
+  source_kind: string;
+  source_mode: string;
+  account_domain: string;
+  capabilities: MirrorCapabilities;
+  balances: Record<string, unknown>[];
+  positions: Record<string, unknown>[];
+  orders: Record<string, unknown>[];
+  fills: Record<string, unknown>[];
+  source_health: Record<string, unknown>;
+  blockers: Record<string, unknown>[];
+  projection_checkpoint_id: string;
+  projection_checksum: string;
+  source_ref: string;
+  source_checksum: string;
+  boundaries: Record<string, unknown>;
+}
+
+export interface MirrorSourceHealthResponse {
+  schema_version: "account_mirror_source_health.v1";
+  account_id: string;
+  state: string;
+  source_ref: string;
+  source_checksum: string;
+  observed_at: string;
+  projection_checkpoint_id: string;
+  projection_checksum: string;
+  blockers: Record<string, unknown>[];
+  boundaries: Record<string, unknown>;
+}
+
+export interface MirrorEvidenceItem {
+  kind: string;
+  owner: string;
+  source_ref: string;
+  checksum: string;
+  authority: string;
+}
+
+export interface MirrorEvidenceResponse {
+  schema_version: "account_mirror_evidence.v1";
+  account_id: string;
+  projection_checkpoint_id: string;
+  projection_checksum: string;
+  source_ref: string;
+  source_checksum: string;
+  evidence: MirrorEvidenceItem[];
+  blockers: Record<string, unknown>[];
+  boundaries: Record<string, unknown>;
+}
+
 export type AccountHealthPanelFixtureState =
   | "happy_path"
   | "empty"

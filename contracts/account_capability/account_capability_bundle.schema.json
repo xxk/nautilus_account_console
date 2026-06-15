@@ -1,0 +1,284 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nautilus.local/contracts/account_capability/account_capability_bundle.schema.json",
+  "title": "Account Capability Bundle",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "account",
+    "capabilities",
+    "observations",
+    "boundaries",
+    "rejection_rules"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "account_capability_bundle.v1"
+    },
+    "account": {
+      "$ref": "#/$defs/account_identity"
+    },
+    "capabilities": {
+      "$ref": "#/$defs/capabilities"
+    },
+    "observations": {
+      "$ref": "#/$defs/observations"
+    },
+    "boundaries": {
+      "$ref": "#/$defs/boundaries"
+    },
+    "rejection_rules": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    }
+  },
+  "$defs": {
+    "checksum": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    },
+    "account_identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "account_id",
+        "display_alias",
+        "source_kind",
+        "source_mode",
+        "account_domain"
+      ],
+      "properties": {
+        "account_id": {
+          "type": "string",
+          "pattern": "^acct\\.[a-z0-9_.-]+$"
+        },
+        "display_alias": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source_kind": {
+          "type": "string",
+          "enum": [
+            "nautilus_paper_runtime",
+            "ctp_trader_api",
+            "ib_tws",
+            "stock_broker_api",
+            "replay_file",
+            "deterministic_fixture"
+          ]
+        },
+        "source_mode": {
+          "type": "string",
+          "enum": [
+            "live_observation",
+            "delayed_snapshot",
+            "replay",
+            "deterministic_fixture"
+          ]
+        },
+        "account_domain": {
+          "type": "string",
+          "enum": ["sandbox", "paper", "live", "backtest"]
+        }
+      }
+    },
+    "source_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "owner",
+        "source_ref",
+        "checksum",
+        "observed_at"
+      ],
+      "properties": {
+        "owner": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "checksum": {
+          "$ref": "#/$defs/checksum"
+        },
+        "observed_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "capabilities": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "observation",
+        "command",
+        "reconciliation",
+        "evidence"
+      ],
+      "properties": {
+        "observation": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["enabled", "mirror_state", "source_ref"],
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "mirror_state": {
+              "type": "string",
+              "enum": ["ready", "planned", "blocked", "stale"]
+            },
+            "source_ref": { "$ref": "#/$defs/source_ref" }
+          }
+        },
+        "command": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "enabled",
+            "mode",
+            "gateway_kind",
+            "allowed_actions",
+            "requires_risk_check",
+            "requires_approval",
+            "authority_ref",
+            "capability_checksum"
+          ],
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "mode": {
+              "type": "string",
+              "enum": ["disabled", "paper", "live"]
+            },
+            "gateway_kind": {
+              "type": ["string", "null"],
+              "enum": [null, "nautilus_paper", "ctp", "ib_tws", "stock"]
+            },
+            "allowed_actions": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": ["submit", "cancel", "replace"]
+              }
+            },
+            "requires_risk_check": { "type": "boolean" },
+            "requires_approval": { "type": "boolean" },
+            "authority_ref": { "type": ["string", "null"] },
+            "capability_checksum": { "$ref": "#/$defs/checksum" }
+          }
+        },
+        "reconciliation": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["enabled", "readback_required"],
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "readback_required": { "type": "boolean" }
+          }
+        },
+        "evidence": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["required", "source_refs_required", "checksums_required"],
+          "properties": {
+            "required": { "type": "boolean" },
+            "source_refs_required": { "type": "boolean" },
+            "checksums_required": { "type": "boolean" }
+          }
+        }
+      }
+    },
+    "observation_value": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["source_ref", "checksum", "observed_at"],
+      "properties": {
+        "source_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "checksum": {
+          "$ref": "#/$defs/checksum"
+        },
+        "observed_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "blocker": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["blocker_id", "type", "owner", "next_action", "source_ref", "checksum"],
+      "properties": {
+        "blocker_id": { "type": "string", "minLength": 1 },
+        "type": { "type": "string", "minLength": 1 },
+        "owner": { "type": "string", "minLength": 1 },
+        "next_action": { "type": "string", "minLength": 1 },
+        "source_ref": { "type": "string", "minLength": 1 },
+        "checksum": { "$ref": "#/$defs/checksum" }
+      }
+    },
+    "observations": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["balances", "positions", "orders", "fills", "source_health", "blockers"],
+      "properties": {
+        "balances": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/observation_value" }
+        },
+        "positions": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/observation_value" }
+        },
+        "orders": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/observation_value" }
+        },
+        "fills": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/observation_value" }
+        },
+        "source_health": {
+          "$ref": "#/$defs/observation_value"
+        },
+        "blockers": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/blocker" }
+        }
+      }
+    },
+    "boundaries": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "read_only_projection",
+        "broker_truth",
+        "runtime_truth",
+        "account_truth",
+        "order_action",
+        "approval_truth",
+        "capital_truth",
+        "trading_readiness_truth"
+      ],
+      "properties": {
+        "read_only_projection": { "type": "boolean", "const": true },
+        "broker_truth": { "type": "boolean", "const": false },
+        "runtime_truth": { "type": "boolean", "const": false },
+        "account_truth": { "type": "boolean", "const": false },
+        "order_action": { "type": "boolean", "const": false },
+        "approval_truth": { "type": "boolean", "const": false },
+        "capital_truth": { "type": "boolean", "const": false },
+        "trading_readiness_truth": { "type": "boolean", "const": false }
+      }
+    }
+  }
+}

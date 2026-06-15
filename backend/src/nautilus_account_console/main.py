@@ -14,7 +14,21 @@ from .ledger import (
     list_order_events,
     list_order_execution_reports,
 )
-from .schemas import AccountDetail, AccountSnapshot, Health, OrderEvent, OrderExecutionReports
+from .account_mirror import AccountMirrorStore
+from .schemas import (
+    AccountDetail,
+    AccountSnapshot,
+    Health,
+    MirrorAccountProjection,
+    MirrorEvidenceResponse,
+    MirrorEvidenceItem,
+    MirrorListResponse,
+    MirrorAccountSummary,
+    MirrorSourceHealthResponse,
+    OrderEvent,
+    OrderExecutionReports,
+)
+from .source_bridge import load_capability_bundles
 
 
 app = FastAPI(title="Nautilus Account Console API", version=__version__)
@@ -36,6 +50,135 @@ def healthz() -> Health:
 @app.get("/api/accounts", response_model=list[AccountSnapshot])
 def accounts() -> list[AccountSnapshot]:
     return list_account_snapshots()
+
+
+def _mirror_projections() -> list[MirrorAccountProjection]:
+    bundles = load_capability_bundles()
+    projections = AccountMirrorStore().list_projections_from_bundles(bundles)
+    return [MirrorAccountProjection(**projection.to_dict()) for projection in projections]
+
+
+def _mirror_projection(account_id: str) -> MirrorAccountProjection:
+    for projection in _mirror_projections():
+        if projection.account_id == account_id:
+            return projection
+    raise HTTPException(status_code=404, detail="mirror account projection not found")
+
+
+def _mirror_summary(projection: MirrorAccountProjection) -> MirrorAccountSummary:
+    return MirrorAccountSummary(
+        account_id=projection.account_id,
+        display_alias=projection.display_alias,
+        source_kind=projection.source_kind,
+        source_mode=projection.source_mode,
+        account_domain=projection.account_domain,
+        mirror_state=projection.capabilities.observation.mirror_state or "unknown",
+        command_enabled=projection.capabilities.command.enabled,
+        command_mode=projection.capabilities.command.mode or "disabled",
+        balance_count=len(projection.balances),
+        position_count=len(projection.positions),
+        order_count=len(projection.orders),
+        fill_count=len(projection.fills),
+        blocker_count=len(projection.blockers),
+        projection_checkpoint_id=projection.projection_checkpoint_id,
+        projection_checksum=projection.projection_checksum,
+        source_ref=projection.source_ref,
+        source_checksum=projection.source_checksum,
+    )
+
+
+@app.get("/api/mirror/accounts", response_model=MirrorListResponse, response_model_exclude_none=True)
+def mirror_accounts() -> MirrorListResponse:
+    projections = _mirror_projections()
+    return MirrorListResponse(
+        schema_version="account_mirror_list.v1",
+        accounts=[_mirror_summary(projection) for projection in projections],
+    )
+
+
+@app.get(
+    "/api/mirror/accounts/{account_id}",
+    response_model=MirrorAccountProjection,
+    response_model_exclude_none=True,
+)
+def mirror_account_detail(account_id: str) -> MirrorAccountProjection:
+    return _mirror_projection(account_id)
+
+
+@app.get("/api/mirror/accounts/{account_id}/positions", response_model=list[dict])
+def mirror_account_positions(account_id: str) -> list[dict]:
+    return _mirror_projection(account_id).positions
+
+
+@app.get("/api/mirror/accounts/{account_id}/orders", response_model=list[dict])
+def mirror_account_orders(account_id: str) -> list[dict]:
+    return _mirror_projection(account_id).orders
+
+
+@app.get("/api/mirror/accounts/{account_id}/capabilities", response_model=dict, response_model_exclude_none=True)
+def mirror_account_capabilities(account_id: str) -> dict:
+    projection = _mirror_projection(account_id)
+    return projection.capabilities.model_dump()
+
+
+@app.get("/api/mirror/accounts/{account_id}/source-health", response_model=MirrorSourceHealthResponse)
+def mirror_account_source_health(account_id: str) -> MirrorSourceHealthResponse:
+    projection = _mirror_projection(account_id)
+    health = projection.source_health
+    return MirrorSourceHealthResponse(
+        schema_version="account_mirror_source_health.v1",
+        account_id=projection.account_id,
+        state=str(health.get("state", "unknown")),
+        source_ref=str(health["source_ref"]),
+        source_checksum=str(health["checksum"]),
+        observed_at=str(health["observed_at"]),
+        projection_checkpoint_id=projection.projection_checkpoint_id,
+        projection_checksum=projection.projection_checksum,
+        blockers=projection.blockers,
+        boundaries=projection.boundaries,
+    )
+
+
+@app.get("/api/mirror/accounts/{account_id}/evidence", response_model=MirrorEvidenceResponse)
+def mirror_account_evidence(account_id: str) -> MirrorEvidenceResponse:
+    projection = _mirror_projection(account_id)
+    evidence = [
+        MirrorEvidenceItem(
+            kind="source_package",
+            owner=projection.source_kind,
+            source_ref=projection.source_ref,
+            checksum=projection.source_checksum,
+            authority="source artifact provenance; not broker or account truth",
+        ),
+        MirrorEvidenceItem(
+            kind="mirror_projection",
+            owner="account-console-backend",
+            source_ref=projection.projection_checkpoint_id,
+            checksum=projection.projection_checksum,
+            authority="Account Mirror read-only projection checkpoint",
+        ),
+    ]
+    for blocker in projection.blockers:
+        evidence.append(
+            MirrorEvidenceItem(
+                kind="typed_blocker",
+                owner=str(blocker["owner"]),
+                source_ref=str(blocker["source_ref"]),
+                checksum=str(blocker["checksum"]),
+                authority="typed blocker; fail closed until owner resolves source evidence",
+            )
+        )
+    return MirrorEvidenceResponse(
+        schema_version="account_mirror_evidence.v1",
+        account_id=projection.account_id,
+        projection_checkpoint_id=projection.projection_checkpoint_id,
+        projection_checksum=projection.projection_checksum,
+        source_ref=projection.source_ref,
+        source_checksum=projection.source_checksum,
+        evidence=evidence,
+        blockers=projection.blockers,
+        boundaries=projection.boundaries,
+    )
 
 
 @app.get("/api/accounts/{account_id}", response_model=AccountDetail)

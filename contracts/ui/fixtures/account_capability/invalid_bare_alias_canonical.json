@@ -1,0 +1,65 @@
+{
+  "schema_version": "account_capability_bundle.v1",
+  "account": {
+    "account_id": "025292",
+    "display_alias": "025292",
+    "source_kind": "ctp_trader_api",
+    "source_mode": "live_observation",
+    "account_domain": "live"
+  },
+  "capabilities": {
+    "observation": {
+      "enabled": true,
+      "mirror_state": "blocked",
+      "source_ref": {
+        "owner": "nautilus_ctp_adapter",
+        "source_ref": "output/account_capability/invalid/source-package.pending.json",
+        "checksum": "sha256:4444444444444444444444444444444444444444444444444444444444444444",
+        "observed_at": "2026-06-15T00:00:00Z"
+      }
+    },
+    "command": {
+      "enabled": false,
+      "mode": "disabled",
+      "gateway_kind": null,
+      "allowed_actions": [],
+      "requires_risk_check": true,
+      "requires_approval": true,
+      "authority_ref": null,
+      "capability_checksum": "sha256:4444444444444444444444444444444444444444444444444444444444444444"
+    },
+    "reconciliation": {
+      "enabled": true,
+      "readback_required": true
+    },
+    "evidence": {
+      "required": true,
+      "source_refs_required": true,
+      "checksums_required": true
+    }
+  },
+  "observations": {
+    "balances": [],
+    "positions": [],
+    "orders": [],
+    "fills": [],
+    "source_health": {
+      "state": "blocked",
+      "source_ref": "output/account_capability/invalid/source-package.pending.json",
+      "checksum": "sha256:4444444444444444444444444444444444444444444444444444444444444444",
+      "observed_at": "2026-06-15T00:00:00Z"
+    },
+    "blockers": []
+  },
+  "boundaries": {
+    "read_only_projection": true,
+    "broker_truth": false,
+    "runtime_truth": false,
+    "account_truth": false,
+    "order_action": false,
+    "approval_truth": false,
+    "capital_truth": false,
+    "trading_readiness_truth": false
+  },
+  "rejection_rules": ["invalid fixture"]
+}

@@ -1,0 +1,27 @@
+{
+  "schema_version": "account_source_artifact.v1",
+  "artifact_id": "source.invalid.command",
+  "account_id": "acct.ctp.paper.19053",
+  "display_alias": "19053",
+  "source_owner": "nautilus_ctp_adapter",
+  "source_kind": "ctp_trader_api",
+  "source_mode": "delayed_snapshot",
+  "account_domain": "paper",
+  "trading_day": "2026-06-15",
+  "observed_at": "2026-06-15T00:00:00Z",
+  "source_ref": "contracts/source_artifacts/account_sources/invalid_direct_command_source.json",
+  "source_checksum": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+  "balances": [],
+  "positions": [],
+  "orders": [],
+  "fills": [],
+  "source_health": {
+    "state": "ready",
+    "lag_ms": 0
+  },
+  "blockers": [],
+  "command": {
+    "enabled": true,
+    "mode": "paper"
+  }
+}

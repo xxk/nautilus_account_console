@@ -89,6 +89,7 @@ import type {
   AccountPositionRow,
   AccountPositionsFixtureState,
   AccountPositionsPanelReadModel,
+  AccountSummaryBlocker,
   AccountReconcileFixtureState,
   AccountReconcileItem,
   AccountReconcilePanelReadModel,
@@ -100,10 +101,27 @@ import type {
   IntradayMonitorFixtureState,
   IntradayMonitorIncidentRow,
   IntradayMonitorPanelReadModel,
-  IntradayMonitorStreamStateRow
+  IntradayMonitorStreamStateRow,
+  MirrorAccountProjection,
+  MirrorAccountSummary,
+  MirrorEvidenceResponse,
+  MirrorSourceHealthResponse
 } from "./types";
+import {
+  fetchMirrorAccount,
+  fetchMirrorAccounts,
+  fetchMirrorEvidence,
+  fetchMirrorSourceHealth
+} from "./api";
 
 type AccountHealthFixtureId = AccountHealthPanelFixtureState | "adr0044_foundation";
+
+interface MirrorWorkbenchReadback {
+  accounts: MirrorAccountSummary[];
+  selected: MirrorAccountProjection;
+  sourceHealth: MirrorSourceHealthResponse | null;
+  evidence: MirrorEvidenceResponse | null;
+}
 
 const fixtureMap: Record<AccountHealthFixtureId, AccountHealthPanelReadModel> = {
   happy_path: happyFixture as AccountHealthPanelReadModel,
@@ -307,6 +325,286 @@ function stateTone(value: string): string {
   return "healthy";
 }
 
+function asNumber(value: unknown): number | null {
+  return typeof value === "number" && Number.isFinite(value) ? value : null;
+}
+
+function asText(value: unknown, fallback = "unknown"): string {
+  return typeof value === "string" && value.length > 0 ? value : fallback;
+}
+
+function directionLabel(value: unknown): AccountPositionRow["direction"] {
+  const normalized = asText(value).toUpperCase();
+  if (normalized === "LONG" || normalized === "SHORT" || normalized === "NET") {
+    return normalized;
+  }
+  return "UNKNOWN";
+}
+
+function sideLabel(value: unknown): AccountOrderRow["side"] {
+  return asText(value).toUpperCase() === "SELL" ? "SELL" : "BUY";
+}
+
+function orderStatusLabel(value: unknown): AccountOrderRow["status"] {
+  const normalized = asText(value).toLowerCase();
+  if (normalized === "submitted" || normalized === "working") {
+    return "working";
+  }
+  if (normalized === "filled") {
+    return "filled";
+  }
+  if (normalized === "canceled" || normalized === "cancelled") {
+    return "canceled";
+  }
+  if (normalized === "rejected") {
+    return "rejected";
+  }
+  if (normalized === "partial") {
+    return "partial";
+  }
+  if (normalized === "blocked" || normalized === "stale") {
+    return normalized;
+  }
+  return "unknown";
+}
+
+function accountKindFromDomain(domain: string): AccountKind {
+  if (domain === "live") {
+    return "live_broker";
+  }
+  if (domain === "backtest") {
+    return "backtest_replay";
+  }
+  if (domain === "paper") {
+    return "broker_paper_probe";
+  }
+  return "sandbox_paper";
+}
+
+function blockerSeverity(type: string): AccountHealthRow["blockers"][number]["severity"] {
+  if (type.includes("missing") || type.includes("unavailable")) {
+    return "high";
+  }
+  if (type.includes("stale")) {
+    return "warning";
+  }
+  return "info";
+}
+
+function mirrorBlockers(blockers: Record<string, unknown>[]): AccountSummaryBlocker[] {
+  const seen = new Set<string>();
+  return blockers.flatMap((blocker, index) => {
+    const kind = asText(blocker.type, "source_blocker");
+    const blockerId = asText(blocker.blocker_id, `mirror-blocker-${index}`);
+    const checksum = asText(blocker.checksum, "sha256:0000000000000000000000000000000000000000000000000000000000000000");
+    const key = `${blockerId}-${checksum}`;
+    if (seen.has(key)) {
+      return [];
+    }
+    seen.add(key);
+    return [{
+      blocker_id: blockerId,
+      severity: blockerSeverity(kind),
+      kind,
+      owner: asText(blocker.owner, "external_source_owner"),
+      next_action: asText(blocker.next_action, "Resolve source evidence before accepting account consistency."),
+      source_ref: asText(blocker.source_ref, "missing_source_ref"),
+      checksum
+    }];
+  });
+}
+
+function mirrorEvidenceRefs(readback: MirrorWorkbenchReadback) {
+  if (readback.evidence) {
+    return readback.evidence.evidence;
+  }
+  return [
+    {
+      kind: "source_package",
+      owner: readback.selected.source_kind,
+      source_ref: readback.selected.source_ref,
+      checksum: readback.selected.source_checksum,
+      authority: "source artifact provenance; not broker or account truth"
+    },
+    {
+      kind: "mirror_projection",
+      owner: "account-console-backend",
+      source_ref: readback.selected.projection_checkpoint_id,
+      checksum: readback.selected.projection_checksum,
+      authority: "Account Mirror read-only projection checkpoint"
+    }
+  ];
+}
+
+function mirrorContext(readback: MirrorWorkbenchReadback) {
+  const health = readback.sourceHealth;
+  return {
+    trading_day: "2026-06-15",
+    session_id: `${readback.selected.source_kind}.${readback.selected.display_alias}`,
+    run_id: readback.selected.source_ref,
+    reducer_checkpoint_id: readback.selected.projection_checkpoint_id,
+    reducer_checkpoint_ts: health?.observed_at ?? asText(readback.selected.source_health.observed_at, "unknown"),
+    stream_state: stateTone(readback.selected.capabilities.observation.mirror_state ?? "blocked") as AccountHealthPanelReadModel["context"]["stream_state"],
+    projection_owner: "account-console-contracts" as const,
+    source_authority: readback.selected.blockers.length > 0 ? "typed_blocker" as const : "normalized_read_model" as const
+  };
+}
+
+function mirrorBoundaries(readback: MirrorWorkbenchReadback) {
+  return {
+    read_only_projection: readback.selected.boundaries.read_only_projection === true,
+    runtime_truth: readback.selected.boundaries.runtime_truth === true,
+    ledger_truth: false,
+    ui_truth: false,
+    paper_ready: false,
+    live_ready: false,
+    broker_tradable: false,
+    admission_truth: false,
+    capital_truth: readback.selected.boundaries.capital_truth === true,
+    broker_truth: readback.selected.boundaries.broker_truth === true,
+    action_controls: readback.selected.boundaries.order_action === true,
+    account_truth: readback.selected.boundaries.account_truth === true,
+    order_truth: false
+  };
+}
+
+function mirrorSummaryReadModel(readback: MirrorWorkbenchReadback): AccountSummaryPanelReadModel {
+  const selected = readback.selected;
+  const balance = selected.balances[0] ?? {};
+  const blockers = mirrorBlockers([...(selected.blockers ?? []), ...(readback.sourceHealth?.blockers ?? [])]);
+  return {
+    schema_version: "account_summary_panel.v1",
+    workbench: "Account Workbench",
+    panel: "Account Summary Panel",
+    route: "/accounts/{account_id}",
+    fixture_state: blockers.length > 0 ? "blocked" : "happy_path",
+    context: mirrorContext(readback),
+    account: {
+      account_id: selected.account_id,
+      account_alias: selected.display_alias,
+      account_kind: accountKindFromDomain(selected.account_domain),
+      portfolio_uid: asText(selected.source_health.account_uid, selected.source_ref),
+      display_state: stateTone(selected.capabilities.observation.mirror_state ?? "blocked") as AccountHealthPanelReadModel["context"]["stream_state"],
+      base_currency: asText(balance.currency, "CNY")
+    },
+    balances: {
+      cash: asNumber(balance.equity),
+      frozen_cash: asNumber(balance.frozen_cash),
+      available_cash: asNumber(balance.available_cash),
+      buying_power: asNumber(balance.available_cash)
+    },
+    pnl: {
+      realized: null,
+      unrealized: asNumber(balance.position_profit),
+      fees: null,
+      taxes: null
+    },
+    margin: {
+      initial_margin: asNumber(balance.margin_used),
+      maintenance_margin: null,
+      margin_ratio: null
+    },
+    settlement: {
+      state: blockers.length > 0 ? "blocked" : "settled",
+      latest_settlement_ref: selected.source_ref,
+      position_carryover_ref: selected.source_ref
+    },
+    positions: selected.positions.map((position) => ({
+      instrument: asText(position.instrument),
+      net_qty: asNumber(position.net_qty),
+      market_value: null,
+      source_ref: asText(position.source_ref, selected.source_ref),
+      checksum: asText(position.checksum, selected.source_checksum)
+    })),
+    blockers,
+    source_refs: mirrorEvidenceRefs(readback),
+    boundaries: mirrorBoundaries(readback),
+    rejection_rules: [
+      "Do not treat Account Console mirror readback as broker truth.",
+      "Do not infer command capability from account domain or source kind."
+    ]
+  };
+}
+
+function mirrorPositionsReadModel(readback: MirrorWorkbenchReadback): AccountPositionsPanelReadModel {
+  return {
+    schema_version: "account_positions_panel.v1",
+    workbench: "Account Workbench",
+    panel: "Account Positions Panel",
+    route: "/accounts/{account_id}/positions",
+    fixture_state: readback.selected.blockers.length > 0 ? "blocked" : "current_positions",
+    context: mirrorContext(readback),
+    account: {
+      account_id: readback.selected.account_id,
+      account_alias: readback.selected.display_alias,
+      account_kind: accountKindFromDomain(readback.selected.account_domain)
+    },
+    positions: readback.selected.positions.map((position) => ({
+      account_id: readback.selected.account_id,
+      instrument: asText(position.instrument),
+      direction: directionLabel(position.direction),
+      net_qty: asNumber(position.net_qty),
+      today_qty: asNumber(position.today_qty),
+      yesterday_qty: asNumber(position.yesterday_qty),
+      available_qty: asNumber(position.available_qty),
+      frozen_qty: asNumber(position.frozen_qty),
+      average_price: asNumber(position.avg_price),
+      market_price: null,
+      market_value: null,
+      unrealized_pnl: asNumber(position.unrealized_pnl),
+      carryover_ref: readback.selected.source_ref,
+      settlement_ref: readback.selected.source_ref,
+      source_ref: asText(position.source_ref, readback.selected.source_ref),
+      checksum: asText(position.checksum, readback.selected.source_checksum)
+    })),
+    blockers: mirrorBlockers(readback.selected.blockers),
+    source_refs: mirrorEvidenceRefs(readback),
+    boundaries: mirrorBoundaries(readback),
+    rejection_rules: ["Do not display positions without source refs and checksums."]
+  };
+}
+
+function mirrorOrdersReadModel(readback: MirrorWorkbenchReadback): AccountOrdersPanelReadModel {
+  return {
+    schema_version: "account_orders_panel.v1",
+    workbench: "Account Workbench",
+    panel: "Account Orders Panel",
+    route: "/accounts/{account_id}/orders",
+    fixture_state: readback.selected.blockers.length > 0 ? "blocked" : "current_orders",
+    context: mirrorContext(readback),
+    account: {
+      account_id: readback.selected.account_id,
+      account_alias: readback.selected.display_alias,
+      account_kind: accountKindFromDomain(readback.selected.account_domain)
+    },
+    orders: readback.selected.orders.map((order) => {
+      const quantity = asNumber(order.quantity);
+      const filledQuantity = asNumber(order.filled_quantity) ?? 0;
+      return {
+        account_id: readback.selected.account_id,
+        client_order_id: asText(order.client_order_id),
+        instrument: asText(order.instrument),
+        side: sideLabel(order.side),
+        offset: "UNKNOWN",
+        order_type: "UNKNOWN",
+        limit_price: null,
+        quantity,
+        filled_quantity: filledQuantity,
+        remaining_quantity: quantity === null ? null : quantity - filledQuantity,
+        status: orderStatusLabel(order.status),
+        lifecycle_ref: asText(order.venue_order_id, readback.selected.source_ref),
+        report_provenance_ref: asText(order.report_provenance_ref, readback.selected.source_ref),
+        source_ref: asText(order.source_ref, readback.selected.source_ref),
+        checksum: asText(order.checksum, readback.selected.source_checksum)
+      };
+    }),
+    blockers: mirrorBlockers(readback.selected.blockers),
+    source_refs: mirrorEvidenceRefs(readback),
+    boundaries: mirrorBoundaries(readback),
+    rejection_rules: ["Do not treat gateway acknowledgements as final account state without mirror readback."]
+  };
+}
+
 export function App() {
   const currentPath = window.location.pathname;
   const isIntradayMonitorRoute = currentPath === "/monitor";
@@ -354,6 +652,9 @@ export function App() {
   const accountIncidentsFixture = accountIncidentsFixtureMap[accountIncidentsFixtureState];
   const accountEvidenceFixture = accountEvidenceFixtureMap[accountEvidenceFixtureState];
   const intradayMonitorFixture = intradayMonitorFixtureMap[intradayMonitorFixtureState];
+  const routeAccountId = decodeURIComponent(currentPath.split("/")[2] ?? "");
+  const [mirrorReadback, setMirrorReadback] = useState<MirrorWorkbenchReadback | null>(null);
+  const [mirrorReadbackError, setMirrorReadbackError] = useState<string | null>(null);
   const [selectedAccountId, setSelectedAccountId] = useState<string | null>(
     fixture.accounts[0]?.account_id ?? null
   );
@@ -386,6 +687,53 @@ export function App() {
 
   const selectedAccount =
     visibleRows.find((account) => account.account_id === selectedAccountId) ?? visibleRows[0] ?? null;
+  const terminalSummary = mirrorReadback ? mirrorSummaryReadModel(mirrorReadback) : accountSummaryFixture;
+  const terminalPositions = mirrorReadback ? mirrorPositionsReadModel(mirrorReadback) : accountPositionsFixture;
+  const terminalOrders = mirrorReadback ? mirrorOrdersReadModel(mirrorReadback) : accountOrdersFixture;
+
+  useEffect(() => {
+    if (
+      !isAccountWorkbenchRoute ||
+      isAccountOrderDetailRoute ||
+      !(routeAccountId.startsWith("acct.") || routeAccountId === "simulated-001")
+    ) {
+      setMirrorReadback(null);
+      setMirrorReadbackError(null);
+      return;
+    }
+
+    let active = true;
+    async function loadMirrorReadback() {
+      try {
+        const list = await fetchMirrorAccounts();
+        const accountId = list.accounts.some((account) => account.account_id === routeAccountId)
+          ? routeAccountId
+          : list.accounts[0]?.account_id;
+        if (!accountId) {
+          throw new Error("mirror account list is empty");
+        }
+        const [selected, sourceHealth, evidence] = await Promise.all([
+          fetchMirrorAccount(accountId),
+          fetchMirrorSourceHealth(accountId),
+          fetchMirrorEvidence(accountId)
+        ]);
+        if (active) {
+          setMirrorReadback({ accounts: list.accounts, selected, sourceHealth, evidence });
+          setMirrorReadbackError(null);
+        }
+      } catch (error) {
+        if (active) {
+          setMirrorReadback(null);
+          setMirrorReadbackError(error instanceof Error ? error.message : "mirror readback unavailable");
+        }
+      }
+    }
+
+    void loadMirrorReadback();
+    return () => {
+      active = false;
+    };
+  }, [isAccountOrderDetailRoute, isAccountWorkbenchRoute, routeAccountId]);
 
   return (
     <main className="shell" data-testid="account-console">
@@ -456,24 +804,28 @@ export function App() {
               <div>
                 <h1>Account Workbench</h1>
                 <p>
-                  {accountSummaryFixture.context.trading_day} ·{" "}
-                  {accountSummaryFixture.account.account_id} · {accountSummaryFixture.context.run_id}
+                  {terminalSummary.context.trading_day} ·{" "}
+                  {terminalSummary.account.account_id} · {terminalSummary.context.run_id}
                 </p>
               </div>
               <div
-                className={`stream-pill ${stateTone(accountSummaryFixture.context.stream_state)}`}
+                className={`stream-pill ${stateTone(terminalSummary.context.stream_state)}`}
                 data-testid="account-workbench-stream-state"
               >
                 <Landmark size={16} />
-                {accountSummaryFixture.context.stream_state}
+                {terminalSummary.context.stream_state}
               </div>
             </header>
 
             <section className="checkpoint-strip" aria-label="Account source checkpoint">
-              <Ref label="Reducer checkpoint" value={accountSummaryFixture.context.reducer_checkpoint_id} />
-              <Ref label="Checkpoint time" value={accountSummaryFixture.context.reducer_checkpoint_ts} />
-              <Ref label="Projection" value={accountSummaryFixture.context.projection_owner} />
-              <Ref label="Authority" value={accountSummaryFixture.context.source_authority} />
+              <Ref label="Reducer checkpoint" value={terminalSummary.context.reducer_checkpoint_id} />
+              <Ref label="Checkpoint time" value={terminalSummary.context.reducer_checkpoint_ts} />
+              <Ref label="Projection" value={terminalSummary.context.projection_owner} />
+              <Ref label="Authority" value={terminalSummary.context.source_authority} />
+              <Ref
+                label="Readback"
+                value={mirrorReadback ? "mirror API" : mirrorReadbackError ? "fixture fallback" : "loading"}
+              />
             </section>
 
             {isAccountOrderDetailRoute ? (
@@ -525,8 +877,13 @@ export function App() {
                 onFixtureState={setAccountEvidenceFixtureState}
               />
             ) : (
-              <AccountSummaryPanel
-                fixture={accountSummaryFixture}
+              <AccountWorkbenchTerminalPanel
+                mirrorAccounts={mirrorReadback?.accounts ?? null}
+                mirrorReadbackError={mirrorReadbackError}
+                sourceHealthDetails={mirrorReadback?.selected.source_health ?? null}
+                summary={terminalSummary}
+                positions={terminalPositions}
+                orders={terminalOrders}
                 fixtureState={accountSummaryFixtureState}
                 onFixtureState={setAccountSummaryFixtureState}
               />
@@ -800,6 +1157,642 @@ function IntradayIncidentCard({ incident }: { incident: IntradayMonitorIncidentR
       </dl>
       <CopyableCode label="incident source ref" value={incident.source_ref} />
     </article>
+  );
+}
+
+function numberTone(value: number | null): string {
+  if (value === null || value === 0) {
+    return "neutral";
+  }
+  return value > 0 ? "positive" : "negative";
+}
+
+function AccountWorkbenchTerminalPanel({
+  mirrorAccounts,
+  mirrorReadbackError,
+  sourceHealthDetails,
+  summary,
+  positions,
+  orders,
+  fixtureState,
+  onFixtureState
+}: {
+  mirrorAccounts: MirrorAccountSummary[] | null;
+  mirrorReadbackError: string | null;
+  sourceHealthDetails: Record<string, unknown> | null;
+  summary: AccountSummaryPanelReadModel;
+  positions: AccountPositionsPanelReadModel;
+  orders: AccountOrdersPanelReadModel;
+  fixtureState: AccountSummaryFixtureState;
+  onFixtureState: (value: AccountSummaryFixtureState) => void;
+}) {
+  const baseCurrency = summary.account.base_currency;
+  const accountRows = mirrorAccounts
+    ? mirrorAccounts.map((account) => ({
+        state: null,
+        account: {
+          account_id: account.account_id,
+          account_alias: account.display_alias,
+          account_kind: accountKindFromDomain(account.account_domain)
+        },
+        streamState: stateTone(account.mirror_state),
+        href: `/accounts/${encodeURIComponent(account.account_id)}`
+      }))
+    : Object.entries(accountSummaryFixtureMap).map(([state, fixture]) => ({
+        state: state as AccountSummaryFixtureState,
+        account: fixture.account,
+        streamState: fixture.context.stream_state,
+        href: null
+      }));
+  const visiblePositions = positions.positions.filter(
+    (position) => position.account_id === summary.account.account_id
+  );
+  const visibleOrders = orders.orders.filter((order) => order.account_id === summary.account.account_id);
+  const allBlockers: AccountSummaryBlocker[] = [
+    ...summary.blockers,
+    ...(visiblePositions.length > 0 ? positions.blockers : []),
+    ...(visibleOrders.length > 0 ? orders.blockers : [])
+  ];
+  const allSourceRefs = [...summary.source_refs, ...positions.source_refs, ...orders.source_refs];
+  const capabilityRows = [
+    {
+      track: "F2",
+      name: "Observation",
+      source: "mirror stream",
+      state: summary.context.stream_state,
+      ref: summary.context.reducer_checkpoint_id
+    },
+    {
+      track: "F4",
+      name: "Source",
+      source: "CTP paper 19053",
+      state: summary.context.source_authority,
+      ref: "fixture bridge"
+    },
+    {
+      track: "F3",
+      name: "Mirror",
+      source: "projection store",
+      state: summary.context.projection_owner,
+      ref: "read model"
+    },
+    {
+      track: "F5",
+      name: "Workbench",
+      source: "account UI",
+      state: "read-only",
+      ref: "orders locked"
+    }
+  ];
+
+  return (
+    <section className="terminal-workbench-shell" data-testid="terminal-workbench-shell">
+      <header className="terminal-status-bar" data-testid="terminal-top-status-bar">
+        <div className="terminal-status-main">
+          <Landmark size={18} />
+          <div>
+            <h2>{summary.account.account_id}</h2>
+            <p data-testid="account-workbench-context-bar">
+              {summary.workbench} / {summary.account.account_alias} / {summary.account.portfolio_uid}
+            </p>
+          </div>
+        </div>
+        <div className="terminal-status-grid">
+          <span>
+            <strong>Trading day</strong>
+            {summary.context.trading_day}
+          </span>
+          <span>
+            <strong>Checkpoint</strong>
+            {summary.context.reducer_checkpoint_id}
+          </span>
+          <span>
+            <strong>Observed</strong>
+            {summary.context.reducer_checkpoint_ts}
+          </span>
+          <span>
+            <strong>Stream</strong>
+            <StateBadge value={summary.context.stream_state} />
+          </span>
+        </div>
+      </header>
+
+      <div className="terminal-layout">
+        <aside className="terminal-left-rail">
+          <section className="terminal-panel" data-testid="account-readback-mode">
+            <div className="terminal-panel-header">
+              <h3>Readback</h3>
+              <StateBadge value={mirrorAccounts ? "healthy" : mirrorReadbackError ? "warning" : "stale"} />
+            </div>
+            <dl className="detail-list">
+              <div>
+                <dt>Mode</dt>
+                <dd>{mirrorAccounts ? "mirror API" : "deterministic fixture fallback"}</dd>
+              </div>
+              <div>
+                <dt>Endpoint</dt>
+                <dd>/api/mirror/accounts</dd>
+              </div>
+              {mirrorReadbackError ? (
+                <div>
+                  <dt>Fallback reason</dt>
+                  <dd>{mirrorReadbackError}</dd>
+                </div>
+              ) : null}
+            </dl>
+          </section>
+
+          <section className="terminal-panel">
+            <div className="terminal-panel-header">
+              <h3>Accounts</h3>
+              <StateBadge value={summary.account.display_state} />
+            </div>
+            <div className="terminal-mini-table-wrap" data-testid="account-selector">
+              <table className="terminal-mini-table">
+                <thead>
+                  <tr>
+                    <th>Alias</th>
+                    <th>ID</th>
+                    <th>Kind</th>
+                    <th>State</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {accountRows.map((row) => (
+                    <tr
+                      className={
+                        row.account.account_id === summary.account.account_id || row.state === fixtureState
+                          ? "selected"
+                          : undefined
+                      }
+                      key={`${row.account.account_id}-${row.state ?? "mirror"}`}
+                    >
+                      <td>{row.account.account_alias}</td>
+                      <td>
+                        {row.href ? (
+                          <a className="table-link-button" href={row.href}>
+                            {row.account.account_id}
+                          </a>
+                        ) : (
+                          <button
+                            className="table-link-button"
+                            onClick={() => row.state && onFixtureState(row.state)}
+                            type="button"
+                          >
+                            {row.account.account_id}
+                          </button>
+                        )}
+                      </td>
+                      <td>{formatLabel(row.account.account_kind)}</td>
+                      <td>
+                        <StateBadge value={row.streamState} />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <section className="terminal-panel">
+            <div className="terminal-panel-header">
+              <h3>Capability Gate</h3>
+            </div>
+            <div className="terminal-mini-table-wrap">
+              <table className="terminal-mini-table" data-testid="account-capability-table">
+                <thead>
+                  <tr>
+                    <th>Track</th>
+                    <th>Name</th>
+                    <th>Source</th>
+                    <th>State</th>
+                    <th>Ref</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {capabilityRows.map((row) => (
+                    <tr data-testid="account-capability-row" key={row.track}>
+                      <td>{row.track}</td>
+                      <td>{row.name}</td>
+                      <td>{row.source}</td>
+                      <td>
+                        <StateBadge value={row.state} />
+                      </td>
+                      <td>{row.ref}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </aside>
+
+        <main className="terminal-center">
+          {mirrorAccounts ? null : (
+            <div className="filter-toolbar account-summary-toolbar terminal-fixture-toolbar">
+              <label>
+                <ListFilter size={14} />
+                Fixture
+                <select
+                  onChange={(event) => onFixtureState(event.target.value as AccountSummaryFixtureState)}
+                  value={fixtureState}
+                >
+                  {Object.entries(accountSummaryFixtureLabels).map(([value, label]) => (
+                    <option key={value} value={value}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+          )}
+
+          {summary.fixture_state === "stale" ? (
+            <div className="state-callout stale" data-testid="account-summary-stale-state">
+              <AlertTriangle size={16} />
+              <span>
+                Stale checkpoint {summary.context.reducer_checkpoint_id} at {summary.context.reducer_checkpoint_ts}
+              </span>
+            </div>
+          ) : null}
+
+          {summary.fixture_state === "empty" ? (
+            <div className="state-callout empty-callout" data-testid="account-summary-empty-state">
+              No account summary values are available for this deterministic fixture state.
+            </div>
+          ) : null}
+
+          <section data-testid="account-workbench-summary-panel" aria-label="Account summary">
+            <div className="terminal-summary-strip" data-testid="account-summary-metric-strip">
+              <Metric
+                label="Cash"
+                testId="account-summary-cash"
+                value={formatMoney(summary.balances.cash, baseCurrency)}
+              />
+              <Metric
+                label="Available"
+                testId="account-summary-available-cash"
+                value={formatMoney(summary.balances.available_cash, baseCurrency)}
+              />
+              <Metric
+                label="Buying power"
+                testId="account-summary-buying-power"
+                value={formatMoney(summary.balances.buying_power, baseCurrency)}
+              />
+              <Metric
+                label="Margin"
+                testId="account-summary-margin"
+                value={formatMoney(summary.margin.initial_margin, baseCurrency)}
+              />
+              <Metric
+                label="Unrealized PnL"
+                testId="account-summary-unrealized-pnl"
+                value={formatMoney(summary.pnl.unrealized, baseCurrency)}
+              />
+              <Metric label="Positions" testId="account-summary-position-count" value={String(visiblePositions.length)} />
+            </div>
+          </section>
+
+          <section className="terminal-panel terminal-table-panel">
+            <div className="terminal-panel-header">
+              <h3>Positions</h3>
+              <span>{positions.context.reducer_checkpoint_id}</span>
+            </div>
+            <div className="terminal-data-table-wrap">
+              <table className="terminal-data-table" data-testid="account-positions-table">
+                <thead>
+                  <tr>
+                    <th>Instrument</th>
+                    <th>Direction</th>
+                    <th>Net</th>
+                    <th>Today</th>
+                    <th>Available</th>
+                    <th>Avg</th>
+                    <th>Last</th>
+                    <th>Value</th>
+                    <th>UPnL</th>
+                    <th>Source</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {visiblePositions.length > 0 ? (
+                    visiblePositions.map((position) => (
+                      <tr data-testid="account-position-projection-row" key={position.checksum}>
+                        <td data-label="Instrument">{position.instrument}</td>
+                        <td data-label="Direction">
+                          <StateBadge value={position.direction} />
+                        </td>
+                        <td className="numeric-cell" data-label="Net">
+                          {position.net_qty ?? "missing"}
+                        </td>
+                        <td className="numeric-cell" data-label="Today">
+                          {position.today_qty ?? "missing"}
+                        </td>
+                        <td className="numeric-cell" data-label="Available">
+                          {position.available_qty ?? "missing"}
+                        </td>
+                        <td className="numeric-cell" data-label="Avg">
+                          {position.average_price ?? "missing"}
+                        </td>
+                        <td className="numeric-cell" data-label="Last">
+                          {position.market_price ?? "missing"}
+                        </td>
+                        <td className="numeric-cell" data-label="Value">
+                          {formatMoney(position.market_value, baseCurrency)}
+                        </td>
+                        <td className={`numeric-cell ${numberTone(position.unrealized_pnl)}`} data-label="UPnL">
+                          {formatMoney(position.unrealized_pnl, baseCurrency)}
+                        </td>
+                        <td data-label="Source">
+                          <CopyableCode label="position source ref" value={position.source_ref} />
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={10}>No position rows in this fixture projection.</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <section className="terminal-panel terminal-bottom-tape" data-testid="account-bottom-tape">
+            <div className="terminal-panel-header">
+              <h3>Orders Tape</h3>
+              <span>{orders.context.reducer_checkpoint_id}</span>
+            </div>
+            <div className="terminal-data-table-wrap">
+              <table className="terminal-data-table compact">
+                <thead>
+                  <tr>
+                    <th>Client order</th>
+                    <th>Instrument</th>
+                    <th>Side</th>
+                    <th>Status</th>
+                    <th>Limit</th>
+                    <th>Qty</th>
+                    <th>Filled</th>
+                    <th>Remaining</th>
+                    <th>Evidence</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {visibleOrders.length > 0 ? (
+                    visibleOrders.map((order) => (
+                      <tr key={order.checksum}>
+                        <td data-label="Client order">{order.client_order_id}</td>
+                        <td data-label="Instrument">{order.instrument}</td>
+                        <td data-label="Side">
+                          <StateBadge value={order.side} />
+                        </td>
+                        <td data-label="Status">
+                          <StateBadge value={order.status} />
+                        </td>
+                        <td className="numeric-cell" data-label="Limit">
+                          {order.limit_price ?? "missing"}
+                        </td>
+                        <td className="numeric-cell" data-label="Qty">
+                          {order.quantity ?? "missing"}
+                        </td>
+                        <td className="numeric-cell" data-label="Filled">
+                          {order.filled_quantity ?? "missing"}
+                        </td>
+                        <td className="numeric-cell" data-label="Remaining">
+                          {order.remaining_quantity ?? "missing"}
+                        </td>
+                        <td data-label="Evidence">
+                          <CopyableCode label="order source ref" value={order.source_ref} />
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={9}>No order rows in this fixture projection.</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <section className="terminal-panel" data-testid="account-order-execution-report">
+            <div className="terminal-panel-header">
+              <h3>Execution Reports</h3>
+              <span>{visibleOrders.filter((order) => order.report_provenance_ref).length}</span>
+            </div>
+            {visibleOrders.some((order) => order.report_provenance_ref) ? (
+              <div className="order-list">
+                {visibleOrders
+                  .filter((order) => order.report_provenance_ref)
+                  .map((order) => (
+                    <article
+                      className="order-card"
+                      data-testid="account-order-execution-report-row"
+                      key={`${order.client_order_id}-${order.report_provenance_ref}`}
+                    >
+                      <div className="order-card-head">
+                        <div>
+                          <strong>{order.client_order_id}</strong>
+                          <span>{order.status}</span>
+                        </div>
+                        <StateBadge value="read-only" />
+                      </div>
+                      <dl className="detail-list two-column">
+                        <div>
+                          <dt>Instrument</dt>
+                          <dd>{order.instrument}</dd>
+                        </div>
+                        <div>
+                          <dt>Side</dt>
+                          <dd>{order.side}</dd>
+                        </div>
+                        <div>
+                          <dt>Report status</dt>
+                          <dd>{order.status}</dd>
+                        </div>
+                        <div>
+                          <dt>Authority</dt>
+                          <dd>execution report provenance only</dd>
+                        </div>
+                      </dl>
+                      <CopyableCode
+                        label="report provenance ref"
+                        value={order.report_provenance_ref ?? "missing"}
+                      />
+                      <CopyableCode label="order source ref" value={order.source_ref} />
+                      <CopyableCode label="order checksum" value={order.checksum} />
+                    </article>
+                  ))}
+              </div>
+            ) : (
+              <p className="muted">No execution report provenance rows in this projection.</p>
+            )}
+          </section>
+        </main>
+
+        <aside className="terminal-right-rail">
+          <section className="terminal-panel" data-testid="account-source-health-panel">
+            <div className="terminal-panel-header">
+              <h3>Source Health</h3>
+              <StateBadge value={summary.fixture_state} />
+            </div>
+            <dl className="detail-list">
+              <div>
+                <dt>Authority</dt>
+                <dd>{summary.context.source_authority}</dd>
+              </div>
+              <div>
+                <dt>Projection owner</dt>
+                <dd>{summary.context.projection_owner}</dd>
+              </div>
+              <div>
+                <dt>Session</dt>
+                <dd>{summary.context.session_id}</dd>
+              </div>
+              <div>
+                <dt>Run</dt>
+                <dd>{summary.context.run_id}</dd>
+              </div>
+              {sourceHealthDetails?.market_source ? (
+                <div>
+                  <dt>Market</dt>
+                  <dd>{asText(sourceHealthDetails.market_source)}</dd>
+                </div>
+              ) : null}
+              {sourceHealthDetails?.execution_target ? (
+                <div>
+                  <dt>Execution</dt>
+                  <dd>{asText(sourceHealthDetails.execution_target)}</dd>
+                </div>
+              ) : null}
+              {sourceHealthDetails?.orders_scope ? (
+                <div>
+                  <dt>Orders</dt>
+                  <dd>{asText(sourceHealthDetails.orders_scope)}</dd>
+                </div>
+              ) : null}
+              {typeof sourceHealthDetails?.broker_order_submission === "boolean" ? (
+                <div>
+                  <dt>Broker submission</dt>
+                  <dd>{sourceHealthDetails.broker_order_submission ? "enabled" : "disabled"}</dd>
+                </div>
+              ) : null}
+              {sourceHealthDetails?.ledger_type ? (
+                <div>
+                  <dt>Ledger</dt>
+                  <dd>{asText(sourceHealthDetails.ledger_type)}</dd>
+                </div>
+              ) : null}
+              {sourceHealthDetails?.stage ? (
+                <div>
+                  <dt>Stage</dt>
+                  <dd>{asText(sourceHealthDetails.stage)}</dd>
+                </div>
+              ) : null}
+            </dl>
+          </section>
+
+          <section className="terminal-panel" data-testid="account-command-capability-state">
+            <div className="terminal-panel-header">
+              <h3>Command Plane</h3>
+              <StateBadge value={summary.boundaries.action_controls ? "warning" : "empty"} />
+            </div>
+            <dl className="detail-list">
+              <div>
+                <dt>Mode</dt>
+                <dd>observation only</dd>
+              </div>
+              <div>
+                <dt>Controls</dt>
+                <dd>none mounted</dd>
+              </div>
+              <div>
+                <dt>Broker adapter</dt>
+                <dd>not bound in this view</dd>
+              </div>
+            </dl>
+          </section>
+
+          <section className="terminal-panel" data-testid="account-summary-boundary-list">
+            <div className="terminal-panel-header">
+              <h3>Boundaries</h3>
+              <StateBadge value="read-only" />
+            </div>
+            <div className="boundary-grid terminal-boundary-grid">
+              <div className="boundary-item">
+                <span>Read-only projection</span>
+                <StateBadge value={summary.boundaries.read_only_projection ? "healthy" : "empty"} />
+              </div>
+              <div className="boundary-item">
+                <span>UI authority</span>
+                <StateBadge value={summary.boundaries.ui_truth ? "warning" : "empty"} />
+              </div>
+              <div className="boundary-item">
+                <span>Action controls</span>
+                <StateBadge value={summary.boundaries.action_controls ? "warning" : "empty"} />
+              </div>
+            </div>
+          </section>
+
+          <section className="terminal-panel terminal-evidence-rail" data-testid="account-evidence-rail">
+            <div className="terminal-panel-header">
+              <h3>Evidence</h3>
+              <span>{allSourceRefs.length} refs</span>
+            </div>
+            <div className="evidence-stack">
+              {allSourceRefs.slice(0, 6).map((source, index) => (
+                <article
+                  className="evidence-item"
+                  data-testid="account-summary-source-ref"
+                  key={`${source.kind}-${source.checksum}-${index}`}
+                >
+                  <strong>{formatLabel(source.kind)}</strong>
+                  <span>{source.owner}</span>
+                  <CopyableCode label="source ref" value={source.source_ref} />
+                </article>
+              ))}
+            </div>
+          </section>
+
+          <section className="terminal-panel">
+            <div className="terminal-panel-header">
+              <h3>Blockers</h3>
+              <span>{allBlockers.length}</span>
+            </div>
+            {allBlockers.length > 0 ? (
+              <div className="blocker-list">
+                {allBlockers.map((blocker) => (
+                  <article
+                    className="blocker-item"
+                    data-testid="account-blocker-row"
+                    key={`${blocker.blocker_id}-${blocker.checksum}`}
+                  >
+                    <div className="blocker-head">
+                      <StateBadge value={blocker.severity} />
+                      <strong data-testid="account-summary-blocker">{formatLabel(blocker.kind)}</strong>
+                    </div>
+                    <dl className="detail-list">
+                      <div>
+                        <dt>Owner</dt>
+                        <dd>{blocker.owner}</dd>
+                      </div>
+                      <div>
+                        <dt>Next action</dt>
+                        <dd>{blocker.next_action}</dd>
+                      </div>
+                    </dl>
+                  </article>
+                ))}
+              </div>
+            ) : (
+              <p className="muted">No blockers in this read-only fixture projection.</p>
+            )}
+          </section>
+        </aside>
+      </div>
+    </section>
   );
 }
 
@@ -2652,9 +3645,9 @@ function CopyableCode({ label, value }: { label: string; value: string }) {
   );
 }
 
-function Metric({ label, value }: { label: string; value: string }) {
+function Metric({ label, testId, value }: { label: string; testId?: string; value: string }) {
   return (
-    <div className="metric">
+    <div className="metric" data-testid={testId}>
       <span>{label}</span>
       <strong>{value}</strong>
     </div>

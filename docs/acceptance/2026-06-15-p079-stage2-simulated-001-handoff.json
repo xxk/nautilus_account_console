@@ -1,0 +1,84 @@
+{
+  "schema": "account-console.p079-stage2-simulated-001-handoff.v1",
+  "status": "ready_for_next_session",
+  "created_at": "2026-06-15",
+  "account_opening": {
+    "account_id": "simulated-001",
+    "account_uid": "sandbox-paper.simulated-001",
+    "account_type": "sandbox_paper",
+    "ledger_type": "simulated_sandbox_ledger",
+    "stage": "R1/P079 Stage 2",
+    "ui_entry": "/accounts/simulated-001",
+    "api_entry": "/api/mirror/accounts/simulated-001"
+  },
+  "market_boundary": {
+    "market_source": "CTP 025292 official market data only",
+    "market_data_account_id": "025292",
+    "market_data_role": "market_data_only",
+    "ctp_trading_account": false,
+    "ctp_trading_front_order_submission": false
+  },
+  "execution_boundary": {
+    "execution_target": "Nautilus Sandbox Paper",
+    "orders_scope": "simulated ledger only",
+    "broker_order_submission": false,
+    "trading_adapter": "disabled"
+  },
+  "account_console_boundary": {
+    "role": "read_only_projection_plus_operator_controls",
+    "writes_ledger_truth": false,
+    "writes_order_truth": false,
+    "writes_fill_truth": false,
+    "writes_position_truth": false,
+    "writes_account_balance_truth": false,
+    "writes_reconcile_truth": false
+  },
+  "browser_evidence": {
+    "command": "cd frontend && npx playwright test tests/e2e/account-terminal-workbench.spec.ts",
+    "viewport_coverage": [
+      "desktop",
+      "tablet",
+      "mobile"
+    ],
+    "screenshots": [
+      "docs/acceptance/browser-evidence/p011-account-workbench-api-readback/desktop-simulated-001-stage2.png",
+      "docs/acceptance/browser-evidence/p011-account-workbench-api-readback/tablet-simulated-001-stage2.png",
+      "docs/acceptance/browser-evidence/p011-account-workbench-api-readback/mobile-simulated-001-stage2.png"
+    ]
+  },
+  "blocker": {
+    "blocker_id": "simulated001_stage2_fixture_only",
+    "type": "fixture_only_read_model",
+    "owner": "nautilus_strategies.sandbox_paper_runtime",
+    "next_action": "Replace this Stage 2 planning/UI acceptance fixture with a pinned sandbox paper runtime projection when the upstream owner publishes one."
+  },
+  "verification_commands": [
+    "python scripts\\validate_p079_stage2_simulated_001.py",
+    "python scripts\\validate_account_source_bridges.py",
+    "python scripts\\validate_account_mirror_api.py",
+    "python scripts\\validate_account_source_health_evidence.py",
+    "python -m pytest backend\\tests",
+    "cd frontend && npx playwright test tests/e2e/account-terminal-workbench.spec.ts",
+    "cd frontend && npm run build"
+  ],
+  "forbidden_claims": [
+    "submit_order_to_ctp_025292",
+    "use_025292_trading_adapter",
+    "use_025292_as_ledger_truth",
+    "paper_ready",
+    "live_ready",
+    "production_ready",
+    "capital_allocated",
+    "broker_tradable",
+    "can_trade"
+  ],
+  "explicit_non_claims": [
+    "no_order_sent_to_ctp_025292",
+    "no_ctp_trading_front_used",
+    "no_real_broker_account_created",
+    "no_stage3_scope",
+    "no_ctp025202_scope",
+    "no_live_admission_risk_capital_scope",
+    "no_readiness_claim"
+  ]
+}

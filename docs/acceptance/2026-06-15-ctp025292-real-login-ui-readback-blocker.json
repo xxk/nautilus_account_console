@@ -1,0 +1,32 @@
+{
+  "schema_version": "ctp025292_real_login_ui_readback_blocker.v1",
+  "status": "blocked",
+  "blocker_id": "ctp025292_real_login_td_bridge_unavailable",
+  "account_id": "acct.ctp.live.025292",
+  "display_alias": "025292",
+  "owner": "nautilus_ctp_adapter",
+  "attempted_at": "2026-06-15T00:00:00Z",
+  "attempted_commands": [
+    "D:\\Nautilus\\nautilus_ctp_adapter\\.venv\\Scripts\\python.exe D:\\Nautilus\\nautilus_ctp_adapter\\scripts\\ctp_account_query_smoke.py --config D:\\Nautilus\\nautilus_ctp_adapter\\cfgs\\local\\ctp.live.025292.local.json --timeout-seconds 25 --session-label nac-ctp025292-account-readonly --output-json output\\account_capability\\ctp-live-025292\\real-login-20260615\\account_query.json",
+    "D:\\Nautilus\\nautilus_ctp_adapter\\.venv\\Scripts\\python.exe D:\\Nautilus\\nautilus_ctp_adapter\\scripts\\ctp_position_query_smoke.py --config D:\\Nautilus\\nautilus_ctp_adapter\\cfgs\\local\\ctp.live.025292.local.json --timeout-seconds 25 --completion-grace-seconds 1.5 --session-label nac-ctp025292-position-readonly --output-json output\\account_capability\\ctp-live-025292\\real-login-20260615\\position_query.json"
+  ],
+  "observed_failure": {
+    "error_type": "RuntimeError",
+    "error_message": "PyO3 TD bridge unavailable; run maturin develop or pip install -e . before TD operations",
+    "diagnosis": "Python can locate ctp_runtime._ctp_runtime, but the extension fails to load a dependent DLL on this machine."
+  },
+  "required_to_unblock": [
+    "Repair the nautilus_ctp_adapter PyO3 TD bridge / dependent DLL load path for Python 3.13.",
+    "Run read-only account query for 025292 and persist account_query.json with balance, available and margin.",
+    "Run read-only position query for 025292 and persist position_query.json with all current positions.",
+    "Build output/account_capability/ctp-live-025292/source-package.json using scripts/build_ctp025292_source_package_from_real_login.py.",
+    "Run UI acceptance against /accounts/acct.ctp.live.025292 and verify displayed funds/positions match the real-login source package."
+  ],
+  "explicit_non_claims": [
+    "no order was submitted",
+    "no Account Console direct CTP login was added",
+    "no repo-local sample values are accepted as real account truth",
+    "no Paper ready, Live ready, production ready, capital allocated, broker tradable or can trade claim is made"
+  ],
+  "verdict": "blocked"
+}

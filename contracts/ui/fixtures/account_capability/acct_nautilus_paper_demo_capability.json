@@ -1,0 +1,79 @@
+{
+  "schema_version": "account_capability_bundle.v1",
+  "account": {
+    "account_id": "acct.nautilus.paper.demo",
+    "display_alias": "Nautilus Paper Demo",
+    "source_kind": "nautilus_paper_runtime",
+    "source_mode": "deterministic_fixture",
+    "account_domain": "sandbox"
+  },
+  "capabilities": {
+    "observation": {
+      "enabled": true,
+      "mirror_state": "planned",
+      "source_ref": {
+        "owner": "account-console-contracts",
+        "source_ref": "contracts/ui/fixtures/account_capability/acct_nautilus_paper_demo_capability.json",
+        "checksum": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+        "observed_at": "2026-06-15T00:00:00Z"
+      }
+    },
+    "command": {
+      "enabled": false,
+      "mode": "disabled",
+      "gateway_kind": null,
+      "allowed_actions": [],
+      "requires_risk_check": true,
+      "requires_approval": true,
+      "authority_ref": null,
+      "capability_checksum": "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+    },
+    "reconciliation": {
+      "enabled": true,
+      "readback_required": true
+    },
+    "evidence": {
+      "required": true,
+      "source_refs_required": true,
+      "checksums_required": true
+    }
+  },
+  "observations": {
+    "balances": [
+      {
+        "currency": "USD",
+        "equity": 100000.0,
+        "available_cash": 100000.0,
+        "margin_used": 0.0,
+        "source_ref": "contracts/ui/fixtures/account_capability/acct_nautilus_paper_demo_capability.json",
+        "checksum": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+        "observed_at": "2026-06-15T00:00:00Z"
+      }
+    ],
+    "positions": [],
+    "orders": [],
+    "fills": [],
+    "source_health": {
+      "state": "planned",
+      "lag_ms": 0,
+      "source_ref": "contracts/ui/fixtures/account_capability/acct_nautilus_paper_demo_capability.json",
+      "checksum": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+      "observed_at": "2026-06-15T00:00:00Z"
+    },
+    "blockers": []
+  },
+  "boundaries": {
+    "read_only_projection": true,
+    "broker_truth": false,
+    "runtime_truth": false,
+    "account_truth": false,
+    "order_action": false,
+    "approval_truth": false,
+    "capital_truth": false,
+    "trading_readiness_truth": false
+  },
+  "rejection_rules": [
+    "Do not infer command capability from Nautilus Paper account domain.",
+    "Do not treat deterministic fixture values as runtime or broker truth."
+  ]
+}
