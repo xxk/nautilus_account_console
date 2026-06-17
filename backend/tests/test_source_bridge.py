@@ -31,6 +31,16 @@ def test_source_bridge_emits_ready_read_only_bundles() -> None:
             assert health["market_data_role"] == "market_data_only"
             assert health["broker_order_submission"] is False
             assert health["trading_adapter"] == "disabled"
+            assert any(
+                row["instrument"] == "ag2612" and row["net_qty"] == 1
+                for row in bundle["observations"]["positions"]
+            )
+            assert any(
+                row["client_order_id"] == "simulated-001-ag2612-buy-1-001"
+                and row["instrument"] == "ag2612"
+                and row["status"] == "filled"
+                for row in bundle["observations"]["orders"]
+            )
 
 
 def test_source_bridge_bundles_project_through_account_mirror() -> None:

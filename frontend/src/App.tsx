@@ -123,6 +123,18 @@ interface MirrorWorkbenchReadback {
   evidence: MirrorEvidenceResponse | null;
 }
 
+const mirrorRouteAliases: Record<string, string> = {
+  "acct.demo-19053": "simulated-001"
+};
+
+function resolveMirrorRouteAccountId(routeAccountId: string, accounts: MirrorAccountSummary[]) {
+  const canonicalRouteAccountId = mirrorRouteAliases[routeAccountId] ?? routeAccountId;
+  if (accounts.some((account) => account.account_id === canonicalRouteAccountId)) {
+    return canonicalRouteAccountId;
+  }
+  return accounts[0]?.account_id;
+}
+
 const fixtureMap: Record<AccountHealthFixtureId, AccountHealthPanelReadModel> = {
   happy_path: happyFixture as AccountHealthPanelReadModel,
   adr0044_foundation: adr0044Fixture as AccountHealthPanelReadModel,
@@ -587,7 +599,7 @@ function mirrorOrdersReadModel(readback: MirrorWorkbenchReadback): AccountOrders
         side: sideLabel(order.side),
         offset: "UNKNOWN",
         order_type: "UNKNOWN",
-        limit_price: null,
+        limit_price: asNumber(order.limit_price),
         quantity,
         filled_quantity: filledQuantity,
         remaining_quantity: quantity === null ? null : quantity - filledQuantity,
@@ -706,9 +718,7 @@ export function App() {
     async function loadMirrorReadback() {
       try {
         const list = await fetchMirrorAccounts();
-        const accountId = list.accounts.some((account) => account.account_id === routeAccountId)
-          ? routeAccountId
-          : list.accounts[0]?.account_id;
+        const accountId = resolveMirrorRouteAccountId(routeAccountId, list.accounts);
         if (!accountId) {
           throw new Error("mirror account list is empty");
         }
@@ -1208,11 +1218,15 @@ function AccountWorkbenchTerminalPanel({
     (position) => position.account_id === summary.account.account_id
   );
   const visibleOrders = orders.orders.filter((order) => order.account_id === summary.account.account_id);
-  const allBlockers: AccountSummaryBlocker[] = [
-    ...summary.blockers,
-    ...(visiblePositions.length > 0 ? positions.blockers : []),
-    ...(visibleOrders.length > 0 ? orders.blockers : [])
-  ];
+  const allBlockers: AccountSummaryBlocker[] = Array.from(
+    new Map(
+      [
+        ...summary.blockers,
+        ...(visiblePositions.length > 0 ? positions.blockers : []),
+        ...(visibleOrders.length > 0 ? orders.blockers : [])
+      ].map((blocker) => [`${blocker.blocker_id}-${blocker.checksum}`, blocker])
+    ).values()
+  );
   const allSourceRefs = [...summary.source_refs, ...positions.source_refs, ...orders.source_refs];
   const capabilityRows = [
     {

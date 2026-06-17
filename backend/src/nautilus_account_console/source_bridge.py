@@ -222,10 +222,28 @@ def load_ctp19053_real_login_bundle(source_package: Path = CTP19053_REAL_SOURCE_
 
 def load_ctp025292_real_login_bundle(source_package: Path = CTP025292_REAL_SOURCE_PACKAGE) -> dict[str, Any]:
     if source_package.exists():
-        return source_artifact_to_capability_bundle(load_source_artifact(source_package))
+        try:
+            payload = load_source_artifact(source_package)
+            if payload.get("source_kind") != "ctp_trader_api":
+                raise SourceBridgeError(f"{source_package}: source_kind must be ctp_trader_api for account readback")
+            if payload.get("source_mode") != "live_observation":
+                raise SourceBridgeError(f"{source_package}: source_mode must be live_observation for account readback")
+            return source_artifact_to_capability_bundle(payload)
+        except SourceBridgeError as exc:
+            return _blocked_ctp025292_bundle(source_package, package_error=str(exc))
 
+    return _blocked_ctp025292_bundle(source_package)
+
+
+def _blocked_ctp025292_bundle(source_package: Path, package_error: str | None = None) -> dict[str, Any]:
     checksum = "sha256:3333333333333333333333333333333333333333333333333333333333333333"
     source_ref = str(source_package.relative_to(ROOT)).replace("\\", "/")
+    next_action = (
+        "Run read-only real-login CTP 025292 account, position and order queries, then build "
+        "output/account_capability/ctp-live-025292/source-package.json."
+    )
+    if package_error:
+        next_action = f"Replace invalid 025292 account readback package. {next_action}"
     return {
         "schema_version": "account_capability_bundle.v1",
         "account": {
@@ -277,18 +295,17 @@ def load_ctp025292_real_login_bundle(source_package: Path = CTP025292_REAL_SOURC
                 "source_ref": source_ref,
                 "checksum": checksum,
                 "observed_at": "2026-06-15T00:00:00Z",
+                **({"package_error": package_error} if package_error else {}),
             },
             "blockers": [
                 {
                     "blocker_id": "ctp025292_real_login_source_unavailable",
                     "type": "source_unavailable",
                     "owner": "nautilus_ctp_adapter",
-                    "next_action": (
-                        "Run read-only real-login CTP 025292 account and position queries, then build "
-                        "output/account_capability/ctp-live-025292/source-package.json."
-                    ),
+                    "next_action": next_action,
                     "source_ref": source_ref,
                     "checksum": checksum,
+                    **({"package_error": package_error} if package_error else {}),
                 }
             ],
         },

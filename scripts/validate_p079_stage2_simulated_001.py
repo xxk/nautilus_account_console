@@ -106,6 +106,16 @@ def main() -> None:
     require(payload["boundaries"]["order_action"] is False, "Account Console must not own order action")
     require(payload["boundaries"]["account_truth"] is False, "Account Console must not own account truth")
     require(payload["boundaries"]["capital_truth"] is False, "Account Console must not own capital truth")
+    require(any(row["instrument"] == "ag2612" and row["net_qty"] == 1 for row in payload["positions"]), "ag2612 long-one position missing")
+    require(
+        any(
+            row["client_order_id"] == "simulated-001-ag2612-buy-1-001"
+            and row["instrument"] == "ag2612"
+            and row["status"] == "filled"
+            for row in payload["orders"]
+        ),
+        "ag2612 buy-one filled order missing",
+    )
 
     health = payload["source_health"]
     require(health["market_data_account_id"] == "025292", "025292 market data id missing from read-model")

@@ -19,6 +19,7 @@
 | [P003 Frontend Dependency Security Follow-up](./p003-frontend-dependency-security-followup/README.md) | verified | Clears the P001 `vite -> esbuild` high severity audit finding while keeping P001 build, fixture and browser evidence green. |
 | [P004 Account Workbench UI Design Gate](./p004-account-workbench-summary-panel/README.md) | phase8_account_workbench_closeout_passed | Proposal-level UI design and acceptance gate for `/accounts/{account_id}` and account drill-down routes; P004 scoped Account Workbench closeout has formal evidence while broader ADR0044/ADR0045 loop and Account Console UI remain outside this claim. |
 | [P005 Intraday Monitor Exception Queue Panel](./p005-intraday-monitor-exception-queue-panel/README.md) | phase1_contract_fixture_gate_passed | Proposal-level UI design, acceptance, read-only contract and deterministic fixtures for `/monitor`; browser implementation remains pending and no runtime, stream, account, order, ledger, HFT, readiness, admission, capital or Account Console UI completion truth is created. |
+| [P018 IB TWS Read-Only Account Console Landing](./p018-ib-tws-readonly-account-console/README.md) | design_gate_ready | Successor proposal for T001/P011 Phase 8: local TWS / IB Gateway live-account read-only observation through owner source packages, Account Mirror projection and Account Console UI readback; no direct TWS calls, no raw secrets and no broker order actions. |
 
 ## Usage Rules
 

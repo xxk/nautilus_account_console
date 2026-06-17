@@ -71,7 +71,7 @@ P0 cannot be accepted by screenshots alone. It needs source/projection compariso
 | P1.2 | Orders/fills observations | order state and fill observation contracts | `ADR0004-G02-PROVENANCE` |
 | P1.3 | Settlement/equity observations | settlement and equity point observations | `ADR0004-G02-PROVENANCE` |
 | P1.4 | Evidence drawer integration | account-bound source refs and checksums | evidence capability |
-| P1.5 | IB TWS paper bridge | IB account summary and position observations | `ADR0004-G04-FABRIC-FIT` |
+| P1.5 | IB TWS read-only bridge | IB account summary, funds, positions, orders and fills from owner-produced source packages; first landing proposal is [P018 IB TWS Read-Only Account Console Landing](../../proposals/p018-ib-tws-readonly-account-console/README.md) | `ADR0004-G04-FABRIC-FIT` |
 | P1.6 | Replay source | replay observations into mirror projection | source provenance gate |
 | P1.7 | CTP Live 025292 read-only source | pinned read-only CTP source package for funds, positions, orders and fills when present | `ADR0004-G02-PROVENANCE`, `ADR0004-G08-OWNER-SEPARATION` |
 | P1.8 | CTP Live 025292 UI consistency | UI/API comparison against pinned Account Mirror projection | `ADR0004-G10-FAIL-CLOSED-BLOCKERS`, CTP 025292 real-account consistency acceptance |
@@ -195,3 +195,4 @@ Do not implement:
 | Should capability registry be generated or hand-authored for P0? | hand-authored deterministic fixture first, generated projection later |
 | Should `/capabilities` be visible in UI P0? | show compact badges first; deep page can wait |
 | How to handle multiple currencies? | single-currency CNY for P0, contract allows currency field |
+| How should IB TWS live account readback land? | use P018 as a successor proposal: `nautilus_strategies` owns local TWS / IB Gateway read-only collection and source package production; Account Console consumes only redacted owner refs, checksums and Account Mirror projections. |

@@ -21,17 +21,22 @@ async function captureEvidence(page: Page, projectName: string, name: string) {
 }
 
 test.describe("T001 Account Terminal Workbench", () => {
-  test("upgrades legacy acct.demo-19053 entry to mirror account selector with simulated-001", async ({
+  test("upgrades legacy acct.demo-19053 entry to Simulated 001 mirror projection", async ({
     page,
   }, testInfo) => {
     await page.goto("/accounts/acct.demo-19053");
 
     await expect(page.getByTestId("terminal-workbench-shell")).toBeVisible();
     await expect(page.getByTestId("account-readback-mode")).toContainText("mirror API");
+    await expect(page.getByTestId("terminal-top-status-bar")).toContainText("simulated-001");
+    await expect(page.getByTestId("terminal-top-status-bar")).toContainText("Simulated 001");
+    await expect(page.getByTestId("terminal-top-status-bar")).toContainText("sandbox-paper.simulated-001");
     await expect(page.getByTestId("account-selector")).toContainText("acct.ctp.paper.19053");
     await expect(page.getByTestId("account-selector")).toContainText("acct.nautilus.paper.demo");
     await expect(page.getByTestId("account-selector")).toContainText("simulated-001");
     await expect(page.getByTestId("account-selector")).toContainText("acct.ctp.live.025292");
+    await expect(page.getByTestId("account-positions-table")).toContainText("ag2612");
+    await expect(page.getByTestId("account-bottom-tape")).toContainText("simulated-001-ag2612-buy-1-001");
     await expect(page.getByText(forbiddenCommandText)).toHaveCount(0);
     await captureEvidence(page, testInfo.project.name, "legacy-acct-demo-19053-selector");
   });
@@ -109,10 +114,10 @@ test.describe("T001 Account Terminal Workbench", () => {
     await expect(page.getByTestId("account-source-health-panel")).toContainText("disabled");
     await expect(page.getByTestId("account-source-health-panel")).toContainText("simulated_sandbox_ledger");
     await expect(page.getByTestId("account-source-health-panel")).toContainText("R1/P079 Stage 2");
-    await expect(page.getByTestId("account-positions-table")).toContainText(
-      "No position rows in this fixture projection."
-    );
-    await expect(page.getByTestId("account-bottom-tape")).toContainText("No order rows in this fixture projection.");
+    await expect(page.getByTestId("account-positions-table")).toContainText("ag2612");
+    await expect(page.getByTestId("account-positions-table")).toContainText("LONG");
+    await expect(page.getByTestId("account-bottom-tape")).toContainText("simulated-001-ag2612-buy-1-001");
+    await expect(page.getByTestId("account-bottom-tape")).toContainText("filled");
     await expect(page.getByTestId("account-command-capability-state")).toContainText("observation only");
     await expect(page.getByText(forbiddenCommandText)).toHaveCount(0);
     await captureEvidence(page, testInfo.project.name, "simulated-001-stage2");

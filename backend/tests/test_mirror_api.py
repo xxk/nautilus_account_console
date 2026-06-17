@@ -68,6 +68,13 @@ def test_simulated_001_is_stage2_market_data_only_sandbox_paper_projection() -> 
     assert health["broker_order_submission"] is False
     assert health["trading_adapter"] == "disabled"
     assert health["account_console_writes_truth"] is False
+    assert any(row["instrument"] == "ag2612" and row["net_qty"] == 1 for row in payload["positions"])
+    assert any(
+        row["client_order_id"] == "simulated-001-ag2612-buy-1-001"
+        and row["instrument"] == "ag2612"
+        and row["status"] == "filled"
+        for row in payload["orders"]
+    )
 
 
 def test_mirror_source_health_and_evidence_are_structured() -> None:

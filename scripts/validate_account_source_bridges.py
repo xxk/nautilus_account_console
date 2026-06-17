@@ -64,6 +64,17 @@ def main() -> None:
             assert health["trading_adapter"] == "disabled"
             assert health["stage"] == "R1/P079 Stage 2"
             assert health["account_console_writes_truth"] is False
+            positions = bundle["observations"]["positions"]
+            orders = bundle["observations"]["orders"]
+            assert any(row["instrument"] == "ag2612" and row["net_qty"] == 1 for row in positions)
+            assert any(
+                row["client_order_id"] == "simulated-001-ag2612-buy-1-001"
+                and row["instrument"] == "ag2612"
+                and row["quantity"] == 1
+                and row["filled_quantity"] == 1
+                and row["status"] == "filled"
+                for row in orders
+            )
         for bucket in ["balances", "positions", "orders", "fills"]:
             for row in bundle["observations"][bucket]:
                 assert row["source_ref"], (bundle["account"]["account_id"], bucket)

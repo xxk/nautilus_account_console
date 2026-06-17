@@ -142,3 +142,31 @@ next_action: replace with pinned sandbox paper runtime projection when the upstr
 ```
 
 This blocker is accepted for Stage 2 planning/UI acceptance. It is not runtime truth and does not authorize order submission.
+
+## 2026-06-16 ag2612 Buy-One Projection Update
+
+`simulated-001` now includes a read-only sandbox paper projection for one filled buy-open order:
+
+```text
+instrument: ag2612
+side: buy
+quantity: 1
+filled_quantity: 1
+status: filled
+client_order_id: simulated-001-ag2612-buy-1-001
+```
+
+The accepted UI entry for this projection is:
+
+```text
+http://127.0.0.1:5173/accounts/acct.demo-19053
+```
+
+This legacy route opens canonical `simulated-001` and is covered by:
+
+```text
+docs/acceptance/2026-06-16-legacy-acct-demo-19053-simulated-001-ag2612-ui-acceptance.md
+frontend/tests/e2e/legacy-simulated-001-ag2612-ui-acceptance.spec.ts
+```
+
+The update remains projection-only. It does not mean Account Console submitted the order or wrote sandbox ledger truth.
