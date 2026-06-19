@@ -1,0 +1,188 @@
+{
+  "schema": "account-console.p011-account-workbench-api-readback-browser-evidence.v1",
+  "status": "implementation_browser_evidence",
+  "created_at": "2026-06-15",
+  "proposal_id": "p011-account-capability-contracts",
+  "phase": "phase_4_account_workbench_api_mode",
+  "adr": "ADR-0004",
+  "topic": "T001",
+  "command": "cd frontend && npx playwright test tests/e2e/account-terminal-workbench.spec.ts",
+  "playwright_config": "frontend/playwright.config.ts",
+  "api_backend": {
+    "command": "python -m uvicorn nautilus_account_console.main:app --host 127.0.0.1 --port 8775 --app-dir ../backend/src",
+    "health_url": "http://127.0.0.1:8775/healthz",
+    "frontend_proxy_env": "NAC_API_BASE=http://127.0.0.1:8775"
+  },
+  "manual_ui_entry": {
+    "url": "http://127.0.0.1:5175/accounts/acct.demo-19053",
+    "backend_url": "http://127.0.0.1:8775",
+    "required_readback": "mirror API",
+    "required_account_visible": "simulated-001",
+    "vscode_tasks": [
+      "Account Console API: dev current worktree 8775",
+      "Account Console UI: dev current worktree 5175"
+    ]
+  },
+  "routes_opened": [
+    "/accounts/acct.demo-19053",
+    "/accounts/acct.ctp.paper.19053",
+    "/accounts/acct.ctp.live.025292",
+    "/accounts/simulated-001"
+  ],
+  "viewport_coverage": [
+    "desktop",
+    "tablet",
+    "mobile"
+  ],
+  "browser_evidence_dir": "docs/acceptance/browser-evidence/p011-account-workbench-api-readback",
+  "browser_evidence": [
+    {
+      "project": "desktop",
+      "route": "/accounts/acct.demo-19053",
+      "screenshot": "docs/acceptance/browser-evidence/p011-account-workbench-api-readback/desktop-legacy-acct-demo-19053-selector.png"
+    },
+    {
+      "project": "tablet",
+      "route": "/accounts/acct.demo-19053",
+      "screenshot": "docs/acceptance/browser-evidence/p011-account-workbench-api-readback/tablet-legacy-acct-demo-19053-selector.png"
+    },
+    {
+      "project": "mobile",
+      "route": "/accounts/acct.demo-19053",
+      "screenshot": "docs/acceptance/browser-evidence/p011-account-workbench-api-readback/mobile-legacy-acct-demo-19053-selector.png"
+    },
+    {
+      "project": "desktop",
+      "route": "/accounts/acct.ctp.paper.19053",
+      "screenshot": "docs/acceptance/browser-evidence/p011-account-workbench-api-readback/desktop-ctp19053-api-readback.png"
+    },
+    {
+      "project": "tablet",
+      "route": "/accounts/acct.ctp.paper.19053",
+      "screenshot": "docs/acceptance/browser-evidence/p011-account-workbench-api-readback/tablet-ctp19053-api-readback.png"
+    },
+    {
+      "project": "mobile",
+      "route": "/accounts/acct.ctp.paper.19053",
+      "screenshot": "docs/acceptance/browser-evidence/p011-account-workbench-api-readback/mobile-ctp19053-api-readback.png"
+    },
+    {
+      "project": "desktop",
+      "route": "/accounts/acct.ctp.live.025292",
+      "screenshot": "docs/acceptance/browser-evidence/p011-account-workbench-api-readback/desktop-ctp025292-blocked.png"
+    },
+    {
+      "project": "tablet",
+      "route": "/accounts/acct.ctp.live.025292",
+      "screenshot": "docs/acceptance/browser-evidence/p011-account-workbench-api-readback/tablet-ctp025292-blocked.png"
+    },
+    {
+      "project": "mobile",
+      "route": "/accounts/acct.ctp.live.025292",
+      "screenshot": "docs/acceptance/browser-evidence/p011-account-workbench-api-readback/mobile-ctp025292-blocked.png"
+    },
+    {
+      "project": "desktop",
+      "route": "/accounts/simulated-001",
+      "screenshot": "docs/acceptance/browser-evidence/p011-account-workbench-api-readback/desktop-simulated-001-stage2.png"
+    },
+    {
+      "project": "tablet",
+      "route": "/accounts/simulated-001",
+      "screenshot": "docs/acceptance/browser-evidence/p011-account-workbench-api-readback/tablet-simulated-001-stage2.png"
+    },
+    {
+      "project": "mobile",
+      "route": "/accounts/simulated-001",
+      "screenshot": "docs/acceptance/browser-evidence/p011-account-workbench-api-readback/mobile-simulated-001-stage2.png"
+    }
+  ],
+  "api_endpoints_verified": [
+    "/api/mirror/accounts",
+    "/api/mirror/accounts/acct.ctp.paper.19053",
+    "/api/mirror/accounts/acct.ctp.paper.19053/source-health",
+    "/api/mirror/accounts/acct.ctp.paper.19053/evidence",
+    "/api/mirror/accounts/acct.ctp.live.025292",
+    "/api/mirror/accounts/acct.ctp.live.025292/source-health",
+    "/api/mirror/accounts/acct.ctp.live.025292/evidence",
+    "/api/mirror/accounts/simulated-001",
+    "/api/mirror/accounts/simulated-001/source-health",
+    "/api/mirror/accounts/simulated-001/evidence"
+  ],
+  "positive_assertions": {
+    "ctp19053": {
+      "canonical_account_id_visible": "acct.ctp.paper.19053",
+      "display_alias_visible": "19053",
+      "readback_mode": "mirror API",
+      "funds_visible": [
+        "500,000",
+        "420,000"
+      ],
+      "position_visible": "rb2610",
+      "order_visible": "ctp-paper-19053-sample-order-001",
+      "execution_report_visible": "ctp-paper-19053-sample-order-001",
+      "execution_report_ref_visible": "contracts/source_artifacts/account_sources/ctp_paper_19053_source.json#orders/0/report",
+      "source_health_visible": "normalized_read_model",
+      "evidence_visible": [
+        "source package",
+        "mirror projection"
+      ],
+      "command_plane_visible": [
+        "observation only",
+        "none mounted"
+      ]
+    },
+    "ctp025292": {
+      "canonical_account_id_visible": "acct.ctp.live.025292",
+      "readback_mode": "mirror API",
+      "blocked_projection_visible": true,
+      "blocker_visible": "source unavailable",
+      "source_health_visible": "typed_blocker",
+      "positions_empty": true,
+      "orders_empty": true,
+      "execution_reports_empty": true,
+      "command_plane_visible": [
+        "observation only",
+        "none mounted"
+      ]
+    },
+    "simulated001": {
+      "canonical_account_id_visible": "simulated-001",
+      "account_uid_visible": "sandbox-paper.simulated-001",
+      "readback_mode": "mirror API",
+      "market_visible": "CTP 025292 official market data only",
+      "execution_visible": "Nautilus Sandbox Paper",
+      "orders_scope_visible": "simulated ledger only",
+      "broker_submission_visible": "disabled",
+      "ledger_type_visible": "simulated_sandbox_ledger",
+      "stage_visible": "R1/P079 Stage 2",
+      "command_plane_visible": [
+        "observation only",
+        "none mounted"
+      ]
+    }
+  },
+  "negative_assertions": [
+    "submit order text is absent",
+    "place order text is absent",
+    "cancel order text is absent",
+    "replace order text is absent",
+    "Paper ready text is absent",
+    "Live ready text is absent",
+    "capital allocated text is absent",
+    "can trade text is absent"
+  ],
+  "verdict": "passed",
+  "explicit_non_claims": [
+    "does_not_prove_broker_truth",
+    "does_not_prove_runtime_truth",
+    "does_not_prove_account_truth",
+    "does_not_prove_order_action_authority",
+    "does_not_prove_paper_readiness",
+    "does_not_prove_live_readiness",
+    "does_not_prove_broker_tradability",
+    "does_not_prove_admission_truth",
+    "does_not_prove_capital_truth",
+    "does_not_complete_ctp025292_real_account_consistency"
+  ]
+}

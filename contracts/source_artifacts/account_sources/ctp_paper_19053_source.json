@@ -1,0 +1,62 @@
+{
+  "schema_version": "account_source_artifact.v1",
+  "artifact_id": "source.ctp.paper.19053.20260615.sample",
+  "account_id": "acct.ctp.paper.19053",
+  "display_alias": "19053",
+  "source_owner": "nautilus_ctp_adapter",
+  "source_kind": "ctp_trader_api",
+  "source_mode": "delayed_snapshot",
+  "account_domain": "paper",
+  "trading_day": "2026-06-15",
+  "observed_at": "2026-06-15T00:00:00Z",
+  "source_ref": "contracts/source_artifacts/account_sources/ctp_paper_19053_source.json",
+  "source_checksum": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "balances": [
+    {
+      "currency": "CNY",
+      "equity": 500000.0,
+      "available_cash": 420000.0,
+      "margin_used": 80000.0,
+      "frozen_cash": 0.0,
+      "position_profit": 0.0
+    }
+  ],
+  "positions": [
+    {
+      "instrument": "rb2610",
+      "exchange": "SHFE",
+      "direction": "long",
+      "net_qty": 1,
+      "today_qty": 1,
+      "yesterday_qty": 0,
+      "available_qty": 1,
+      "frozen_qty": 0,
+      "avg_price": 3500.0,
+      "unrealized_pnl": 0.0
+    }
+  ],
+  "orders": [
+    {
+      "client_order_id": "ctp-paper-19053-sample-order-001",
+      "venue_order_id": "ctp-sim-order-001",
+      "instrument": "rb2610",
+      "side": "buy",
+      "quantity": 1,
+      "filled_quantity": 0,
+      "status": "submitted",
+      "report_msg_type": "ctp_execution_report",
+      "report_status": "submitted",
+      "report_seq": "ctp-paper-19053-report-001",
+      "report_provenance_ref": "contracts/source_artifacts/account_sources/ctp_paper_19053_source.json#orders/0/report",
+      "report_msg_ref": "ctp://paper/19053/execution-reports/ctp-sim-order-001/001",
+      "report_msg_checksum": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "report_msg_excerpt": "CTP paper execution report submitted for rb2610 buy 1"
+    }
+  ],
+  "fills": [],
+  "source_health": {
+    "state": "ready",
+    "lag_ms": 0
+  },
+  "blockers": []
+}

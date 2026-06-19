@@ -1,0 +1,43 @@
+{
+  "schema_version": "account_source_artifact.v1",
+  "artifact_id": "source.ctp.live.025292.<YYYYMMDD>.<run_id>",
+  "account_id": "acct.ctp.live.025292",
+  "display_alias": "025292",
+  "source_owner": "nautilus_ctp_adapter",
+  "source_kind": "ctp_trader_api",
+  "source_mode": "live_observation",
+  "account_domain": "live",
+  "observation_mode": "snapshot",
+  "event_stream": "not_implemented",
+  "trading_day": "<YYYY-MM-DD>",
+  "query_window_id": "ctp025292.<YYYYMMDD>.<run_id>",
+  "query_started_at": "<ISO-8601 UTC timestamp>",
+  "query_completed_at": "<ISO-8601 UTC timestamp>",
+  "observed_at": "<ISO-8601 UTC timestamp>",
+  "source_ref": "output/account_capability/ctp-live-025292/source-package.json",
+  "source_checksum": "sha256:<replace-with-package-sha256>",
+  "balances": [
+    {
+      "currency": "CNY",
+      "equity": 0.0,
+      "available_cash": 0.0,
+      "margin_used": 0.0,
+      "withdraw_quota": 0.0,
+      "frozen_margin": 0.0,
+      "frozen_cash": 0.0,
+      "position_profit": 0.0,
+      "close_profit": 0.0,
+      "commission": 0.0
+    }
+  ],
+  "positions": [],
+  "orders": [],
+  "fills": [],
+  "source_health": {
+    "state": "ready",
+    "lag_ms": 0,
+    "observation_mode": "snapshot",
+    "event_stream": "not_implemented"
+  },
+  "blockers": []
+}

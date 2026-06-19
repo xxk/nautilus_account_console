@@ -1,5 +1,5 @@
 schema_version: 1
-last_updated: '2026-06-13'
+last_updated: '2026-06-15'
 source_pattern: D:\Nautilus\DSLresearch\docs\topics\主题状态注册表_Topic State Registry.yaml
 status: thin_local_kernel
 topics:
@@ -7,3 +7,13 @@ topics:
     canonical_status: active
     execution_order: 1
     path: docs/topics/contract-first-ui-slice-development.md
+  T001-account-mirror-observation-plane:
+    topic_id: T001
+    canonical_status: active
+    execution_order: 2
+    path: docs/topics/T001-account-mirror-observation-plane.md
+    gates:
+    - T001-GATE-OBSERVATION-CONTRACT
+    - T001-GATE-SOURCE-PROVENANCE
+    - T001-GATE-CAPABILITY-REGISTRY
+    - T001-GATE-READBACK-RECONCILIATION

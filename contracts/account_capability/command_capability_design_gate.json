@@ -1,0 +1,58 @@
+{
+  "schema_version": "account_command_capability_design_gate.v1",
+  "status": "design_gate_only",
+  "proposal_phase": "p011.phase_7",
+  "primary_adr": "ADR-0004",
+  "topic": "T001",
+  "current_phase": {
+    "command_implementation_accepted": false,
+    "ui_command_controls_accepted": false,
+    "account_mirror_write_authority": false,
+    "broker_gateway_implementation_accepted": false
+  },
+  "reserved_command_modes": [
+    "disabled",
+    "paper_design_only",
+    "live_design_only"
+  ],
+  "future_actions": [
+    "submit",
+    "cancel",
+    "replace"
+  ],
+  "required_flow": [
+    "order_intent",
+    "risk_check",
+    "approval_admission",
+    "execution_gateway",
+    "execution_event",
+    "account_mirror_readback",
+    "reconciliation_projection",
+    "ui_status_evidence"
+  ],
+  "required_future_contracts": [
+    "OrderIntent",
+    "RiskDecision",
+    "ApprovalDecision",
+    "ExecutionCommand",
+    "ExecutionEvent",
+    "MirrorReadback",
+    "ReconciliationResult"
+  ],
+  "authority_boundaries": {
+    "account_console_ui_command_authority": false,
+    "account_console_backend_broker_writer": false,
+    "account_mirror_command_authority": false,
+    "risk_owner_required": true,
+    "approval_owner_required": true,
+    "gateway_owner_required": true,
+    "readback_reconciliation_required": true
+  },
+  "negative_acceptance": [
+    "P011 Phase 7 must not expose submit/cancel/replace UI controls.",
+    "P011 Phase 7 must not expose command API routes.",
+    "Command capability must not be inferred from account domain, source kind or source mode.",
+    "Gateway acknowledgement must not be treated as final account state without Account Mirror readback.",
+    "Live command must fail closed without risk, approval, session, authority and reconciliation evidence."
+  ]
+}

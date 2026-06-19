@@ -1,8 +1,17 @@
 # Topic Roadmap Root / Topic 路线图根目录
 
-This directory is reserved for account-console topic roadmaps.
+- Updated: 2026-06-15
+- Project: `nautilus_account_console`
 
-No topic roadmaps are registered yet. New topics should use:
+## Registered Roadmaps
+
+| Roadmap | Purpose |
+| --- | --- |
+| [T001 Account Capability Feature Roadmap](./T001-account-capability-feature-roadmap.md) | Feature planning for Account Capability Fabric observation, mirror projections, Account Workbench API mode, source health, IB/stock sources and future command capability design. |
+
+## Usage
+
+New topics should use:
 
 ```text
 docs/topics/_template/roadmap/README.md

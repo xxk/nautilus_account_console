@@ -1,0 +1,618 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>P018 IB TWS Account Workbench Detailed UI</title>
+    <style>
+      :root {
+        --bg: #f4f7fa;
+        --panel: #ffffff;
+        --panel-2: #f8fafc;
+        --ink: #172026;
+        --muted: #5d6b76;
+        --line: #d5dde5;
+        --nav: #111a20;
+        --teal: #0e7c6b;
+        --blue: #1d5a92;
+        --green: #146c3f;
+        --amber: #9b5a00;
+        --red: #a12a24;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        background: var(--bg);
+        color: var(--ink);
+        font-family: Inter, "Segoe UI", Arial, sans-serif;
+        margin: 0;
+      }
+
+      .shell {
+        min-width: 1440px;
+      }
+
+      .topbar {
+        align-items: center;
+        background: var(--nav);
+        color: #fff;
+        display: grid;
+        grid-template-columns: 1fr auto auto auto;
+        gap: 18px;
+        min-height: 72px;
+        padding: 12px 24px;
+      }
+
+      .title h1 {
+        font-size: 18px;
+        margin: 0 0 5px;
+      }
+
+      .title p {
+        color: #b9c7d1;
+        font-size: 12px;
+        margin: 0;
+      }
+
+      .pill {
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        color: var(--muted);
+        display: inline-flex;
+        font-size: 12px;
+        font-weight: 700;
+        min-height: 24px;
+        padding: 4px 10px;
+        white-space: nowrap;
+      }
+
+      .pill.ok {
+        background: #e9f7ef;
+        border-color: #8bd2a8;
+        color: var(--green);
+      }
+
+      .pill.warn {
+        background: #fff5e5;
+        border-color: #e0a143;
+        color: var(--amber);
+      }
+
+      .pill.bad {
+        background: #fdecea;
+        border-color: #df928b;
+        color: var(--red);
+      }
+
+      .pill.info {
+        background: #ebf3fb;
+        border-color: #8bb7df;
+        color: var(--blue);
+      }
+
+      .layout {
+        display: grid;
+        gap: 18px;
+        grid-template-columns: 248px minmax(0, 1fr) 276px;
+        padding: 20px;
+      }
+
+      .rail,
+      .main,
+      .right {
+        min-width: 0;
+      }
+
+      .stack {
+        display: grid;
+        gap: 16px;
+      }
+
+      .panel {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        min-width: 0;
+        padding: 14px;
+      }
+
+      .panel h2,
+      .panel h3 {
+        font-size: 14px;
+        margin: 0;
+      }
+
+      .panel .sub {
+        color: var(--muted);
+        font-size: 12px;
+        margin: 5px 0 0;
+      }
+
+      .panel-head {
+        align-items: start;
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 12px;
+      }
+
+      .mini-table,
+      .data-table {
+        border-collapse: collapse;
+        font-size: 12px;
+        width: 100%;
+      }
+
+      .mini-table th,
+      .mini-table td,
+      .data-table th,
+      .data-table td {
+        border-bottom: 1px solid #edf1f5;
+        padding: 8px 9px;
+        text-align: left;
+        vertical-align: top;
+      }
+
+      .mini-table th,
+      .data-table th {
+        background: var(--panel-2);
+        color: #4d5b66;
+        font-size: 11px;
+        font-weight: 800;
+      }
+
+      .selected-row {
+        background: #eef8f5;
+      }
+
+      .numeric {
+        font-variant-numeric: tabular-nums;
+        text-align: right !important;
+        white-space: nowrap;
+      }
+
+      .neg {
+        color: var(--red);
+      }
+
+      .pos {
+        color: var(--green);
+      }
+
+      .grid-4 {
+        display: grid;
+        gap: 16px;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+
+      .grid-2 {
+        display: grid;
+        gap: 16px;
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .metric {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        min-height: 94px;
+        padding: 13px;
+      }
+
+      .metric span {
+        color: var(--muted);
+        display: block;
+        font-size: 11px;
+        font-weight: 800;
+      }
+
+      .metric strong {
+        display: block;
+        font-size: 22px;
+        margin: 10px 0 8px;
+      }
+
+      .metric small {
+        color: var(--muted);
+        font-size: 11px;
+      }
+
+      .region-blocker {
+        border-color: #d08a23;
+        background: #fffaf1;
+      }
+
+      .blocker-list {
+        display: grid;
+        gap: 8px;
+      }
+
+      .blocker {
+        border: 1px solid #dda65a;
+        border-radius: 6px;
+        color: var(--amber);
+        font-size: 12px;
+        font-weight: 800;
+        padding: 7px 8px;
+      }
+
+      .detail-list {
+        display: grid;
+        gap: 10px;
+        margin: 0;
+      }
+
+      .detail-list div {
+        display: grid;
+        gap: 4px;
+      }
+
+      .detail-list dt {
+        color: var(--muted);
+        font-size: 11px;
+        font-weight: 800;
+      }
+
+      .detail-list dd {
+        font-size: 12px;
+        margin: 0;
+        overflow-wrap: anywhere;
+      }
+
+      .tabs {
+        display: flex;
+        gap: 8px;
+      }
+
+      .tab {
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 800;
+        padding: 7px 10px;
+      }
+
+      .tab.active {
+        background: #eaf7f3;
+        border-color: #8fcbbf;
+        color: var(--teal);
+      }
+
+      .toolbar {
+        align-items: center;
+        display: flex;
+        gap: 10px;
+        justify-content: space-between;
+        margin-bottom: 10px;
+      }
+
+      .filter-chip {
+        background: #f0f4f7;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        color: #42515c;
+        font-size: 12px;
+        padding: 6px 8px;
+      }
+
+      .wide-scroll {
+        overflow-x: auto;
+      }
+
+      .wide-scroll table {
+        min-width: 980px;
+      }
+
+      .footer-note {
+        color: var(--muted);
+        font-size: 12px;
+        padding: 0 20px 24px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <header class="topbar">
+        <div class="title">
+          <h1>Account Workbench / IB TWS Read-only</h1>
+          <p>acct.ib.live.u3028269 · IB Live U***8269 · source package → Account Mirror → UI</p>
+        </div>
+        <span class="pill info" data-testid="ib-live-selected-account">U3028269 selected</span>
+        <span class="pill" data-testid="ib-live-translation-mode">base USD + original currency</span>
+        <span class="pill ok" data-testid="ib-live-update-metadata">source 16:48 · INDIVIDUAL</span>
+      </header>
+
+      <div class="layout">
+        <aside class="rail stack">
+          <section class="panel">
+            <div class="panel-head">
+              <div>
+                <h2>Accounts</h2>
+                <p class="sub">multi-account selector</p>
+              </div>
+            </div>
+            <table class="mini-table" data-testid="account-selector">
+              <thead>
+                <tr><th>Alias</th><th>ID</th><th>State</th></tr>
+              </thead>
+              <tbody>
+                <tr class="selected-row"><td>IB Live</td><td>acct.ib.live.u3028269</td><td>blocked</td></tr>
+                <tr><td>Sim 001</td><td>simulated-001</td><td>ready</td></tr>
+                <tr><td>CTP 025292</td><td>acct.ctp.live.025292</td><td>blocked</td></tr>
+                <tr><td>Paper 19053</td><td>acct.ctp.paper.19053</td><td>blocked</td></tr>
+              </tbody>
+            </table>
+          </section>
+
+          <section class="panel">
+            <h2>Source Package</h2>
+            <p class="sub">owner runtime required</p>
+            <p><span class="pill warn">waiting source package</span></p>
+            <dl class="detail-list">
+              <div><dt>owner</dt><dd>nautilus_strategies</dd></div>
+              <div><dt>entrypoint</dt><dd>owner entrypoint ref only</dd></div>
+              <div><dt>checksum</dt><dd>required before pass</dd></div>
+              <div><dt>secrets</dt><dd>raw_secret_values_recorded=false</dd></div>
+            </dl>
+          </section>
+
+          <section class="panel">
+            <h2>Capability Gate</h2>
+            <p class="sub">read-only boundaries</p>
+            <table class="mini-table" data-testid="account-capability-table">
+              <tbody>
+                <tr data-testid="account-capability-row"><td>Observation</td><td>enabled</td></tr>
+                <tr data-testid="account-capability-row"><td>Command</td><td>disabled</td></tr>
+                <tr data-testid="account-capability-row"><td>TWS connect</td><td>owner only</td></tr>
+                <tr data-testid="account-capability-row"><td>Secret storage</td><td>forbidden</td></tr>
+                <tr data-testid="account-capability-row"><td>Can-trade</td><td>forbidden</td></tr>
+              </tbody>
+            </table>
+          </section>
+
+          <section class="panel region-blocker">
+            <h2>Missing Regions</h2>
+            <p class="sub">visible blockers, not silent gaps</p>
+            <div class="blocker-list">
+              <div class="blocker" data-testid="ib-live-segment-matrix-region-missing">segment matrix blocker until source/API mapped</div>
+              <div class="blocker" data-testid="ib-live-real-fx-region-missing">real FX detail blocker until package validates</div>
+              <div class="blocker" data-testid="ib-live-portfolio-filter-region-missing">portfolio filter state pending</div>
+              <div class="blocker" data-testid="ib-live-update-metadata-region-missing">staleness policy pending</div>
+            </div>
+          </section>
+        </aside>
+
+        <main class="main stack">
+          <section class="panel">
+            <div class="panel-head">
+              <div>
+                <h2>U3028269 Account Readback</h2>
+                <p class="sub">No direct TWS calls from Account Console · no broker mutation</p>
+              </div>
+              <div class="tabs">
+                <span class="tab active">Overview</span>
+                <span class="tab">Funds</span>
+                <span class="tab">Positions</span>
+                <span class="tab">Orders</span>
+                <span class="tab">Executions</span>
+              </div>
+            </div>
+          </section>
+
+          <section class="grid-4">
+            <div class="metric" data-testid="ib-live-funds-net-liquidation">
+              <span>Net liquidation</span><strong>181,766 USD</strong><small>base-currency total</small>
+            </div>
+            <div class="metric" data-testid="ib-live-funds-cash-balance">
+              <span>Cash balance</span><strong class="neg">-69,868 USD</strong><small>signed value preserved</small>
+            </div>
+            <div class="metric" data-testid="ib-live-funds-available">
+              <span>Available funds</span><strong>72,042 USD</strong><small>observation only, not can-trade</small>
+            </div>
+            <div class="metric" data-testid="ib-live-excess-liquidity">
+              <span>Excess liquidity</span><strong>113,215 USD</strong><small>read-only Account Mirror field</small>
+            </div>
+          </section>
+
+          <section class="panel" data-testid="ib-live-balances-panel">
+            <div class="panel-head">
+              <div><h2>Balances + Segment Matrix</h2><p class="sub">Total / US Securities / US Commodities / UK Regulated</p></div>
+              <span class="pill warn">requires source checksum</span>
+            </div>
+            <table class="data-table" data-testid="ib-live-balance-segment-matrix">
+              <thead>
+                <tr>
+                  <th>Metric</th><th class="numeric">Total</th><th class="numeric">US Securities</th><th class="numeric">US Commodities</th><th class="numeric">UK Regulated</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>Net liquidation</td><td class="numeric">181,766 USD</td><td class="numeric">158,372 USD</td><td class="numeric">0 USD</td><td class="numeric">23,394 USD</td></tr>
+                <tr><td>Securities gross value</td><td class="numeric">176,570 USD</td><td class="numeric">153,176 USD</td><td class="numeric">0 USD</td><td class="numeric">23,394 USD</td></tr>
+                <tr><td>Cash</td><td class="numeric neg">-69,868 USD</td><td class="numeric neg">-93,262 USD</td><td class="numeric">0 USD</td><td class="numeric">23,394 USD</td></tr>
+                <tr><td>Monthly interest</td><td class="numeric neg">-165 USD</td><td class="numeric neg">-165 USD</td><td class="numeric">0 USD</td><td class="numeric">0 USD</td></tr>
+              </tbody>
+            </table>
+          </section>
+
+          <section class="grid-2">
+            <div class="panel" data-testid="ib-live-margin-panel">
+              <h2>Margin Requirements</h2>
+              <p class="sub">current initial / maintenance margin</p>
+              <table class="data-table">
+                <tbody>
+                  <tr><th>Metric</th><th class="numeric">Total</th><th class="numeric">US Sec</th><th class="numeric">UK Reg</th></tr>
+                  <tr><td data-testid="ib-live-current-initial-margin">Initial margin</td><td class="numeric">104,529</td><td class="numeric">104,529</td><td class="numeric">0</td></tr>
+                  <tr><td data-testid="ib-live-current-maintenance-margin">Maintenance</td><td class="numeric">68,156</td><td class="numeric">68,156</td><td class="numeric">0</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="panel" data-testid="ib-live-available-trading-panel">
+              <h2>Available For Trading</h2>
+              <p class="sub">displayed as read-only; never enables trading</p>
+              <table class="data-table">
+                <tbody>
+                  <tr><th>Metric</th><th class="numeric">Total</th><th class="numeric">US Sec</th><th class="numeric">UK Reg</th></tr>
+                  <tr><td data-testid="ib-live-available-funds">Available funds</td><td class="numeric">72,042</td><td class="numeric">48,648</td><td class="numeric">23,394</td></tr>
+                  <tr><td data-testid="ib-live-excess-liquidity">Excess liquidity</td><td class="numeric">113,215</td><td class="numeric">89,821</td><td class="numeric">23,394</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <section class="panel" data-testid="ib-live-real-fx-market-value-panel">
+            <div class="panel-head">
+              <div><h2>Real FX Balances / Market Value</h2><p class="sub">original-currency rows plus base-currency total and FX provenance</p></div>
+              <span class="pill info" data-testid="ib-live-base-currency">Base USD</span>
+            </div>
+            <div class="wide-scroll">
+              <table class="data-table" data-testid="ib-live-currency-funds-table">
+                <thead>
+                  <tr><th>Currency</th><th class="numeric">Cash</th><th class="numeric">FX cash</th><th class="numeric">Stocks</th><th class="numeric">Bonds</th><th class="numeric">Net liquidation</th><th class="numeric">Unrealized PnL</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td data-testid="ib-live-currency-code">CNH</td><td class="numeric">10,031</td><td class="numeric">0</td><td class="numeric">0</td><td class="numeric">0</td><td class="numeric">10,031</td><td class="numeric">0</td></tr>
+                  <tr><td data-testid="ib-live-currency-code">HKD</td><td class="numeric neg">-34,919</td><td class="numeric">17,837</td><td class="numeric">151,416</td><td class="numeric">0</td><td class="numeric">116,424</td><td class="numeric pos">15,462</td></tr>
+                  <tr><td data-testid="ib-live-currency-code">JPY</td><td class="numeric neg">-48,556</td><td class="numeric">0</td><td class="numeric">0</td><td class="numeric">0</td><td class="numeric neg">-48,558</td><td class="numeric">0</td></tr>
+                  <tr><td data-testid="ib-live-currency-code">USD</td><td class="numeric">3,618</td><td class="numeric">5,559</td><td class="numeric">75,457</td><td class="numeric">24,548</td><td class="numeric">103,966</td><td class="numeric neg">-61,987</td></tr>
+                  <tr><td>Total (USD)</td><td class="numeric neg" data-testid="ib-live-base-total-cash-balance">-69,868</td><td class="numeric">23,394</td><td class="numeric">226,856</td><td class="numeric">24,548</td><td class="numeric" data-testid="ib-live-base-total-net-liquidation">181,766</td><td class="numeric neg">-46,526</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <p class="sub"><span data-testid="ib-live-fx-source">FX source: IB translated fields</span> · <span data-testid="ib-live-fx-time">FX time: source_collected_at</span> · <span data-testid="ib-live-fx-tolerance">tolerance: validator-defined</span></p>
+          </section>
+
+          <section class="panel" data-testid="ib-live-portfolio-filter-bar">
+            <div class="toolbar">
+              <div>
+                <h2>Portfolio Filters</h2>
+                <p class="sub">filter state is UI-only; source truth unchanged</p>
+              </div>
+              <div>
+                <span class="filter-chip">Text: empty</span>
+                <span class="filter-chip">Security type: all</span>
+                <span class="filter-chip">Currency: all</span>
+                <span class="filter-chip">Exchange: all</span>
+                <span class="filter-chip">Show zero rows: true</span>
+              </div>
+            </div>
+          </section>
+
+          <section class="panel" data-testid="ib-live-positions-table">
+            <div class="panel-head">
+              <div><h2>Portfolio Positions</h2><p class="sub">stable identity = account + symbol + exchange + currency + contract identity</p></div>
+              <span class="pill warn">source package pending</span>
+            </div>
+            <div class="wide-scroll">
+              <table class="data-table">
+                <thead>
+                  <tr><th>Symbol</th><th>Description</th><th>Exchange</th><th class="numeric">Qty</th><th>Cur</th><th class="numeric">Market value</th><th class="numeric">Market px</th><th class="numeric">Avg px</th><th class="numeric">UPnL</th><th class="numeric">Realized</th></tr>
+                </thead>
+                <tbody>
+                  <tr data-testid="ib-live-position-row"><td data-testid="ib-live-position-symbol">388</td><td>Hong Kong Exchanges</td><td data-testid="ib-live-position-exchange">SEHK</td><td class="numeric" data-testid="ib-live-position-quantity">600</td><td data-testid="ib-live-position-currency">HKD</td><td class="numeric" data-testid="ib-live-position-market-value">23,390</td><td class="numeric" data-testid="ib-live-position-market-price">383.8</td><td class="numeric" data-testid="ib-live-position-average-price">252.45</td><td class="numeric pos" data-testid="ib-live-position-unrealized-pnl">10,056</td><td class="numeric">0</td></tr>
+                  <tr data-testid="ib-live-position-row"><td>700</td><td>Tencent Holdings</td><td>SEHK</td><td class="numeric">500</td><td>HKD</td><td class="numeric">28,461</td><td class="numeric">445.9</td><td class="numeric">427.16</td><td class="numeric pos">1,199</td><td class="numeric">0</td></tr>
+                  <tr data-testid="ib-live-position-row"><td>MSFT</td><td>Microsoft Corp</td><td>NASDAQ</td><td class="numeric">50</td><td>USD</td><td class="numeric">19,650</td><td class="numeric">393.00</td><td class="numeric">393.27</td><td class="numeric neg">-13</td><td class="numeric">0</td></tr>
+                  <tr data-testid="ib-live-position-row"><td>GOOG</td><td>Alphabet Inc</td><td>NASDAQ</td><td class="numeric">10</td><td>USD</td><td class="numeric">3,697</td><td class="numeric">369.65</td><td class="numeric">312.02</td><td class="numeric pos">576</td><td class="numeric">0</td></tr>
+                  <tr data-testid="ib-live-position-row"><td>SUNAC OPT</td><td>Sunac China option</td><td>USD</td><td class="numeric">$174.951K</td><td>USD</td><td class="numeric">24,548</td><td class="numeric">14.0314</td><td class="numeric">46.6741</td><td class="numeric neg">-57,109</td><td class="numeric">0</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <section class="panel region-blocker" data-testid="ib-live-orders-table">
+            <div class="panel-head">
+              <div><h2>Open Orders</h2><p class="sub">read-only order status; no submit/cancel/replace controls</p></div>
+              <span class="pill warn">source package required</span>
+            </div>
+            <p>Show open orders here when owner package provides them. Until then, display a typed blocker, not an empty broker-truth claim.</p>
+          </section>
+
+          <section class="panel" data-testid="ib-live-executions-table">
+            <div class="panel-head">
+              <div>
+                <h2>Execution Reports</h2>
+                <p class="sub">immutable fills from owner package; separate from order status</p>
+              </div>
+              <span class="pill warn" data-testid="ib-live-executions-region-missing">blocked until execution package validates</span>
+            </div>
+            <div class="wide-scroll">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Exec ID</th><th>Order ID</th><th>Perm ID</th><th>Time</th><th>Symbol</th><th>Side</th><th class="numeric">Qty</th><th class="numeric">Price</th><th>Exchange</th><th>Cur</th><th class="numeric">Commission</th><th class="numeric">Realized PnL</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr data-testid="ib-live-execution-row">
+                    <td data-testid="ib-live-execution-exec-id">blocked</td>
+                    <td data-testid="ib-live-execution-order-id">not_available</td>
+                    <td data-testid="ib-live-execution-perm-id">not_available</td>
+                    <td data-testid="ib-live-execution-time">source_required</td>
+                    <td data-testid="ib-live-execution-symbol">source_required</td>
+                    <td data-testid="ib-live-execution-side">source_required</td>
+                    <td class="numeric" data-testid="ib-live-execution-quantity">source_required</td>
+                    <td class="numeric" data-testid="ib-live-execution-price">source_required</td>
+                    <td data-testid="ib-live-execution-exchange">source_required</td>
+                    <td data-testid="ib-live-execution-currency">source_required</td>
+                    <td class="numeric" data-testid="ib-live-execution-commission">not_available</td>
+                    <td class="numeric" data-testid="ib-live-execution-realized-pnl">not_available</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <p class="sub"><span data-testid="ib-live-execution-source-time">source_collected_at required</span> · <span data-testid="ib-live-execution-source-checksum">source_checksum required</span> · no execution row can enable broker actions</p>
+          </section>
+        </main>
+
+        <aside class="right stack">
+          <section class="panel" data-testid="account-source-health-panel">
+            <h2>Source Health</h2>
+            <p class="sub">same-slice package required</p>
+            <p><span class="pill warn">blocked_missing_source</span></p>
+            <p>TWS connection must be proven by owner package metadata, not probe-only evidence.</p>
+          </section>
+
+          <section class="panel" data-testid="account-evidence-rail">
+            <h2>Evidence Rail</h2>
+            <p class="sub">refs only, no secrets</p>
+            <dl class="detail-list">
+              <div><dt>owner repo</dt><dd>owner_repo_ref</dd></div>
+              <div><dt>entrypoint</dt><dd>owner_entrypoint_ref</dd></div>
+              <div><dt>source checksum</dt><dd>source_checksum</dd></div>
+              <div><dt>projection checksum</dt><dd>projection_checksum</dd></div>
+              <div><dt>secret policy</dt><dd><strong>raw_secret_values=false</strong></dd></div>
+            </dl>
+          </section>
+
+          <section class="panel">
+            <h2>Blockers</h2>
+            <p class="sub">visible until cleared</p>
+            <div class="blocker-list">
+              <div class="blocker" data-testid="account-blocker-row">ib_ui_region_missing</div>
+              <div class="blocker" data-testid="account-blocker-row">ib_funds_stale</div>
+              <div class="blocker" data-testid="account-blocker-row">ib_position_row_mismatch</div>
+              <div class="blocker" data-testid="account-blocker-row">ib_tws_section_coverage_missing</div>
+            </div>
+          </section>
+
+          <section class="panel" data-testid="account-summary-boundary-list">
+            <h2>Boundary Assertions</h2>
+            <p class="sub">hard no-action rules</p>
+            <dl class="detail-list">
+              <div><dt>IB API</dt><dd>no ibapi import</dd></div>
+              <div><dt>TWS socket</dt><dd>no direct connection</dd></div>
+              <div><dt>Orders</dt><dd>no submit/cancel/replace</dd></div>
+              <div><dt>Readiness</dt><dd>no can-trade label</dd></div>
+              <div><dt>Secrets</dt><dd>no raw values recorded</dd></div>
+            </dl>
+          </section>
+        </aside>
+      </div>
+      <p class="footer-note">Design artifact for P018. This page is not runtime truth; it is a UI target for Account Workbench implementation and browser/API readback gates.</p>
+    </div>
+  </body>
+</html>

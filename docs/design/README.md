@@ -1,6 +1,6 @@
 # UI Design Index / UI 设计索引
 
-- Updated: 2026-06-14
+- Updated: 2026-06-15
 - Project: `nautilus_account_console`
 
 ## Design Documents
@@ -11,6 +11,9 @@
 | [Account Console capability UI design](./account-console-capability-ui-design.md) | baseline | Business capability surfaces, routes and workbench-level UI design. |
 | [Account Console UI implementation design](./account-console-ui-implementation-design.md) | active | Global implementation-level UI design rules for AI-assisted panel slices. |
 | [Account Console UI landing blueprint](./account-console-ui-landing-blueprint.md) | active | Product-level landing guardrails that prevent implementation drift. |
+| [Account Capability Fabric architecture design](./account-capability-fabric-architecture-design.md) | draft | Architecture design for ADR-0004 landing: capability fabric, Account Mirror readback, source boundaries, projection/API surfaces and anti-patterns. |
+| [Account Command Capability design gate](./account-command-capability-design-gate.md) | design_gate_only | P011 Phase 7 command-plane gate: future order intent, risk/approval, execution gateway, readback and reconciliation boundaries without command implementation. |
+| [Account Workbench terminal UI design](./account-workbench-terminal-ui-design.md) | draft | Kuaiqi 2 inspired dense Account Workbench layout for API-backed account observation, positions, source health, evidence and capability badges without command controls. |
 | [Account Console UI landing preview](./account-console-ui-landing-preview.html) | preview | Static visual preview for review before product implementation. |
 | [Account Console order observation preview](./account-console-order-observation-preview.html) | preview | Static visual preview for the Account Workbench Orders and Order Lifecycle surface. |
 

@@ -1,0 +1,73 @@
+{
+  "schema": "account-console.ctp19053-funds-positions-ui-readback-evidence.v1",
+  "status": "ui_matches_pinned_projection",
+  "created_at": "2026-06-15",
+  "account_id": "acct.ctp.paper.19053",
+  "display_alias": "19053",
+  "ui_url": "http://127.0.0.1:5175/accounts/acct.demo-19053",
+  "readback_mode": "mirror API",
+  "source_ref": "contracts/source_artifacts/account_sources/ctp_paper_19053_source.json",
+  "source_checksum": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "source_mode": "delayed_snapshot",
+  "source_artifact_id": "source.ctp.paper.19053.20260615.sample",
+  "projection_checkpoint_id": "sha256:81e85f2c04b82f9a86fe0f6fc2c9329ca7d5509b4cfa9d75f330e17172dc1799",
+  "projection_checksum": "sha256:01b16f252174a9be4759e8be9039933d2e340951104e7b03b24d0caa56d0899e",
+  "expected_from_source_and_api": {
+    "funds": {
+      "currency": "CNY",
+      "equity": 500000.0,
+      "available_cash": 420000.0,
+      "margin_used": 80000.0,
+      "position_profit": 0.0
+    },
+    "positions": [
+      {
+        "instrument": "rb2610",
+        "exchange": "SHFE",
+        "direction": "long",
+        "net_qty": 1,
+        "today_qty": 1,
+        "available_qty": 1,
+        "avg_price": 3500.0,
+        "unrealized_pnl": 0.0
+      }
+    ]
+  },
+  "observed_in_ui": {
+    "summary_text": [
+      "Cash CNY 500,000",
+      "Available CNY 420,000",
+      "Margin CNY 80,000",
+      "Unrealized PnL CNY 0",
+      "Positions 1"
+    ],
+    "positions_text": [
+      "rb2610 long 1 1 1 3500",
+      "contracts/source_artifacts/account_sources/ctp_paper_19053_source.json"
+    ],
+    "source_health_text": [
+      "Authority normalized_read_model",
+      "Session ctp_trader_api.19053",
+      "Run contracts/source_artifacts/account_sources/ctp_paper_19053_source.json"
+    ]
+  },
+  "browser_evidence": {
+    "screenshot": "docs/acceptance/browser-evidence/p011-account-workbench-api-readback/5175-ctp19053-funds-positions-readback.png"
+  },
+  "comparison": {
+    "funds_match": "pass",
+    "positions_match": "pass",
+    "source_ref_visible": "pass",
+    "readback_mode_visible": "pass",
+    "command_disabled": "pass"
+  },
+  "verdict": "passed_for_ui_readback_against_pinned_projection",
+  "explicit_non_claims": [
+    "does_not_prove_current_broker_truth",
+    "does_not_prove_real_ctp_runtime_truth",
+    "does_not_prove_paper_readiness",
+    "does_not_prove_live_readiness",
+    "does_not_prove_tradability",
+    "does_not_authorize_order_submission"
+  ]
+}

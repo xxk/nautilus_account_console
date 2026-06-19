@@ -1,0 +1,110 @@
+{
+  "schema_version": "account_source_artifact.v1",
+  "artifact_id": "source.nautilus.sandbox-paper.simulated-001.20260616.ag2612-buy1.fixture",
+  "account_id": "simulated-001",
+  "account_uid": "sandbox-paper.simulated-001",
+  "display_alias": "Simulated 001",
+  "source_owner": "nautilus_strategies.sandbox_paper_runtime",
+  "source_kind": "nautilus_sandbox_paper",
+  "source_mode": "deterministic_fixture",
+  "account_domain": "sandbox",
+  "account_type": "sandbox_paper",
+  "ledger_type": "simulated_sandbox_ledger",
+  "ledger_semantics": "simulated_sandbox_only",
+  "market_source": "CTP 025292 official market data only",
+  "market_data_account_id": "025292",
+  "market_data_role": "market_data_only",
+  "execution_target": "Nautilus Sandbox Paper",
+  "broker_order_submission": false,
+  "trading_adapter": "disabled",
+  "stage": "R1/P079 Stage 2",
+  "upstream_contract_ref": "D:/Nautilus/_worktrees/r1-heartbeat-driver-contract/nautilus_strategies/docs/changes/20260615__paper__p079-stage2-025292-market-data-only-simulated-001-planning/evidence/stage2_environment_account_contract.json",
+  "trading_day": "2026-06-15",
+  "observed_at": "2026-06-16T00:00:00Z",
+  "source_ref": "contracts/source_artifacts/account_sources/nautilus_sandbox_paper_simulated_001_source.json",
+  "source_checksum": "sha256:2222222222222222222222222222222222222222222222222222222222222222",
+  "balances": [
+    {
+      "currency": "CNY",
+      "equity": 1000000.0,
+      "available_cash": 987500.0,
+      "margin_used": 12500.0,
+      "frozen_cash": 0.0,
+      "position_profit": 0.0,
+      "account_uid": "sandbox-paper.simulated-001",
+      "ledger_type": "simulated_sandbox_ledger"
+    }
+  ],
+  "positions": [
+    {
+      "account_uid": "sandbox-paper.simulated-001",
+      "instrument": "ag2612",
+      "exchange": "SHFE",
+      "direction": "long",
+      "net_qty": 1,
+      "today_qty": 1,
+      "yesterday_qty": 0,
+      "available_qty": 1,
+      "frozen_qty": 0,
+      "avg_price": 5820.0,
+      "market_price": 5820.0,
+      "market_value": 87300.0,
+      "unrealized_pnl": 0.0,
+      "ledger_type": "simulated_sandbox_ledger"
+    }
+  ],
+  "orders": [
+    {
+      "account_uid": "sandbox-paper.simulated-001",
+      "client_order_id": "simulated-001-ag2612-buy-1-001",
+      "venue_order_id": "sandbox-paper-simulated-001-ag2612-001",
+      "instrument": "ag2612",
+      "exchange": "SHFE",
+      "side": "buy",
+      "offset": "open",
+      "order_type": "limit",
+      "limit_price": 5820.0,
+      "quantity": 1,
+      "filled_quantity": 1,
+      "remaining_quantity": 0,
+      "status": "filled",
+      "report_msg_type": "sandbox_paper_execution_report",
+      "report_status": "filled",
+      "report_seq": "simulated-001-ag2612-buy-1-report-001",
+      "report_provenance_ref": "contracts/source_artifacts/account_sources/nautilus_sandbox_paper_simulated_001_source.json#orders/0/report",
+      "report_msg_ref": "sandbox-paper://simulated-001/orders/simulated-001-ag2612-buy-1-001/reports/001",
+      "report_msg_checksum": "sha256:2222222222222222222222222222222222222222222222222222222222222222",
+      "report_msg_excerpt": "Nautilus Sandbox Paper filled BUY OPEN ag2612 1 @ 5820"
+    }
+  ],
+  "fills": [],
+  "source_health": {
+    "state": "ready",
+      "lag_ms": 0,
+      "scenario": "ag2612_buy_one_lot",
+      "scenario_result": "filled",
+    "account_uid": "sandbox-paper.simulated-001",
+    "account_type": "sandbox_paper",
+    "ledger_type": "simulated_sandbox_ledger",
+    "market_source": "CTP 025292 official market data only",
+    "market_data_account_id": "025292",
+    "market_data_role": "market_data_only",
+    "execution_target": "Nautilus Sandbox Paper",
+    "orders_scope": "simulated ledger only",
+    "broker_order_submission": false,
+    "trading_adapter": "disabled",
+    "stage": "R1/P079 Stage 2",
+      "projection_only": true,
+      "account_console_writes_truth": false
+  },
+  "blockers": [
+    {
+      "blocker_id": "simulated001_stage2_fixture_only",
+      "type": "fixture_only_read_model",
+      "owner": "nautilus_strategies.sandbox_paper_runtime",
+      "next_action": "Replace this Stage 2 planning/UI acceptance fixture with a pinned sandbox paper runtime projection when the upstream owner publishes one.",
+      "source_ref": "contracts/source_artifacts/account_sources/nautilus_sandbox_paper_simulated_001_source.json",
+      "checksum": "sha256:2222222222222222222222222222222222222222222222222222222222222222"
+    }
+  ]
+}

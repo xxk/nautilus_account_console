@@ -1,6 +1,8 @@
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 
+const apiBase = process.env.NAC_API_BASE ?? "http://127.0.0.1:8765";
+
 export default defineConfig({
   plugins: [react()],
   server: {
@@ -8,8 +10,8 @@ export default defineConfig({
       allow: [".."]
     },
     proxy: {
-      "/api": "http://127.0.0.1:8765",
-      "/healthz": "http://127.0.0.1:8765"
+      "/api": apiBase,
+      "/healthz": apiBase
     }
   }
 });

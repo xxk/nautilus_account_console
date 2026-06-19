@@ -75,6 +75,96 @@ class OrderExecutionReports(BaseModel):
     reports: list[OrderEvent]
 
 
+class MirrorCapabilityState(BaseModel):
+    enabled: bool
+    mirror_state: str | None = None
+    mode: str | None = None
+
+
+class MirrorCapabilities(BaseModel):
+    observation: MirrorCapabilityState
+    command: MirrorCapabilityState
+
+
+class MirrorAccountProjection(BaseModel):
+    schema_version: str
+    account_id: str
+    display_alias: str
+    source_kind: str
+    source_mode: str
+    account_domain: str
+    capabilities: MirrorCapabilities
+    balances: list[dict]
+    positions: list[dict]
+    orders: list[dict]
+    fills: list[dict]
+    source_health: dict
+    blockers: list[dict]
+    projection_checkpoint_id: str
+    projection_checksum: str
+    source_ref: str
+    source_checksum: str
+    boundaries: dict
+
+
+class MirrorAccountSummary(BaseModel):
+    account_id: str
+    display_alias: str
+    source_kind: str
+    source_mode: str
+    account_domain: str
+    mirror_state: str
+    command_enabled: bool
+    command_mode: str
+    balance_count: int
+    position_count: int
+    order_count: int
+    fill_count: int
+    blocker_count: int
+    projection_checkpoint_id: str
+    projection_checksum: str
+    source_ref: str
+    source_checksum: str
+
+
+class MirrorListResponse(BaseModel):
+    schema_version: str
+    accounts: list[MirrorAccountSummary]
+
+
+class MirrorEvidenceItem(BaseModel):
+    kind: str
+    owner: str
+    source_ref: str
+    checksum: str
+    authority: str
+
+
+class MirrorEvidenceResponse(BaseModel):
+    schema_version: str
+    account_id: str
+    projection_checkpoint_id: str
+    projection_checksum: str
+    source_ref: str
+    source_checksum: str
+    evidence: list[MirrorEvidenceItem]
+    blockers: list[dict]
+    boundaries: dict
+
+
+class MirrorSourceHealthResponse(BaseModel):
+    schema_version: str
+    account_id: str
+    state: str
+    source_ref: str
+    source_checksum: str
+    observed_at: str
+    projection_checkpoint_id: str
+    projection_checksum: str
+    blockers: list[dict]
+    boundaries: dict
+
+
 class Health(BaseModel):
     ok: bool
     service: str

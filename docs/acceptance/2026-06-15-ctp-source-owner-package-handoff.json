@@ -1,0 +1,80 @@
+{
+  "schema": "account-console.ctp-source-owner-package-handoff.v1",
+  "status": "blocked_waiting_for_source_owner_packages",
+  "created_at": "2026-06-15",
+  "owner_expected": "nautilus_ctp_adapter",
+  "consumer": "Account Console Account Mirror",
+  "scope": "ADR-0004 / T001 / P011 pinned read-only CTP source packages",
+  "packages": [
+    {
+      "account_id": "acct.ctp.paper.19053",
+      "display_alias": "19053",
+      "account_domain": "paper",
+      "required_package_path": "output/account_capability/ctp-paper-19053/source-package.json",
+      "template_ref": "contracts/source_artifacts/templates/ctp_paper_19053_source_package.template.json",
+      "blocker_ref": "docs/acceptance/2026-06-15-ctp19053-real-readback-blocker.json",
+      "validation_command": "python scripts\\validate_ctp19053_consistency.py --source-package output\\account_capability\\ctp-paper-19053\\source-package.json",
+      "blocker_command": "python scripts\\validate_ctp19053_consistency.py --write-blocker",
+      "sample_command": "python scripts\\validate_ctp19053_consistency.py --source-package contracts\\source_artifacts\\samples\\ctp_paper_19053_sample_source.json"
+    },
+    {
+      "account_id": "acct.ctp.live.025292",
+      "display_alias": "025292",
+      "account_domain": "live",
+      "required_package_path": "output/account_capability/ctp-live-025292/source-package.json",
+      "template_ref": "contracts/source_artifacts/templates/ctp_live_025292_source_package.template.json",
+      "blocker_ref": "docs/acceptance/2026-06-15-ctp025292-real-account-consistency-blocker.json",
+      "validation_command": "python scripts\\validate_ctp025292_consistency.py --source-package output\\account_capability\\ctp-live-025292\\source-package.json",
+      "blocker_command": "python scripts\\validate_ctp025292_consistency.py --write-blocker",
+      "sample_command": "python scripts\\validate_ctp025292_consistency.py --source-package contracts\\source_artifacts\\samples\\ctp_live_025292_sample_source.json"
+    }
+  ],
+  "required_ctp_queries": [
+    "QryTradingAccount",
+    "QryInvestorPosition",
+    "QryOrder",
+    "QryTrade when fills exist or order fill state needs verification"
+  ],
+  "required_snapshot_metadata": [
+    "trading_day",
+    "query_window_id",
+    "query_started_at",
+    "query_completed_at",
+    "observed_at",
+    "source_ref",
+    "source_checksum",
+    "observation_mode=snapshot",
+    "event_stream=not_implemented"
+  ],
+  "forbidden_fields": [
+    "password",
+    "auth_code",
+    "authcode",
+    "token",
+    "secret",
+    "session_password",
+    "command"
+  ],
+  "forbidden_claims": [
+    "Paper ready",
+    "Live ready",
+    "production ready",
+    "capital allocated",
+    "broker tradable",
+    "can trade"
+  ],
+  "acceptance_commands_after_real_packages": [
+    "python scripts\\validate_ctp19053_consistency.py --source-package output\\account_capability\\ctp-paper-19053\\source-package.json",
+    "python scripts\\validate_ctp025292_consistency.py --source-package output\\account_capability\\ctp-live-025292\\source-package.json",
+    "python scripts\\validate_adr004_p011_landing_consistency.py"
+  ],
+  "explicit_non_claims": [
+    "does_not_authorize_account_console_ctp_direct_calls",
+    "does_not_create_broker_truth",
+    "does_not_create_runtime_truth",
+    "does_not_create_order_action_authority",
+    "does_not_claim_paper_ready",
+    "does_not_claim_live_ready",
+    "does_not_claim_tradability"
+  ]
+}

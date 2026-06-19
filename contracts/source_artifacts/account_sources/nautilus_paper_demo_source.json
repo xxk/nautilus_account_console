@@ -1,0 +1,30 @@
+{
+  "schema_version": "account_source_artifact.v1",
+  "artifact_id": "source.nautilus.paper.demo.20260615.sample",
+  "account_id": "acct.nautilus.paper.demo",
+  "display_alias": "Nautilus Paper Demo",
+  "source_owner": "nautilus_paper_runtime",
+  "source_kind": "nautilus_paper_runtime",
+  "source_mode": "deterministic_fixture",
+  "account_domain": "sandbox",
+  "trading_day": "2026-06-15",
+  "observed_at": "2026-06-15T00:00:00Z",
+  "source_ref": "contracts/source_artifacts/account_sources/nautilus_paper_demo_source.json",
+  "source_checksum": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "balances": [
+    {
+      "currency": "USD",
+      "equity": 100000.0,
+      "available_cash": 100000.0,
+      "margin_used": 0.0
+    }
+  ],
+  "positions": [],
+  "orders": [],
+  "fills": [],
+  "source_health": {
+    "state": "ready",
+    "lag_ms": 0
+  },
+  "blockers": []
+}

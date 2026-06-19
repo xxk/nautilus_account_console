@@ -51,6 +51,71 @@
         "panel": "shared",
         "clear": true
       }
+    },
+    {
+      "label": "Account Console API: dev current worktree 8775",
+      "type": "shell",
+      "command": "python",
+      "args": [
+        "-m",
+        "uvicorn",
+        "nautilus_account_console.main:app",
+        "--host",
+        "127.0.0.1",
+        "--port",
+        "8775",
+        "--app-dir",
+        "backend/src"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "isBackground": true,
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      }
+    },
+    {
+      "label": "Account Console UI: dev current worktree 5175",
+      "type": "shell",
+      "command": "powershell",
+      "args": [
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-Command",
+        "$env:NAC_API_BASE='http://127.0.0.1:8775'; node node_modules/vite/bin/vite.js --host 127.0.0.1 --port 5175"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}/frontend"
+      },
+      "isBackground": true,
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      }
+    },
+    {
+      "label": "ADR004/P011: landing consistency gate",
+      "type": "shell",
+      "command": "python",
+      "args": [
+        "scripts\\validate_adr004_p011_landing_consistency.py"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "clear": true
+      }
     }
   ]
 }
