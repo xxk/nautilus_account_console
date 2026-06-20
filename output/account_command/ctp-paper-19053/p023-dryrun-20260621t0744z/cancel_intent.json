@@ -1,0 +1,20 @@
+{
+  "schema_version": "account_command.cancel_intent.v1",
+  "intent_id": "intent.ctp19053.p023-openctp19053-20260620t234744z-close-001.cancel",
+  "account_id": "acct.ctp.paper.19053",
+  "mode": "live_dry_run",
+  "action": "cancel",
+  "instrument": "rb2610",
+  "exchange": "SHFE",
+  "client_order_id": "p023-openctp19053-20260620t234744z-close-001",
+  "venue_order_id": "2",
+  "order_ref": "2",
+  "front_id": 1,
+  "session_id": 648937905,
+  "idempotency_key": "p023-openctp19053-20260620t234744z-close-001-cancel",
+  "operator_ref": "operator-ref://local-codex/p023",
+  "readback_ref": "output/account_command/ctp-paper-19053/p023-dryrun-20260621t0744z/post_submit_readback.json",
+  "raw_secret_values_recorded": false,
+  "raw_broker_endpoint_recorded": false,
+  "checksum": "sha256:a04122c442547f558cc7b951472b7370e53f881ca97ad8a7bb7e746cdfd72f31"
+}

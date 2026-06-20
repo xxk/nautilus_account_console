@@ -1,0 +1,20 @@
+{
+  "schema_version": "account_command.cancel_intent.v1",
+  "intent_id": "intent.ctp19053.p023-rb2610-close-20260621t0748z.cancel",
+  "account_id": "acct.ctp.paper.19053",
+  "mode": "paper_armed",
+  "action": "cancel",
+  "instrument": "rb2610",
+  "exchange": "SHFE",
+  "client_order_id": "p023-rb2610-close-20260621t0748z",
+  "venue_order_id": "166",
+  "order_ref": "2",
+  "front_id": 1,
+  "session_id": 653722036,
+  "idempotency_key": "p023-rb2610-close-20260621t0748z-cancel",
+  "operator_ref": "operator-ref://local-codex/p023",
+  "readback_ref": "output/account_command/ctp-paper-19053/p023-armed-20260621t0748z/post_submit_readback.json",
+  "raw_secret_values_recorded": false,
+  "raw_broker_endpoint_recorded": false,
+  "checksum": "sha256:f5e72934e88c18de4fc22e6cebd32afbd8bf508ae147da58ec1efc5d0b2c7aac"
+}

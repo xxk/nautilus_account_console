@@ -176,10 +176,13 @@ def _open_order_status(row: dict[str, Any]) -> str:
     leaves_qty = int(row.get("leaves_qty") or 0)
     trade_volume = int(row.get("trade_volume") or 0)
     status = int(row.get("status") or 0)
+    status_text = str(row.get("error_msg") or "").lower()
+    if status == 5 or "撤" in status_text or status_text in {"cancelled", "canceled"}:
+        return "canceled"
+    if (status == 0 and leaves_qty == 0) or trade_volume > 0:
+        return "filled"
     if leaves_qty > 0:
         return "working"
-    if status == 0 or trade_volume > 0:
-        return "filled"
     return "unknown"
 
 

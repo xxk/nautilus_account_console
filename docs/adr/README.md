@@ -1,6 +1,6 @@
 # ADR Index / ADR 索引
 
-- Updated: 2026-06-20
+- Updated: 2026-06-21
 - Project: `nautilus_account_console`
 - Template: [ADR模板 / ADR Template](ADR模板_ADR%20Template.md)
 
@@ -19,6 +19,7 @@
 | ADR | Title | Proposed question |
 | --- | --- | --- |
 | [ADR-0006](0006-adopt-project-local-and-shared-knowledge-base.md) | Project-Local Knowledge Router And Shared Knowledge Base | Decide how Account Console should establish a reusable project-local knowledge router and knowledge-base sample while adopting `D:\Nautilus\global_docs\knowledge-common`, minimizing AI context reads and avoiding a second truth source. |
+| [ADR-0007](0007-adopt-governed-account-command-capability.md) | Governed Account Command Capability | Decide whether Account Console may implement submit/cancel capability through OrderIntent, risk/approval, Command Gateway, execution event, Account Mirror readback and reconciliation evidence, without making Account Mirror or UI a broker writer. |
 
 ## Usage Rules
 

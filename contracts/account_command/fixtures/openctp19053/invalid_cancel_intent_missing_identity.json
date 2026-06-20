@@ -1,0 +1,15 @@
+{
+  "schema_version": "account_command.cancel_intent.v1",
+  "intent_id": "intent.ctp19053.cancel.invalid",
+  "account_id": "acct.ctp.paper.19053",
+  "mode": "paper_armed",
+  "action": "cancel",
+  "instrument": "zn2610",
+  "exchange": "SHFE",
+  "idempotency_key": "ctp19053-cancel-invalid",
+  "operator_ref": "operator-ref://local-codex/p023",
+  "readback_ref": "output/account_command/ctp-paper-19053/example/post_submit_readback.json#orders/1",
+  "raw_secret_values_recorded": false,
+  "raw_broker_endpoint_recorded": false
+}
+

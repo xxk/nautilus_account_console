@@ -1,0 +1,258 @@
+from __future__ import annotations
+
+import sys
+from pathlib import Path
+
+
+ROOT = Path(__file__).resolve().parents[1]
+BACKEND_SRC = ROOT / "backend" / "src"
+ADR = ROOT / "docs" / "adr" / "0007-adopt-governed-account-command-capability.md"
+PROPOSAL = ROOT / "docs" / "proposals" / "p023-openctp-19053-paper-command-capability"
+PROPOSAL_INDEX = ROOT / "docs" / "proposals" / "README.md"
+CONTRACT_DIR = ROOT / "contracts" / "account_command"
+
+
+class P023ValidationError(AssertionError):
+    pass
+
+
+def require(condition: bool, message: str) -> None:
+    if not condition:
+        raise P023ValidationError(message)
+
+
+def read(path: Path) -> str:
+    return path.read_text(encoding="utf-8")
+
+
+def validate_adr_link() -> None:
+    text = read(ADR)
+    for phrase in [
+        "P023 OpenCTP 19053 Paper Command Capability Acceptance Design",
+        "OpenCTP 19053 7x24 Paper",
+        "The 7x24 property means the paper counter",
+        "does not imply live readiness",
+        "P023 may use small quantity",
+    ]:
+        require(phrase in text, f"ADR-0007 missing P023 landing phrase: {phrase}")
+
+
+def validate_proposal_docs() -> None:
+    required_files = [
+        "README.md",
+        "phase-plan.md",
+        "acceptance.md",
+        "ui-acceptance.md",
+        "ui-design.md",
+        "live-trading-scenarios.md",
+        "non-ui-acceptance.md",
+        "web-ui-acceptance.md",
+    ]
+    for filename in required_files:
+        require((PROPOSAL / filename).exists(), f"P023 missing {filename}")
+
+    readme = read(PROPOSAL / "README.md")
+    for phrase in [
+        "Proposal ID: `p023-openctp-19053-paper-command-capability`",
+        "ADR carrier: yes",
+        "Primary ADR: ADR-0007",
+        "OpenCTP TTS 7x24 simulation",
+        "This proposal does not enable Account Console web/API command controls.",
+        "live-trading-scenarios.md",
+        "Live Scenario Coverage",
+        "validate_p023_account_command_contracts.py",
+        "validate_p023_openctp19053_command_run.py",
+        "Account Mirror as broker writer",
+        "P023 paper runtime is accepted",
+    ]:
+        require(phrase in readme, f"P023 README missing {phrase}")
+
+    phase_plan = read(PROPOSAL / "phase-plan.md")
+    for phrase in [
+        "Phase 4 | OpenCTP 19053 paper submit",
+        "Phase 5 | OpenCTP 19053 paper cancel",
+        "completed_contract_gate",
+        "completed_disabled_gate",
+        "completed_dry_run",
+        "completed_paper_submit",
+        "completed_paper_cancel",
+        "ReqQryOrder",
+        "ADR Decision Coverage Mapping",
+        "Gateway ack is not final account state",
+    ]:
+        require(phrase in phase_plan, f"P023 phase plan missing {phrase}")
+
+    acceptance = read(PROPOSAL / "acceptance.md")
+    for phrase in [
+        "P023_OPENCTP_19053_COMMAND_ACCEPTANCE_DESIGN_OK",
+        "P023_ACCOUNT_COMMAND_CONTRACTS_OK",
+        "P023_OPENCTP19053_COMMAND_RUN_OK",
+        "validate_p023_account_command_contracts.py",
+        "validate_p023_openctp19053_command_run.py",
+        "contract_gate_ready",
+        "runtime_accepted",
+        "19053 7x24 paper preflight ready",
+        "Paper submit accepted by gateway",
+        "Paper cancel uses readback identity",
+        "Post-cancel readback reconciles",
+        "Gateway ack treated as final order state",
+        "Paper 7x24 evidence claims live readiness",
+        "output/account_command/ctp-paper-19053/<run-id>/",
+        "gateway_ack_is_final_state=false",
+        "live-trading-scenarios.md",
+        "LT-01",
+        "LT-30",
+        "non-ui-acceptance.md",
+        "web-ui-acceptance.md",
+    ]:
+        require(phrase in acceptance, f"P023 acceptance missing {phrase}")
+
+    live_scenarios = read(PROPOSAL / "live-trading-scenarios.md")
+    for phrase in [
+        "Scenario Groups",
+        "Detailed Scenarios",
+        "19053 Paper Acceptance Subset",
+        "Live Blocked Until",
+        "LT-01",
+        "LT-08",
+        "LT-11",
+        "LT-14",
+        "LT-20",
+        "LT-29",
+        "LT-30",
+        "7x24 paper lane",
+        "live_armed",
+        "raw password/front/auth/token",
+        "gateway ack marked final",
+        "duplicate broker orders appear",
+        "Cancel open order",
+        "Post-session closeout",
+    ]:
+        require(phrase in live_scenarios, f"P023 live scenario catalog missing {phrase}")
+
+    non_ui = read(PROPOSAL / "non-ui-acceptance.md")
+    for phrase in [
+        "Non-UI Scenario Matrix",
+        "Required Non-UI Artifact Family",
+        "G1 Pre-trade readiness",
+        "G2 Submit",
+        "G3 Cancel",
+        "G4 Fill lifecycle",
+        "G5 Reject/block",
+        "G6 Connectivity",
+        "G7 Session conflict",
+        "G8 Emergency controls",
+        "G9 Audit/reconciliation",
+        "G10 UI safety backend state",
+        "NU-01",
+        "NU-14",
+        "NUN-01",
+        "NUN-12",
+        "validate_command_audit_chain",
+        "validate_command_redaction",
+    ]:
+        require(phrase in non_ui, f"P023 non-UI acceptance missing {phrase}")
+
+    web_ui = read(PROPOSAL / "web-ui-acceptance.md")
+    for phrase in [
+        "Web UI Scenario Matrix",
+        "Required Web UI Evidence",
+        "Required Data Test IDs",
+        "G1 Pre-trade readiness",
+        "G2 Submit",
+        "G3 Cancel",
+        "G4 Fill lifecycle",
+        "G5 Reject/block",
+        "G6 Connectivity",
+        "G7 Session conflict",
+        "G8 Emergency controls",
+        "G9 Audit/reconciliation",
+        "G10 UI safety",
+        "`account-submit-order-button`",
+        "`account-cancel-order-button`",
+        "`account-command-reconciliation-ref`",
+        "UI-01",
+        "UI-12",
+        "UIN-01",
+        "UIN-10",
+        "Screenshots alone are never sufficient.",
+    ]:
+        require(phrase in web_ui, f"P023 web UI acceptance missing {phrase}")
+
+    ui_acceptance = read(PROPOSAL / "ui-acceptance.md")
+    for phrase in [
+        "Before Command Enabled",
+        "After Paper Command Enabled",
+        "command.mode=paper_armed",
+        "No submit, cancel, replace",
+        "gateway event id",
+        "post-submit/post-cancel readback refs",
+    ]:
+        require(phrase in ui_acceptance, f"P023 UI acceptance missing {phrase}")
+
+    ui_design = read(PROPOSAL / "ui-design.md")
+    for phrase in [
+        "`account-submit-order-button`",
+        "`account-cancel-order-button`",
+        "`account-command-reconciliation-ref`",
+        "When disabled, the page should not reserve empty command controls.",
+    ]:
+        require(phrase in ui_design, f"P023 UI design missing {phrase}")
+
+
+def validate_index() -> None:
+    text = read(PROPOSAL_INDEX)
+    require("Updated: 2026-06-21" in text, "proposal index date not updated")
+    require("P023 OpenCTP 19053 Paper Command Capability" in text, "proposal index missing P023")
+    require("ADR-0007 successor proposal" in text, "proposal index missing ADR-0007 relation")
+
+
+def validate_contract_gate_landed() -> None:
+    require((ROOT / "scripts" / "validate_p023_account_command_contracts.py").exists(), "missing P023 command contract validator")
+    require((ROOT / "scripts" / "run_p023_openctp19053_command_acceptance.py").exists(), "missing P023 command runtime runner")
+    require((ROOT / "scripts" / "validate_p023_openctp19053_command_run.py").exists(), "missing P023 command run validator")
+    for filename in [
+        "order_intent.schema.json",
+        "cancel_intent.schema.json",
+        "decision_and_event.schema.json",
+    ]:
+        require((CONTRACT_DIR / filename).exists(), f"missing command contract schema {filename}")
+    fixture_dir = CONTRACT_DIR / "fixtures" / "openctp19053"
+    for filename in [
+        "order_intent_valid.json",
+        "cancel_intent_valid.json",
+        "command_audit_valid.json",
+        "invalid_order_intent_missing_idempotency.json",
+        "invalid_order_intent_raw_secret_flag.json",
+        "invalid_cancel_intent_missing_identity.json",
+        "invalid_audit_ack_final_state.json",
+    ]:
+        require((fixture_dir / filename).exists(), f"missing command contract fixture {filename}")
+
+
+def validate_current_backend_still_read_only() -> None:
+    sys.path.insert(0, str(BACKEND_SRC))
+    from nautilus_account_console.main import app
+
+    forbidden_tokens = ["/submit", "/cancel", "/replace", "/commands"]
+    for route in app.routes:
+        path = getattr(route, "path", "")
+        methods = getattr(route, "methods", set()) or set()
+        for token in forbidden_tokens:
+            require(token not in path, f"backend exposes command route before P023 implementation: {path}")
+        if path.startswith("/api/mirror/"):
+            forbidden_methods = sorted(method for method in methods if method not in {"GET", "HEAD"})
+            require(not forbidden_methods, f"mirror route exposes write method before P023 implementation: {path}")
+
+
+def main() -> None:
+    validate_adr_link()
+    validate_proposal_docs()
+    validate_index()
+    validate_contract_gate_landed()
+    validate_current_backend_still_read_only()
+    print("P023_OPENCTP_19053_COMMAND_ACCEPTANCE_DESIGN_OK: status=paper_runtime_accepted current_command=disabled")
+
+
+if __name__ == "__main__":
+    main()

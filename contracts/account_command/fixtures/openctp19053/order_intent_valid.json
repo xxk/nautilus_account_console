@@ -1,0 +1,20 @@
+{
+  "schema_version": "account_command.order_intent.v1",
+  "intent_id": "intent.ctp19053.submit.001",
+  "account_id": "acct.ctp.paper.19053",
+  "mode": "paper_armed",
+  "action": "submit",
+  "instrument": "zn2610",
+  "exchange": "SHFE",
+  "side": "BUY",
+  "quantity": 1,
+  "order_type": "LIMIT",
+  "limit_price": 1.0,
+  "time_in_force": "GFD",
+  "offset": "OPEN",
+  "idempotency_key": "ctp19053-submit-001",
+  "operator_ref": "operator-ref://local-codex/p023",
+  "preflight_ref": "output/account_command/ctp-paper-19053/example/preflight_readback.json",
+  "raw_secret_values_recorded": false,
+  "raw_broker_endpoint_recorded": false
+}

@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nautilus.local/contracts/account_command/cancel_intent.schema.json",
+  "title": "Account Command Cancel Intent",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "intent_id",
+    "account_id",
+    "mode",
+    "action",
+    "instrument",
+    "exchange",
+    "client_order_id",
+    "venue_order_id",
+    "order_ref",
+    "front_id",
+    "session_id",
+    "idempotency_key",
+    "operator_ref",
+    "readback_ref",
+    "raw_secret_values_recorded",
+    "raw_broker_endpoint_recorded"
+  ],
+  "properties": {
+    "schema_version": { "type": "string", "const": "account_command.cancel_intent.v1" },
+    "intent_id": { "type": "string", "pattern": "^intent\\.[a-z0-9_.-]+$" },
+    "account_id": { "type": "string", "const": "acct.ctp.paper.19053" },
+    "mode": { "type": "string", "enum": ["paper_armed", "live_dry_run", "live_armed"] },
+    "action": { "type": "string", "const": "cancel" },
+    "instrument": { "type": "string", "minLength": 1 },
+    "exchange": { "type": "string", "minLength": 1 },
+    "client_order_id": { "type": "string", "minLength": 1 },
+    "venue_order_id": { "type": "string", "minLength": 1 },
+    "order_ref": { "type": "string", "minLength": 1 },
+    "front_id": { "type": "integer" },
+    "session_id": { "type": "integer" },
+    "idempotency_key": { "type": "string", "minLength": 12 },
+    "operator_ref": { "type": "string", "minLength": 1 },
+    "readback_ref": { "type": "string", "minLength": 1 },
+    "raw_secret_values_recorded": { "type": "boolean", "const": false },
+    "raw_broker_endpoint_recorded": { "type": "boolean", "const": false }
+  }
+}
+

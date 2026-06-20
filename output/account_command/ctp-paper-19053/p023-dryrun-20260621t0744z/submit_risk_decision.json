@@ -1,0 +1,38 @@
+{
+  "schema_version": "account_command.risk_decision.v1",
+  "account_id": "acct.ctp.paper.19053",
+  "status": "approved",
+  "source_ref": "output/account_command/ctp-paper-19053/p023-dryrun-20260621t0744z/submit_intent.json",
+  "mode": "paper_armed",
+  "preflight": {
+    "accepted": true,
+    "issues": [],
+    "instrument": "rb2610",
+    "direction": "LONG",
+    "position_qty": 3,
+    "yd_position_qty": 3,
+    "exchange": "SHFE",
+    "preflight_run_id": "paper-readonly-1781998948162"
+  },
+  "guardrails": {
+    "config_ref": "owner://nautilus_ctp_adapter/cfgs/local/ctp.openctp.tts.7x24.local.json",
+    "user_id_fingerprint": "eabddb2a8122",
+    "allowed_instruments": [
+      "rb2610"
+    ],
+    "guardrails_enabled": true,
+    "allow_live_order_smoke": false,
+    "allow_exposure_reduction_order_smoke": true,
+    "max_order_qty": 3,
+    "max_net_position": 5,
+    "max_submit_per_minute": 10,
+    "price_mode": "best_level_1",
+    "raw_secret_values_recorded": false,
+    "raw_broker_endpoint_recorded": false
+  },
+  "projected_net_position": 2,
+  "raw_secret_values_recorded": false,
+  "raw_broker_endpoint_recorded": false,
+  "gateway_ack_is_final_state": false,
+  "checksum": "sha256:d35e6e869eb0b77c3693023b9301baf93919f9c378b9a649c3fe5e306caf003d"
+}
