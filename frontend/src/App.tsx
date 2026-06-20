@@ -319,10 +319,19 @@ const intradayMonitorFixtureLabels: Record<IntradayMonitorFixtureState, string> 
   partial: "partial"
 };
 
+const portfolioOwnerConsoleUrl =
+  "http://127.0.0.1:4185/console/portfolios/CTA-CORE-001?view=portfolio-owner&origin=account-console";
+
 const workbenches = [
   { label: "Daily Closeout", path: "/closeout", icon: Gauge },
   { label: "Intraday Monitor", path: "/monitor", icon: Radio },
   { label: "Account Workbench", path: "/accounts/acct.demo-19053", icon: Database },
+  {
+    label: "Portfolio Owner",
+    path: portfolioOwnerConsoleUrl,
+    icon: Landmark,
+    testId: "portfolio-owner-console-nav-link"
+  },
   { label: "Allocation Admin", path: "/management/accounts", icon: Layers },
   { label: "Risk And Reconcile", path: "/risk-reconcile", icon: ShieldAlert },
   { label: "Evidence Explorer", path: "/evidence", icon: FileSearch },
@@ -775,6 +784,7 @@ export function App() {
               <a
                 aria-current={active ? "page" : undefined}
                 className={active ? "nav-item active" : "nav-item"}
+                data-testid={item.testId}
                 href={item.path}
                 key={item.path}
               >
