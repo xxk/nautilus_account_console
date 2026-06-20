@@ -1,0 +1,151 @@
+{
+  "schema": "account-console.p019-ib-u3028269-tws-api-pipeline-summary.v1",
+  "proposal_id": "p019-broker-observation-session-foundation",
+  "account_id": "acct.ib.live.u3028269",
+  "display_alias": "U3028269",
+  "started_at": "2026-06-20T10:45:56Z",
+  "completed_at": "2026-06-20T10:46:29Z",
+  "status": "ready",
+  "blocker_id": null,
+  "socket_diagnostic_ref": "output/debug/p019-tws-api-readiness/tws-api-socket-diagnostic.json",
+  "firewall_diagnostic_ref": "output/debug/p019-tws-api-readiness/windows-firewall-tws-api-diagnostic.json",
+  "config_diagnostic_ref": "output/debug/p019-tws-api-readiness/tws-api-config-diagnostic.json",
+  "readiness_ref": "output/debug/p019-tws-api-readiness/tws-api-readiness-probe.json",
+  "account_summary_ref": "output/account_capability/ib-live-u3028269/tws-api/account_summary.json",
+  "positions_ref": "output/account_capability/ib-live-u3028269/tws-api/positions.json",
+  "source_package_ref": "output/account_capability/ib-live-u3028269/source-package.json",
+  "ibapi_available": true,
+  "ibapi_runtime_ref": "output/runtime/python",
+  "socket_primary_blocker": null,
+  "firewall_primary_blocker": "unknown",
+  "config_primary_blocker": null,
+  "ready_for_tws_api_funds_positions_query": true,
+  "account_summary_success": true,
+  "positions_success": true,
+  "source_package_state": "ready",
+  "boundaries": {
+    "raw_secret_values_recorded": false,
+    "raw_broker_endpoint_recorded": false,
+    "screenshot_used_for_funds_positions": false,
+    "order_action_sent": false
+  },
+  "steps": [
+    {
+      "command": "python scripts/diagnose_p019_tws_api_socket.py",
+      "returncode": 0,
+      "ok": true,
+      "stdout_tail": [
+        "{\"status\": \"ready\", \"output\": \"D:\\\\Nautilus\\\\_worktrees\\\\r1-hb-contract\\\\nautilus_account_console\\\\output\\\\debug\\\\p019-tws-api-readiness\\\\tws-api-socket-diagnostic.json\"}"
+      ],
+      "stderr_tail": []
+    },
+    {
+      "command": "python scripts/validate_p019_tws_api_socket_diagnostic.py",
+      "returncode": 0,
+      "ok": true,
+      "stdout_tail": [
+        "P019_TWS_API_SOCKET_DIAGNOSTIC_OK: status=ready tws_process=present handshake_ok"
+      ],
+      "stderr_tail": []
+    },
+    {
+      "command": "python scripts/diagnose_p019_windows_firewall_tws_api.py",
+      "returncode": 0,
+      "ok": true,
+      "stdout_tail": [
+        "{\"status\": \"written\", \"primary_blocker\": \"unknown\", \"output\": \"D:\\\\Nautilus\\\\_worktrees\\\\r1-hb-contract\\\\nautilus_account_console\\\\output\\\\debug\\\\p019-tws-api-readiness\\\\windows-firewall-tws-api-diagnostic.json\"}"
+      ],
+      "stderr_tail": []
+    },
+    {
+      "command": "python scripts/validate_p019_windows_firewall_tws_api_diagnostic.py",
+      "returncode": 0,
+      "ok": true,
+      "stdout_tail": [
+        "P019_WINDOWS_FIREWALL_TWS_API_DIAGNOSTIC_OK: allow_rules=present block_rules=absent api_listener=True"
+      ],
+      "stderr_tail": []
+    },
+    {
+      "command": "python scripts/diagnose_p019_tws_api_config.py",
+      "returncode": 0,
+      "ok": true,
+      "stdout_tail": [
+        "{\"status\": \"ready\", \"primary_blocker\": null, \"output\": \"D:\\\\Nautilus\\\\_worktrees\\\\r1-hb-contract\\\\nautilus_account_console\\\\output\\\\debug\\\\p019-tws-api-readiness\\\\tws-api-config-diagnostic.json\"}"
+      ],
+      "stderr_tail": []
+    },
+    {
+      "command": "python scripts/validate_p019_tws_api_config_diagnostic.py",
+      "returncode": 0,
+      "ok": true,
+      "stdout_tail": [
+        "P019_TWS_API_CONFIG_DIAGNOSTIC_OK: status=ready latest_socket_client=false primary_blocker=none"
+      ],
+      "stderr_tail": []
+    },
+    {
+      "command": "python scripts/probe_p019_tws_api_readiness.py",
+      "returncode": 0,
+      "ok": true,
+      "stdout_tail": [
+        "{\"status\": \"ready\", \"output\": \"D:\\\\Nautilus\\\\_worktrees\\\\r1-hb-contract\\\\nautilus_account_console\\\\output\\\\debug\\\\p019-tws-api-readiness\\\\tws-api-readiness-probe.json\"}"
+      ],
+      "stderr_tail": []
+    },
+    {
+      "command": "python scripts/validate_p019_tws_api_readiness_probe.py",
+      "returncode": 0,
+      "ok": true,
+      "stdout_tail": [
+        "P019_TWS_API_READINESS_PROBE_OK: status=ready account_query_sent=false"
+      ],
+      "stderr_tail": []
+    },
+    {
+      "command": "python scripts/collect_ib_u3028269_tws_api_snapshot.py --allow-blocked",
+      "returncode": 0,
+      "ok": true,
+      "stdout_tail": [
+        "{\"status\": \"ready\", \"port_ref\": \"tws_paper_default\", \"output_dir\": \"D:\\\\Nautilus\\\\_worktrees\\\\r1-hb-contract\\\\nautilus_account_console\\\\output\\\\account_capability\\\\ib-live-u3028269\\\\tws-api\"}"
+      ],
+      "stderr_tail": []
+    },
+    {
+      "command": "python scripts/validate_p019_ib_u3028269_tws_api_queries.py",
+      "returncode": 0,
+      "ok": true,
+      "stdout_tail": [
+        "P019_IB_U3028269_TWS_API_QUERIES_OK: status=ready order_action_sent=false screenshot_values=false"
+      ],
+      "stderr_tail": []
+    },
+    {
+      "command": "python scripts/build_ib_u3028269_source_package_from_tws_api.py --allow-blocked",
+      "returncode": 0,
+      "ok": true,
+      "stdout_tail": [
+        "IB_U3028269_SOURCE_PACKAGE_BUILT: status=ready output=D:\\Nautilus\\_worktrees\\r1-hb-contract\\nautilus_account_console\\output\\account_capability\\ib-live-u3028269\\source-package.json"
+      ],
+      "stderr_tail": []
+    },
+    {
+      "command": "python scripts/validate_p019_ib_u3028269_source_package.py",
+      "returncode": 0,
+      "ok": true,
+      "stdout_tail": [
+        "P019_IB_U3028269_SOURCE_PACKAGE_OK: status=ready api_transport=ib_tws_api screenshot_values=false"
+      ],
+      "stderr_tail": []
+    },
+    {
+      "command": "python scripts/validate_account_mirror_api.py",
+      "returncode": 0,
+      "ok": true,
+      "stdout_tail": [
+        "ACCOUNT_MIRROR_API_OK: accounts=5 ib_tws_u3028269=ready"
+      ],
+      "stderr_tail": []
+    }
+  ]
+}

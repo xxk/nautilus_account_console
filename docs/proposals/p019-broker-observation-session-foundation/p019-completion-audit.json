@@ -1,0 +1,314 @@
+{
+  "schema": "account-console.p019-completion-audit.v1",
+  "proposal_id": "p019-broker-observation-session-foundation",
+  "adr_id": "ADR-0005",
+  "audited_at": "2026-06-20T10:46:34Z",
+  "overall_status": "not_complete",
+  "completion_must_not_be_claimed": true,
+  "primary_runtime_blocker": "adr0005_not_accepted",
+  "primary_runtime_blocker_detail": "adr0005_proposed_landing_not_started",
+  "raw_secret_values_recorded": false,
+  "screenshot_used_for_funds_positions": false,
+  "order_action_sent": false,
+  "synthetic_ready_contract_is_real_account_truth": false,
+  "adr_status": {
+    "decision_status": "proposed",
+    "landing_status": "not_started",
+    "acceptance_required_before_direct_session": true,
+    "status": "blocked"
+  },
+  "runtime_truth": {
+    "tws_process_present": true,
+    "tws_account_window_ref": "U3028269_account_window",
+    "tws_api_socket_ready": true,
+    "tws_api_readiness_probe_ref": "output/debug/p019-tws-api-readiness/tws-api-readiness-probe.json",
+    "account_summary_success": true,
+    "positions_success": true,
+    "source_package_state": "ready",
+    "pipeline_summary_ref": "output/account_capability/ib-live-u3028269/pipeline-summary.json",
+    "status": "ready"
+  },
+  "real_acceptance_closeout": {
+    "closeout_summary_ref": "output/account_capability/ib-live-u3028269/real-acceptance-closeout.json",
+    "runner_ref": "scripts/run_p019_u3028269_real_acceptance_closeout.py",
+    "validator_ref": "scripts/validate_p019_u3028269_real_acceptance_closeout.py",
+    "status": "ready",
+    "blocker_id": null,
+    "pipeline_status": "ready",
+    "real_ui_parity_verdict": "pass",
+    "synthetic_evidence_used_for_real_closeout": false,
+    "required_ready_chain": [
+      "ready_for_tws_api_funds_positions_query=true",
+      "account_summary_success=true",
+      "positions_success=true",
+      "source_package_state=ready",
+      "query_source_parity=pass",
+      "real_ui_parity_verdict=pass",
+      "command_enabled=false",
+      "order_action=false"
+    ]
+  },
+  "acceptance_requirements": [
+    {
+      "id": "A1",
+      "requirement": "Observation-only broker session profile and no command APIs",
+      "current_evidence": [
+        "scripts/validate_p019_profile_security_provenance.py",
+        "scripts/validate_p019_api_boundary.py",
+        "contracts/broker_observation/fixtures/ib_tws_profile_blocked_adr0005_not_accepted.json"
+      ],
+      "current_status": "pre_acceptance_partial",
+      "missing_for_completion": [
+        "ADR-0005 acceptance",
+        "accepted read-only observation profile evidence from owner/runtime source"
+      ]
+    },
+    {
+      "id": "A2",
+      "requirement": "Secret/config boundary stores refs only",
+      "current_evidence": [
+        "scripts/validate_p019_profile_security_provenance.py",
+        "scripts/diagnose_p019_tws_api_config.py"
+      ],
+      "current_status": "pre_acceptance_partial",
+      "missing_for_completion": [
+        "owner-owned runtime config/secret resolution evidence with raw values outside this worktree"
+      ]
+    },
+    {
+      "id": "A3",
+      "requirement": "Session conflict policy fails closed",
+      "current_evidence": [
+        "contracts/broker_observation/fixtures/ib_tws_session_conflict_policy_blocked.json",
+        "scripts/validate_adr0005_broker_observation_contracts.py"
+      ],
+      "current_status": "pre_acceptance_partial",
+      "missing_for_completion": [
+        "real runtime conflict evaluation after ADR-0005 acceptance"
+      ]
+    },
+    {
+      "id": "A4",
+      "requirement": "Observed order callbacks map to Nautilus-compatible OrderStatusReport",
+      "current_evidence": [
+        "contracts/broker_observation/fixtures/ib_tws_report_mapping_matrix.json",
+        "scripts/validate_adr0005_broker_observation_contracts.py"
+      ],
+      "current_status": "pre_acceptance_partial",
+      "missing_for_completion": [
+        "real callback mapper tests against authorized same-slice broker observation data"
+      ]
+    },
+    {
+      "id": "A5",
+      "requirement": "Observed fill callbacks map to Nautilus-compatible FillReport",
+      "current_evidence": [
+        "contracts/broker_observation/fixtures/ib_tws_report_mapping_matrix.json",
+        "scripts/validate_adr0005_broker_observation_contracts.py"
+      ],
+      "current_status": "pre_acceptance_partial",
+      "missing_for_completion": [
+        "real callback mapper tests with fills/commission rows from authorized same-slice source evidence"
+      ]
+    },
+    {
+      "id": "A6",
+      "requirement": "Raw broker payload is provenance only",
+      "current_evidence": [
+        "scripts/validate_p019_profile_security_provenance.py",
+        "contracts/broker_observation/fixtures/ib_tws_report_batch_sample.json"
+      ],
+      "current_status": "pre_acceptance_partial",
+      "missing_for_completion": [
+        "production observation artifacts proving raw payload remains provenance-only"
+      ]
+    },
+    {
+      "id": "A7",
+      "requirement": "Account Mirror remains projection boundary",
+      "current_evidence": [
+        "scripts/validate_account_mirror_api.py",
+        "scripts/validate_p019_api_boundary.py"
+      ],
+      "current_status": "pre_acceptance_partial",
+      "missing_for_completion": [
+        "Account Mirror projection populated from accepted real TWS API / owner runtime source"
+      ]
+    },
+    {
+      "id": "A8",
+      "requirement": "Freshness, sequence and lag metadata before realtime claims",
+      "current_evidence": [
+        "contracts/broker_observation/fixtures/ib_tws_freshness_sequence_blocked_gap.json",
+        "scripts/validate_adr0005_broker_observation_contracts.py"
+      ],
+      "current_status": "pre_acceptance_partial",
+      "missing_for_completion": [
+        "live or replayed freshness cursors proving sequence continuity and lag"
+      ]
+    },
+    {
+      "id": "A9",
+      "requirement": "Order reports do not enable command capability",
+      "current_evidence": [
+        "scripts/validate_p019_api_boundary.py",
+        "scripts/validate_p019_tws_api_recovery_path_guard.py",
+        "frontend/tests/e2e/p019-ib-tws-synthetic-ready-projection.spec.ts",
+        "scripts/validate_p019_u3028269_synthetic_ready_ui_contract.py"
+      ],
+      "current_status": "pre_acceptance_partial",
+      "missing_for_completion": [
+        "accepted real owner/runtime report-row UI/API evidence with no order action controls"
+      ]
+    },
+    {
+      "id": "A10",
+      "requirement": "Cross-broker extension shape remains broker-neutral",
+      "current_evidence": [
+        "contracts/broker_observation/fixtures/cross_broker_extension_matrix_blocked.json",
+        "scripts/validate_adr0005_broker_observation_contracts.py"
+      ],
+      "current_status": "pre_acceptance_partial",
+      "missing_for_completion": [
+        "accepted adapter implementations continue using shared broker-neutral contract family"
+      ]
+    },
+    {
+      "id": "A11",
+      "requirement": "Durable observation store persists reports/snapshots/session health/cursors",
+      "current_evidence": [
+        "contracts/broker_observation/fixtures/ib_tws_store_complete_reload.json",
+        "scripts/validate_adr0005_broker_observation_contracts.py"
+      ],
+      "current_status": "pre_acceptance_partial",
+      "missing_for_completion": [
+        "durable store restart/reload test from authorized observation records"
+      ]
+    },
+    {
+      "id": "A12",
+      "requirement": "Replay gaps and checksum mismatches produce typed blockers",
+      "current_evidence": [
+        "contracts/broker_observation/fixtures/ib_tws_store_gap_blocker.json",
+        "scripts/validate_adr0005_broker_observation_contracts.py"
+      ],
+      "current_status": "pre_acceptance_partial",
+      "missing_for_completion": [
+        "real replay gap/checksum/missing startup report blockers from runtime/store evidence"
+      ]
+    },
+    {
+      "id": "A13",
+      "requirement": "Execution Reports render as normalized table with parity/reload proof",
+      "current_evidence": [
+        "frontend/tests/e2e/p019-ib-tws-blocked-projection.spec.ts",
+        "docs/acceptance/2026-06-20-p019-u3028269-blocked-ui-parity-evidence.json",
+        "frontend/tests/e2e/p019-ib-tws-synthetic-ready-projection.spec.ts",
+        "docs/acceptance/2026-06-20-p019-u3028269-synthetic-ready-ui-contract-evidence.json",
+        "contracts/broker_observation/fixtures/ib_tws_report_batch_sample.json",
+        "contracts/broker_observation/fixtures/ib_tws_store_complete_reload.json"
+      ],
+      "current_status": "pre_acceptance_partial",
+      "missing_for_completion": [
+        "real owner/runtime normalized report-row table parity",
+        "real owner/runtime durable-store persistence reload parity"
+      ]
+    },
+    {
+      "id": "A14",
+      "requirement": "U3028269 funds render as table-based multi-currency UI",
+      "current_evidence": [
+        "frontend/tests/e2e/p019-ib-tws-blocked-projection.spec.ts",
+        "docs/acceptance/2026-06-20-p019-u3028269-blocked-ui-parity-evidence.json"
+      ],
+      "current_status": "pre_acceptance_partial",
+      "missing_for_completion": [
+        "positive per-currency funds evidence from authorized TWS API / owner runtime source",
+        "UI parity against same-slice TWS API/source package"
+      ]
+    }
+  ],
+  "required_before_implementation_closeout": [
+    {
+      "id": "C1",
+      "requirement": "check_proposal_docs.py passes for P019",
+      "evidence": "scripts/check_proposal_docs.py --root . --proposal-id p019-broker-observation-session-foundation",
+      "status": "proved"
+    },
+    {
+      "id": "C2",
+      "requirement": "Focused profile schema tests exist and pass",
+      "evidence": "scripts/validate_p019_profile_security_provenance.py",
+      "status": "pre_acceptance_partial"
+    },
+    {
+      "id": "C3",
+      "requirement": "Focused session conflict policy tests exist and pass",
+      "evidence": "scripts/validate_adr0005_broker_observation_contracts.py",
+      "status": "pre_acceptance_partial"
+    },
+    {
+      "id": "C4",
+      "requirement": "Focused Nautilus-compatible order/fill report tests exist and pass",
+      "evidence": "scripts/validate_adr0005_broker_observation_contracts.py",
+      "status": "pre_acceptance_partial"
+    },
+    {
+      "id": "C5",
+      "requirement": "Focused durable observation store reload tests exist and pass",
+      "evidence": "contracts/broker_observation/fixtures/ib_tws_store_complete_reload.json",
+      "status": "pre_acceptance_partial"
+    },
+    {
+      "id": "C6",
+      "requirement": "Focused Account Mirror projection tests exist and pass",
+      "evidence": "backend/tests/test_source_bridge.py and scripts/validate_account_mirror_api.py",
+      "status": "pre_acceptance_partial"
+    },
+    {
+      "id": "C7",
+      "requirement": "Negative tests prove no command APIs, raw secrets, memory-only report loss and raw payload browser truth",
+      "evidence": "scripts/validate_p019_api_boundary.py and scripts/validate_adr0005_broker_observation_contracts.py",
+      "status": "pre_acceptance_partial"
+    },
+    {
+      "id": "C8",
+      "requirement": "Browser tests prove Execution Reports table columns, row identity, provenance, reload parity and typed blockers",
+      "evidence": "frontend/tests/e2e/p019-ib-tws-blocked-projection.spec.ts and frontend/tests/e2e/p019-ib-tws-synthetic-ready-projection.spec.ts",
+      "status": "pre_acceptance_partial",
+      "missing_for_completion": [
+        "accepted real owner/runtime report-row parity",
+        "accepted real owner/runtime persistence reload parity"
+      ]
+    },
+    {
+      "id": "C9",
+      "requirement": "TWS U3028269 UI readback compared against same-slice TWS API/source data; funds/positions values come through authorized TWS API / owner runtime source",
+      "evidence": "output/account_capability/ib-live-u3028269/real-acceptance-closeout.json",
+      "status": "proved"
+    },
+    {
+      "id": "C10",
+      "requirement": "Readiness probe passes before any funds/positions query is attempted",
+      "evidence": "output/account_capability/ib-live-u3028269/wait-collect-summary.json and output/account_capability/ib-live-u3028269/real-acceptance-closeout.json",
+      "status": "proved"
+    }
+  ],
+  "blocking_conditions": [
+    {
+      "blocker_id": "adr0005_not_accepted",
+      "owner": "architecture",
+      "blocks": [
+        "direct broker observation session acceptance",
+        "implementation closeout"
+      ]
+    },
+    {
+      "blocker_id": "synthetic_contract_not_real_truth",
+      "owner": "account-console-contracts",
+      "blocks": [
+        "using synthetic fixtures as real account truth"
+      ]
+    }
+  ]
+}

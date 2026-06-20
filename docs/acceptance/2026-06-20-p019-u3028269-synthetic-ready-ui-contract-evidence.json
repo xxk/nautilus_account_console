@@ -1,0 +1,82 @@
+{
+  "schema": "account-console.p019-u3028269-synthetic-ready-ui-contract-evidence.v1",
+  "proposal_id": "p019-broker-observation-session-foundation",
+  "account_id": "acct.ib.live.u3028269",
+  "display_alias": "U3028269",
+  "route": "/accounts/acct.ib.live.u3028269",
+  "source_kind": "ib_tws_observation",
+  "source_ref": "contracts/broker_observation/fixtures/ib_tws_u3028269_ready_source.synthetic.json",
+  "source_checksum": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "projection_checkpoint_id": "mirror.synthetic.u3028269.ready.2026-06-20T00:00:01Z",
+  "projection_checksum": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "verdict": "synthetic_contract_only",
+  "ui_surfaces": {
+    "funds_table_testid": "tws-multi-currency-funds-table",
+    "base_currency_rollup_testid": "tws-base-currency-rollup",
+    "positions_table_testid": "account-positions-table",
+    "position_row_testid": "account-position-projection-row",
+    "execution_reports_table_testid": "tws-execution-reports-table",
+    "execution_report_row_testid": "tws-execution-report-row",
+    "execution_report_reload_ref_testid": "tws-execution-report-reload-ref",
+    "command_state_testid": "account-command-capability-state",
+    "evidence_rail_testid": "account-evidence-rail"
+  },
+  "observed_contract_values": {
+    "currency": "USD",
+    "position_instrument": "AAPL",
+    "execution_report_types": [
+      "OrderStatusReport",
+      "FillReport"
+    ],
+    "execution_report_sequences": [
+      1,
+      2
+    ],
+    "execution_report_source_refs": [
+      "observation-ref://ib-tws/u3028269/reports/000001",
+      "observation-ref://ib-tws/u3028269/reports/000002"
+    ],
+    "store_reload_ref": "contracts/broker_observation/fixtures/ib_tws_store_complete_reload.json",
+    "report_batch_ref": "contracts/broker_observation/fixtures/ib_tws_report_batch_sample.json",
+    "reload_checkpoint_id": "broker-observation-store.reload.u3028269.complete.001",
+    "records_reloaded_from_store": 2,
+    "records_loaded_from_live_memory": 0,
+    "reload_parity_status": "passed",
+    "command_enabled": false,
+    "mirror_state": "ready"
+  },
+  "explicit_non_claims": [
+    "does_not_prove_real_u3028269_funds",
+    "does_not_prove_real_u3028269_positions",
+    "does_not_prove_real_u3028269_order_or_fill_callbacks",
+    "does_not_close_real_ui_parity",
+    "does_not_accept_adr0005",
+    "does_not_satisfy_p018_owner_source_package_acceptance",
+    "does_not_open_direct_tws_session",
+    "does_not_enable_command_capability",
+    "does_not_record_raw_secret_values"
+  ],
+  "required_real_closeout_chain": [
+    "local_tws_api_readiness_probe_pass",
+    "readonly_tws_api_account_summary_success",
+    "readonly_tws_api_positions_success",
+    "source_package_built_from_real_query_artifacts",
+    "account_mirror_projection_from_real_source_package",
+    "ui_parity_against_same_slice_tws_api_source"
+  ],
+  "boundaries": {
+    "synthetic_contract_only": true,
+    "raw_secret_values_recorded": false,
+    "screenshot_used_for_funds_positions": false,
+    "execution_reports_synthetic_contract_only": true,
+    "durable_store_synthetic_contract_only": true,
+    "broker_truth": false,
+    "order_action": false
+  },
+  "browser_evidence": [
+    {
+      "project": "desktop",
+      "screenshot": "docs/acceptance/browser-evidence/p019-u3028269-synthetic-ready-ui/desktop-acct-ib-live-u3028269-synthetic-ready.png"
+    }
+  ]
+}

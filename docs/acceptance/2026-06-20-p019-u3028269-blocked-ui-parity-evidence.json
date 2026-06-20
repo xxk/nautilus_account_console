@@ -1,0 +1,53 @@
+{
+  "schema": "account-console.p019-u3028269-blocked-ui-parity-evidence.v1",
+  "proposal_id": "p019-broker-observation-session-foundation",
+  "status": "blocked_waiting_for_tws_api_readiness_and_real_source_package",
+  "account_id": "acct.ib.live.u3028269",
+  "display_alias": "U3028269",
+  "route": "/accounts/acct.ib.live.u3028269",
+  "source_kind": "ib_tws_observation",
+  "source_ref": "output/account_capability/ib-live-u3028269/source-package.json",
+  "source_checksum": "sha256:38b4d7c3733257ea6365dc6ec63264f9872be979e534560b39a21fde16044a0d",
+  "projection_checkpoint_id": "sha256:085a2b24585b0385c8ddf861b98c63b38b466581beaaf969f352d36bd318fbe3",
+  "projection_checksum": "sha256:7e94819f87d7c9f8f986dfd63161bda3e886e56a3002b47a16bf406974f72768",
+  "blocker_id": "tws_api_readiness_missing",
+  "blocker_kind": "source_unavailable",
+  "parity": {
+    "funds_parity": "blocked",
+    "positions_parity": "blocked",
+    "orders_fills_parity": "blocked",
+    "execution_reports_table_parity": "blocked",
+    "execution_reports_persistence_parity": "blocked"
+  },
+  "ui_surfaces": {
+    "funds_table_testid": "tws-multi-currency-funds-table",
+    "funds_blocker_testid": "tws-funds-blocker",
+    "fx_provenance_testid": "tws-fx-provenance",
+    "positions_table_testid": "account-positions-table",
+    "orders_table_testid": "account-bottom-tape",
+    "execution_reports_table_testid": "tws-execution-reports-table",
+    "execution_reports_blocker_testid": "tws-execution-report-blocker"
+  },
+  "browser_evidence": [
+    {
+      "project": "desktop",
+      "screenshot": "docs/acceptance/browser-evidence/p019-u3028269-blocked-ui/desktop-acct-ib-live-u3028269-blocked.png"
+    }
+  ],
+  "explicit_non_claims": [
+    "does_not_accept_adr0005",
+    "does_not_open_direct_tws_session",
+    "does_not_prove_tws_api_funds_parity",
+    "does_not_prove_tws_api_positions_parity",
+    "does_not_prove_order_or_fill_truth",
+    "does_not_enable_command_capability",
+    "does_not_record_raw_secret_values"
+  ],
+  "boundaries": {
+    "raw_secret_values_recorded": false,
+    "direct_session_allowed": false,
+    "broker_truth": false,
+    "order_action": false
+  },
+  "verdict": "blocked"
+}

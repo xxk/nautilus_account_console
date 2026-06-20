@@ -1,0 +1,91 @@
+{
+  "schema": "account-console.p019-tws-api-socket-diagnostic.v1",
+  "proposal_id": "p019-broker-observation-session-foundation",
+  "account_id": "acct.ib.live.u3028269",
+  "display_alias": "U3028269",
+  "observed_at": "2026-06-20T10:46:04Z",
+  "diagnostic_kind": "local_tws_api_socket",
+  "tws_process": {
+    "present": true,
+    "process_name": "tws",
+    "process_id": 31044,
+    "window_title_ref": "U3028269_account_window",
+    "responding": true
+  },
+  "ibapi_available": true,
+  "ibapi_runtime_ref": "output/runtime/python",
+  "host_ref": "localhost_tws_api",
+  "listener_port_refs": {
+    "tws_live_default": {
+      "listening": false,
+      "owning_process": null
+    },
+    "tws_paper_default": {
+      "listening": true,
+      "owning_process": 31044
+    },
+    "gateway_live_default": {
+      "listening": false,
+      "owning_process": null
+    },
+    "gateway_paper_default": {
+      "listening": false,
+      "owning_process": null
+    }
+  },
+  "connect_port_refs": {
+    "tws_live_default": {
+      "connectable": false
+    },
+    "tws_paper_default": {
+      "connectable": true
+    },
+    "gateway_live_default": {
+      "connectable": false
+    },
+    "gateway_paper_default": {
+      "connectable": false
+    }
+  },
+  "handshake_port_refs": {
+    "tws_live_default": {
+      "status": "connect_timeout",
+      "tcp_connected": false,
+      "bytes_received": 0,
+      "server_version": null,
+      "connect_time": null
+    },
+    "tws_paper_default": {
+      "status": "handshake_ok",
+      "tcp_connected": true,
+      "bytes_received": 39,
+      "server_version": 155,
+      "connect_time": "20260620 18:46:20 ������������"
+    },
+    "gateway_live_default": {
+      "status": "connect_timeout",
+      "tcp_connected": false,
+      "bytes_received": 0,
+      "server_version": null,
+      "connect_time": null
+    },
+    "gateway_paper_default": {
+      "status": "connect_timeout",
+      "tcp_connected": false,
+      "bytes_received": 0,
+      "server_version": null,
+      "connect_time": null
+    }
+  },
+  "handshake_version_range": "v100..155",
+  "ready_for_tws_api_funds_positions_query": true,
+  "typed_blocker": null,
+  "boundaries": {
+    "raw_secret_values_recorded": false,
+    "raw_broker_endpoint_recorded": false,
+    "tws_api_account_query_sent": false,
+    "funds_positions_values_recorded": false,
+    "screenshot_used_for_funds_positions": false,
+    "order_action_sent": false
+  }
+}

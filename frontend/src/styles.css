@@ -60,10 +60,16 @@ select {
 }
 
 .primary-nav {
+  align-self: start;
   background: #172026;
   color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
   min-width: 0;
   padding: 18px 14px;
+  position: sticky;
+  top: 0;
 }
 
 .brand-lockup {
@@ -99,6 +105,35 @@ select {
 .nav-item.active,
 .nav-item:hover {
   background: #24414b;
+  color: #ffffff;
+}
+
+.external-console-rail {
+  border-top: 1px solid rgba(129, 230, 217, 0.42);
+  display: grid;
+  gap: 8px;
+  margin-top: 10px;
+  padding: 14px 0 0;
+}
+
+.external-console-rail > span {
+  color: #9bf2e1;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 0 10px;
+  text-transform: uppercase;
+}
+
+.external-console-link {
+  background: #0d625a;
+  border: 1px solid #63e6cf;
+  color: #e6fffb;
+  font-weight: 800;
+}
+
+.external-console-link:hover {
+  background: #168779;
+  border-color: #a7fff1;
   color: #ffffff;
 }
 
@@ -855,6 +890,24 @@ select {
   color: #5b6770;
 }
 
+.terminal-funds-panel {
+  margin-top: 12px;
+}
+
+.funds-rollup {
+  align-items: center;
+  border-top: 1px solid #edf1f4;
+  color: #42515c;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding-top: 10px;
+}
+
+.funds-rollup > span:first-child {
+  font-weight: 700;
+}
+
 .monitor-stream-grid {
   display: grid;
   gap: 12px;
@@ -925,11 +978,24 @@ select {
   }
 
   .primary-nav {
+    height: auto;
+    position: static;
+    gap: 10px;
     padding: 12px;
   }
 
   .primary-nav nav {
     grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .external-console-rail {
+    border-top: 0;
+    margin-top: 0;
+    padding: 0;
+  }
+
+  .external-console-rail > span {
+    display: none;
   }
 
   .brand-lockup {
@@ -983,6 +1049,10 @@ select {
   }
 
   .primary-nav nav {
+    grid-template-columns: 1fr;
+  }
+
+  .external-console-rail {
     grid-template-columns: 1fr;
   }
 

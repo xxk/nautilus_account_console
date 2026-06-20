@@ -1,0 +1,124 @@
+{
+  "schema": "account-console.ib-tws-api-query.v1",
+  "account_id": "acct.ib.live.u3028269",
+  "display_alias": "U3028269",
+  "query_kind": "positions",
+  "source_kind": "ib_tws_api",
+  "success": true,
+  "tws_api_login_confirmed": true,
+  "query_started_at": "2026-06-20T10:46:27Z",
+  "query_completed_at": "2026-06-20T10:46:28Z",
+  "raw_secret_values_recorded": false,
+  "raw_broker_endpoint_recorded": false,
+  "screenshot_used_for_values": false,
+  "order_action_sent": false,
+  "account_ref": "ib-account-ref://U3028269",
+  "positions": [
+    {
+      "instrument": "981",
+      "exchange": "SEHK",
+      "net_qty": 5000.0,
+      "avg_cost": 49.31699125,
+      "unrealized_pnl": null
+    },
+    {
+      "instrument": "MSFT",
+      "exchange": "NASDAQ",
+      "net_qty": 50.0,
+      "avg_cost": 393.27,
+      "unrealized_pnl": null
+    },
+    {
+      "instrument": "700",
+      "exchange": "SEHK",
+      "net_qty": 500.0,
+      "avg_cost": 427.1575,
+      "unrealized_pnl": null
+    },
+    {
+      "instrument": "NDAQ",
+      "exchange": "NASDAQ",
+      "net_qty": 10.0,
+      "avg_cost": 73.19,
+      "unrealized_pnl": null
+    },
+    {
+      "instrument": "ICE",
+      "exchange": "NYSE",
+      "net_qty": 180.0,
+      "avg_cost": 172.30666665,
+      "unrealized_pnl": null
+    },
+    {
+      "instrument": "SUNAC",
+      "exchange": "",
+      "net_qty": 174.951,
+      "avg_cost": 466.74061025,
+      "unrealized_pnl": null
+    },
+    {
+      "instrument": "2956.OLD",
+      "exchange": "VALUE",
+      "net_qty": 4000.0,
+      "avg_cost": 0.0217,
+      "unrealized_pnl": null
+    },
+    {
+      "instrument": "3690",
+      "exchange": "SEHK",
+      "net_qty": 500.0,
+      "avg_cost": 125.160625,
+      "unrealized_pnl": null
+    },
+    {
+      "instrument": "9988",
+      "exchange": "SEHK",
+      "net_qty": 2000.0,
+      "avg_cost": 124.4023734,
+      "unrealized_pnl": null
+    },
+    {
+      "instrument": "1069",
+      "exchange": "SEHK",
+      "net_qty": 2000.0,
+      "avg_cost": 0.1003874,
+      "unrealized_pnl": null
+    },
+    {
+      "instrument": "388",
+      "exchange": "SEHK",
+      "net_qty": 600.0,
+      "avg_cost": 252.44629815,
+      "unrealized_pnl": null
+    },
+    {
+      "instrument": "GOOG",
+      "exchange": "NASDAQ",
+      "net_qty": 10.0,
+      "avg_cost": 312.02,
+      "unrealized_pnl": null
+    },
+    {
+      "instrument": "XLP",
+      "exchange": "ARCA",
+      "net_qty": 100.0,
+      "avg_cost": 79.05,
+      "unrealized_pnl": null
+    },
+    {
+      "instrument": "853",
+      "exchange": "SEHK",
+      "net_qty": 15400.0,
+      "avg_cost": 9.2088844,
+      "unrealized_pnl": null
+    },
+    {
+      "instrument": "TLT",
+      "exchange": "NASDAQ",
+      "net_qty": 200.0,
+      "avg_cost": 89.497143,
+      "unrealized_pnl": null
+    }
+  ],
+  "query_checksum": "sha256:306e4a7940db01564af4b2d863ca1e10de1a3c5e363d2c42c424667dcc4d288f"
+}

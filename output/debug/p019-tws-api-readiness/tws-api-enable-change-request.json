@@ -1,0 +1,62 @@
+{
+  "schema": "account-console.p019-tws-api-enable-change-request.v1",
+  "proposal_id": "p019-broker-observation-session-foundation",
+  "account_id": "acct.ib.live.u3028269",
+  "display_alias": "U3028269",
+  "prepared_at": "2026-06-20T10:45:02Z",
+  "status": "already_ready_no_change_required",
+  "purpose": "enable_logged_in_tws_api_socket_for_readonly_funds_positions_collection",
+  "change_owner": "local_tws_operator",
+  "current_evidence_refs": {
+    "config_diagnostic": "output/debug/p019-tws-api-readiness/tws-api-config-diagnostic.json",
+    "reinstall_decision": "output/debug/p019-tws-api-readiness/tws-reinstall-decision.json"
+  },
+  "target_config_ref": "local-file-ref://C:/Jts/1045/gffiklmeamhoiehlgjoifpcbcjmdkpaijiiacdbc/tws.xml",
+  "current_settings": {
+    "socketClient": "false",
+    "allowOnlyLocalhost": "true",
+    "port": "7497",
+    "api_socket_enabled": false
+  },
+  "requested_settings": {
+    "socketClient": "false",
+    "allowOnlyLocalhost": "true",
+    "port": "7497"
+  },
+  "operator_steps": [
+    "No TWS API socket enable change is required for the current evidence.",
+    "Run the P019 real acceptance closeout runner to collect read-only funds and positions."
+  ],
+  "expected_effect": {
+    "latest_config_socket_client_false_cleared": true,
+    "known_api_port_listening": true,
+    "ready_for_tws_api_funds_positions_query": true,
+    "account_summary_positions_collection_allowed_after_readiness": true
+  },
+  "post_change_verification_commands": [
+    "python scripts/diagnose_p019_tws_api_config.py",
+    "python scripts/validate_p019_tws_api_config_diagnostic.py",
+    "python scripts/probe_p019_tws_api_readiness.py",
+    "python scripts/validate_p019_tws_api_readiness_probe.py",
+    "python scripts/run_p019_u3028269_real_acceptance_closeout.py --wait-timeout-seconds 120 --wait-interval-seconds 5",
+    "python scripts/validate_p019_u3028269_real_acceptance_closeout.py"
+  ],
+  "reinstall_decision": {
+    "current_decision": "do_not_reinstall_yet",
+    "reinstall_recommended": false,
+    "primary_next_action": "run_real_acceptance_closeout"
+  },
+  "approval_required_for_writes_outside_worktree": true,
+  "writes_outside_worktree_performed": false,
+  "boundaries": {
+    "raw_config_file_contents_recorded": false,
+    "raw_secret_values_recorded": false,
+    "raw_broker_endpoint_recorded": false,
+    "tws_config_modified_by_this_script": false,
+    "tws_reinstall_performed": false,
+    "tws_api_account_query_sent": false,
+    "funds_positions_values_recorded": false,
+    "screenshot_used_for_funds_positions": false,
+    "order_action_sent": false
+  }
+}

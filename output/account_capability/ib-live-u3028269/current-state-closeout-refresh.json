@@ -1,0 +1,158 @@
+{
+  "schema": "account-console.p019-u3028269-current-state-closeout-refresh.v1",
+  "proposal_id": "p019-broker-observation-session-foundation",
+  "account_id": "acct.ib.live.u3028269",
+  "display_alias": "U3028269",
+  "started_at": "2026-06-20T10:44:33Z",
+  "completed_at": "2026-06-20T10:45:44Z",
+  "status": "ready",
+  "blocker_id": null,
+  "real_acceptance_closeout_ref": "output/account_capability/ib-live-u3028269/real-acceptance-closeout.json",
+  "runtime_evidence_freshness_ref": "scripts/validate_p019_runtime_evidence_freshness.py",
+  "steps": [
+    {
+      "command": "python scripts/diagnose_p019_tws_api_socket.py",
+      "returncode": 0,
+      "ok": true,
+      "stdout_tail": [
+        "{\"status\": \"ready\", \"output\": \"D:\\\\Nautilus\\\\_worktrees\\\\r1-hb-contract\\\\nautilus_account_console\\\\output\\\\debug\\\\p019-tws-api-readiness\\\\tws-api-socket-diagnostic.json\"}"
+      ],
+      "stderr_tail": []
+    },
+    {
+      "command": "python scripts/validate_p019_tws_api_socket_diagnostic.py",
+      "returncode": 0,
+      "ok": true,
+      "stdout_tail": [
+        "P019_TWS_API_SOCKET_DIAGNOSTIC_OK: status=ready tws_process=present handshake_ok"
+      ],
+      "stderr_tail": []
+    },
+    {
+      "command": "python scripts/diagnose_p019_windows_firewall_tws_api.py",
+      "returncode": 0,
+      "ok": true,
+      "stdout_tail": [
+        "{\"status\": \"written\", \"primary_blocker\": \"unknown\", \"output\": \"D:\\\\Nautilus\\\\_worktrees\\\\r1-hb-contract\\\\nautilus_account_console\\\\output\\\\debug\\\\p019-tws-api-readiness\\\\windows-firewall-tws-api-diagnostic.json\"}"
+      ],
+      "stderr_tail": []
+    },
+    {
+      "command": "python scripts/validate_p019_windows_firewall_tws_api_diagnostic.py",
+      "returncode": 0,
+      "ok": true,
+      "stdout_tail": [
+        "P019_WINDOWS_FIREWALL_TWS_API_DIAGNOSTIC_OK: allow_rules=present block_rules=absent api_listener=True"
+      ],
+      "stderr_tail": []
+    },
+    {
+      "command": "python scripts/diagnose_p019_tws_api_config.py",
+      "returncode": 0,
+      "ok": true,
+      "stdout_tail": [
+        "{\"status\": \"ready\", \"primary_blocker\": null, \"output\": \"D:\\\\Nautilus\\\\_worktrees\\\\r1-hb-contract\\\\nautilus_account_console\\\\output\\\\debug\\\\p019-tws-api-readiness\\\\tws-api-config-diagnostic.json\"}"
+      ],
+      "stderr_tail": []
+    },
+    {
+      "command": "python scripts/validate_p019_tws_api_config_diagnostic.py",
+      "returncode": 0,
+      "ok": true,
+      "stdout_tail": [
+        "P019_TWS_API_CONFIG_DIAGNOSTIC_OK: status=ready latest_socket_client=false primary_blocker=none"
+      ],
+      "stderr_tail": []
+    },
+    {
+      "command": "python scripts/decide_p019_tws_reinstall_gate.py",
+      "returncode": 0,
+      "ok": true,
+      "stdout_tail": [
+        "{\"status\": \"do_not_reinstall_yet\", \"output\": \"D:\\\\Nautilus\\\\_worktrees\\\\r1-hb-contract\\\\nautilus_account_console\\\\output\\\\debug\\\\p019-tws-api-readiness\\\\tws-reinstall-decision.json\"}"
+      ],
+      "stderr_tail": []
+    },
+    {
+      "command": "python scripts/validate_p019_tws_reinstall_decision_gate.py",
+      "returncode": 0,
+      "ok": true,
+      "stdout_tail": [
+        "P019_TWS_REINSTALL_DECISION_GATE_OK: decision=do_not_reinstall_yet next=real_closeout"
+      ],
+      "stderr_tail": []
+    },
+    {
+      "command": "python scripts/prepare_p019_tws_api_enable_change_request.py",
+      "returncode": 0,
+      "ok": true,
+      "stdout_tail": [
+        "{\"status\": \"already_ready_no_change_required\", \"output\": \"D:\\\\Nautilus\\\\_worktrees\\\\r1-hb-contract\\\\nautilus_account_console\\\\output\\\\debug\\\\p019-tws-api-readiness\\\\tws-api-enable-change-request.json\"}"
+      ],
+      "stderr_tail": []
+    },
+    {
+      "command": "python scripts/validate_p019_tws_api_enable_change_request.py",
+      "returncode": 0,
+      "ok": true,
+      "stdout_tail": [
+        "P019_TWS_API_ENABLE_CHANGE_REQUEST_OK: status=already_ready target=socketClient_true"
+      ],
+      "stderr_tail": []
+    },
+    {
+      "command": "python scripts/run_p019_u3028269_real_acceptance_closeout.py --wait-timeout-seconds 1 --wait-interval-seconds 1",
+      "returncode": 0,
+      "ok": true,
+      "stdout_tail": [
+        "{\"status\": \"ready\", \"blocker_id\": null, \"summary\": \"D:\\\\Nautilus\\\\_worktrees\\\\r1-hb-contract\\\\nautilus_account_console\\\\output\\\\account_capability\\\\ib-live-u3028269\\\\real-acceptance-closeout.json\"}"
+      ],
+      "stderr_tail": []
+    },
+    {
+      "command": "python scripts/validate_p019_u3028269_real_acceptance_closeout.py",
+      "returncode": 0,
+      "ok": true,
+      "stdout_tail": [
+        "P019_U3028269_REAL_ACCEPTANCE_CLOSEOUT_OK: status=ready"
+      ],
+      "stderr_tail": []
+    },
+    {
+      "command": "python scripts/validate_p019_runtime_evidence_freshness.py",
+      "returncode": 0,
+      "ok": true,
+      "stdout_tail": [
+        "P019_RUNTIME_EVIDENCE_FRESHNESS_OK: status=ready evidence=fresh"
+      ],
+      "stderr_tail": []
+    },
+    {
+      "command": "python scripts/validate_p019_completion_audit.py",
+      "returncode": 0,
+      "ok": true,
+      "stdout_tail": [
+        "P019_COMPLETION_AUDIT_OK: overall=not_complete blockers=adr0005,real_parity"
+      ],
+      "stderr_tail": []
+    },
+    {
+      "command": "python scripts/validate_p019_broker_observation_foundation.py",
+      "returncode": 0,
+      "ok": true,
+      "stdout_tail": [
+        "P019_BROKER_OBSERVATION_FOUNDATION_OK: status=proposed pre_acceptance=partial blockers=typed"
+      ],
+      "stderr_tail": []
+    }
+  ],
+  "boundaries": {
+    "writes_outside_worktree": false,
+    "raw_secret_values_recorded": false,
+    "raw_broker_endpoint_recorded": false,
+    "raw_config_file_contents_recorded": false,
+    "tws_reinstall_performed": false,
+    "screenshot_used_for_funds_positions": false,
+    "order_action_sent": false
+  }
+}

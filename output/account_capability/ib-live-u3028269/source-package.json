@@ -1,0 +1,191 @@
+{
+  "schema_version": "account_source_artifact.v1",
+  "artifact_id": "source.ib.live.u3028269.20260620104628",
+  "account_id": "acct.ib.live.u3028269",
+  "display_alias": "U3028269",
+  "source_owner": "account-console-broker-observation-session",
+  "source_kind": "ib_tws_observation",
+  "source_mode": "live_observation",
+  "account_domain": "live",
+  "observation_mode": "snapshot",
+  "event_stream": "not_implemented",
+  "trading_day": "2026-06-20",
+  "query_window_id": "ib-u3028269.20260620104628",
+  "query_started_at": "2026-06-20T10:46:28Z",
+  "query_completed_at": "2026-06-20T10:46:28Z",
+  "observed_at": "2026-06-20T10:46:28Z",
+  "source_ref": "output/account_capability/ib-live-u3028269/source-package.json",
+  "source_checksum": "sha256:a51cee3f4e3ab8eec1fd2b0508fd3b31052c0419a8e358c87dca65be75be6d58",
+  "source_inputs": {
+    "readiness_probe": "output/debug/p019-tws-api-readiness/tws-api-readiness-probe.json",
+    "account_summary_query": "output/account_capability/ib-live-u3028269/tws-api/account_summary.json",
+    "positions_query": "output/account_capability/ib-live-u3028269/tws-api/positions.json"
+  },
+  "balances": [
+    {
+      "currency": "USD",
+      "equity": 178744.95,
+      "available_cash": 73196.81,
+      "margin_used": 67394.39,
+      "unrealized_pnl": 0.0
+    }
+  ],
+  "positions": [
+    {
+      "instrument": "981",
+      "exchange": "SEHK",
+      "direction": "long",
+      "net_qty": 5000.0,
+      "available_qty": 5000.0,
+      "avg_price": 49.31699125,
+      "unrealized_pnl": null
+    },
+    {
+      "instrument": "MSFT",
+      "exchange": "NASDAQ",
+      "direction": "long",
+      "net_qty": 50.0,
+      "available_qty": 50.0,
+      "avg_price": 393.27,
+      "unrealized_pnl": null
+    },
+    {
+      "instrument": "700",
+      "exchange": "SEHK",
+      "direction": "long",
+      "net_qty": 500.0,
+      "available_qty": 500.0,
+      "avg_price": 427.1575,
+      "unrealized_pnl": null
+    },
+    {
+      "instrument": "NDAQ",
+      "exchange": "NASDAQ",
+      "direction": "long",
+      "net_qty": 10.0,
+      "available_qty": 10.0,
+      "avg_price": 73.19,
+      "unrealized_pnl": null
+    },
+    {
+      "instrument": "ICE",
+      "exchange": "NYSE",
+      "direction": "long",
+      "net_qty": 180.0,
+      "available_qty": 180.0,
+      "avg_price": 172.30666665,
+      "unrealized_pnl": null
+    },
+    {
+      "instrument": "SUNAC",
+      "exchange": "",
+      "direction": "long",
+      "net_qty": 174.951,
+      "available_qty": 174.951,
+      "avg_price": 466.74061025,
+      "unrealized_pnl": null
+    },
+    {
+      "instrument": "2956.OLD",
+      "exchange": "VALUE",
+      "direction": "long",
+      "net_qty": 4000.0,
+      "available_qty": 4000.0,
+      "avg_price": 0.0217,
+      "unrealized_pnl": null
+    },
+    {
+      "instrument": "3690",
+      "exchange": "SEHK",
+      "direction": "long",
+      "net_qty": 500.0,
+      "available_qty": 500.0,
+      "avg_price": 125.160625,
+      "unrealized_pnl": null
+    },
+    {
+      "instrument": "9988",
+      "exchange": "SEHK",
+      "direction": "long",
+      "net_qty": 2000.0,
+      "available_qty": 2000.0,
+      "avg_price": 124.4023734,
+      "unrealized_pnl": null
+    },
+    {
+      "instrument": "1069",
+      "exchange": "SEHK",
+      "direction": "long",
+      "net_qty": 2000.0,
+      "available_qty": 2000.0,
+      "avg_price": 0.1003874,
+      "unrealized_pnl": null
+    },
+    {
+      "instrument": "388",
+      "exchange": "SEHK",
+      "direction": "long",
+      "net_qty": 600.0,
+      "available_qty": 600.0,
+      "avg_price": 252.44629815,
+      "unrealized_pnl": null
+    },
+    {
+      "instrument": "GOOG",
+      "exchange": "NASDAQ",
+      "direction": "long",
+      "net_qty": 10.0,
+      "available_qty": 10.0,
+      "avg_price": 312.02,
+      "unrealized_pnl": null
+    },
+    {
+      "instrument": "XLP",
+      "exchange": "ARCA",
+      "direction": "long",
+      "net_qty": 100.0,
+      "available_qty": 100.0,
+      "avg_price": 79.05,
+      "unrealized_pnl": null
+    },
+    {
+      "instrument": "853",
+      "exchange": "SEHK",
+      "direction": "long",
+      "net_qty": 15400.0,
+      "available_qty": 15400.0,
+      "avg_price": 9.2088844,
+      "unrealized_pnl": null
+    },
+    {
+      "instrument": "TLT",
+      "exchange": "NASDAQ",
+      "direction": "long",
+      "net_qty": 200.0,
+      "available_qty": 200.0,
+      "avg_price": 89.497143,
+      "unrealized_pnl": null
+    }
+  ],
+  "orders": [],
+  "fills": [],
+  "source_health": {
+    "state": "ready",
+    "lag_ms": 0,
+    "observation_mode": "snapshot",
+    "event_stream": "not_implemented",
+    "readiness_probe_ref": "output/debug/p019-tws-api-readiness/tws-api-readiness-probe.json",
+    "account_summary_query_ref": "output/account_capability/ib-live-u3028269/tws-api/account_summary.json",
+    "positions_query_ref": "output/account_capability/ib-live-u3028269/tws-api/positions.json",
+    "raw_secret_values_recorded": false,
+    "screenshot_used_for_values": false,
+    "api_transport": "ib_tws_api"
+  },
+  "blockers": [],
+  "boundaries": {
+    "raw_secret_values_recorded": false,
+    "screenshot_used_for_funds_positions": false,
+    "tws_api_account_query_required": true,
+    "order_action_sent": false
+  }
+}

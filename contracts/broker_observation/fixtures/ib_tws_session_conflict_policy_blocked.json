@@ -1,0 +1,73 @@
+{
+  "schema_version": "broker_observation_session_conflict_policy.v1",
+  "policy_id": "broker-observation-conflict.ib-tws.u3028269.adr0005-preacceptance",
+  "account_id": "acct.ib.live.u3028269",
+  "source_kind": "ib_tws_observation",
+  "session_owner": "account-console-broker-observation-session",
+  "raw_secret_values_recorded": false,
+  "fail_closed": true,
+  "conflict_keys": [
+    "broker_username_ref",
+    "host_port_ref",
+    "client_id_ref",
+    "session_owner",
+    "nautilus_trading_session_ref",
+    "broker_connection_slot_ref"
+  ],
+  "unknown_owner_policy": "blocked",
+  "direct_session_allowed": false,
+  "evaluations": [
+    {
+      "case_id": "unknown_owner",
+      "input_refs": [
+        "owner-config-ref://ib-tws/u3028269/read-only-observation",
+        "owner-session-ref://ib-tws/u3028269/unknown-owner"
+      ],
+      "decision": "blocked",
+      "blocker_id": "session_owner_unknown",
+      "session_allowed": false,
+      "reason": "Owner identity for the broker connection slot is unknown.",
+      "next_action": "Resolve broker/runtime session owner before opening any Account Console observation session."
+    },
+    {
+      "case_id": "same_client_id_conflict",
+      "input_refs": [
+        "owner-config-ref://ib-tws/u3028269/read-only-observation",
+        "owner-session-ref://ib-tws/u3028269/client-id-conflict"
+      ],
+      "decision": "blocked",
+      "blocker_id": "broker_client_id_conflict",
+      "session_allowed": false,
+      "reason": "Configured broker client id slot is already owned by another runtime.",
+      "next_action": "Allocate an owner-approved read-only observation client id ref or stay blocked."
+    },
+    {
+      "case_id": "active_nautilus_trading_session",
+      "input_refs": [
+        "owner-config-ref://ib-tws/u3028269/read-only-observation",
+        "owner-session-ref://nautilus/ib-tws/u3028269/active-trading-session"
+      ],
+      "decision": "blocked",
+      "blocker_id": "nautilus_trading_session_active",
+      "session_allowed": false,
+      "reason": "A Nautilus trading session is active for the same broker/account owner lane.",
+      "next_action": "Do not attach Account Console observation until the runtime owner publishes an approved non-conflicting observation slot."
+    },
+    {
+      "case_id": "broker_connection_slot_conflict",
+      "input_refs": [
+        "owner-config-ref://ib-tws/u3028269/read-only-observation",
+        "owner-session-ref://ib-tws/u3028269/connection-slot-conflict"
+      ],
+      "decision": "blocked",
+      "blocker_id": "broker_connection_slot_conflict",
+      "session_allowed": false,
+      "reason": "Broker connection slot conflicts with an existing owner session.",
+      "next_action": "Use owner-approved conflict-free refs before direct observation can be considered."
+    }
+  ],
+  "command": {
+    "enabled": false,
+    "allowed_actions": []
+  }
+}

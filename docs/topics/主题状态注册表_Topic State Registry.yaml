@@ -1,5 +1,5 @@
 schema_version: 1
-last_updated: '2026-06-15'
+last_updated: '2026-06-20'
 source_pattern: D:\Nautilus\DSLresearch\docs\topics\主题状态注册表_Topic State Registry.yaml
 status: thin_local_kernel
 topics:
@@ -17,3 +17,9 @@ topics:
     - T001-GATE-SOURCE-PROVENANCE
     - T001-GATE-CAPABILITY-REGISTRY
     - T001-GATE-READBACK-RECONCILIATION
+  ib-tws:
+    canonical_status: active
+    execution_order: 3
+    path: docs/topics/ib-tws/README.md
+    knowledge_cards:
+    - docs/topics/ib-tws/u3028269-tws-login-and-api-knowledge.md

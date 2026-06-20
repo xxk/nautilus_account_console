@@ -15,6 +15,7 @@ def test_mirror_accounts_api_lists_bridged_accounts() -> None:
         "acct.ctp.paper.19053",
         "acct.ctp.live.025292",
         "simulated-001",
+        "acct.ib.live.u3028269",
     }
     assert all(row["route_id"] and row["evidence_partition"] for row in payload["accounts"])
 
@@ -50,6 +51,43 @@ def test_mirror_api_shows_unbridged_live_025292_as_blocked_projection() -> None:
     assert payload["source_ref"].endswith("output/account_capability/ctp-live-025292/source-package.json")
     assert payload["route_context"]["route_id"] == "route.ctp.live.025292.account-readonly"
     assert payload["route_context"]["account_truth"] == "blocked_until_pinned_source_package"
+    assert payload["boundaries"]["order_action"] is False
+
+
+def test_mirror_api_shows_ib_tws_u3028269_as_read_only_projection() -> None:
+    client = TestClient(app)
+    response = client.get("/api/mirror/accounts/acct.ib.live.u3028269")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["account_id"] == "acct.ib.live.u3028269"
+    assert payload["display_alias"] == "U3028269"
+    assert payload["source_kind"] == "ib_tws_observation"
+    assert payload["capabilities"]["command"] == {"enabled": False, "mode": "disabled"}
+    assert payload["capabilities"]["observation"]["mirror_state"] in {"blocked", "ready"}
+    assert payload["source_ref"].endswith("output/account_capability/ib-live-u3028269/source-package.json")
+    assert payload["source_health"]["api_transport"] == "ib_tws_api"
+    assert payload["source_health"]["screenshot_used_for_values"] is False
+    assert payload["source_health"]["raw_secret_values_recorded"] is False
+    assert payload["route_context"]["route_id"] == "route.ib.live.u3028269.account-readonly"
+    if payload["capabilities"]["observation"]["mirror_state"] == "ready":
+        assert payload["source_health"]["state"] == "ready"
+        assert payload["source_health"].get("blocker_id") is None
+        assert payload["route_context"]["account_truth"] == "ib_tws_api_source_package"
+        assert payload["blockers"] == []
+        assert payload["positions"]
+        assert payload["balances"]
+    else:
+        assert payload["source_health"]["blocker_id"] == "tws_api_readiness_missing"
+        assert payload["blockers"][0]["type"] == "source_unavailable"
+        assert payload["blockers"][0]["blocker_id"] == "tws_api_readiness_missing"
+        assert payload["route_context"]["account_truth"] == "blocked_until_tws_api_source_package"
+        assert payload["positions"] == []
+        assert payload["balances"] == []
+    assert payload["orders"] == []
+    assert payload["fills"] == []
+    assert payload["boundaries"]["read_only_projection"] is True
+    assert payload["boundaries"]["broker_truth"] is False
     assert payload["boundaries"]["order_action"] is False
 
 

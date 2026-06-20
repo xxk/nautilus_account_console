@@ -1,0 +1,33 @@
+{
+  "schema_version": "broker_observation_profile.v1",
+  "account_id": "acct.ib.live.u3028269",
+  "display_alias": "U3028269",
+  "source_kind": "ib_tws_observation",
+  "broker": "ib_tws",
+  "mode": "read_only_observation",
+  "adr_gate": {
+    "adr_id": "ADR-0005",
+    "decision_status": "proposed",
+    "direct_session_allowed": false,
+    "blocker_id": "adr0005_not_accepted"
+  },
+  "session_owner": "account-console-broker-observation-session",
+  "config_ref": "owner-config-ref://ib-tws/u3028269/read-only-observation",
+  "secret_ref": "owner-secret-ref://ib-tws/u3028269/read-only-observation",
+  "raw_secret_values_recorded": false,
+  "command": {
+    "enabled": false,
+    "allowed_actions": []
+  },
+  "conflict_policy": {
+    "fail_closed": true,
+    "conflict_keys": [
+      "broker_username_ref",
+      "host_port_ref",
+      "client_id_ref",
+      "nautilus_trading_session_ref"
+    ],
+    "unknown_owner_policy": "blocked"
+  },
+  "projection_boundary": "account_mirror"
+}

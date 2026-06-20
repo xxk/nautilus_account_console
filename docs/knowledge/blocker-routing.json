@@ -1,0 +1,70 @@
+{
+  "version": 1,
+  "scope": "project-local",
+  "extends": "D:/Nautilus/global_docs/knowledge-common/router-base.json",
+  "rules": [
+    {
+      "id": "account-console-readiness-wording",
+      "family": "readiness-wording",
+      "when": ["paper ready", "live ready", "can trade", "admitted"],
+      "read": [
+        "docs/knowledge/ui-projection-boundary.md",
+        "docs/knowledge/bug-ledger/KB-BUG-0001__readiness-claim-leaked-into-readonly-console.md"
+      ],
+      "shared_patterns": [],
+      "must_not": [
+        "claim readiness from UI",
+        "write admission, capital, broker or trading truth"
+      ],
+      "owner_boundary": "account-console-read-only-projection",
+      "gate": "python scripts/check_knowledge_docs.py --root ."
+    },
+    {
+      "id": "account-console-raw-report-truth",
+      "family": "raw-report-truth",
+      "when": ["raw callback", "raw report", "broker payload", "screenshot truth"],
+      "read": [
+        "docs/knowledge/account-console-read-model-boundary.md",
+        "docs/knowledge/bug-ledger/KB-BUG-0002__raw-report-treated-as-account-truth.md"
+      ],
+      "shared_patterns": [],
+      "must_not": [
+        "parse raw payload as account truth",
+        "use screenshots as formal account or order truth"
+      ],
+      "owner_boundary": "account-console-read-model-projection",
+      "gate": "python scripts/check_knowledge_docs.py --root ."
+    },
+    {
+      "id": "account-console-secret-runtime-material",
+      "family": "secret-runtime-material",
+      "when": ["password", "auth code", "front", "api key", "raw config"],
+      "read": [
+        "docs/knowledge/runtime-secret-boundary.md"
+      ],
+      "shared_patterns": [],
+      "must_not": [
+        "copy raw secrets into docs, evidence or chat",
+        "record raw endpoint or raw config bodies"
+      ],
+      "owner_boundary": "owner-repo-secret-ref-only",
+      "gate": "python scripts/check_knowledge_docs.py --root ."
+    },
+    {
+      "id": "account-console-owner-boundary-confusion",
+      "family": "owner-boundary-confusion",
+      "when": ["command", "broker session", "mirror", "runtime owner"],
+      "read": [
+        "docs/knowledge/owner-boundaries.md",
+        "docs/knowledge/project-playbook.md"
+      ],
+      "shared_patterns": [],
+      "must_not": [
+        "create a second runtime",
+        "infer command authority from observation"
+      ],
+      "owner_boundary": "account-console-observation-only",
+      "gate": "python scripts/check_knowledge_docs.py --root ."
+    }
+  ]
+}

@@ -1,0 +1,91 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nautilus.local/contracts/broker_observation/report_mapping_matrix.schema.json",
+  "title": "Broker Observation Report Mapping Matrix",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "matrix_id",
+    "account_id",
+    "source_kind",
+    "raw_secret_values_recorded",
+    "command",
+    "mappings",
+    "raw_payload_policy"
+  ],
+  "properties": {
+    "schema_version": { "type": "string", "const": "broker_observation_report_mapping_matrix.v1" },
+    "matrix_id": { "type": "string" },
+    "account_id": { "type": "string", "pattern": "^acct\\.[a-z0-9_.-]+$" },
+    "source_kind": { "type": "string" },
+    "raw_secret_values_recorded": { "type": "boolean", "const": false },
+    "command": {
+      "type": "object",
+      "required": ["enabled", "allowed_actions"],
+      "properties": {
+        "enabled": { "type": "boolean", "const": false },
+        "allowed_actions": { "type": "array", "maxItems": 0 }
+      },
+      "additionalProperties": false
+    },
+    "mappings": {
+      "type": "array",
+      "minItems": 2,
+      "items": {
+        "type": "object",
+        "required": [
+          "callback_kind",
+          "target_report_type",
+          "required_target_fields",
+          "field_map",
+          "provenance_fields",
+          "raw_payload_is_canonical"
+        ],
+        "properties": {
+          "callback_kind": { "type": "string" },
+          "target_report_type": { "type": "string", "enum": ["OrderStatusReport", "FillReport"] },
+          "required_target_fields": {
+            "type": "array",
+            "items": { "type": "string" },
+            "minItems": 1,
+            "uniqueItems": true
+          },
+          "field_map": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["target_field", "source_field_ref", "semantics"],
+              "properties": {
+                "target_field": { "type": "string" },
+                "source_field_ref": { "type": "string" },
+                "semantics": { "type": "string" }
+              },
+              "additionalProperties": false
+            },
+            "minItems": 1
+          },
+          "provenance_fields": {
+            "type": "array",
+            "items": { "type": "string" },
+            "minItems": 3,
+            "uniqueItems": true
+          },
+          "raw_payload_is_canonical": { "type": "boolean", "const": false }
+        },
+        "additionalProperties": false
+      }
+    },
+    "raw_payload_policy": {
+      "type": "object",
+      "required": ["payload_ref_required", "payload_checksum_required", "excerpt_must_be_redacted", "browser_may_parse_raw_payload"],
+      "properties": {
+        "payload_ref_required": { "type": "boolean", "const": true },
+        "payload_checksum_required": { "type": "boolean", "const": true },
+        "excerpt_must_be_redacted": { "type": "boolean", "const": true },
+        "browser_may_parse_raw_payload": { "type": "boolean", "const": false }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

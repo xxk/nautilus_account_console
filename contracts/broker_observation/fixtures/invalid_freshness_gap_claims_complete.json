@@ -1,0 +1,40 @@
+{
+  "schema_version": "broker_observation_freshness_sequence_checkpoint.v1",
+  "checkpoint_id": "broker-observation-freshness.invalid.gap-complete",
+  "account_id": "acct.ib.live.u3028269",
+  "source_kind": "ib_tws_observation",
+  "observation_mode": "replay",
+  "raw_secret_values_recorded": false,
+  "command": {
+    "enabled": false,
+    "allowed_actions": []
+  },
+  "cursor": {
+    "source_cursor_ref": "observation-cursor-ref://ib-tws/u3028269/reports/source/000002",
+    "durable_cursor_ref": "store-cursor-ref://broker-observation/u3028269/reports/durable/000002",
+    "last_observed_sequence": 2,
+    "last_persisted_sequence": 2,
+    "next_expected_sequence": 3,
+    "continuity": "gap"
+  },
+  "freshness": {
+    "observed_at": "2026-06-20T02:00:01.100Z",
+    "received_at": "2026-06-20T02:00:01.130Z",
+    "persisted_at": "2026-06-20T02:00:01.180Z",
+    "max_observation_lag_ms": 30,
+    "max_persist_lag_ms": 80,
+    "freshness_state": "fresh"
+  },
+  "sequence_window": {
+    "first_sequence": 1,
+    "last_sequence": 2,
+    "record_count": 2,
+    "gap_count": 1
+  },
+  "claim_guard": {
+    "may_claim_realtime": false,
+    "may_claim_complete_history": true,
+    "may_claim_trading_readiness": false,
+    "blockers": []
+  }
+}

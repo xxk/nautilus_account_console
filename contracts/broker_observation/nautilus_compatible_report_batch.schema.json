@@ -1,0 +1,89 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nautilus.local/contracts/broker_observation/nautilus_compatible_report_batch.schema.json",
+  "title": "Nautilus Compatible Broker Observation Report Batch",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "account_id",
+    "source_kind",
+    "reports",
+    "raw_secret_values_recorded",
+    "command"
+  ],
+  "properties": {
+    "schema_version": { "type": "string", "const": "broker_observation_report_batch.v1" },
+    "account_id": { "type": "string", "pattern": "^acct\\.[a-z0-9_.-]+$" },
+    "source_kind": { "type": "string" },
+    "reports": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "report_id",
+          "nautilus_report_type",
+          "account_id",
+          "instrument_id",
+          "client_order_id",
+          "venue_order_id",
+          "event_timestamp",
+          "observed_timestamp",
+          "received_timestamp",
+          "sequence",
+          "source_ref",
+          "source_checksum",
+          "raw_payload_provenance"
+        ],
+        "properties": {
+          "report_id": { "type": "string" },
+          "nautilus_report_type": { "type": "string", "enum": ["OrderStatusReport", "FillReport"] },
+          "account_id": { "type": "string" },
+          "instrument_id": { "type": "string" },
+          "client_order_id": { "type": "string" },
+          "venue_order_id": { "type": "string" },
+          "side": { "type": "string" },
+          "order_type": { "type": "string" },
+          "time_in_force": { "type": "string" },
+          "order_status": { "type": "string" },
+          "quantity": { "type": "number" },
+          "filled_quantity": { "type": "number" },
+          "remaining_quantity": { "type": "number" },
+          "price": { "type": ["number", "null"] },
+          "avg_price": { "type": ["number", "null"] },
+          "trade_id": { "type": ["string", "null"] },
+          "last_px": { "type": ["number", "null"] },
+          "last_qty": { "type": ["number", "null"] },
+          "commission": { "type": ["number", "null"] },
+          "event_timestamp": { "type": "string" },
+          "observed_timestamp": { "type": "string" },
+          "received_timestamp": { "type": "string" },
+          "sequence": { "type": "integer", "minimum": 0 },
+          "source_ref": { "type": "string" },
+          "source_checksum": { "type": "string" },
+          "raw_payload_provenance": {
+            "type": "object",
+            "required": ["payload_ref", "payload_checksum", "excerpt_redacted"],
+            "properties": {
+              "payload_ref": { "type": "string" },
+              "payload_checksum": { "type": "string" },
+              "excerpt_redacted": { "type": "boolean", "const": true }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "raw_secret_values_recorded": { "type": "boolean", "const": false },
+    "command": {
+      "type": "object",
+      "required": ["enabled", "allowed_actions"],
+      "properties": {
+        "enabled": { "type": "boolean", "const": false },
+        "allowed_actions": { "type": "array", "maxItems": 0 }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

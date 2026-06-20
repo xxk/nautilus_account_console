@@ -1,6 +1,6 @@
 # Topics / 长期专题
 
-- Updated: 2026-06-15
+- Updated: 2026-06-20
 - Project: `nautilus_account_console`
 - State registry: [主题状态注册表_Topic State Registry.yaml](%E4%B8%BB%E9%A2%98%E7%8A%B6%E6%80%81%E6%B3%A8%E5%86%8C%E8%A1%A8_Topic%20State%20Registry.yaml)
 - Source pattern: `D:\Nautilus\DSLresearch\docs\topics`
@@ -11,6 +11,7 @@
 | --- | --- | --- |
 | [Contract-first UI slice development](./contract-first-ui-slice-development.md) | active | Long-term implementation method, roadmap and acceptance guardrails for AI-assisted UI slice delivery. |
 | [T001 Account Mirror observation plane](./T001-account-mirror-observation-plane.md) | active | Landing roadmap and Gates for the Account Capability Fabric observation capability, backed by read-only Account Mirror projections. |
+| [IB TWS](./ib-tws/README.md) | active | Non-secret IB TWS operational knowledge for Account Console observation work, including U3028269 login/API enablement and safe closeout backfill rules. |
 
 ## Usage Rules
 

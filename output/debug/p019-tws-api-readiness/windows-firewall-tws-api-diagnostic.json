@@ -1,0 +1,287 @@
+{
+  "schema": "account-console.p019-windows-firewall-tws-api-diagnostic.v1",
+  "proposal_id": "p019-broker-observation-session-foundation",
+  "account_id": "acct.ib.live.u3028269",
+  "display_alias": "U3028269",
+  "observed_at": "2026-06-20T10:46:21Z",
+  "diagnostic_kind": "windows_firewall_tws_api",
+  "tws_process": {
+    "present": true,
+    "window_title_ref": "U3028269_account_window",
+    "responding": true
+  },
+  "firewall_profiles": [
+    {
+      "Name": "Domain",
+      "Enabled": 0,
+      "DefaultInboundAction": 0,
+      "DefaultOutboundAction": 0
+    },
+    {
+      "Name": "Private",
+      "Enabled": 1,
+      "DefaultInboundAction": 4,
+      "DefaultOutboundAction": 2
+    },
+    {
+      "Name": "Public",
+      "Enabled": 1,
+      "DefaultInboundAction": 4,
+      "DefaultOutboundAction": 2
+    }
+  ],
+  "matching_allow_rules": [
+    {
+      "DisplayName": "Distributed Transaction Coordinator (TCP-Out)",
+      "Enabled": "False",
+      "Direction": "Outbound",
+      "Action": "Allow",
+      "Profile": "Private, Public",
+      "Program": null,
+      "Protocol": "TCP",
+      "LocalPort": "Any",
+      "RemoteAddress": "LocalSubnet",
+      "LocalAddress": "Any"
+    },
+    {
+      "DisplayName": "Distributed Transaction Coordinator (TCP-Out)",
+      "Enabled": "False",
+      "Direction": "Outbound",
+      "Action": "Allow",
+      "Profile": "Domain",
+      "Program": null,
+      "Protocol": "TCP",
+      "LocalPort": "Any",
+      "RemoteAddress": "Any",
+      "LocalAddress": "Any"
+    },
+    {
+      "DisplayName": "VisualSVN Distributed File System Service (RPC)",
+      "Enabled": "False",
+      "Direction": "Inbound",
+      "Action": "Allow",
+      "Profile": "Private, Public",
+      "Program": null,
+      "Protocol": "TCP",
+      "LocalPort": "Any",
+      "RemoteAddress": "LocalSubnet",
+      "LocalAddress": "Any"
+    },
+    {
+      "DisplayName": "VisualSVN Distributed File System Service (RPC)",
+      "Enabled": "False",
+      "Direction": "Inbound",
+      "Action": "Allow",
+      "Profile": "Domain",
+      "Program": null,
+      "Protocol": "TCP",
+      "LocalPort": "Any",
+      "RemoteAddress": "Any",
+      "LocalAddress": "Any"
+    },
+    {
+      "DisplayName": "Allow TWS Live API 10.168.80.56 7496",
+      "Enabled": "True",
+      "Direction": "Inbound",
+      "Action": "Allow",
+      "Profile": "Any",
+      "Program": null,
+      "Protocol": "TCP",
+      "LocalPort": "7496",
+      "RemoteAddress": "Any",
+      "LocalAddress": "10.168.80.56"
+    },
+    {
+      "DisplayName": "3proxy HTTP 3129 Interactive",
+      "Enabled": "True",
+      "Direction": "Inbound",
+      "Action": "Allow",
+      "Profile": "Any",
+      "Program": null,
+      "Protocol": "TCP",
+      "LocalPort": "3129",
+      "RemoteAddress": "Any",
+      "LocalAddress": "10.168.80.56"
+    },
+    {
+      "DisplayName": "Java(TM) Platform SE binary",
+      "Enabled": "True",
+      "Direction": "Inbound",
+      "Action": "Allow",
+      "Profile": "Private",
+      "Program": null,
+      "Protocol": "TCP",
+      "LocalPort": "Any",
+      "RemoteAddress": "Any",
+      "LocalAddress": "Any"
+    },
+    {
+      "DisplayName": "Java(TM) Platform SE binary",
+      "Enabled": "True",
+      "Direction": "Inbound",
+      "Action": "Allow",
+      "Profile": "Private",
+      "Program": null,
+      "Protocol": "UDP",
+      "LocalPort": "Any",
+      "RemoteAddress": "Any",
+      "LocalAddress": "Any"
+    },
+    {
+      "DisplayName": "Allow TWS Live API 10.168.80.56 7497",
+      "Enabled": "True",
+      "Direction": "Inbound",
+      "Action": "Allow",
+      "Profile": "Any",
+      "Program": null,
+      "Protocol": "TCP",
+      "LocalPort": "7497",
+      "RemoteAddress": "Any",
+      "LocalAddress": "10.168.80.56"
+    },
+    {
+      "DisplayName": "Allow TWS Live API 10.168.80.56 7497",
+      "Enabled": "True",
+      "Direction": "Inbound",
+      "Action": "Allow",
+      "Profile": "Any",
+      "Program": null,
+      "Protocol": "TCP",
+      "LocalPort": "7497",
+      "RemoteAddress": "Any",
+      "LocalAddress": "10.168.80.56"
+    },
+    {
+      "DisplayName": "Allow IB Gateway Paper API 4002",
+      "Enabled": "True",
+      "Direction": "Inbound",
+      "Action": "Allow",
+      "Profile": "Any",
+      "Program": null,
+      "Protocol": "TCP",
+      "LocalPort": "4002",
+      "RemoteAddress": "Any",
+      "LocalAddress": "Any"
+    },
+    {
+      "DisplayName": "Trader Workstation",
+      "Enabled": "True",
+      "Direction": "Inbound",
+      "Action": "Allow",
+      "Profile": "Private",
+      "Program": null,
+      "Protocol": "TCP",
+      "LocalPort": "Any",
+      "RemoteAddress": "Any",
+      "LocalAddress": "Any"
+    },
+    {
+      "DisplayName": "Trader Workstation",
+      "Enabled": "True",
+      "Direction": "Inbound",
+      "Action": "Allow",
+      "Profile": "Private",
+      "Program": null,
+      "Protocol": "UDP",
+      "LocalPort": "Any",
+      "RemoteAddress": "Any",
+      "LocalAddress": "Any"
+    },
+    {
+      "DisplayName": "Node.js JavaScript Runtime",
+      "Enabled": "True",
+      "Direction": "Inbound",
+      "Action": "Allow",
+      "Profile": "Private",
+      "Program": null,
+      "Protocol": "TCP",
+      "LocalPort": "Any",
+      "RemoteAddress": "Any",
+      "LocalAddress": "Any"
+    },
+    {
+      "DisplayName": "Node.js JavaScript Runtime",
+      "Enabled": "True",
+      "Direction": "Inbound",
+      "Action": "Allow",
+      "Profile": "Private",
+      "Program": null,
+      "Protocol": "UDP",
+      "LocalPort": "Any",
+      "RemoteAddress": "Any",
+      "LocalAddress": "Any"
+    },
+    {
+      "DisplayName": "Node.js JavaScript Runtime",
+      "Enabled": "True",
+      "Direction": "Inbound",
+      "Action": "Allow",
+      "Profile": "Private",
+      "Program": null,
+      "Protocol": "TCP",
+      "LocalPort": "Any",
+      "RemoteAddress": "Any",
+      "LocalAddress": "Any"
+    },
+    {
+      "DisplayName": "Node.js JavaScript Runtime",
+      "Enabled": "True",
+      "Direction": "Inbound",
+      "Action": "Allow",
+      "Profile": "Private",
+      "Program": null,
+      "Protocol": "UDP",
+      "LocalPort": "Any",
+      "RemoteAddress": "Any",
+      "LocalAddress": "Any"
+    },
+    {
+      "DisplayName": "Node.js JavaScript Runtime",
+      "Enabled": "True",
+      "Direction": "Inbound",
+      "Action": "Allow",
+      "Profile": "Private",
+      "Program": null,
+      "Protocol": "TCP",
+      "LocalPort": "Any",
+      "RemoteAddress": "Any",
+      "LocalAddress": "Any"
+    },
+    {
+      "DisplayName": "Node.js JavaScript Runtime",
+      "Enabled": "True",
+      "Direction": "Inbound",
+      "Action": "Allow",
+      "Profile": "Private",
+      "Program": null,
+      "Protocol": "UDP",
+      "LocalPort": "Any",
+      "RemoteAddress": "Any",
+      "LocalAddress": "Any"
+    }
+  ],
+  "matching_block_rules": [],
+  "known_api_listeners": [
+    {
+      "LocalAddress": "::",
+      "LocalPort": 7497,
+      "State": 2,
+      "OwningProcess": 31044
+    }
+  ],
+  "diagnosis": {
+    "matching_allow_rules_present": true,
+    "matching_block_rules_present": false,
+    "known_tws_api_ports_listening": true,
+    "firewall_is_primary_blocker": null,
+    "primary_blocker": "unknown"
+  },
+  "boundaries": {
+    "raw_secret_values_recorded": false,
+    "raw_broker_endpoint_recorded": false,
+    "tws_api_account_query_sent": false,
+    "funds_positions_values_recorded": false,
+    "screenshot_used_for_funds_positions": false,
+    "order_action_sent": false
+  }
+}

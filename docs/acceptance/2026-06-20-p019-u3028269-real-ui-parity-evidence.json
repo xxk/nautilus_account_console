@@ -1,0 +1,40 @@
+{
+  "schema": "account-console.p019-u3028269-real-ui-parity-evidence.v1",
+  "proposal_id": "p019-broker-observation-session-foundation",
+  "account_id": "acct.ib.live.u3028269",
+  "display_alias": "U3028269",
+  "route": "/accounts/acct.ib.live.u3028269",
+  "source_kind": "ib_tws_observation",
+  "source_ref": "output/account_capability/ib-live-u3028269/source-package.json",
+  "source_checksum": "sha256:a51cee3f4e3ab8eec1fd2b0508fd3b31052c0419a8e358c87dca65be75be6d58",
+  "projection_checkpoint_id": "sha256:e34355e2ac8b7283b98fb73371f293bd304b308caeb8c321b20c8e8ff314098c",
+  "projection_checksum": "sha256:93dbdad955909329c2e3b9e1dbec2ed472f98264e16a9772b28bbbaa7be5d907",
+  "browser_evidence": [
+    {
+      "project": "desktop",
+      "screenshot": "docs/acceptance/browser-evidence/p019-u3028269-real-ui-parity/desktop-acct-ib-live-u3028269-real-ui-parity.png"
+    }
+  ],
+  "boundaries": {
+    "raw_secret_values_recorded": false,
+    "screenshot_used_for_funds_positions": false,
+    "broker_truth": false,
+    "order_action": false
+  },
+  "status": "ready_real_tws_api_source_package_ui_parity_checked",
+  "verdict": "pass",
+  "parity": {
+    "funds_parity": "pass",
+    "positions_parity": "pass",
+    "orders_fills_parity": "blocked",
+    "execution_reports_table_parity": "blocked",
+    "execution_reports_persistence_parity": "blocked"
+  },
+  "compared_against": {
+    "api_route": "/api/mirror/accounts/acct.ib.live.u3028269",
+    "balance_count": 1,
+    "position_count": 15,
+    "order_count": 0,
+    "fill_count": 0
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "schema_version": "p019.tws_local_window_confirmation.v1",
+  "status": "process_and_window_title_confirmed_screenshot_blocked_minimized",
+  "observed_at": "2026-06-20T06:56:45Z",
+  "process": {
+    "process_id": 31044,
+    "process_name": "tws",
+    "window_title": "U3028269 账户"
+  },
+  "screenshot_attempts": [
+    {
+      "path": "output/debug/p019-tws-local-window-confirmation/tws-window-titlebar-redacted.png",
+      "result": "captured_black_minimized_window",
+      "usable_as_visual_evidence": false,
+      "captured_region": "titlebar_top_140px_only"
+    },
+    {
+      "path": "output/debug/p019-tws-local-window-confirmation/tws-window-header-redacted-restore.png",
+      "result": "copy_from_screen_failed_invalid_handle",
+      "usable_as_visual_evidence": false,
+      "captured_region": "restored_window_top_220px_only"
+    },
+    {
+      "path": "output/debug/p019-tws-local-window-confirmation/tws-window-printwindow-header-redacted.png",
+      "result": "printwindow_failed",
+      "usable_as_visual_evidence": false,
+      "captured_region": "printwindow_top_220px_only"
+    }
+  ],
+  "typed_blocker": {
+    "blocker_id": "tws_window_minimized_screenshot_unavailable",
+    "blocker_kind": "local_visual_evidence_blocker",
+    "reason": "TWS process and main window title are visible to Windows, but the window remains minimized at offscreen coordinates and cannot be restored by non-interactive capture APIs.",
+    "retry_condition": "Operator brings TWS window to foreground/unminimized on the active desktop, then rerun header-only screenshot capture."
+  },
+  "boundaries": {
+    "raw_secret_values_recorded": false,
+    "broker_api_called": false,
+    "tws_command_sent": false,
+    "account_rows_captured": false,
+    "funds_positions_orders_captured": false,
+    "visual_evidence_accepted": false
+  }
+}

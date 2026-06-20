@@ -1,0 +1,154 @@
+{
+  "schema": "account-console.p019-u3028269-real-acceptance-closeout.v1",
+  "proposal_id": "p019-broker-observation-session-foundation",
+  "account_id": "acct.ib.live.u3028269",
+  "display_alias": "U3028269",
+  "started_at": "2026-06-20T10:45:54Z",
+  "completed_at": "2026-06-20T10:46:34Z",
+  "status": "ready",
+  "blocker_id": null,
+  "pipeline_summary_ref": "output/account_capability/ib-live-u3028269/pipeline-summary.json",
+  "real_ui_parity_ref": "docs/acceptance/2026-06-20-p019-u3028269-real-ui-parity-evidence.json",
+  "pipeline_status": "ready",
+  "real_ui_parity_verdict": "pass",
+  "account_summary_success": true,
+  "positions_success": true,
+  "source_package_state": "ready",
+  "required_ready_chain": [
+    "ready_for_tws_api_funds_positions_query=true",
+    "account_summary_success=true",
+    "positions_success=true",
+    "source_package_state=ready",
+    "query_source_parity=pass",
+    "real_ui_parity_verdict=pass",
+    "command_enabled=false",
+    "order_action=false"
+  ],
+  "steps": [
+    {
+      "command": "C:\\Users\\Administrator\\anaconda3\\python.exe scripts/wait_p019_tws_api_ready_and_collect.py --timeout-seconds 30 --interval-seconds 5",
+      "cwd": ".",
+      "returncode": 0,
+      "ok": true,
+      "stdout_tail": [
+        "{\"status\": \"ready\", \"blocker_id\": null, \"summary\": \"D:\\\\Nautilus\\\\_worktrees\\\\r1-hb-contract\\\\nautilus_account_console\\\\output\\\\account_capability\\\\ib-live-u3028269\\\\wait-collect-summary.json\"}"
+      ],
+      "stderr_tail": []
+    },
+    {
+      "command": "C:\\Users\\Administrator\\anaconda3\\python.exe scripts/validate_p019_tws_api_wait_collect.py",
+      "cwd": ".",
+      "returncode": 0,
+      "ok": true,
+      "stdout_tail": [
+        "P019_TWS_API_WAIT_COLLECT_OK: status=ready attempts=1 pipeline_ran=true"
+      ],
+      "stderr_tail": []
+    },
+    {
+      "command": "C:\\Users\\Administrator\\anaconda3\\python.exe scripts/validate_p019_ib_u3028269_tws_api_pipeline.py",
+      "cwd": ".",
+      "returncode": 0,
+      "ok": true,
+      "stdout_tail": [
+        "P019_IB_U3028269_TWS_API_PIPELINE_OK: status=ready blocker_id=none steps=13"
+      ],
+      "stderr_tail": []
+    },
+    {
+      "command": "C:\\Users\\Administrator\\anaconda3\\python.exe scripts/validate_p019_ib_u3028269_tws_api_queries.py",
+      "cwd": ".",
+      "returncode": 0,
+      "ok": true,
+      "stdout_tail": [
+        "P019_IB_U3028269_TWS_API_QUERIES_OK: status=ready order_action_sent=false screenshot_values=false"
+      ],
+      "stderr_tail": []
+    },
+    {
+      "command": "C:\\Users\\Administrator\\anaconda3\\python.exe scripts/validate_p019_ib_u3028269_source_package.py",
+      "cwd": ".",
+      "returncode": 0,
+      "ok": true,
+      "stdout_tail": [
+        "P019_IB_U3028269_SOURCE_PACKAGE_OK: status=ready api_transport=ib_tws_api screenshot_values=false"
+      ],
+      "stderr_tail": []
+    },
+    {
+      "command": "C:\\Users\\Administrator\\anaconda3\\python.exe scripts/validate_p019_ib_u3028269_query_source_parity.py",
+      "cwd": ".",
+      "returncode": 0,
+      "ok": true,
+      "stdout_tail": [
+        "P019_IB_U3028269_QUERY_SOURCE_PARITY_OK: current=ready synthetic_ready=pass"
+      ],
+      "stderr_tail": []
+    },
+    {
+      "command": "C:\\Users\\Administrator\\anaconda3\\python.exe scripts/validate_account_mirror_api.py",
+      "cwd": ".",
+      "returncode": 0,
+      "ok": true,
+      "stdout_tail": [
+        "ACCOUNT_MIRROR_API_OK: accounts=5 ib_tws_u3028269=ready"
+      ],
+      "stderr_tail": []
+    },
+    {
+      "command": "cmd /c npx playwright test tests/e2e/p019-ib-tws-real-ui-parity.spec.ts --project=desktop",
+      "cwd": "frontend",
+      "returncode": 0,
+      "ok": true,
+      "stdout_tail": [
+        "",
+        "  ok 1 [desktop] › tests\\e2e\\p019-ib-tws-real-ui-parity.spec.ts:29:1 › P019 U3028269 real UI parity is blocked until same-slice TWS API source package is ready (992ms)",
+        "",
+        "  1 passed (3.2s)"
+      ],
+      "stderr_tail": [
+        "\u001b[2m[WebServer] \u001b[22mINFO:     Started server process [38684]",
+        "\u001b[2m[WebServer] \u001b[22mINFO:     Waiting for application startup.",
+        "\u001b[2m[WebServer] \u001b[22mINFO:     Application startup complete.",
+        "\u001b[2m[WebServer] \u001b[22mINFO:     Uvicorn running on http://127.0.0.1:8775 (Press CTRL+C to quit)"
+      ]
+    },
+    {
+      "command": "C:\\Users\\Administrator\\anaconda3\\python.exe scripts/validate_p019_u3028269_real_ui_parity.py",
+      "cwd": ".",
+      "returncode": 0,
+      "ok": true,
+      "stdout_tail": [
+        "P019_U3028269_REAL_UI_PARITY_OK: verdict=pass"
+      ],
+      "stderr_tail": []
+    },
+    {
+      "command": "C:\\Users\\Administrator\\anaconda3\\python.exe scripts/validate_p019_broker_observation_foundation.py",
+      "cwd": ".",
+      "returncode": 0,
+      "ok": true,
+      "stdout_tail": [
+        "P019_BROKER_OBSERVATION_FOUNDATION_OK: status=proposed pre_acceptance=partial blockers=typed"
+      ],
+      "stderr_tail": []
+    },
+    {
+      "command": "C:\\Users\\Administrator\\anaconda3\\python.exe scripts/validate_p019_completion_audit.py",
+      "cwd": ".",
+      "returncode": 0,
+      "ok": true,
+      "stdout_tail": [
+        "P019_COMPLETION_AUDIT_OK: overall=not_complete blockers=adr0005,real_parity"
+      ],
+      "stderr_tail": []
+    }
+  ],
+  "boundaries": {
+    "raw_secret_values_recorded": false,
+    "raw_broker_endpoint_recorded": false,
+    "screenshot_used_for_funds_positions": false,
+    "order_action_sent": false,
+    "synthetic_evidence_used_for_real_closeout": false
+  }
+}

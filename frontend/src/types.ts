@@ -463,6 +463,25 @@ export interface AccountOrderRow {
   checksum: string;
 }
 
+export interface AccountExecutionReportRow {
+  account_id: string;
+  report_id: string;
+  report_type: "OrderStatusReport" | "FillReport";
+  client_order_id: string;
+  venue_order_id: string | null;
+  instrument: string;
+  side: "BUY" | "SELL";
+  status_or_trade: string;
+  quantity: number | null;
+  filled_quantity: number | null;
+  remaining_quantity: number | null;
+  limit_or_last_price: number | null;
+  sequence: number | null;
+  source_ref: string;
+  checksum: string;
+  reload_checkpoint_id: string | null;
+}
+
 export interface AccountOrdersBlocker {
   blocker_id: string;
   severity: AccountHealthSeverity;

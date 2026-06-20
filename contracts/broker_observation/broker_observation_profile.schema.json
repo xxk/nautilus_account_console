@@ -1,0 +1,81 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nautilus.local/contracts/broker_observation/broker_observation_profile.schema.json",
+  "title": "Broker Observation Profile",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "account_id",
+    "source_kind",
+    "broker",
+    "mode",
+    "adr_gate",
+    "session_owner",
+    "config_ref",
+    "secret_ref",
+    "raw_secret_values_recorded",
+    "command",
+    "conflict_policy",
+    "projection_boundary"
+  ],
+  "properties": {
+    "schema_version": { "type": "string", "const": "broker_observation_profile.v1" },
+    "account_id": { "type": "string", "pattern": "^acct\\.[a-z0-9_.-]+$" },
+    "display_alias": { "type": "string" },
+    "source_kind": {
+      "type": "string",
+      "enum": [
+        "ib_tws_observation",
+        "ctp_observation",
+        "stock_broker_observation",
+        "cqg_observation",
+        "tt_observation"
+      ]
+    },
+    "broker": { "type": "string" },
+    "mode": { "type": "string", "const": "read_only_observation" },
+    "adr_gate": {
+      "type": "object",
+      "required": ["adr_id", "decision_status", "direct_session_allowed"],
+      "properties": {
+        "adr_id": { "type": "string", "const": "ADR-0005" },
+        "decision_status": { "type": "string", "enum": ["proposed", "accepted"] },
+        "direct_session_allowed": { "type": "boolean" },
+        "blocker_id": { "type": ["string", "null"] }
+      },
+      "additionalProperties": false
+    },
+    "session_owner": { "type": "string" },
+    "config_ref": { "type": "string" },
+    "secret_ref": { "type": "string" },
+    "raw_secret_values_recorded": { "type": "boolean", "const": false },
+    "command": {
+      "type": "object",
+      "required": ["enabled", "allowed_actions"],
+      "properties": {
+        "enabled": { "type": "boolean", "const": false },
+        "allowed_actions": {
+          "type": "array",
+          "maxItems": 0
+        }
+      },
+      "additionalProperties": false
+    },
+    "conflict_policy": {
+      "type": "object",
+      "required": ["fail_closed", "conflict_keys", "unknown_owner_policy"],
+      "properties": {
+        "fail_closed": { "type": "boolean", "const": true },
+        "conflict_keys": {
+          "type": "array",
+          "items": { "type": "string" },
+          "minItems": 1
+        },
+        "unknown_owner_policy": { "type": "string", "const": "blocked" }
+      },
+      "additionalProperties": false
+    },
+    "projection_boundary": { "type": "string", "const": "account_mirror" }
+  },
+  "additionalProperties": false
+}

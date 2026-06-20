@@ -1,0 +1,33 @@
+{
+  "schema": "account-console.ib-tws-api-query.v1",
+  "account_id": "acct.ib.live.u3028269",
+  "display_alias": "U3028269",
+  "query_kind": "account_summary",
+  "source_kind": "ib_tws_api",
+  "success": true,
+  "tws_api_login_confirmed": true,
+  "query_started_at": "2026-06-20T00:00:00Z",
+  "query_completed_at": "2026-06-20T00:00:01Z",
+  "raw_secret_values_recorded": false,
+  "raw_broker_endpoint_recorded": false,
+  "screenshot_used_for_values": false,
+  "order_action_sent": false,
+  "account_ref": "ib-account-ref://U3028269",
+  "balances": [
+    {
+      "currency": "BASE",
+      "net_liquidation": 100000.0,
+      "available_funds": 75000.0,
+      "margin_used": 25000.0,
+      "unrealized_pnl": 123.45
+    },
+    {
+      "currency": "USD",
+      "net_liquidation": 50000.0,
+      "available_funds": 40000.0,
+      "margin_used": 10000.0,
+      "unrealized_pnl": -12.5
+    }
+  ],
+  "query_checksum": "sha256:synthetic-ready-account-summary"
+}

@@ -1,0 +1,45 @@
+{
+  "schema": "account-console.p019-tws-api-readiness-probe.v1",
+  "proposal_id": "p019-broker-observation-session-foundation",
+  "account_id": "acct.ib.live.u3028269",
+  "display_alias": "U3028269",
+  "observed_at": "2026-06-20T00:00:00Z",
+  "probe_kind": "local_tws_api_readiness",
+  "evidence_kind": "api_readiness_probe",
+  "ibapi_available": true,
+  "ibapi_runtime_ref": "output/runtime/python",
+  "host_ref": "localhost_tws_api",
+  "candidate_port_refs": {
+    "tws_live_default": {
+      "checked": true,
+      "open": true
+    },
+    "tws_paper_default": {
+      "checked": true,
+      "open": false
+    },
+    "gateway_live_default": {
+      "checked": true,
+      "open": false
+    },
+    "gateway_paper_default": {
+      "checked": true,
+      "open": false
+    }
+  },
+  "ready_for_tws_api_funds_positions_query": true,
+  "typed_blocker": null,
+  "boundaries": {
+    "raw_secret_values_recorded": false,
+    "raw_broker_endpoint_recorded": false,
+    "tws_api_account_query_sent": false,
+    "funds_positions_values_recorded": false,
+    "screenshot_used_for_funds_positions": false,
+    "order_action_sent": false
+  },
+  "explicit_non_claims": [
+    "synthetic_contract_fixture_not_real_account_truth",
+    "does_not_accept_adr0005",
+    "does_not_authorize_order_action"
+  ]
+}

@@ -87,6 +87,7 @@ import type {
   AccountKind,
   AccountOrderDetailFixtureState,
   AccountOrderDetailPanelReadModel,
+  AccountExecutionReportRow,
   AccountOrdersFixtureState,
   AccountOrdersPanelReadModel,
   AccountOrderRow,
@@ -320,18 +321,12 @@ const intradayMonitorFixtureLabels: Record<IntradayMonitorFixtureState, string> 
 };
 
 const portfolioOwnerConsoleUrl =
-  "http://127.0.0.1:4185/console/portfolios/CTA-CORE-001?view=portfolio-owner&origin=account-console";
+  "http://127.0.0.1:4185/console/portfolios/CTA-CORE-001?view=portfolio-owner&origin=account-console&portfolio_uid=CTA-CORE-001";
 
 const workbenches = [
   { label: "Daily Closeout", path: "/closeout", icon: Gauge },
   { label: "Intraday Monitor", path: "/monitor", icon: Radio },
   { label: "Account Workbench", path: "/accounts/acct.demo-19053", icon: Database },
-  {
-    label: "Portfolio Owner",
-    path: portfolioOwnerConsoleUrl,
-    icon: Landmark,
-    testId: "portfolio-owner-console-nav-link"
-  },
   { label: "Allocation Admin", path: "/management/accounts", icon: Layers },
   { label: "Risk And Reconcile", path: "/risk-reconcile", icon: ShieldAlert },
   { label: "Evidence Explorer", path: "/evidence", icon: FileSearch },
@@ -380,7 +375,7 @@ function sideLabel(value: unknown): AccountOrderRow["side"] {
 
 function orderStatusLabel(value: unknown): AccountOrderRow["status"] {
   const normalized = asText(value).toLowerCase();
-  if (normalized === "submitted" || normalized === "working") {
+  if (normalized === "submitted" || normalized === "working" || normalized === "accepted") {
     return "working";
   }
   if (normalized === "filled") {
@@ -399,6 +394,27 @@ function orderStatusLabel(value: unknown): AccountOrderRow["status"] {
     return normalized;
   }
   return "unknown";
+}
+
+function reportStatusLabel(value: unknown): string {
+  const label = asText(value);
+  const normalized = label.toLowerCase();
+  if (
+    [
+      "accepted",
+      "submitted",
+      "working",
+      "partial",
+      "filled",
+      "alltraded",
+      "cancelled",
+      "canceled",
+      "rejected"
+    ].includes(normalized)
+  ) {
+    return label.toUpperCase();
+  }
+  return label;
 }
 
 function accountKindFromDomain(domain: string): AccountKind {
@@ -528,7 +544,7 @@ function mirrorSummaryReadModel(readback: MirrorWorkbenchReadback): AccountSumma
     },
     pnl: {
       realized: null,
-      unrealized: asNumber(balance.position_profit),
+      unrealized: asNumber(balance.unrealized_pnl ?? balance.position_profit),
       fees: null,
       taxes: null
     },
@@ -636,6 +652,57 @@ function mirrorOrdersReadModel(readback: MirrorWorkbenchReadback): AccountOrders
     boundaries: mirrorBoundaries(readback),
     rejection_rules: ["Do not treat gateway acknowledgements as final account state without mirror readback."]
   };
+}
+
+function mirrorExecutionReportRows(readback: MirrorWorkbenchReadback): AccountExecutionReportRow[] {
+  const storeReload = readback.selected.source_health.store_reload as Record<string, unknown> | undefined;
+  const reloadCheckpointId = storeReload
+    ? asText(storeReload.reload_checkpoint_id, "unknown")
+    : null;
+  const orderRows = readback.selected.orders.map((order) => ({
+    account_id: readback.selected.account_id,
+    report_id: asText(order.report_id, asText(order.client_order_id)),
+    report_type: "OrderStatusReport" as const,
+    client_order_id: asText(order.client_order_id),
+    venue_order_id: asText(order.venue_order_id, asText(order.lifecycle_ref, "missing")),
+    instrument: asText(order.instrument_id, asText(order.instrument)),
+    side: sideLabel(order.side),
+    status_or_trade: reportStatusLabel(order.order_status ?? order.status),
+    quantity: asNumber(order.quantity),
+    filled_quantity: asNumber(order.filled_quantity),
+    remaining_quantity: asNumber(order.remaining_quantity),
+    limit_or_last_price: asNumber(order.price ?? order.limit_price),
+    sequence: asNumber(order.sequence),
+    source_ref: asText(order.source_ref ?? order.report_provenance_ref, readback.selected.source_ref),
+    checksum: asText(order.source_checksum ?? order.checksum, readback.selected.source_checksum),
+    reload_checkpoint_id: reloadCheckpointId
+  }));
+  const fillRows = readback.selected.fills.map((fill) => ({
+    account_id: readback.selected.account_id,
+    report_id: asText(fill.report_id, asText(fill.trade_id)),
+    report_type: "FillReport" as const,
+    client_order_id: asText(fill.client_order_id),
+    venue_order_id: asText(fill.venue_order_id, "missing"),
+    instrument: asText(fill.instrument_id, asText(fill.instrument)),
+    side: sideLabel(fill.side),
+    status_or_trade: asText(fill.trade_id, asText(fill.order_status, "unknown")),
+    quantity: asNumber(fill.quantity),
+    filled_quantity: asNumber(fill.filled_quantity),
+    remaining_quantity: asNumber(fill.remaining_quantity),
+    limit_or_last_price: asNumber(fill.last_px ?? fill.price),
+    sequence: asNumber(fill.sequence),
+    source_ref: asText(fill.source_ref, readback.selected.source_ref),
+    checksum: asText(fill.source_checksum ?? fill.checksum, readback.selected.source_checksum),
+    reload_checkpoint_id: reloadCheckpointId
+  }));
+  return [...orderRows, ...fillRows].sort((left, right) => {
+    const leftSeq = left.sequence ?? Number.MAX_SAFE_INTEGER;
+    const rightSeq = right.sequence ?? Number.MAX_SAFE_INTEGER;
+    if (leftSeq !== rightSeq) {
+      return leftSeq - rightSeq;
+    }
+    return left.report_id.localeCompare(right.report_id);
+  });
 }
 
 export function App() {
@@ -784,7 +851,6 @@ export function App() {
               <a
                 aria-current={active ? "page" : undefined}
                 className={active ? "nav-item active" : "nav-item"}
-                data-testid={item.testId}
                 href={item.path}
                 key={item.path}
               >
@@ -794,6 +860,17 @@ export function App() {
             );
           })}
         </nav>
+        <div className="external-console-rail" aria-label="External console handoff">
+          <span>外仓连接</span>
+          <a
+            className="nav-item external-console-link"
+            data-testid="portfolio-owner-console-nav-link"
+            href={portfolioOwnerConsoleUrl}
+          >
+            <Landmark size={16} />
+            <span>Portfolio Owner Console</span>
+          </a>
+        </div>
       </aside>
 
       <section className="workspace">
@@ -911,6 +988,7 @@ export function App() {
             ) : (
               <AccountWorkbenchTerminalPanel
                 mirrorAccounts={mirrorReadback?.accounts ?? null}
+                mirrorReadback={mirrorReadback}
                 mirrorReadbackError={mirrorReadbackError}
                 sourceHealthDetails={mirrorReadback?.selected.source_health ?? null}
                 summary={terminalSummary}
@@ -1201,6 +1279,7 @@ function numberTone(value: number | null): string {
 
 function AccountWorkbenchTerminalPanel({
   mirrorAccounts,
+  mirrorReadback,
   mirrorReadbackError,
   sourceHealthDetails,
   summary,
@@ -1210,6 +1289,7 @@ function AccountWorkbenchTerminalPanel({
   onFixtureState
 }: {
   mirrorAccounts: MirrorAccountSummary[] | null;
+  mirrorReadback: MirrorWorkbenchReadback | null;
   mirrorReadbackError: string | null;
   sourceHealthDetails: Record<string, unknown> | null;
   summary: AccountSummaryPanelReadModel;
@@ -1240,6 +1320,28 @@ function AccountWorkbenchTerminalPanel({
     (position) => position.account_id === summary.account.account_id
   );
   const visibleOrders = orders.orders.filter((order) => order.account_id === summary.account.account_id);
+  const executionReportRows = mirrorReadback
+    ? mirrorExecutionReportRows(mirrorReadback).filter((report) => report.account_id === summary.account.account_id)
+    : visibleOrders
+        .filter((order) => order.report_provenance_ref)
+        .map((order, index) => ({
+          account_id: order.account_id,
+          report_id: `${order.client_order_id}-${order.report_provenance_ref}`,
+          report_type: "OrderStatusReport" as const,
+          client_order_id: order.client_order_id,
+          venue_order_id: order.lifecycle_ref,
+          instrument: order.instrument,
+          side: order.side,
+          status_or_trade: order.status,
+          quantity: order.quantity,
+          filled_quantity: order.filled_quantity,
+          remaining_quantity: order.remaining_quantity,
+          limit_or_last_price: order.limit_price,
+          sequence: index + 1,
+          source_ref: order.report_provenance_ref ?? order.source_ref,
+          checksum: order.checksum,
+          reload_checkpoint_id: null
+        }));
   const allBlockers: AccountSummaryBlocker[] = Array.from(
     new Map(
       [
@@ -1487,6 +1589,90 @@ function AccountWorkbenchTerminalPanel({
               />
               <Metric label="Positions" testId="account-summary-position-count" value={String(visiblePositions.length)} />
             </div>
+            <div className="terminal-panel terminal-table-panel terminal-funds-panel">
+              <div className="terminal-panel-header">
+                <h3>Funds</h3>
+                <span>{summary.context.reducer_checkpoint_id}</span>
+              </div>
+              <div className="terminal-data-table-wrap">
+                <table className="terminal-data-table compact" data-testid="tws-multi-currency-funds-table">
+                  <thead>
+                    <tr>
+                      <th>Currency</th>
+                      <th>Cash</th>
+                      <th>Available</th>
+                      <th>Buying power</th>
+                      <th>Margin</th>
+                      <th>Equity/net liq</th>
+                      <th>Unrealized PnL</th>
+                      <th>FX/provenance</th>
+                      <th>Source</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {summary.fixture_state === "blocked" && allBlockers.length > 0 ? (
+                      allBlockers.map((blocker) => (
+                        <tr data-testid="tws-funds-blocker" key={`funds-${blocker.blocker_id}`}>
+                          <td data-label="Currency">blocked</td>
+                          <td className="numeric-cell" data-label="Cash">missing</td>
+                          <td className="numeric-cell" data-label="Available">missing</td>
+                          <td className="numeric-cell" data-label="Buying power">missing</td>
+                          <td className="numeric-cell" data-label="Margin">missing</td>
+                          <td className="numeric-cell" data-label="Equity/net liq">missing</td>
+                          <td className="numeric-cell" data-label="Unrealized PnL">missing</td>
+                          <td data-label="FX/provenance" data-testid="tws-fx-provenance">
+                            {formatLabel(blocker.kind)}
+                          </td>
+                          <td data-label="Source">
+                            <CopyableCode label="funds blocker source ref" value={blocker.source_ref} />
+                          </td>
+                        </tr>
+                      ))
+                    ) : summary.balances.cash !== null ||
+                      summary.balances.available_cash !== null ||
+                      summary.margin.initial_margin !== null ||
+                      summary.pnl.unrealized !== null ? (
+                      <tr data-testid="tws-currency-balance-row">
+                        <td data-label="Currency">{baseCurrency}</td>
+                        <td className="numeric-cell" data-label="Cash">
+                          {formatMoney(summary.balances.cash, baseCurrency)}
+                        </td>
+                        <td className="numeric-cell" data-label="Available">
+                          {formatMoney(summary.balances.available_cash, baseCurrency)}
+                        </td>
+                        <td className="numeric-cell" data-label="Buying power">
+                          {formatMoney(summary.balances.buying_power, baseCurrency)}
+                        </td>
+                        <td className="numeric-cell" data-label="Margin">
+                          {formatMoney(summary.margin.initial_margin, baseCurrency)}
+                        </td>
+                        <td className="numeric-cell" data-label="Equity/net liq">
+                          {formatMoney(summary.balances.cash, baseCurrency)}
+                        </td>
+                        <td className={`numeric-cell ${numberTone(summary.pnl.unrealized)}`} data-label="Unrealized PnL">
+                          {formatMoney(summary.pnl.unrealized, baseCurrency)}
+                        </td>
+                        <td data-label="FX/provenance" data-testid="tws-fx-provenance">
+                          source currency
+                        </td>
+                        <td data-label="Source">
+                          <CopyableCode label="funds source ref" value={summary.source_refs[0]?.source_ref ?? summary.context.run_id} />
+                        </td>
+                      </tr>
+                    ) : (
+                      <tr data-testid="tws-funds-empty-state">
+                        <td colSpan={9}>No funds rows in this fixture projection.</td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+              <div className="funds-rollup" data-testid="tws-base-currency-rollup">
+                <span>Base currency rollup</span>
+                <StateBadge value={summary.fixture_state === "blocked" ? "blocked" : "healthy"} />
+                <span>{summary.fixture_state === "blocked" ? "blocked until source package" : baseCurrency}</span>
+              </div>
+            </div>
           </section>
 
           <section className="terminal-panel terminal-table-panel">
@@ -1511,9 +1697,9 @@ function AccountWorkbenchTerminalPanel({
                   </tr>
                 </thead>
                 <tbody>
-                  {visiblePositions.length > 0 ? (
-                    visiblePositions.map((position) => (
-                      <tr data-testid="account-position-projection-row" key={position.checksum}>
+                    {visiblePositions.length > 0 ? (
+                    visiblePositions.map((position, index) => (
+                      <tr data-testid="account-position-projection-row" key={`${position.checksum}-${index}`}>
                         <td data-label="Instrument">{position.instrument}</td>
                         <td data-label="Direction">
                           <StateBadge value={position.direction} />
@@ -1616,55 +1802,112 @@ function AccountWorkbenchTerminalPanel({
           <section className="terminal-panel" data-testid="account-order-execution-report">
             <div className="terminal-panel-header">
               <h3>Execution Reports</h3>
-              <span>{visibleOrders.filter((order) => order.report_provenance_ref).length}</span>
+              <span>{executionReportRows.length}</span>
             </div>
-            {visibleOrders.some((order) => order.report_provenance_ref) ? (
-              <div className="order-list">
-                {visibleOrders
-                  .filter((order) => order.report_provenance_ref)
-                  .map((order) => (
-                    <article
-                      className="order-card"
-                      data-testid="account-order-execution-report-row"
-                      key={`${order.client_order_id}-${order.report_provenance_ref}`}
-                    >
-                      <div className="order-card-head">
-                        <div>
-                          <strong>{order.client_order_id}</strong>
-                          <span>{order.status}</span>
-                        </div>
-                        <StateBadge value="read-only" />
-                      </div>
-                      <dl className="detail-list two-column">
-                        <div>
-                          <dt>Instrument</dt>
-                          <dd>{order.instrument}</dd>
-                        </div>
-                        <div>
-                          <dt>Side</dt>
-                          <dd>{order.side}</dd>
-                        </div>
-                        <div>
-                          <dt>Report status</dt>
-                          <dd>{order.status}</dd>
-                        </div>
-                        <div>
-                          <dt>Authority</dt>
-                          <dd>execution report provenance only</dd>
-                        </div>
-                      </dl>
-                      <CopyableCode
-                        label="report provenance ref"
-                        value={order.report_provenance_ref ?? "missing"}
-                      />
-                      <CopyableCode label="order source ref" value={order.source_ref} />
-                      <CopyableCode label="order checksum" value={order.checksum} />
-                    </article>
-                  ))}
-              </div>
-            ) : (
-              <p className="muted">No execution report provenance rows in this projection.</p>
-            )}
+            <div className="terminal-data-table-wrap">
+              <table className="terminal-data-table compact" data-testid="tws-execution-reports-table">
+                <thead>
+                  <tr>
+                    <th>Report type</th>
+                    <th>Client order</th>
+                    <th>Venue order</th>
+                    <th>Instrument</th>
+                    <th>Side</th>
+                    <th>Status/trade</th>
+                    <th>Quantity</th>
+                    <th>Filled</th>
+                    <th>Remaining</th>
+                    <th>Limit/last</th>
+                    <th>Sequence</th>
+                    <th>Source</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {executionReportRows.length > 0 ? (
+                    executionReportRows
+                      .map((report) => (
+                        <tr
+                          data-testid="tws-execution-report-row"
+                          key={`${report.report_id}-${report.source_ref}`}
+                        >
+                          <td data-label="Report type" data-testid="tws-execution-report-type">
+                            {report.report_type}
+                          </td>
+                          <td data-label="Client order" data-testid="tws-execution-report-client-order-id">
+                            {report.client_order_id}
+                          </td>
+                          <td data-label="Venue order" data-testid="tws-execution-report-venue-order-id">
+                            {report.venue_order_id ?? "missing"}
+                          </td>
+                          <td data-label="Instrument">{report.instrument}</td>
+                          <td data-label="Side">
+                            <StateBadge value={report.side} />
+                          </td>
+                          <td data-label="Status/trade">{report.status_or_trade}</td>
+                          <td className="numeric-cell" data-label="Quantity">
+                            {report.quantity ?? "missing"}
+                          </td>
+                          <td className="numeric-cell" data-label="Filled">
+                            {report.filled_quantity ?? "missing"}
+                          </td>
+                          <td className="numeric-cell" data-label="Remaining">
+                            {report.remaining_quantity ?? "missing"}
+                          </td>
+                          <td className="numeric-cell" data-label="Limit/last">
+                            {report.limit_or_last_price ?? "missing"}
+                          </td>
+                          <td data-label="Sequence" data-testid="tws-execution-report-sequence">
+                            {report.sequence ?? "missing"}
+                          </td>
+                          <td data-label="Source" data-testid="tws-execution-report-source-ref">
+                            <CopyableCode
+                              label="report provenance ref"
+                              value={report.source_ref}
+                            />
+                            {report.reload_checkpoint_id ? (
+                              <small data-testid="tws-execution-report-reload-ref">
+                                {report.reload_checkpoint_id}
+                              </small>
+                            ) : null}
+                          </td>
+                        </tr>
+                      ))
+                  ) : allBlockers.length > 0 ? (
+                    allBlockers.map((blocker) => (
+                      <tr data-testid="tws-execution-report-blocker" key={`execution-report-${blocker.blocker_id}`}>
+                        <td data-label="Report type">blocked</td>
+                        <td data-label="Client order" colSpan={2}>
+                          {blocker.blocker_id}
+                        </td>
+                        <td data-label="Instrument">missing</td>
+                        <td data-label="Side">missing</td>
+                        <td data-label="Status/trade">{formatLabel(blocker.kind)}</td>
+                        <td className="numeric-cell" data-label="Quantity">
+                          missing
+                        </td>
+                        <td className="numeric-cell" data-label="Filled">
+                          missing
+                        </td>
+                        <td className="numeric-cell" data-label="Remaining">
+                          missing
+                        </td>
+                        <td className="numeric-cell" data-label="Limit/last">
+                          missing
+                        </td>
+                        <td data-label="Sequence">blocked</td>
+                        <td data-label="Source">
+                          <CopyableCode label="execution report blocker source ref" value={blocker.source_ref} />
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr data-testid="tws-execution-report-empty-state">
+                      <td colSpan={12}>No execution report provenance rows in this projection.</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
           </section>
         </main>
 
@@ -1981,8 +2224,12 @@ function AccountSummaryPanel({
         <div className="drawer-section">
           <h3>Source Refs</h3>
           <div className="evidence-stack">
-            {fixture.source_refs.map((source) => (
-              <article className="evidence-item" data-testid="account-summary-source-ref" key={source.checksum}>
+            {fixture.source_refs.map((source, index) => (
+              <article
+                className="evidence-item"
+                data-testid="account-summary-source-ref"
+                key={`${source.checksum}-${index}`}
+              >
                 <strong>{formatLabel(source.kind)}</strong>
                 <dl className="detail-list">
                   <div>
