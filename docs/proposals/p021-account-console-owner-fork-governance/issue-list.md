@@ -1,7 +1,7 @@
 # P021 Issue List / Owner-Fork Governance Ledger
 
 - Proposal ID: `p021-account-console-owner-fork-governance`
-- Status: draft
+- Status: implementation_gate_passed
 - Created: 2026-06-20
 - Updated: 2026-06-20
 
@@ -23,7 +23,7 @@ This ledger is the required carry-forward surface for owner ambiguity, fork risk
 
 | Field | Value |
 | --- | --- |
-| Status | `open` |
+| Status | `closed` |
 | Risk type | second implementation |
 | Current owner | account-console-backend |
 | Affected files | `backend/src/nautilus_account_console/source_bridge.py`; `backend/src/nautilus_account_console/account_mirror.py` |
@@ -38,6 +38,12 @@ Required governance:
 2. Keep validation fail-closed for missing checksum/source authority.
 3. Add focused tests so route_context cannot mint readiness, broker truth, account truth or command authority.
 
+Closeout evidence:
+
+1. `backend/src/nautilus_account_console/route_context.py` is the canonical resolver/validator owner.
+2. `source_bridge.py` and `account_mirror.py` delegate fallback construction to that module.
+3. `python scripts\validate_p021_owner_fork_governance.py` checks this remains true.
+
 Must not:
 
 1. Keep two independent fallback tables for the same account family.
@@ -47,7 +53,7 @@ Must not:
 
 | Field | Value |
 | --- | --- |
-| Status | `open` |
+| Status | `accepted_with_guardrails` |
 | Risk type | owner unclear / truth-source drift |
 | Current owner | account-console-backend reads; external owners produce |
 | Affected files | `backend/src/nautilus_account_console/source_bridge.py`; `backend/src/nautilus_account_console/ctp19053_consistency.py`; `backend/src/nautilus_account_console/ctp025292_consistency.py` |
@@ -62,6 +68,12 @@ Required governance:
 2. Preserve owner, source_ref, checksum and blocker semantics.
 3. Missing or invalid external owner evidence must render typed blocker, not substitute truth.
 
+Closeout evidence:
+
+1. Source packages remain referenced evidence with `source_ref` and checksum preservation.
+2. Repo-local `output/account_capability/**/source-package.json` is explicitly not Account Console-owned truth.
+3. `python scripts\validate_p021_owner_fork_governance.py` keeps this boundary in the issue ledger and owner map.
+
 Must not:
 
 1. Copy raw runtime secrets or raw broker endpoint material into this worktree.
@@ -72,7 +84,7 @@ Must not:
 
 | Field | Value |
 | --- | --- |
-| Status | `open` |
+| Status | `closed` |
 | Risk type | fork implementation / test authority leakage |
 | Current owner | account-console-browser-acceptance-tests |
 | Affected files | `frontend/tests/e2e/p019-ib-tws-synthetic-ready-projection.spec.ts`; `frontend/tests/README.md` |
@@ -87,6 +99,12 @@ Required governance:
 2. Remove or neutralize authority-looking fields such as account/capital truth claims.
 3. Ensure the test cannot be cited as real U3028269 funds/positions evidence.
 
+Closeout evidence:
+
+1. Synthetic ready projection now marks `synthetic_contract_guard_not_account_truth`.
+2. Synthetic boundaries assert broker/account/runtime/capital truth are all false.
+3. `python scripts\validate_p021_owner_fork_governance.py` rejects authority leakage in the synthetic Playwright contract.
+
 Must not:
 
 1. Let test payloads claim broker, account, runtime, capital or trading-readiness truth.
@@ -97,7 +115,7 @@ Must not:
 
 | Field | Value |
 | --- | --- |
-| Status | `open` |
+| Status | `accepted_with_guardrails` |
 | Risk type | future fork risk |
 | Current owner | account-console-frontend |
 | Affected files | `frontend/src/App.tsx`; `frontend/src/types.ts`; `frontend/tests/README.md` |
@@ -111,6 +129,12 @@ Required governance:
 1. Preserve one canonical production route/fixture registry.
 2. Extract or document registry ownership before more panels are added.
 3. Guard against production imports from `frontend/tests` and test-owned routes.
+
+Closeout evidence:
+
+1. The current production route registry remains single-owner in `frontend/src/App.tsx`.
+2. `frontend/tests/README.md` records the no-second-route-registry rule.
+3. `python scripts\validate_p021_owner_fork_governance.py` rejects test route registries and production imports from tests.
 
 Must not:
 

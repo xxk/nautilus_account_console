@@ -3,7 +3,7 @@
 <!-- PROPOSAL-ANTI-DRIFT-GATE:v1 -->
 
 - Proposal ID: `p021-account-console-owner-fork-governance`
-- Status: draft
+- Status: implementation_gate_passed
 - Created: 2026-06-20
 - Updated: 2026-06-20
 - Owner: account-console-governance / account-console-architecture
@@ -81,7 +81,7 @@ Owner Boundary:
 
 ## 4. Review Verdict / 评审结论
 
-**Current verdict**: `draft`
+**Current verdict**: `implementation_gate_passed`
 
 | Item | Verdict |
 | --- | --- |
@@ -95,10 +95,10 @@ Owner Boundary:
 
 | Issue | Summary | Current status | Target phase |
 | --- | --- | --- | --- |
-| P021-I1 | Backend route-context fallback is duplicated in `source_bridge.py` and `account_mirror.py` | open | Phase 1 |
-| P021-I2 | Source-package paths under `output/account_capability/**` are hard-coded into backend modules | open | Phase 2 |
-| P021-I3 | Synthetic-ready Playwright test mocks a full ready projection and can become a second projector | open | Phase 3 |
-| P021-I4 | Frontend `App.tsx` owns route/fixture/panel registry in one large module; currently single but fragile | open | Phase 4 |
+| P021-I1 | Backend route-context fallback is duplicated in `source_bridge.py` and `account_mirror.py` | closed | Phase 1 |
+| P021-I2 | Source-package paths under `output/account_capability/**` are hard-coded into backend modules | accepted_with_guardrails | Phase 2 |
+| P021-I3 | Synthetic-ready Playwright test mocks a full ready projection and can become a second projector | closed | Phase 3 |
+| P021-I4 | Frontend `App.tsx` owns route/fixture/panel registry in one large module; currently single but fragile | accepted_with_guardrails | Phase 4 |
 
 See [issue-list.md](issue-list.md) for per-issue evidence, rejection rules and carry-forward status.
 
@@ -115,9 +115,9 @@ See [issue-list.md](issue-list.md) for per-issue evidence, rejection rules and c
 
 | Graduation item | Policy | Target | Status |
 | --- | --- | --- | --- |
-| Owner map backfill | required | `docs/ownership/account-console-owner-map.md` | planned |
-| Backend route-context resolver convergence | required | `backend/src/nautilus_account_console/` | planned |
-| Source package provider boundary | required | backend source package loading path | planned |
-| Browser synthetic-test boundary | required | `frontend/tests/e2e/` | planned |
-| Frontend registry governance | required | `frontend/src/` and `frontend/tests/README.md` | planned |
+| Owner map backfill | required | `docs/ownership/account-console-owner-map.md` | passed |
+| Backend route-context resolver convergence | required | `backend/src/nautilus_account_console/` | passed |
+| Source package provider boundary | required | backend source package loading path | accepted_with_guardrails |
+| Browser synthetic-test boundary | required | `frontend/tests/e2e/` | passed |
+| Frontend registry governance | required | `frontend/src/` and `frontend/tests/README.md` | accepted_with_guardrails |
 | Proposal-local evidence | archive_only | `acceptance.md`, `issue-list.md` | present |

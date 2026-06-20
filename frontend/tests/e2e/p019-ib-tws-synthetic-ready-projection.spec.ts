@@ -118,17 +118,17 @@ const readyProjection = {
   source_checksum: sourceChecksum,
   route_context: {
     route_id: "route.ib.live.u3028269",
-    account_truth: "ib_tws_api_source_package",
+    account_truth: "synthetic_contract_guard_not_account_truth",
     execution_adapter: "ib_tws_api.readonly_observation",
     blocker_id: null
   },
   boundaries: {
     read_only_projection: true,
     runtime_truth: false,
-    capital_truth: true,
+    capital_truth: false,
     broker_truth: false,
     order_action: false,
-    account_truth: true,
+    account_truth: false,
     raw_secret_values_recorded: false,
     screenshot_used_for_funds_positions: false
   }
@@ -214,6 +214,12 @@ const readyEvidence = {
 test("P019 synthetic ready U3028269 projection renders funds, positions and reports without command drift", async ({
   page
 }, testInfo) => {
+  expect(readyProjection.boundaries.account_truth).toBe(false);
+  expect(readyProjection.boundaries.capital_truth).toBe(false);
+  expect(readyProjection.boundaries.broker_truth).toBe(false);
+  expect(readyProjection.boundaries.runtime_truth).toBe(false);
+  expect(readyProjection.route_context.account_truth).toBe("synthetic_contract_guard_not_account_truth");
+
   await page.route("**/api/mirror/**", async (route) => {
     const url = new URL(route.request().url());
     if (url.pathname === "/api/mirror/accounts") {

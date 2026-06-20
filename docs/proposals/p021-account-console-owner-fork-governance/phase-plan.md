@@ -1,7 +1,7 @@
 # P021 Account Console Owner/Fork Governance Phase Plan / 分阶段推进计划
 
 - Proposal ID: `p021-account-console-owner-fork-governance`
-- Status: draft
+- Status: implementation_gate_passed
 - Created: 2026-06-20
 - Updated: 2026-06-20
 - Linked proposal: [README.md](README.md)
@@ -43,44 +43,44 @@ Boundary rules:
 <!-- AI-PHASE-STATUS-BEGIN
 reviewed_at: 2026-06-20
 reviewer: codex
-overall_status: draft
+overall_status: implementation_gate_passed
 phases:
   - id: phase_0_proposal_convergence
     status: completed
     ai_progress: 100
-    evidence: "P021 README, phase-plan, acceptance and issue-list created"
+    evidence: "P021 README, phase-plan, acceptance and issue-list created; proposal docs gate mapped"
   - id: phase_1_route_context_owner_convergence
-    status: planned
-    ai_progress: 0
-    evidence: "P021-I1 open"
+    status: completed
+    ai_progress: 100
+    evidence: "backend/src/nautilus_account_console/route_context.py canonical owner plus backend tests"
   - id: phase_2_source_package_provider_boundary
-    status: planned
-    ai_progress: 0
-    evidence: "P021-I2 open"
+    status: accepted_with_guardrails
+    ai_progress: 100
+    evidence: "source refs/checksums preserved; output source packages documented as not Account Console-owned truth"
   - id: phase_3_synthetic_test_boundary
-    status: planned
-    ai_progress: 0
-    evidence: "P021-I3 open"
+    status: completed
+    ai_progress: 100
+    evidence: "synthetic projection truth flags false and validator guard added"
   - id: phase_4_frontend_registry_governance
-    status: planned
-    ai_progress: 0
-    evidence: "P021-I4 open"
+    status: accepted_with_guardrails
+    ai_progress: 100
+    evidence: "frontend tests README rule and P021 validator reject second test route registries"
   - id: phase_5_closeout
-    status: planned
-    ai_progress: 0
-    evidence: "closeout not started"
+    status: completed
+    ai_progress: 100
+    evidence: "P021 owner/fork governance validator, proposal docs gate, owner boundary gate and backend tests"
 AI-PHASE-STATUS-END -->
 
 ## Phase Status Board / Phase 状态表
 
 | Phase | Goal | Current status | AI Progress | Evidence / Current facts | Next action |
 | --- | --- | --- | ---: | --- | --- |
-| Phase 0 Proposal convergence | Open governance proposal and issue ledger | `completed` | 100% | P021 docs created | Run proposal docs gate |
-| Phase 1 Route-context owner convergence | Replace duplicated fallback route-context logic with one canonical resolver or one canonical owner path | `planned` | 0% | P021-I1 maps `source_bridge.py` and `account_mirror.py` duplication | Create child change or direct implementation slice |
-| Phase 2 Source-package provider boundary | Make real source package loading owner-explicit and not hard-coded as Account Console truth | `planned` | 0% | P021-I2 maps hard-coded `output/account_capability/**` paths | Introduce provider/ref boundary and guards |
-| Phase 3 Synthetic-test boundary | Prevent synthetic-ready e2e mocks from becoming a second projector or formal evidence | `planned` | 0% | P021-I3 maps `p019-ib-tws-synthetic-ready-projection.spec.ts` | Reduce mock authority and add negative assertions |
-| Phase 4 Frontend registry governance | Keep one canonical route/fixture registry while reducing `App.tsx` growth risk | `planned` | 0% | P021-I4 maps single-file registry risk | Extract or document single-owner registry with tests |
-| Phase 5 Closeout | Verify all issue rows closed or typed-blocked with carry-forward | `planned` | 0% | owner boundary gate currently passes | Run gates and update graduation matrix |
+| Phase 0 Proposal convergence | Open governance proposal and issue ledger | `completed` | 100% | P021 docs created and gate mapped | Maintain proposal docs gate |
+| Phase 1 Route-context owner convergence | Replace duplicated fallback route-context logic with one canonical resolver or one canonical owner path | `completed` | 100% | canonical `route_context.py`; source_bridge/account_mirror delegate | Preserve compatibility wrapper only |
+| Phase 2 Source-package provider boundary | Make real source package loading owner-explicit and not hard-coded as Account Console truth | `accepted_with_guardrails` | 100% | source refs/checksums preserved; issue ledger rejects Account Console truth ownership | Keep external owner evidence boundary |
+| Phase 3 Synthetic-test boundary | Prevent synthetic-ready e2e mocks from becoming a second projector or formal evidence | `completed` | 100% | synthetic test asserts no account/capital/broker/runtime truth | Keep display-contract-only evidence |
+| Phase 4 Frontend registry governance | Keep one canonical route/fixture registry while reducing `App.tsx` growth risk | `accepted_with_guardrails` | 100% | README rule plus validator guard for test route registries | Extract later only if feature growth requires it |
+| Phase 5 Closeout | Verify all issue rows closed or typed-blocked with carry-forward | `completed` | 100% | P021 validator, proposal docs gate, owner boundary gate, backend tests | Commit closeout |
 
 ## Phase 0: Proposal Convergence
 

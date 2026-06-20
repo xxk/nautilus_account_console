@@ -1,7 +1,7 @@
 # P021 Account Console Owner/Fork Governance Acceptance / 验收
 
 - Proposal ID: `p021-account-console-owner-fork-governance`
-- Status: draft
+- Status: implementation_gate_passed
 - Created: 2026-06-20
 - Updated: 2026-06-20
 - Linked proposal: [README.md](README.md)
@@ -39,31 +39,31 @@ Out of scope:
 
 | Gate | Requirement | Applies when | Must fail if | Status |
 | --- | --- | --- | --- | --- |
-| G1 Owner issue ledger | Every discovered issue is recorded with owner, evidence, phase and acceptance row | all P021 work | issue remains only in chat or commit text | planned |
-| G2 Route-context single owner | Backend route_context generation has one canonical resolver or explicit delegation | backend route context work | same account class has independent fallback business rules in two modules | planned |
-| G3 Source package owner boundary | Source packages are read as owner evidence, not Account Console-owned truth | real account source package path work | local output path is treated as canonical source owner | planned |
-| G4 Synthetic test display-only boundary | Synthetic-ready e2e remains display guard only | Playwright mock projection work | mocked projection claims account/capital/broker/runtime truth | planned |
-| G5 Frontend canonical registry | Route/fixture registry remains single-owner and production-owned | frontend route/panel work | feature-specific second route registry appears | planned |
-| G6 Protected test authority | Existing tests are not weakened, skipped, renamed away or retired by AI self-approval | any test change | protected test contract is weakened without human approval | planned |
+| G1 Owner issue ledger | Every discovered issue is recorded with owner, evidence, phase and acceptance row | all P021 work | issue remains only in chat or commit text | passed |
+| G2 Route-context single owner | Backend route_context generation has one canonical resolver or explicit delegation | backend route context work | same account class has independent fallback business rules in two modules | passed |
+| G3 Source package owner boundary | Source packages are read as owner evidence, not Account Console-owned truth | real account source package path work | local output path is treated as canonical source owner | passed_with_guardrails |
+| G4 Synthetic test display-only boundary | Synthetic-ready e2e remains display guard only | Playwright mock projection work | mocked projection claims account/capital/broker/runtime truth | passed |
+| G5 Frontend canonical registry | Route/fixture registry remains single-owner and production-owned | frontend route/panel work | feature-specific second route registry appears | passed_with_guardrails |
+| G6 Protected test authority | Existing tests are not weakened, skipped, renamed away or retired by AI self-approval | any test change | protected test contract is weakened without human approval | passed |
 
 ## Scenario Matrix / 验收场景矩阵
 
 | ID | Type | Scenario | Verification | Pass signal | Status |
 | --- | --- | --- | --- | --- | --- |
 | A1 | success | P021 opens with all four discovered risks in issue-list | docs review | P021-I1 through P021-I4 present with owner/phase/acceptance mapping | passed |
-| N1 | drift | A discovered risk is only in chat and not mapped to issue-list | docs review | `owner_issue_unmapped` | planned |
-| A2 | success | Route-context resolver has one canonical owner path | backend tests + source review | no duplicate fallback route_context logic for same account family | planned |
-| N2 | drift | `source_bridge.py` and `account_mirror.py` independently mint route_context for the same account family | source review / focused test | `route_context_second_resolver` | planned |
-| A3 | success | Source package loading is owner-explicit and fail-closed | backend tests | missing/invalid package becomes typed blocker | planned |
-| N3 | drift | `output/account_capability/**/source-package.json` is accepted as local truth without owner/source_ref/checksum | backend tests / source review | `source_package_owner_boundary_violation` | planned |
-| A4 | success | Synthetic-ready e2e mock is display-only and cannot be real source evidence | frontend test + source review | mock authority says synthetic contract guard only; no account/capital truth claims | planned |
-| N4 | drift | Synthetic mock payload carries `account_truth: true`, `capital_truth: true`, command authority or readiness claim | source review / e2e negative assertion | `synthetic_projection_authority_leak` | planned |
-| A5 | success | Frontend route/fixture registry has one canonical production owner | owner boundary gate + source review | no test-owned or feature-specific second route registry | planned |
-| N5 | drift | A test or feature file creates a second production-like route registry or special runtime path | owner boundary gate / source review | `frontend_second_route_registry` | planned |
-| A6 | success | Existing owner-boundary gate still passes after governance work | `python scripts\validate_owner_boundaries.py` | `owner boundary validation passed` | planned |
-| N6 | drift | Governance work weakens owner-boundary gate coverage or removes negative checks | git/source review | `owner_gate_weakened` | planned |
-| A7 | success | Proposal docs gate passes for P021 | `python scripts\check_proposal_docs.py --root . --proposal-id p021-account-console-owner-fork-governance` | `PROPOSAL_DOCS_OK` | planned |
-| N7 | drift | P021 closes while docs gate fails or issue-list remains open without typed blocker | docs gate + issue review | `proposal_closeout_unverified` | planned |
+| N1 | drift | A discovered risk is only in chat and not mapped to issue-list | docs review | `owner_issue_unmapped` | passed |
+| A2 | success | Route-context resolver has one canonical owner path | backend tests + source review | no duplicate fallback route_context logic for same account family | passed |
+| N2 | drift | `source_bridge.py` and `account_mirror.py` independently mint route_context for the same account family | source review / focused test | `route_context_second_resolver` | passed |
+| A3 | success | Source package loading is owner-explicit and fail-closed | backend tests | missing/invalid package becomes typed blocker | passed_with_guardrails |
+| N3 | drift | `output/account_capability/**/source-package.json` is accepted as local truth without owner/source_ref/checksum | backend tests / source review | `source_package_owner_boundary_violation` | passed_with_guardrails |
+| A4 | success | Synthetic-ready e2e mock is display-only and cannot be real source evidence | frontend test + source review | mock authority says synthetic contract guard only; no account/capital truth claims | passed |
+| N4 | drift | Synthetic mock payload carries `account_truth: true`, `capital_truth: true`, command authority or readiness claim | source review / e2e negative assertion | `synthetic_projection_authority_leak` | passed |
+| A5 | success | Frontend route/fixture registry has one canonical production owner | owner boundary gate + source review | no test-owned or feature-specific second route registry | passed_with_guardrails |
+| N5 | drift | A test or feature file creates a second production-like route registry or special runtime path | owner boundary gate / source review | `frontend_second_route_registry` | passed_with_guardrails |
+| A6 | success | Existing owner-boundary gate still passes after governance work | `python scripts\validate_owner_boundaries.py` | `owner boundary validation passed` | passed |
+| N6 | drift | Governance work weakens owner-boundary gate coverage or removes negative checks | git/source review | `owner_gate_weakened` | passed |
+| A7 | success | Proposal docs gate passes for P021 | `python scripts\check_proposal_docs.py --root . --proposal-id p021-account-console-owner-fork-governance` | `PROPOSAL_DOCS_OK` | passed |
+| N7 | drift | P021 closes while docs gate fails or issue-list remains open without typed blocker | docs gate + issue review | `proposal_closeout_unverified` | passed |
 
 ## Positive-to-Negative Coverage Map
 
@@ -92,6 +92,10 @@ Out of scope:
 | --- | --- | --- |
 | Owner boundary gate before P021 | `python scripts\validate_owner_boundaries.py` | `owner boundary validation passed` |
 | P021 proposal docs | `docs/proposals/p021-account-console-owner-fork-governance/` | created |
+| P021 governance validator | `python scripts\validate_p021_owner_fork_governance.py` | `P021_OWNER_FORK_GOVERNANCE_OK: issues=4 route_context=canonical synthetic=guarded registry=single_owner` |
+| Focused backend tests | `python -m pytest backend\tests\test_mirror_api.py backend\tests\test_source_bridge.py backend\tests\test_account_mirror.py -q` | `13 passed in 0.51s` |
+| Proposal docs gate | `python scripts\check_proposal_docs.py --root . --proposal-id p021-account-console-owner-fork-governance` | `PROPOSAL_DOCS_OK: proposals=1` |
+| Synthetic projection e2e | `cmd /c npx playwright test tests/e2e/p019-ib-tws-synthetic-ready-projection.spec.ts --project=desktop --reporter=line` | `1 passed` |
 
 ## Required Before Closeout
 

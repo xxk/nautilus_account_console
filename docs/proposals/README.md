@@ -22,7 +22,7 @@
 | [P018 IB TWS Read-Only Account Console Landing](./p018-ib-tws-readonly-account-console/README.md) | design_gate_ready | Successor proposal for T001/P011 Phase 8: local TWS / IB Gateway live-account read-only observation through owner source packages, Account Mirror projection and Account Console UI readback; no direct TWS calls, no raw secrets and no broker order actions. |
 | [P019 Broker Observation Session Foundation](./p019-broker-observation-session-foundation/README.md) | proposed | Successor proposal for ADR-0005: broker-generic read-only observation profiles, session conflict policy, Nautilus-compatible order/fill reports and anti-drift gates before CTP/IB/stock/CQG/TT implementation. |
 | [P020 ADR-0006 Account Console Knowledge Router](./p020-adr0006-account-console-knowledge-router/README.md) | implementation_gate_passed | Successor proposal for ADR-0006: project-local knowledge router, shared/project knowledge split, anti-drift matrix and prevention gate landed for `docs/knowledge/`. |
-| [P021 Account Console Owner/Fork Governance](./p021-account-console-owner-fork-governance/README.md) | draft | Governance proposal for owner ambiguity, fork risk and second-implementation risk found in Account Console route-context, source-package, synthetic-test and frontend-registry lanes. |
+| [P021 Account Console Owner/Fork Governance](./p021-account-console-owner-fork-governance/README.md) | implementation_gate_passed | Governance proposal for owner ambiguity, fork risk and second-implementation risk found in Account Console route-context, source-package, synthetic-test and frontend-registry lanes. |
 
 ## Usage Rules
 
