@@ -14,6 +14,7 @@ from nautilus_account_console.source_bridge import (  # noqa: E402
     SourceBridgeError,
     load_capability_bundles,
     load_source_artifact,
+    validate_route_context,
 )
 
 
@@ -37,8 +38,13 @@ def main() -> None:
         assert command["enabled"] is False, bundle["account"]["account_id"]
         assert command["mode"] == "disabled", bundle["account"]["account_id"]
         assert bundle["observations"]["source_health"]["source_ref"], bundle["account"]["account_id"]
+        validate_route_context(bundle["route_context"], bundle["account"]["account_id"])
+        assert bundle["route_context"]["route_id"], bundle["account"]["account_id"]
+        assert bundle["route_context"]["evidence_partition"], bundle["account"]["account_id"]
         if bundle["account"]["account_id"] == "acct.ctp.paper.19053":
             health = bundle["observations"]["source_health"]
+            assert bundle["route_context"]["account_alias"] == "19053"
+            assert bundle["route_context"]["risk_domain"] == "paper"
             assert health["state"] in {"ready", "blocked"}
             if health["state"] == "blocked":
                 assert not bundle["observations"]["balances"]
@@ -46,12 +52,19 @@ def main() -> None:
                 assert bundle["observations"]["blockers"][0]["blocker_id"] == "ctp19053_real_login_source_unavailable"
         if bundle["account"]["account_id"] == "acct.ctp.live.025292":
             health = bundle["observations"]["source_health"]
+            assert bundle["route_context"]["account_alias"] == "025292"
+            assert bundle["route_context"]["risk_domain"] == "live"
             assert health["state"] in {"ready", "blocked"}
             if health["state"] == "blocked":
                 assert not bundle["observations"]["balances"]
                 assert not bundle["observations"]["positions"]
                 assert bundle["observations"]["blockers"][0]["blocker_id"] == "ctp025292_real_login_source_unavailable"
         if bundle["account"]["account_id"] == "simulated-001":
+            assert bundle["route_context"]["route_id"] == "route.p079.stage2.simulated-001"
+            assert bundle["route_context"]["market_data_source"] == "ctp_md.025292"
+            assert bundle["route_context"]["execution_adapter"] == "nautilus_sandbox_paper_simulated_runtime"
+            assert bundle["route_context"]["account_truth"] == "nautilus_sandbox_paper_simulated_ledger"
+            assert bundle["route_context"]["risk_domain"] == "sandbox"
             health = bundle["observations"]["source_health"]
             assert health["account_uid"] == "sandbox-paper.simulated-001"
             assert health["account_type"] == "sandbox_paper"

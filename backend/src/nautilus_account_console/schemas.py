@@ -104,6 +104,7 @@ class MirrorAccountProjection(BaseModel):
     projection_checksum: str
     source_ref: str
     source_checksum: str
+    route_context: dict
     boundaries: dict
 
 
@@ -125,6 +126,8 @@ class MirrorAccountSummary(BaseModel):
     projection_checksum: str
     source_ref: str
     source_checksum: str
+    route_id: str
+    evidence_partition: str
 
 
 class MirrorListResponse(BaseModel):

@@ -59,27 +59,42 @@ class ConsistencyResult:
         }
 
 
+def _blocked_result(source_package: Path) -> ConsistencyResult:
+    return ConsistencyResult(
+        verdict="blocked",
+        account_id=ACCOUNT_ID,
+        blocker_id="ctp025292_source_unavailable",
+        source_ref=str(source_package),
+        source_checksum=None,
+        projection_checkpoint_id=None,
+        projection_checksum=None,
+        funds_match="blocked",
+        positions_match="blocked",
+        orders_match="blocked",
+        command_disabled="pass",
+        evidence_visible="blocked",
+        sensitive_artifact_check="pass",
+    )
+
+
+def _is_default_source_package(source_package: Path) -> bool:
+    return source_package.resolve() == DEFAULT_SOURCE_PACKAGE.resolve()
+
+
 def evaluate_ctp025292_source_package(source_package: Path = DEFAULT_SOURCE_PACKAGE) -> ConsistencyResult:
     if not source_package.exists():
-        return ConsistencyResult(
-            verdict="blocked",
-            account_id=ACCOUNT_ID,
-            blocker_id="ctp025292_source_unavailable",
-            source_ref=str(source_package),
-            source_checksum=None,
-            projection_checkpoint_id=None,
-            projection_checksum=None,
-            funds_match="blocked",
-            positions_match="blocked",
-            orders_match="blocked",
-            command_disabled="pass",
-            evidence_visible="blocked",
-            sensitive_artifact_check="pass",
-        )
+        if _is_default_source_package(source_package):
+            return _blocked_result(source_package)
+        raise Ctp025292ConsistencyError(f"{source_package}: source package does not exist")
 
     payload = json.loads(source_package.read_text(encoding="utf-8"))
-    _validate_source_package(payload, source_package)
-    bundle = source_artifact_to_capability_bundle(payload)
+    try:
+        _validate_source_package(payload, source_package)
+        bundle = source_artifact_to_capability_bundle(payload)
+    except (Ctp025292ConsistencyError, SourceBridgeError):
+        if _is_default_source_package(source_package):
+            return _blocked_result(source_package)
+        raise
     projection = AccountMirrorStore().project_bundle(bundle, source_package.as_posix()).to_dict()
     command = projection["capabilities"]["command"]
     if command["enabled"] is not False or command["mode"] != "disabled":
@@ -113,7 +128,7 @@ def write_blocker_if_needed(
             "owner": "nautilus_ctp_adapter",
             "template_ref": "contracts/source_artifacts/templates/ctp_live_025292_source_package.template.json",
             "next_action": "Produce pinned read-only CTP 025292 source package at output/account_capability/ctp-live-025292/source-package.json from the template and source-owner read-only query output",
-            "reason": "CTP 025292 source package is not available inside the current worktree.",
+            "reason": "CTP 025292 source package is missing or not a valid account-readback package inside the current worktree.",
         }
         blocker_path.write_text(json.dumps(blocker_payload, indent=2) + "\n", encoding="utf-8")
     return result

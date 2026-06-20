@@ -281,7 +281,8 @@ def main() -> None:
             "P011 is the single landing proposal for ADR-0004",
             "P012-P017 are not separate proposals",
             "Phase 1 through Phase 5 are accepted",
-            "Phase 6 is blocked",
+            "Phase 6 remains blocked",
+            "Phase 6a route/context separation is accepted",
             "ADR-0047",
             "AccountRuntimeContext",
             "market_data_source",
@@ -316,13 +317,14 @@ def main() -> None:
             "P011_UI_READBACK_EVIDENCE_OK: routes=4 screenshots=12 verdict=passed",
             "P079_STAGE2_SIMULATED_001_OK: account=simulated-001 market_source=025292 role=market_data_only screenshots=3",
             "COMMAND_CAPABILITY_DESIGN_GATE_OK: phase=p011.phase_7 status=design_gate_only",
+            "ADR0047_ROUTE_CONTEXT_ALIGNMENT_OK: accounts=4 route_contexts=4 negatives=2",
             "blocked_waiting_for_source_owner_packages",
             "ADR-0047 route/context alignment gate",
             "market_data_source",
             "execution_adapter",
             "account_truth",
             "evidence_partition",
-            "19 passed",
+            "20 passed",
         ],
         "P011 acceptance",
     )
@@ -408,13 +410,29 @@ def main() -> None:
         payload = detail.json()
         require(payload["capabilities"]["command"]["enabled"] is False, f"command enabled for {account_id}")
         require(payload["boundaries"]["order_action"] is False, f"order action boundary true for {account_id}")
+        require(payload["route_context"]["route_id"], f"route_id missing for {account_id}")
+        require(payload["route_context"]["evidence_partition"], f"evidence partition missing for {account_id}")
 
     blocked = client.get("/api/mirror/accounts/acct.ctp.live.025292").json()
     require(blocked["source_health"]["state"] == "blocked", "025292 source health must remain blocked")
     require(blocked["positions"] == [], "025292 blocked projection must not invent positions")
     require(blocked["orders"] == [], "025292 blocked projection must not invent orders")
+    require(
+        blocked["route_context"]["account_truth"] == "blocked_until_pinned_source_package",
+        "025292 route context account truth drifted",
+    )
 
     simulated = client.get("/api/mirror/accounts/simulated-001").json()
+    require(simulated["route_context"]["route_id"] == "route.p079.stage2.simulated-001", "simulated route_id drifted")
+    require(simulated["route_context"]["market_data_source"] == "ctp_md.025292", "simulated market source drifted")
+    require(
+        simulated["route_context"]["execution_adapter"] == "nautilus_sandbox_paper_simulated_runtime",
+        "simulated execution adapter drifted",
+    )
+    require(
+        simulated["route_context"]["account_truth"] == "nautilus_sandbox_paper_simulated_ledger",
+        "simulated account truth drifted",
+    )
     health = simulated["source_health"]
     require(health["account_uid"] == "sandbox-paper.simulated-001", "simulated-001 uid drifted")
     require(health["market_data_account_id"] == "025292", "simulated-001 market data id drifted")

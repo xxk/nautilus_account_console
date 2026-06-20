@@ -2,7 +2,7 @@
 
 **创建日期**：2026-06-15
 **最后更新**：2026-06-15
-**状态**：in_progress_waiting_for_ctp_source_owner_packages_and_adr0047_route_context_alignment
+**状态**：in_progress_waiting_for_ctp_source_owner_packages
 **proposal-id**：`p011-account-capability-contracts`
 **Proposal ID**：`p011-account-capability-contracts`
 **关联提案**：[README.md](README.md)
@@ -63,7 +63,7 @@ The current real-account task is therefore split into:
 <!-- AI-PHASE-STATUS-BEGIN
 reviewed_at: 2026-06-15
 reviewer: Codex
-overall_status: in_progress_waiting_for_ctp_source_owner_packages_and_adr0047_route_context_alignment
+overall_status: in_progress_waiting_for_ctp_source_owner_packages
 phases:
   - id: phase_0_proposal_convergence
     status: completed
@@ -94,9 +94,9 @@ phases:
     ai_progress: 75
     evidence: "scripts/validate_ctp19053_consistency.py; scripts/validate_ctp025292_consistency.py; real-login UI fail-closed evidence; sample source package harness pass"
   - id: phase_6a_adr0047_route_context_alignment
-    status: planned
-    ai_progress: 0
-    evidence: "ADR-0047 requires AccountRuntimeContext fields and Nautilus-native conformance; Account Console must project or block, not own runtime routing"
+    status: completed
+    ai_progress: 100
+    evidence: "route_context projected through source_bridge, AccountMirrorStore and mirror APIs; python scripts/validate_adr0047_route_context_alignment.py"
   - id: phase_7_command_capability_design_gate
     status: completed
     ai_progress: 100
@@ -114,7 +114,7 @@ AI-PHASE-STATUS-END -->
 | Phase 4 Account Workbench API mode | Expose API-backed account summary, positions, orders and capabilities to UI | `completed` | 100% | `/api/mirror/accounts*` endpoints validate; `ACCOUNT_MIRROR_API_OK: accounts=4`; desktop/tablet/mobile UI readback for blocked CTP `19053`, blocked CTP `025292` and `simulated-001` passes | start Phase 5 source health and evidence |
 | Phase 5 Source health and evidence | Add source health, blockers and evidence drawer integration | `completed` | 100% | `ACCOUNT_SOURCE_HEALTH_EVIDENCE_OK: ready=2 blocked=2`; backend tests passed | start Phase 6 real-login CTP account consistency |
 | Phase 6 CTP real-account consistency | Compare UI/API against pinned real-login CTP `19053` and `025292` source-owner packages | `blocked` | 75% | harnesses ready; default runs materialize source unavailable blockers; real-login UI specs pass fail-closed; sample package paths prove comparison logic only | source owner repairs PyO3 TD bridge, provides pinned packages at `output/account_capability/ctp-paper-19053/source-package.json` and `output/account_capability/ctp-live-025292/source-package.json`, then rerun |
-| Phase 6a ADR-0047 route/context alignment | Ensure Account Console projections carry or block route context without becoming runtime owner | `planned` | 0% | ADR-0047 accepted in `nautilus_strategies`; no Account Console closeout may claim real-account consistency until alignment gate passes | add projection/acceptance checks for `route_id`, `account_alias`, `market_data_source`, `execution_adapter`, `account_truth`, `risk_domain` and `evidence_partition`, with negative tests for market-data-as-account-truth and readiness substitution |
+| Phase 6a ADR-0047 route/context alignment | Ensure Account Console projections carry or block route context without becoming runtime owner | `completed` | 100% | `route_context` is projected through source bridges, mirror projection and API list/detail; `python scripts/validate_adr0047_route_context_alignment.py` returns `ADR0047_ROUTE_CONTEXT_ALIGNMENT_OK: accounts=4 route_contexts=4 negatives=2` | keep Phase 6 blocked on source-owner packages; keep route/context gate in regression |
 | Phase 7 Command capability design gate | Freeze future command design without implementation | `completed` | 100% | command design gate doc, machine-readable gate and validator exist; no submit/cancel/replace implementation accepted | future command proposal must satisfy this gate before exposing actions |
 
 ## Phase 1 Deliverables

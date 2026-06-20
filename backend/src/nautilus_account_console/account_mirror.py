@@ -16,6 +16,53 @@ def _checksum(payload: Any) -> str:
     return "sha256:" + sha256(encoded).hexdigest()
 
 
+def _fallback_route_context_for_bundle(payload: dict[str, Any]) -> dict[str, Any]:
+    account = payload["account"]
+    account_id = str(account["account_id"])
+    source_ref = payload["capabilities"]["observation"]["source_ref"]
+    if account_id == "acct.ctp.paper.19053":
+        return {
+            "state": "blocked",
+            "route_id": "route.ctp.paper.19053.account-readonly",
+            "account_alias": "19053",
+            "market_data_source": "not_in_scope_for_account_readback",
+            "execution_adapter": "ctp_td.19053.blocked_until_source_package",
+            "account_truth": "blocked_until_pinned_source_package",
+            "risk_domain": "paper",
+            "evidence_partition": "account/acct.ctp.paper.19053/blocked-source-package",
+            "context_ref": source_ref["source_ref"],
+            "context_checksum": source_ref["checksum"],
+            "blocker_id": "ctp19053_source_package_pending",
+        }
+    if account_id == "acct.ctp.live.025292":
+        return {
+            "state": "blocked",
+            "route_id": "route.ctp.live.025292.account-readonly",
+            "account_alias": "025292",
+            "market_data_source": "not_in_scope_for_account_readback",
+            "execution_adapter": "ctp_td.025292.blocked_until_source_package",
+            "account_truth": "blocked_until_pinned_source_package",
+            "risk_domain": "live",
+            "evidence_partition": "account/acct.ctp.live.025292/blocked-source-package",
+            "context_ref": source_ref["source_ref"],
+            "context_checksum": source_ref["checksum"],
+            "blocker_id": "ctp025292_source_package_pending",
+        }
+    return {
+        "state": "projected",
+        "route_id": f"route.{account_id.removeprefix('acct.')}.readonly",
+        "account_alias": str(account["display_alias"]),
+        "market_data_source": "not_in_scope_for_account_readback",
+        "execution_adapter": str(account["source_kind"]),
+        "account_truth": str(source_ref["owner"]),
+        "risk_domain": str(account["account_domain"]),
+        "evidence_partition": f"account/{account_id}/source-package",
+        "context_ref": source_ref["source_ref"],
+        "context_checksum": source_ref["checksum"],
+        "blocker_id": None,
+    }
+
+
 @dataclass(frozen=True)
 class MirrorProjection:
     account_id: str
@@ -37,6 +84,7 @@ class MirrorProjection:
     projection_checksum: str
     source_ref: str
     source_checksum: str
+    route_context: dict[str, Any]
     boundaries: dict[str, Any]
 
     def to_dict(self) -> dict[str, Any]:
@@ -67,6 +115,7 @@ class MirrorProjection:
             "projection_checksum": self.projection_checksum,
             "source_ref": self.source_ref,
             "source_checksum": self.source_checksum,
+            "route_context": self.route_context,
             "boundaries": self.boundaries,
         }
 
@@ -103,10 +152,12 @@ class AccountMirrorStore:
         capabilities = payload["capabilities"]
         observations = payload["observations"]
         source_ref = capabilities["observation"]["source_ref"]
+        route_context = payload.get("route_context") or _fallback_route_context_for_bundle(payload)
         checkpoint_seed = {
             "account": account,
             "capabilities": capabilities,
             "observations": observations,
+            "route_context": route_context,
             "source_path": source_path,
         }
         checkpoint_id = _checksum({"checkpoint": checkpoint_seed})
@@ -116,6 +167,7 @@ class AccountMirrorStore:
             "source_checksum": source_ref["checksum"],
             "checkpoint_id": checkpoint_id,
             "observations": observations,
+            "route_context": route_context,
             "boundaries": payload["boundaries"],
         }
         projection_checksum = _checksum(projection_payload)
@@ -139,5 +191,6 @@ class AccountMirrorStore:
             projection_checksum=projection_checksum,
             source_ref=source_ref["source_ref"],
             source_checksum=source_ref["checksum"],
+            route_context=dict(route_context),
             boundaries=dict(payload["boundaries"]),
         )

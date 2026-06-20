@@ -16,5 +16,5 @@
   "owner": "nautilus_ctp_adapter",
   "template_ref": "contracts/source_artifacts/templates/ctp_live_025292_source_package.template.json",
   "next_action": "Produce pinned read-only CTP 025292 source package at output/account_capability/ctp-live-025292/source-package.json from the template and source-owner read-only query output",
-  "reason": "CTP 025292 source package is not available inside the current worktree."
+  "reason": "CTP 025292 source package is missing or not a valid account-readback package inside the current worktree."
 }

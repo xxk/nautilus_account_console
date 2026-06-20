@@ -9,7 +9,7 @@ BACKEND_SRC = ROOT / "backend" / "src"
 sys.path.insert(0, str(BACKEND_SRC))
 
 from nautilus_account_console.account_mirror import AccountMirrorStore  # noqa: E402
-from nautilus_account_console.source_bridge import load_capability_bundles  # noqa: E402
+from nautilus_account_console.source_bridge import load_capability_bundles, validate_route_context  # noqa: E402
 
 
 EXPECTED_ACCOUNTS = {
@@ -35,6 +35,9 @@ def main() -> None:
         assert payload["projection_checksum"].startswith("sha256:"), projection.account_id
         assert payload["source_ref"], projection.account_id
         assert payload["source_checksum"].startswith("sha256:"), projection.account_id
+        validate_route_context(payload["route_context"], projection.account_id)
+        assert payload["route_context"]["route_id"], projection.account_id
+        assert payload["route_context"]["evidence_partition"], projection.account_id
         assert payload["boundaries"]["read_only_projection"] is True, projection.account_id
         for key in [
             "broker_truth",
@@ -51,6 +54,10 @@ def main() -> None:
         if projection.account_id in {"acct.ctp.paper.19053", "acct.ctp.live.025292"}:
             assert payload["blockers"], f"{projection.account_id} must remain blocked until pinned source package exists"
             assert payload["source_health"]["state"] == "blocked", f"{projection.account_id} source must not look healthy"
+        if projection.account_id == "simulated-001":
+            assert payload["route_context"]["market_data_source"] == "ctp_md.025292", projection.account_id
+            assert payload["route_context"]["execution_adapter"] != "ctp_td.025292", projection.account_id
+            assert payload["route_context"]["account_truth"] != "broker_ctp", projection.account_id
 
     print(f"ACCOUNT_MIRROR_PROJECTION_OK: projections={len(projections)}")
 

@@ -84,6 +84,8 @@ def _mirror_summary(projection: MirrorAccountProjection) -> MirrorAccountSummary
         projection_checksum=projection.projection_checksum,
         source_ref=projection.source_ref,
         source_checksum=projection.source_checksum,
+        route_id=str(projection.route_context["route_id"]),
+        evidence_partition=str(projection.route_context["evidence_partition"]),
     )
 
 

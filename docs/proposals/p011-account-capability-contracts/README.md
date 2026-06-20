@@ -5,7 +5,7 @@
 
 **proposal-id**：`p011-account-capability-contracts`
 **Proposal ID**：`p011-account-capability-contracts`
-**状态**：in_progress_waiting_for_ctp_source_owner_packages_and_adr0047_route_context_alignment
+**状态**：in_progress_waiting_for_ctp_source_owner_packages
 **范围**：single umbrella proposal for ADR-0004 landing phases, now constrained by ADR-0047: contracts, Account Mirror projection, source bridges, API/UI mode, source health/evidence, read-only CTP `19053` / `025292` source-package consistency, AccountRuntimeContext projection alignment and command design gate
 
 | 顶部状态块 / Top Status Block | 值 |
@@ -56,7 +56,7 @@ P011 is the single landing proposal for ADR-0004. The former P012-P017 slices ar
 | Topic status | T001 active; capability registry minimum precedes CTP `025292` consistency | T001 topic / roadmap |
 | Proposal shape | P011 is the umbrella proposal; P012-P017 are not separate proposals | this README / roadmap |
 | Contract status | Phase 1 passed with positive/negative contract fixtures | phase-plan.md / acceptance.md |
-| Runtime status | observation stack implemented through Phase 5 plus R1/P079 Stage 2 `simulated-001` UI/read-model fixture; Phase 6 waits for pinned CTP `19053` and `025292` source-owner packages; ADR-0047 route/context alignment is required before claiming real-account consistency; Phase 7 command design gate complete | phase-plan.md / acceptance.md |
+| Runtime status | observation stack implemented through Phase 5 plus R1/P079 Stage 2 `simulated-001` UI/read-model fixture; Phase 6 waits for pinned CTP `19053` and `025292` source-owner packages; Phase 6a ADR-0047 route/context projection alignment passes as a projection-only gate; Phase 7 command design gate complete | phase-plan.md / acceptance.md |
 | Browser evidence | Account Workbench API readback has desktop/tablet/mobile screenshots for CTP Paper `19053`, blocked CTP Live `025292` and R1/P079 Stage 2 `simulated-001` | `../../acceptance/2026-06-15-p011-account-workbench-api-readback-browser-evidence.json` |
 
 ## Graduation / Closeout Matrix
@@ -79,7 +79,7 @@ P011 is the single landing proposal for ADR-0004. The former P012-P017 slices ar
 
 Implementation may continue within the P011 phase spine, but the current real-account task must be finer than one UI task.
 
-Phase 1 through Phase 5 are accepted for their scoped repo-local deliverables. Phase 6 is blocked until the source owner publishes pinned read-only CTP Paper `19053` and CTP Live `025292` source packages and the Account Console projection proves ADR-0047 route/context separation. Phase 7 is accepted as a design gate only and does not authorize submit, cancel or replace implementation.
+Phase 1 through Phase 5 are accepted for their scoped repo-local deliverables. Phase 6 remains blocked until the source owner publishes pinned read-only CTP Paper `19053` and CTP Live `025292` source packages. Phase 6a route/context separation is accepted as an Account Console projection gate, and Phase 7 is accepted as a design gate only; neither authorizes submit, cancel or replace implementation.
 
 ADR-0047 alignment rule:
 

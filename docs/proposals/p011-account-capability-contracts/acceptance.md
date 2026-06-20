@@ -2,7 +2,7 @@
 
 **proposal-id**：`p011-account-capability-contracts`
 **Proposal ID**：`p011-account-capability-contracts`
-**状态**：in_progress_waiting_for_ctp_source_owner_packages_and_adr0047_route_context_alignment
+**状态**：in_progress_waiting_for_ctp_source_owner_packages
 
 ## Scope / 验收范围
 
@@ -46,8 +46,8 @@ Out of scope:
 | G6 | phase ordering is enforced | each phase closeout | later phase passes while its prerequisite phase is unmapped or blocked without an explicit independent design-gate exception | passed_for_phase_7 |
 | G7 | CTP `19053` and `025292` consistency uses pinned source/projection packages | Phase 6 | moving latest endpoint, repo-local sample, screenshot-only evidence or direct broker UI call is accepted | blocked_waiting_for_source_owner_packages |
 | G8 | command design gate remains design-only | Phase 7 | submit/cancel/replace UI, API or gateway implementation appears from P011 Phase 7 | passed_for_phase_7 |
-| G9 | ADR-0047 route/context separation is preserved | Phase 6a and later | `market_data_source` implies `execution_adapter` or `account_truth`; route context is missing but UI claims real-account consistency | planned |
-| G10 | readiness substitution is rejected | Phase 6a and later | source package, CTP login, endpoint probe, UI screenshot or source health is treated as Paper ready, Live ready, broker tradable, capital allocated or can trade | planned |
+| G9 | ADR-0047 route/context separation is preserved | Phase 6a and later | `market_data_source` implies `execution_adapter` or `account_truth`; route context is missing but UI claims real-account consistency | passed_for_phase_6a |
+| G10 | readiness substitution is rejected | Phase 6a and later | source package, CTP login, endpoint probe, UI screenshot or source health is treated as Paper ready, Live ready, broker tradable, capital allocated or can trade | passed_for_phase_6a |
 
 ## ADR Carrier Acceptance Matrix
 
@@ -60,10 +60,10 @@ Out of scope:
 | A5 | ADR-0004 | D6 | Fail-closed blockers | missing/stale/source mismatch/capability missing states are typed | empty success replaces blocker | no fallback truth writer | 19053/025292 pending source blockers validate | passed_for_phase_1 |
 | A6 | ADR-0004 | D7 | Capability extension rule | new account behavior must map to accepted capability | broker-specific plane or UI branch appears | ADR/topic/proposal accepts new capability | schema + proposal phase mapping | passed_for_phase_1 |
 | A7 | ADR-0004 | D5 | Command separated from observation | command design gate defines order intent/risk/approval/gateway/event/readback/reconciliation without implementation | command UI or gateway implementation appears from P011 evidence alone | command authority remains separate | `python scripts\validate_command_capability_design_gate.py` | passed_design_gate_only |
-| A8 | ADR-0047 | D2 | AccountRuntimeContext route model | projection carries `route_id`, `account_alias` and route/context refs or typed blocker | UI claims real-account consistency without route/context partition | Account Console projects context only; runtime owner remains external | Phase 6a validator to add | planned |
-| A9 | ADR-0047 | D4 | Capability separation | projection separates `market_data_source`, `execution_adapter` and `account_truth` | CTP market data source becomes account truth or execution adapter by inference | Account Console cannot infer broker capability from source kind | Phase 6a negative tests to add | planned |
-| A10 | ADR-0047 | D5 | Evidence partition | orders/fills/account/position/reconcile evidence is partitioned by route/account/truth/evidence partition | evidence rows are joined by display alias, latest path or screenshot text | evidence owner remains source/runtime/account ledger owner | Phase 6a evidence partition checks to add | planned |
-| A11 | ADR-0047 | D6 | Readiness gates do not substitute | UI/source evidence remains observation-only | source package, CTP login or UI pass claims Paper ready, Live ready or tradable | readiness/admission/capital owners remain external | forbidden-claim checks to add | planned |
+| A8 | ADR-0047 | D2 | AccountRuntimeContext route model | projection carries `route_id`, `account_alias` and route/context refs or typed blocker | UI claims real-account consistency without route/context partition | Account Console projects context only; runtime owner remains external | `python scripts\validate_adr0047_route_context_alignment.py` | passed_for_phase_6a |
+| A9 | ADR-0047 | D4 | Capability separation | projection separates `market_data_source`, `execution_adapter` and `account_truth` | CTP market data source becomes account truth or execution adapter by inference | Account Console cannot infer broker capability from source kind | `ADR0047_ROUTE_CONTEXT_ALIGNMENT_OK: accounts=4 route_contexts=4 negatives=2` | passed_for_phase_6a |
+| A10 | ADR-0047 | D5 | Evidence partition | orders/fills/account/position/reconcile evidence is partitioned by route/account/truth/evidence partition | evidence rows are joined by display alias, latest path or screenshot text | evidence owner remains source/runtime/account ledger owner | mirror list/detail exposes `route_id` and `evidence_partition` | passed_for_phase_6a |
+| A11 | ADR-0047 | D6 | Readiness gates do not substitute | UI/source evidence remains observation-only | source package, CTP login or UI pass claims Paper ready, Live ready or tradable | readiness/admission/capital owners remain external | route context gate plus boundary checks keep readiness truth false | passed_for_phase_6a |
 
 ## Phase Acceptance Matrix / Phase 验收矩阵
 
@@ -75,7 +75,7 @@ Out of scope:
 | Phase 4 | API-backed Account Workbench | UI/API read projections and retain deterministic fixture fallback | UI renders broker-specific branches or command controls | passed |
 | Phase 5 | source health and evidence | stale/missing/checksum/blocker states render with evidence refs | missing source is hidden as empty success | passed |
 | Phase 6 | CTP `19053` / `025292` source-package UI consistency | pinned source/projection/UI comparison for funds, positions, orders and fills when present | values mismatch, source package is unpinned, sample data is treated as broker truth, direct CTP calls appear in Account Console, or command controls appear | blocked_waiting_for_source_owner_packages |
-| Phase 6a | ADR-0047 route/context projection alignment | route/context fields are projected or blocked; market data, execution adapter and account truth remain separate | route context missing but UI claims consistency, market data becomes account truth, or readiness is inferred | planned |
+| Phase 6a | ADR-0047 route/context projection alignment | route/context fields are projected or blocked; market data, execution adapter and account truth remain separate | route context missing but UI claims consistency, market data becomes account truth, or readiness is inferred | passed_for_phase_6a |
 | Phase 7 | command design gate | future command contract boundaries accepted without implementation | submit/cancel/replace is implemented or implied | passed_design_gate_only |
 
 ## Scenario Matrix / 场景矩阵
@@ -93,8 +93,8 @@ Out of scope:
 | N6 | failure | CTP `19053` or `025292` acceptance uses moving latest data, repo-local sample as broker truth or screenshot-only evidence | Phase 6 audit | rejected | planned |
 | N7 | blocker | CTP `19053` or `025292` pinned source package is missing | Phase 6 harness | `ctp19053_source_unavailable` / `ctp025292_source_unavailable` | passed |
 | N8 | failure | P011 Phase 7 exposes command UI/API or broker gateway implementation | command design gate validator | rejected | passed |
-| N9 | failure | `market_data_source=CTP 025292` is treated as a trading account or `account_truth=broker_ctp` for `simulated-001` | Phase 6a ADR-0047 alignment audit | rejected | planned |
-| N10 | failure | source package, UI value match or source health is used to claim Paper ready, Live ready, broker tradable, can trade, production ready or capital allocated | Phase 6a forbidden-claim audit | rejected | planned |
+| N9 | failure | `market_data_source=CTP 025292` is treated as a trading account or `account_truth=broker_ctp` for `simulated-001` | Phase 6a ADR-0047 alignment audit | rejected | passed_for_phase_6a |
+| N10 | failure | source package, UI value match or source health is used to claim Paper ready, Live ready, broker tradable, can trade, production ready or capital allocated | Phase 6a forbidden-claim audit | rejected | passed_for_phase_6a |
 | N11 | failure | Account Console adds a runtime resolver, CTP adapter, order writer, account ledger writer or order event truth writer | owner-boundary and code audit | rejected | planned |
 
 ## Evidence
@@ -118,9 +118,9 @@ Out of scope:
 | CTP 19053 default real-source harness | `python scripts\validate_ctp19053_consistency.py --write-blocker` | `CTP19053_CONSISTENCY_BLOCKED: blocker=ctp19053_source_unavailable`; real source package expected from source owner at `output/account_capability/ctp-paper-19053/source-package.json` |
 | CTP 19053 sample consistency harness | `python scripts\validate_ctp19053_consistency.py --source-package contracts\source_artifacts\samples\ctp_paper_19053_sample_source.json` | `CTP19053_CONSISTENCY_OK: verdict=passed`; proves comparison logic only, not current broker truth |
 | CTP 025292 default consistency harness | `python scripts\validate_ctp025292_consistency.py --write-blocker` | `CTP025292_CONSISTENCY_BLOCKED: blocker=ctp025292_source_unavailable`; real source package expected from source owner at `output/account_capability/ctp-live-025292/source-package.json` |
-| ADR-0047 route/context alignment gate | Phase 6a validator to add | must prove or block `route_id`, `account_alias`, `market_data_source`, `execution_adapter`, `account_truth`, `risk_domain` and `evidence_partition`; must reject market-data-as-account-truth and readiness substitution |
+| ADR-0047 route/context alignment gate | `python scripts\validate_adr0047_route_context_alignment.py` | `ADR0047_ROUTE_CONTEXT_ALIGNMENT_OK: accounts=4 route_contexts=4 negatives=2`; proves or blocks `route_id`, `account_alias`, `market_data_source`, `execution_adapter`, `account_truth`, `risk_domain` and `evidence_partition`; rejects market-data-as-account-truth and readiness substitution |
 | CTP 025292 sample consistency harness | `python scripts\validate_ctp025292_consistency.py --source-package contracts\source_artifacts\samples\ctp_live_025292_sample_source.json` | `CTP025292_CONSISTENCY_OK: verdict=passed` |
-| Backend tests | `python -m pytest backend\tests` | `19 passed` |
+| Backend tests | `python -m pytest backend\tests` | `20 passed` |
 | Frontend build | `cd frontend && npm run build` | build passed |
 
 ## Closeout Checklist
@@ -131,5 +131,5 @@ Out of scope:
 4. T001 roadmap remains aligned with P011 as the first implementation proposal.
 5. No source connectivity, broker read or UI rendering is claimed beyond the phase evidence that has passed.
 6. Phase 6 remains blocked until the external source owner provides pinned CTP `19053` and `025292` read-only packages. The blockers are accepted evidence of fail-closed behavior, not passed real-account consistency runs.
-7. Phase 6a must pass before any closeout says real-account UI consistency is accepted after ADR-0047. It is an alignment gate, not runtime builder implementation.
+7. Phase 6a passes as a projection alignment gate. It does not accept real-account UI consistency, runtime builder implementation, broker tradability, readiness or can-trade.
 8. Phase 7 accepts only the command design gate. It does not accept submit, cancel, replace, broker gateway, approval, risk, capital or live trading readiness implementation.

@@ -78,6 +78,8 @@ export interface MirrorAccountSummary {
   source_kind: string;
   source_mode: string;
   account_domain: string;
+  route_id: string;
+  evidence_partition: string;
   mirror_state: string;
   command_enabled: boolean;
   command_mode: string;
@@ -115,6 +117,7 @@ export interface MirrorAccountProjection {
   projection_checksum: string;
   source_ref: string;
   source_checksum: string;
+  route_context: Record<string, unknown>;
   boundaries: Record<string, unknown>;
 }
 

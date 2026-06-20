@@ -27,6 +27,9 @@ def main() -> None:
         "acct.ctp.live.025292",
         "simulated-001",
     }
+    for row in payload["accounts"]:
+        assert row["route_id"], row["account_id"]
+        assert row["evidence_partition"], row["account_id"]
 
     detail = client.get("/api/mirror/accounts/acct.ctp.paper.19053")
     assert detail.status_code == 200
@@ -34,6 +37,7 @@ def main() -> None:
     assert detail_payload["capabilities"]["command"]["enabled"] is False
     assert detail_payload["capabilities"]["command"]["mode"] == "disabled"
     assert detail_payload["source_health"]["state"] in {"ready", "blocked"}
+    assert detail_payload["route_context"]["route_id"] == "route.ctp.paper.19053.account-readonly"
 
     positions = client.get("/api/mirror/accounts/acct.ctp.paper.19053/positions")
     assert positions.status_code == 200
@@ -81,6 +85,8 @@ def main() -> None:
     blocked_payload = blocked.json()
     assert blocked_payload["capabilities"]["command"]["enabled"] is False
     assert blocked_payload["blockers"][0]["type"] == "source_unavailable"
+    assert blocked_payload["route_context"]["route_id"] == "route.ctp.live.025292.account-readonly"
+    assert blocked_payload["route_context"]["account_truth"] == "blocked_until_pinned_source_package"
 
     simulated = client.get("/api/mirror/accounts/simulated-001")
     assert simulated.status_code == 200
@@ -88,6 +94,10 @@ def main() -> None:
     assert simulated_payload["account_id"] == "simulated-001"
     assert simulated_payload["capabilities"]["command"]["enabled"] is False
     assert simulated_payload["boundaries"]["order_action"] is False
+    assert simulated_payload["route_context"]["route_id"] == "route.p079.stage2.simulated-001"
+    assert simulated_payload["route_context"]["market_data_source"] == "ctp_md.025292"
+    assert simulated_payload["route_context"]["execution_adapter"] == "nautilus_sandbox_paper_simulated_runtime"
+    assert simulated_payload["route_context"]["account_truth"] == "nautilus_sandbox_paper_simulated_ledger"
     health = simulated_payload["source_health"]
     assert health["account_uid"] == "sandbox-paper.simulated-001"
     assert health["account_type"] == "sandbox_paper"

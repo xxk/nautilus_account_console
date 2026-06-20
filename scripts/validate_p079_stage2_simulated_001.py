@@ -106,6 +106,20 @@ def main() -> None:
     require(payload["boundaries"]["order_action"] is False, "Account Console must not own order action")
     require(payload["boundaries"]["account_truth"] is False, "Account Console must not own account truth")
     require(payload["boundaries"]["capital_truth"] is False, "Account Console must not own capital truth")
+    route_context = payload["route_context"]
+    require(route_context["route_id"] == "route.p079.stage2.simulated-001", "route context route_id mismatch")
+    require(route_context["account_alias"] == "sandbox-paper.simulated-001", "route context account alias mismatch")
+    require(route_context["market_data_source"] == "ctp_md.025292", "route context market data source mismatch")
+    require(
+        route_context["execution_adapter"] == "nautilus_sandbox_paper_simulated_runtime",
+        "route context execution adapter mismatch",
+    )
+    require(
+        route_context["account_truth"] == "nautilus_sandbox_paper_simulated_ledger",
+        "route context account truth mismatch",
+    )
+    require(route_context["risk_domain"] == "sandbox", "route context risk domain mismatch")
+    require("025292-md-only" in route_context["evidence_partition"], "route context evidence partition mismatch")
     require(any(row["instrument"] == "ag2612" and row["net_qty"] == 1 for row in payload["positions"]), "ag2612 long-one position missing")
     require(
         any(
@@ -129,6 +143,10 @@ def main() -> None:
     ctp025292 = client.get("/api/mirror/accounts/acct.ctp.live.025292").json()
     require(ctp025292["capabilities"]["command"]["enabled"] is False, "025292 command must remain disabled")
     require(ctp025292["boundaries"]["order_action"] is False, "025292 must not expose order action")
+    require(
+        ctp025292["route_context"]["account_truth"] == "blocked_until_pinned_source_package",
+        "025292 account truth must stay blocked until source package",
+    )
     require(ctp025292["source_health"]["state"] == "blocked", "025292 remains read-only blocked account projection")
 
     for phrase in [
