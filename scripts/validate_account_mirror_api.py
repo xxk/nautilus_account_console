@@ -109,14 +109,20 @@ def main() -> None:
         assert ib_tws_payload["positions"]
         assert ib_tws_payload["boundaries"]["broker_truth"] is False
         assert ib_tws_payload["boundaries"]["account_truth"] is False
+        open_orders = ib_tws_payload["source_health"]["open_orders_readonly_query"]
+        assert open_orders["api_call"] == "reqAllOpenOrders"
+        assert open_orders["order_action_sent"] is False
+        assert open_orders["cancel_order_sent"] is False
+        assert open_orders["replace_order_sent"] is False
+        assert ib_tws_payload["source_health"]["open_order_rows"] == len(ib_tws_payload["orders"])
     else:
         assert ib_tws_payload["source_health"]["blocker_id"] == "tws_api_readiness_missing"
         assert ib_tws_payload["blockers"][0]["type"] == "source_unavailable"
         assert ib_tws_payload["route_context"]["account_truth"] == "blocked_until_tws_api_source_package"
         assert ib_tws_payload["balances"] == []
         assert ib_tws_payload["positions"] == []
+        assert ib_tws_payload["orders"] == []
         assert ib_tws_payload["boundaries"]["broker_truth"] is False
-    assert ib_tws_payload["orders"] == []
     assert ib_tws_payload["fills"] == []
     assert ib_tws_payload["boundaries"]["order_action"] is False
 

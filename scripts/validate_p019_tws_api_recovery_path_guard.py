@@ -82,11 +82,17 @@ def main() -> None:
         "reqManagedAccts",
         "reqAccountSummary",
         "reqPositions",
+        "reqExecutions",
+        "reqAutoOpenOrders",
+        "reqOpenOrders",
+        "reqAllOpenOrders",
+        "ExecutionFilter",
+        "openOrderEnd",
         "cancelAccountSummary",
         "cancelPositions",
     ]:
         require(required in collector, f"collector missing read-only IB API term {required}")
-    for forbidden in ["placeOrder", "cancelOrder", "reqOpenOrders", "reqAllOpenOrders", "reqGlobalCancel"]:
+    for forbidden in ["placeOrder", "cancelOrder", "reqGlobalCancel"]:
         require(forbidden not in collector, f"collector must not contain command/order term {forbidden}")
 
     for term in [

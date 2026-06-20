@@ -3,7 +3,7 @@
   "proposal_id": "p019-broker-observation-session-foundation",
   "account_id": "acct.ib.live.u3028269",
   "display_alias": "U3028269",
-  "observed_at": "2026-06-20T10:46:21Z",
+  "observed_at": "2026-06-20T15:09:50Z",
   "diagnostic_kind": "windows_firewall_tws_api",
   "tws_process": {
     "present": true,
@@ -266,7 +266,7 @@
       "LocalAddress": "::",
       "LocalPort": 7497,
       "State": 2,
-      "OwningProcess": 31044
+      "OwningProcess": 12764
     }
   ],
   "diagnosis": {

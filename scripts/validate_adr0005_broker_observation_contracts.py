@@ -102,6 +102,10 @@ def validate_docs_gates() -> None:
         "tws-multi-currency-funds-table",
         "tws-execution-reports-table",
         "execution_reports_persistence_parity",
+        "execution_report_rows=0",
+        "complete_history_claimed=false",
+        "durable_reload_state=partial",
+        "does not close UI-TWS-15, UI-TWS-17 or UI-TWS-18 as passed",
     ]:
         require(term in ui_acceptance, f"{P019_UI_ACCEPTANCE}: missing UI acceptance term {term}")
 

@@ -1,24 +1,26 @@
 ---
-status: proposed
+status: accepted
 owner: architecture
 adr_id: "0005"
-decision_status: proposed
-landing_status: not_started
+decision_status: accepted
+landing_status: foundation_accepted
 ---
 
 # ADR-0005: Account Console Independent Broker Observation Sessions / Account Console 独立 Broker 观测会话
 
 - 日期：`2026-06-20`
 - ADR 类型：standard
-- 决策状态：proposed
-- 落地状态：not_started
-- 落地摘要：not_started; pending architecture decision and successor proposal
-- 覆盖摘要：decision 0/6, implementation 0/6, retirement 0/2
+- 决策状态：accepted
+- 落地状态：foundation_accepted via P019
+- 落地摘要：ADR-0005 accepts governed read-only broker observation sessions as an Account Console capability owner, with command, broker truth, account truth, secret and screenshot boundaries enforced by P019 contract/API/browser/runtime gates.
+- 覆盖摘要：decision 6/6, implementation foundation 12/12, retirement 2/2; real U3028269 funds/positions parity is ready, while real order/fill report-row parity remains typed partial because the same-slice read-only `reqExecutions` query returned zero execution rows.
 - 适用范围：`nautilus_account_console` Account Capability Fabric, Account Mirror, CTP / IB TWS / stock / CQG / TT broker account observation, Nautilus-compatible order/fill reports, high-frequency test observation
 - 决策问题：Account Console 是否可以拥有独立 broker 观测会话，以便在高频测试期间观测 CTP、IB TWS、股票、CQG、TT 等账户，同时不成为第二个交易执行 owner？
-- 当前倾向：评审中；推荐候选是 Account Console owns independent read-only broker observation sessions, with broker-specific profiles, Nautilus-compatible order/fill reports, explicit session conflict policy and Account Mirror projection boundary.
-- 最终决策：待决策
-- Required document order: ADR-0005 -> architecture review -> successor proposal -> implementation -> acceptance evidence
+- 当前倾向：accepted；Account Console may own governed read-only broker observation sessions, with broker-specific profiles, Nautilus-compatible order/fill reports, explicit session conflict policy, durable observation store and Account Mirror projection boundary.
+- 最终决策：accepted；采用 Option C as the first local capability owner, while rejecting direct full broker clients and preserving Nautilus/future Execution Gateway as command owner.
+- Acceptance anchor: [ADR-0005 Broker Observation Session acceptance closeout](../acceptance/2026-06-20-adr0005-broker-observation-session-acceptance.json)
+- Executable landing consistency gate: `python scripts\validate_adr0005_acceptance.py`
+- Required document order: ADR-0005 -> P019 successor proposal -> contract/API/browser/runtime gates -> acceptance closeout
 
 ---
 
@@ -103,7 +105,7 @@ Broker order/fill reports also require durable local maintenance. Some brokers o
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | A. Keep Account Console projection-only | Account Console 只读 Nautilus / source package / Account Mirror 投影，不拥有任何 broker session | 最保守的 read-only dashboard；Nautilus 已提供足够观测 | 不新增 broker session owner；最符合现有 ADR-0004 原文 | 高频测试时观测链路依赖 Nautilus；无法独立验证 broker account state；operator 排障能力弱 | 高 | 低 | 评审中 | possible rejected or baseline |
 | B. Share Nautilus broker session | Nautilus owns CTP/IB/stock/CQG/TT trading session; Account Console 通过 Nautilus telemetry / local API 读取 | broker 只允许一条 session；必须避免并发登录 | 不抢 broker session；order lifecycle 单 owner | Account Console 不是真正独立观测；Nautilus 故障时观测也丢失；高频观测受 execution runtime API 限制 | 中高 | 中 | 评审中 | possible included as fallback |
-| C. Independent read-only broker observation sessions | Account Console backend 连接 dedicated broker observation endpoints，用 broker-specific profile 做只读观测；order/fill callbacks 归一成 Nautilus-compatible reports，写入 durable observation store，再投影到 Account Mirror | 高频测试、operator 需要独立账户观测；CTP/IB/stock/CQG/TT 都需要可扩展接入；盘后复盘需要本地 report/snapshot 历史 | 独立观测能力强；可采集 health/lag/events/order reports；可盘后复盘；不依赖 Nautilus telemetry；新增 broker 只扩 profile/adapter/mapper | 需要 per-broker session conflict policy；并发登录限制复杂；必须严禁 order mutation；report mapper 必须严格对齐 Nautilus；local store 不能漂成 truth writer | 高 | 高 | 推荐候选 | proposed |
+| C. Independent read-only broker observation sessions | Account Console backend 连接 dedicated broker observation endpoints，用 broker-specific profile 做只读观测；order/fill callbacks 归一成 Nautilus-compatible reports，写入 durable observation store，再投影到 Account Mirror | 高频测试、operator 需要独立账户观测；CTP/IB/stock/CQG/TT 都需要可扩展接入；盘后复盘需要本地 report/snapshot 历史 | 独立观测能力强；可采集 health/lag/events/order reports；可盘后复盘；不依赖 Nautilus telemetry；新增 broker 只扩 profile/adapter/mapper | 需要 per-broker session conflict policy；并发登录限制复杂；必须严禁 order mutation；report mapper 必须严格对齐 Nautilus；local store 不能漂成 truth writer | 高 | 高 | 采纳 | accepted |
 | D. Account Console direct full broker clients | Account Console 直接成为完整 CTP/IB/stock/CQG/TT client，读写都可做 | 想快速实现“登录+下单+观测”一体 | 短期功能完整 | 直接成为第二 execution owner；与 ADR-0004 冲突；抢 session/order lifecycle；高风险 | 低 | 中 | 拒绝候选 | rejected if decision accepts current boundaries |
 | E. External Observation Gateway service | 单独服务拥有 broker observation sessions，Account Console 只连该服务；Nautilus 也可消费 | 多 broker、多语言、高频观测集中治理 | owner 分离清晰；可独立扩缩容；Account Console 不直接连 broker | 新服务治理成本高；初期链路更长；需要跨 repo owner | 高 | 高 | 未来扩展候选 | future extension |
 | F. Manual operator broker console only | 人工打开 TWS/CTP terminal/stock/CQG/TT UI 观察，Account Console 不接 broker | 极早期或无法授权开发时 | 零开发；无 session API 风险 | 无结构化证据、无 lag metrics、无法自动验收、无法接 Account Mirror | 低 | 低 | 拒绝长期方案 | manual-only fallback |
@@ -114,7 +116,7 @@ Broker order/fill reports also require durable local maintenance. Some brokers o
 | --- | --- | --- | --- | --- | --- |
 | A | included | partially_implemented | docs_only | ADR-0004; owner map projection-only boundary | 高频独立观测不足 |
 | B | future | not_implemented | missing_evidence | no accepted Nautilus telemetry bridge in Account Console yet | Nautilus failure couples observation failure |
-| C | future | not_implemented | missing_evidence | this ADR proposed; successor proposal required | per-broker session conflict, secret boundary, mutation guard, durable store truth-boundary |
+| C | accepted | foundation_accepted | executable_evidence | P019 foundation, ADR-0005 acceptance closeout, real U3028269 TWS API funds/positions parity | real order/fill report-row parity waits for non-empty same-slice executions |
 | D | rejected | rejected_not_applicable | not_applicable | ADR-0004 command separation | 无，除非 future command ADR reopens |
 | E | future | not_implemented | missing_evidence | no external observation gateway owner yet | cross-repo governance and latency budget |
 | F | rejected | rejected_not_applicable | not_applicable | manual UI observation only | cannot support contract-first high-frequency evidence |
@@ -132,67 +134,121 @@ Broker order/fill reports also require durable local maintenance. Some brokers o
 
 ## 4. 决策 / Decision
 
-待决策。This ADR is currently opened for option comparison only. Section 4 will be filled after architecture review chooses between A/B/C/E or another explicitly reviewed option.
+ADR-0005 is accepted. Account Console may own a governed, read-only broker observation session capability for CTP, IB TWS / IB Gateway, stock broker APIs, CQG and TT, provided every implementation stays behind the boundaries below:
+
+1. Observation sessions are read-only and cannot expose submit, cancel, replace, modify, CTP order insert/action, IB `placeOrder` / `cancelOrder`, or equivalent mutation APIs.
+2. Broker/account/order truth remains with the broker/runtime/source owner. Account Console writes only contracts, normalized observation artifacts, projection caches, evidence refs and typed blockers.
+3. Account Mirror is the UI/API projection boundary. The browser must not call broker adapters directly or parse raw broker payloads as truth.
+4. Raw passwords, auth codes, 2FA material, front addresses, API keys, broker secrets and account secrets remain outside this worktree. Local artifacts may record owner refs, redacted aliases, checksums and negative assertions only.
+5. Every broker observation family must use the shared profile, session-conflict, report-mapping, freshness and durable-store contract family unless a later ADR accepts a fork.
+6. Durable observation storage is an evidence/projection cache only. It may support replay and incident review, but must not claim broker truth, command authority, trading readiness or complete history without source evidence.
 
 ### 4.1 决策结论 / Decision Summary
 
-（待决策后填写）
+Option C, independent read-only broker observation sessions, is accepted as the first implementation direction. Option A remains a safe fallback for accounts without an accepted observation profile; Option B remains a compatibility bridge where Nautilus owns the only session; Option E may be revisited as a future external gateway. Option D and any direct full broker client in Account Console are rejected.
+
+The accepted local owner is `account-console-broker-observation-session`, limited to read-only observation profiles, normalized Nautilus-compatible reports, durable observation-store evidence and Account Mirror input packages. Nautilus / future Execution Gateway remains the command and execution owner.
 
 ### 4.2 决策边界 / Decision Boundaries
 
-（待决策后填写）
+1. `account-console-broker-observation-session` may collect or project read-only account/funds/positions/report observations only after readiness and conflict gates pass.
+2. A connected observation session never implies command capability, live trading readiness, broker tradability, admission, approval or capital authority.
+3. Missing source evidence, sequence gaps, checksum drift, conflict ambiguity, unavailable execution rows or incomplete replay must produce typed blockers.
+4. Screenshots may support UI rendering or local operator/window context, but never funds, positions, order, fill, broker, account or readiness truth.
+5. Real U3028269 TWS API funds and positions are accepted only through the same-slice TWS API query -> source package -> Account Mirror -> UI parity chain recorded by P019.
+6. Real U3028269 order/fill callback parity is not claimed while the current read-only `reqExecutions` evidence has zero rows; this is a typed residual runtime condition, not a reason to reopen the architecture decision.
 
 ### 4.3 Design Kernel / 设计内核
 
-（待决策后填写）
+```text
+Broker Observation Profile
+  -> readiness and session-conflict gates
+  -> read-only broker observation adapter
+  -> normalized Nautilus-compatible OrderStatusReport / FillReport
+  -> durable observation/evidence store
+  -> Account Mirror projection
+  -> Account Console API/UI readback
+```
+
+The browser consumes Account Mirror projections only. Raw broker payloads remain provenance/debug evidence by ref and checksum.
 
 ### 4.4 推荐产物 / Recommended Deliverables
 
-（待决策后填写）
+The accepted foundation deliverables are:
+
+1. broker observation profile, session-conflict, report batch, report mapping, freshness, durable-store and cross-broker extension schemas/fixtures;
+2. negative validators rejecting raw secrets, command drift, raw payload truth, broker-specific contract forks, realtime claims from snapshots and memory-only reload pass claims;
+3. Account Mirror API projection for `acct.ib.live.u3028269` with command disabled and no broker/order/account truth;
+4. real U3028269 read-only TWS API pipeline, source-package builder, query/source parity validator and UI parity harness;
+5. durable store reload proof from persisted source/executions artifacts with no live-memory dependency;
+6. P019 evidence lanes and runtime redaction/freshness validators.
 
 ### 4.5 决策覆盖与落地矩阵 / Decision Coverage And Landing Matrix
 
-（待决策后填写）
+| Decision item | Status | Evidence |
+| --- | --- | --- |
+| D1 Observation-only broker session | accepted | `validate_p019_api_boundary.py`, `validate_p019_profile_security_provenance.py`, Account Mirror U3028269 projection |
+| D2 Secret/config boundary | accepted | profile/security validators, runtime redaction gate, owner refs only |
+| D3 Session conflict fail-closed | accepted | `session_conflict_policy.schema.json`, blocked/negative fixtures |
+| D4 Nautilus-compatible order status report | accepted foundation | report mapping matrix and synthetic positive report-row UI; real row parity waits for non-empty same-slice executions |
+| D5 Nautilus-compatible fill report | accepted foundation | report mapping matrix, synthetic fill path, real `reqExecutions` zero-row typed blocker |
+| D6 Raw payload provenance only | accepted | report batch/mapping validators and browser negative gates |
+| D7 Account Mirror projection boundary | accepted | `validate_account_mirror_api.py`, P019 API boundary, real UI parity |
+| D8 Freshness and sequence discipline | accepted foundation | freshness/sequence schema, runtime freshness gates; realtime claims remain blocked without event evidence |
+| D9 No command drift from reports | accepted | API boundary and Playwright synthetic report-row test |
+| D10 Cross-broker extension shape | accepted | cross-broker extension matrix covering IB TWS, CTP, stock broker, CQG and TT |
+| D11 Durable observation store | accepted foundation | complete/gap fixtures plus real persisted-artifact reload proof |
+| D12 Replay gap blockers | accepted | gap fixture, checksum/memory-only negative tests and real zero-execution partial blocker |
 
 ---
-
-> Decision Gate / 决策门：本 ADR 仍处于 pre-decision。以下 Section 5-7 只保留模板结构与待决策占位；不得把 successor proposal 的 phase plan、acceptance evidence、真实命令输出或 runtime artifact 预填进 ADR。
 
 ---
 
 ## 5. Landing Map / 落地映射
 
-（待决策后填写）
+P019 is the accepted successor proposal for the ADR-0005 foundation. Future broker-specific implementations inherit the same contract family and must add child-change evidence instead of reopening the architecture decision.
 
 ### 5.0 Accepted Decision Boundary / 已接受决策边界
 
-（待决策后填写）
+The accepted boundary is read-only broker observation only:
+
+1. observation profiles and source packages may be owned locally when all readiness, conflict, secret and no-command gates pass;
+2. normalized reports and durable observation-store artifacts may be persisted locally as evidence/projection cache;
+3. Account Mirror remains the only UI/API readback boundary;
+4. broker/runtime/account/order truth, command authority, approvals, capital and tradability remain external or future-owner concerns.
 
 ### 5.0.1 Not Accepted By This ADR / 本 ADR 不接受
 
-（待决策后填写）
+This ADR does not accept order submission, cancellation, replacement, modification, command UI, raw credential ownership, broker tradability, production admission, capital allocation, or complete execution-history claims from partial observation evidence.
 
 ### 5.0.2 Successor Proposal Boundary / 后续 Proposal 边界
 
-（待决策后填写）
+P019 is the successor proposal for the accepted foundation. It closes the shared broker-observation contract/API/UI/runtime gates and leaves only source-specific runtime evidence to future child changes.
 
 | Phase | 目标 | 承接 proposal / change | 退出条件 | retirement 影响 | 承接状态 / Landing Status |
 | --- | --- | --- | --- | --- | --- |
-| Phase 0 | 待决策后填写 | 待决策后填写 | 待决策后填写 | 待决策后填写 | not_started |
+| Phase 0 | Accept architecture and owner boundary | ADR-0005 + P019 | ADR accepted, owner map aligned, no-command/secret/truth gates pass | pre-decision blocker retired | completed |
+| Phase 1 | Contract family | P019 | schemas, positive fixtures and negative fixtures pass | broker-specific schema forks rejected | completed |
+| Phase 2 | Account Mirror readback | P019 U3028269 | U3028269 projects through Account Mirror only | direct browser/broker route rejected | completed |
+| Phase 3 | Real funds/positions parity | P019 U3028269 real closeout | TWS API query/source/UI parity pass | screenshot and sample truth rejected | completed |
+| Phase 4 | Report/store foundation | P019 report/store gates | synthetic positive and real persisted-artifact reload evidence pass; zero real execution rows typed partial | memory-only report/store pass rejected | completed_with_residual_runtime_blocker |
+| Phase 5 | Future broker expansion | future child proposals | each broker extends shared contracts and preserves command boundary | ad hoc broker UI truth rejected | future |
 
 ### 5.1 旧代码退役与文档收口 / Legacy Retirement And Documentation Closure
 
-（待决策后填写）
+P019 retires the pre-ADR blocker as an architecture blocker. Runtime blockers remain typed evidence when specific broker/source conditions are absent, for example zero same-slice execution rows, missing startup replay, checksum drift, or session conflicts.
 
 | 旧项 / 路径 | 当前职责 | 新归宿 / 替代物 | 处理动作 | 暂留边界 | 最终移除条件 | 文档同步项 | 承接状态 / Landing Status |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 待决策后填写 | 待决策后填写 | 待决策后填写 | 待决策后填写 | 待决策后填写 | 待决策后填写 | 待决策后填写 | not_started |
+| `adr0005_not_accepted` blocker | pre-decision architecture gate | runtime/source-specific typed blockers | retire as architecture blocker | historical evidence may mention it as non-claim | ADR acceptance validator passes | P019 completion audit, owner map | retired_for_architecture |
+| P019 blocked UI projection | fail-closed rendering guard | synthetic blocked contract evidence | keep as negative UI contract | does not describe current real TWS ready state | blocked UI validator passes | P019 acceptance | retained_as_negative_fixture |
+| synthetic ready report rows | positive UI/report/store contract guard | real owner/runtime report rows when available | keep synthetic-only boundary | cannot prove real U3028269 order/fill truth | same-slice non-empty executions evidence | P019 evidence lane manifest | retained_as_contract_fixture |
 
 ---
 
 ## 6. Acceptance And Evidence / 验收与证据
 
-本 ADR 仍处于 pre-decision；本节不记录任何已完成实现证据。以下验收场景是防 drift 的 architecture-level requirements：若 Section 4 后续接受独立 broker observation sessions，successor proposal / child change 必须逐项证明这些要求，才能声称 ADR-0005 已落地。
+ADR-0005 architecture acceptance is complete for the P019 foundation. This section records the stable acceptance shape; detailed commands and artifacts remain in P019 and the machine-readable acceptance closeout.
 
 ### 6.0 ADR-Level Acceptance Only / 仅限 ADR 级验收
 
@@ -242,11 +298,13 @@ ADR-0005 的验收只证明 Account Console broker observation 架构没有 drif
 
 ### 6.4 ADR Closeout Distillation / ADR closeout 沉淀
 
-（closeout 后回填）
+ADR-0005 closeout is recorded by `docs/acceptance/2026-06-20-adr0005-broker-observation-session-acceptance.json` and validated by `python scripts/validate_adr0005_acceptance.py`.
 
 | Distillation target | Stable conclusion distilled from this ADR | Source proposal / change / evidence | Do not copy forward | Closeout action |
 | --- | --- | --- | --- | --- |
-| 待决策后填写 | 待决策后填写 | 待决策后填写 | 待决策后填写 | 待决策后填写 |
+| `docs/adr/README.md` | ADR-0005 is a binding accepted ADR | ADR-0005 + acceptance closeout | transient runtime logs | move from proposed to current binding ADRs |
+| `docs/ownership/account-console-owner-map.md` | `account-console-broker-observation-session` is accepted for read-only observation only | P019 + owner-map alignment validator | command/trading/readiness claims | update pending owner to accepted guarded owner |
+| P019 docs | P019 foundation is accepted with residual runtime blockers for real report rows | P019 completion audit | synthetic-as-real claims | mark foundation accepted and preserve typed blockers |
 
 ---
 

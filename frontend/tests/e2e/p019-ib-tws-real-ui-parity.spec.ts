@@ -26,6 +26,17 @@ function formatMoney(value: number | null, currency: string): string {
   return `${currency} ${value.toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
 }
 
+function normalizedOrderStatus(value: unknown): string {
+  const normalized = asText(value, "unknown").toLowerCase();
+  if (["submitted", "presubmitted", "working", "accepted"].includes(normalized)) {
+    return "working";
+  }
+  if (["cancelled", "canceled"].includes(normalized)) {
+    return "canceled";
+  }
+  return normalized;
+}
+
 test("P019 U3028269 real UI parity is blocked until same-slice TWS API source package is ready", async ({
   page
 }, testInfo) => {
@@ -115,21 +126,28 @@ test("P019 U3028269 real UI parity is blocked until same-slice TWS API source pa
   expect(projection.boundaries.broker_truth).toBe(false);
   expect(projection.balances.length).toBeGreaterThan(0);
 
-  const firstBalance = projection.balances[0];
-  const currency = asText(firstBalance.currency, "USD");
-  const cash = asNumber(firstBalance.equity);
-  const available = asNumber(firstBalance.available_cash);
-  const buyingPower = available;
-  const margin = asNumber(firstBalance.margin_used);
-  const unrealizedPnl = asNumber(firstBalance.unrealized_pnl ?? firstBalance.position_profit);
-
   const fundsTable = page.getByTestId("tws-multi-currency-funds-table");
-  await expect(fundsTable).toContainText(currency);
-  await expect(fundsTable).toContainText(formatMoney(cash, currency));
-  await expect(fundsTable).toContainText(formatMoney(available, currency));
-  await expect(fundsTable).toContainText(formatMoney(buyingPower, currency));
-  await expect(fundsTable).toContainText(formatMoney(margin, currency));
-  await expect(fundsTable).toContainText(formatMoney(unrealizedPnl, currency));
+  const currencyBalances = projection.balances.filter((balance: Record<string, unknown>) => balance.currency !== "BASE");
+  expect(currencyBalances.length).toBeGreaterThanOrEqual(2);
+  expect(currencyBalances.map((balance: Record<string, unknown>) => balance.currency)).toContain("USD");
+  await expect(page.getByTestId("tws-currency-balance-row")).toHaveCount(currencyBalances.length);
+  for (const balance of currencyBalances) {
+    const currency = asText(balance.currency, "USD");
+    const cash = asNumber(balance.cash ?? balance.total_cash ?? balance.equity);
+    const available = asNumber(balance.available_cash);
+    const buyingPower = available;
+    const margin = asNumber(balance.margin_used);
+    const equity = asNumber(balance.equity ?? balance.net_liquidation_by_currency);
+    const unrealizedPnl = asNumber(balance.unrealized_pnl ?? balance.position_profit);
+
+    await expect(fundsTable).toContainText(currency);
+    await expect(fundsTable).toContainText(formatMoney(cash, currency));
+    await expect(fundsTable).toContainText(formatMoney(available, currency));
+    await expect(fundsTable).toContainText(formatMoney(buyingPower, currency));
+    await expect(fundsTable).toContainText(formatMoney(margin, currency));
+    await expect(fundsTable).toContainText(formatMoney(equity, currency));
+    await expect(fundsTable).toContainText(formatMoney(unrealizedPnl, currency));
+  }
 
   const positionRows = page.getByTestId("account-position-projection-row");
   await expect(positionRows).toHaveCount(projection.positions.length);
@@ -140,6 +158,40 @@ test("P019 U3028269 real UI parity is blocked until same-slice TWS API source pa
     await expect(row).toContainText(String(position.available_qty ?? "missing"));
     await expect(row).toContainText(String(position.avg_price ?? "missing"));
     await expect(row).toContainText(asText(position.source_ref, projection.source_ref));
+  }
+
+  const openOrderRows = page.getByTestId("tws-open-order-row");
+  await expect(page.getByTestId("tws-open-orders-table")).toBeVisible();
+  await expect(page.getByTestId("tws-open-order-count")).toContainText(String(projection.orders.length));
+  await expect(openOrderRows).toHaveCount(projection.orders.length);
+  for (const [index, order] of projection.orders.entries()) {
+    const row = page.getByTestId("tws-open-order-row").nth(index);
+    await expect(row).toContainText(asText(order.client_order_id));
+    await expect(row).toContainText(asText(order.instrument));
+    await expect(row).toContainText(asText(order.side));
+    await expect(row).toContainText(normalizedOrderStatus(order.status));
+    await expect(row).toContainText(String(order.quantity ?? "missing"));
+    await expect(row).toContainText(String(order.filled_quantity ?? "missing"));
+    await expect(row).toContainText(String(order.remaining_quantity ?? "missing"));
+    await expect(row).toContainText(String(order.limit_price ?? "missing"));
+    await expect(row).toContainText(asText(order.source_ref, projection.source_ref));
+  }
+
+  const fillRows = page.getByTestId("tws-fill-row");
+  await expect(page.getByTestId("tws-fills-table")).toBeVisible();
+  await expect(page.getByTestId("tws-fill-count")).toContainText(String(projection.fills.length));
+  await expect(fillRows).toHaveCount(projection.fills.length);
+  if (projection.fills.length === 0) {
+    await expect(page.getByTestId("tws-fill-empty-state")).toContainText("No fill rows in this mirror projection.");
+  }
+  for (const [index, fill] of projection.fills.entries()) {
+    const row = page.getByTestId("tws-fill-row").nth(index);
+    await expect(row).toContainText(asText(fill.report_id, asText(fill.trade_id)));
+    await expect(row).toContainText(asText(fill.client_order_id));
+    await expect(row).toContainText(asText(fill.instrument_id, asText(fill.instrument)));
+    await expect(row).toContainText(asText(fill.side));
+    await expect(row).toContainText(String(fill.filled_quantity ?? "missing"));
+    await expect(row).toContainText(asText(fill.source_ref, projection.source_ref));
   }
 
   if (testInfo.project.name === "desktop") {
@@ -156,14 +208,33 @@ test("P019 U3028269 real UI parity is blocked until same-slice TWS API source pa
             orders_fills_parity: projection.orders.length === 0 && projection.fills.length === 0 ? "blocked" : "pass",
             execution_reports_table_parity:
               projection.orders.length === 0 && projection.fills.length === 0 ? "blocked" : "pass",
-            execution_reports_persistence_parity: "blocked"
+            execution_reports_persistence_parity: "blocked",
+            open_orders_parity: "pass",
+            fills_parity: projection.source_health.executions_query_success === true ? "pass" : "blocked"
           },
           compared_against: {
             api_route: `/api/mirror/accounts/${accountId}`,
             balance_count: projection.balances.length,
+            rendered_balance_count: currencyBalances.length,
+            rendered_balance_currencies: currencyBalances.map((balance: Record<string, unknown>) => balance.currency),
             position_count: projection.positions.length,
             order_count: projection.orders.length,
-            fill_count: projection.fills.length
+            rendered_open_order_count: projection.orders.length,
+            rendered_open_order_client_order_ids: projection.orders.map((order: Record<string, unknown>) =>
+              asText(order.client_order_id)
+            ),
+            fill_count: projection.fills.length,
+            rendered_fill_count: projection.fills.length,
+            rendered_fill_report_ids: projection.fills.map((fill: Record<string, unknown>) =>
+              asText(fill.report_id, asText(fill.trade_id))
+            ),
+            execution_report_rows: projection.source_health.execution_report_rows ?? projection.fills.length,
+            execution_report_state: projection.source_health.execution_report_state ?? "unknown",
+            executions_query_success: projection.source_health.executions_query_success === true,
+            executions_complete_history_claimed:
+              projection.source_health.executions_readonly_query?.complete_history_claimed === true,
+            executions_order_action_sent:
+              projection.source_health.executions_readonly_query?.order_action_sent === true
           }
         },
         null,

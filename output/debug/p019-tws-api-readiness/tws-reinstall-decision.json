@@ -3,7 +3,7 @@
   "proposal_id": "p019-broker-observation-session-foundation",
   "account_id": "acct.ib.live.u3028269",
   "display_alias": "U3028269",
-  "observed_at": "2026-06-20T10:45:02Z",
+  "observed_at": "2026-06-20T14:48:16Z",
   "decision": "do_not_reinstall_yet",
   "reinstall_recommended": false,
   "primary_next_action": "run_real_acceptance_closeout",

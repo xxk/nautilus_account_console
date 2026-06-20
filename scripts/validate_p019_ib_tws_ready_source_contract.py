@@ -79,9 +79,89 @@ def main() -> None:
     with tempfile.TemporaryDirectory(prefix="p019-ready-source-contract-") as tmp:
         tmp_dir = Path(tmp)
         output = tmp_dir / "source-package.json"
+        executions = tmp_dir / "executions.json"
+        executions.write_text(
+            json.dumps(
+                {
+                    "schema": "account-console.ib-tws-api-query.v1",
+                    "account_id": "acct.ib.live.u3028269",
+                    "display_alias": "U3028269",
+                    "query_kind": "executions",
+                    "source_kind": "ib_tws_api",
+                    "success": True,
+                    "tws_api_login_confirmed": True,
+                    "query_started_at": "2026-06-20T00:00:00Z",
+                    "query_completed_at": "2026-06-20T00:00:00Z",
+                    "raw_secret_values_recorded": False,
+                    "raw_broker_endpoint_recorded": False,
+                    "screenshot_used_for_values": False,
+                    "order_action_sent": False,
+                    "account_ref": "ib-account-ref://U3028269",
+                    "executions": [],
+                    "commissions": [],
+                    "execution_report_rows": 0,
+                    "readonly_query": {
+                        "api_call": "reqExecutions",
+                        "filter_type": "ExecutionFilter",
+                        "filter_account_ref": "ib-account-ref://U3028269",
+                        "filter_account_raw_value_recorded": False,
+                        "query_scope": "synthetic_current_tws_session_matching_account_filter",
+                        "request_id": "exec-readonly-synthetic",
+                        "order_action_sent": False,
+                        "complete_history_claimed": False,
+                    },
+                    "query_checksum": "sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+                },
+                ensure_ascii=False,
+                indent=2,
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        open_orders = tmp_dir / "open_orders.json"
+        open_orders.write_text(
+            json.dumps(
+                {
+                    "schema": "account-console.ib-tws-api-query.v1",
+                    "account_id": "acct.ib.live.u3028269",
+                    "display_alias": "U3028269",
+                    "query_kind": "open_orders",
+                    "source_kind": "ib_tws_api",
+                    "success": True,
+                    "tws_api_login_confirmed": True,
+                    "query_started_at": "2026-06-20T00:00:00Z",
+                    "query_completed_at": "2026-06-20T00:00:00Z",
+                    "raw_secret_values_recorded": False,
+                    "raw_broker_endpoint_recorded": False,
+                    "screenshot_used_for_values": False,
+                    "order_action_sent": False,
+                    "cancel_order_sent": False,
+                    "replace_order_sent": False,
+                    "account_ref": "ib-account-ref://U3028269",
+                    "open_orders": [],
+                    "open_order_rows": 0,
+                    "readonly_query": {
+                        "api_call": "reqAllOpenOrders",
+                        "callback_rows": ["openOrder", "orderStatus", "openOrderEnd"],
+                        "query_scope": "synthetic_current_tws_session_open_orders_visible_to_api_client",
+                        "order_action_sent": False,
+                        "cancel_order_sent": False,
+                        "replace_order_sent": False,
+                        "complete_history_claimed": False,
+                    },
+                    "query_checksum": "sha256:abababababababababababababababababababababababababababababababab",
+                },
+                ensure_ascii=False,
+                indent=2,
+            )
+            + "\n",
+            encoding="utf-8",
+        )
         package = builder.build_source_package(
             account_summary_path=ACCOUNT_SUMMARY,
             positions_path=POSITIONS,
+            executions_query_path=executions,
+            open_orders_query_path=open_orders,
             readiness_probe_path=READINESS,
             output_path=output,
             allow_blocked=False,

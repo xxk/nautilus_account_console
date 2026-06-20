@@ -8,7 +8,7 @@ ROOT = Path(__file__).resolve().parents[1]
 COVERAGE = ROOT / "docs" / "proposals" / "p019-broker-observation-session-foundation" / "pre-acceptance-coverage.md"
 ACCEPTANCE = ROOT / "docs" / "proposals" / "p019-broker-observation-session-foundation" / "acceptance.md"
 AUDIT = ROOT / "docs" / "proposals" / "p019-broker-observation-session-foundation" / "pre-implementation-audit.md"
-FOUNDATION = ROOT / "scripts" / "validate_p019_broker_observation_foundation.py"
+ADR = ROOT / "docs" / "adr" / "0005-account-console-independent-broker-observation-sessions.md"
 
 
 class PreacceptanceCoverageError(AssertionError):
@@ -41,59 +41,51 @@ def main() -> None:
     coverage = read(COVERAGE)
     acceptance = read(ACCEPTANCE)
     audit = read(AUDIT)
+    adr = read(ADR)
 
-    require("- Status: pre-acceptance partial" in coverage, "coverage closeout must remain partial")
-    require("ADR-0005 is accepted" in coverage, "coverage must keep ADR acceptance as future requirement")
-    require("does not authorize a direct Account Console broker observation session" in coverage, "coverage must not authorize direct session")
+    require("decision_status: accepted" in adr, "ADR-0005 must now be accepted")
+    require("- Status: accepted_with_residual_runtime_blockers" in acceptance, "P019 acceptance must be accepted")
+    require("- Status: historical_pre_acceptance_retained" in coverage, "coverage doc must be historical retained")
+    require("ADR-0005 is now accepted" in coverage, "coverage doc must acknowledge accepted ADR")
 
     for idx in range(1, 15):
         row_id = f"A{idx}"
-        row = table_row_for(coverage, row_id)
-        require("pre-acceptance partial" in row, f"{row_id} must remain pre-acceptance partial")
+        table_row_for(coverage, row_id)
         require(row_id in acceptance, f"{row_id} must exist in acceptance matrix")
-
     for idx in range(1, 10):
         row_id = f"PRE-G{idx:02d}"
-        row = table_row_for(coverage, row_id)
+        table_row_for(coverage, row_id)
         require(row_id in audit, f"{row_id} must exist in pre-implementation audit")
-        if row_id in {"PRE-G01", "PRE-G02"}:
-            require("blocked by ADR" in row, f"{row_id} must stay blocked by ADR while ADR-0005 is proposed")
-        else:
-            require("pre-acceptance partial" in row, f"{row_id} must remain pre-acceptance partial")
+
+    for row_id in ["A5", "A13", "PRE-G06", "PRE-G08"]:
+        row = table_row_for(coverage, row_id)
+        require("execution_report_rows=0" in row or "zero execution rows" in row, f"{row_id} must retain zero-row term")
+        require(
+            "blocked" in row or "not report parity" in row or "non-empty" in row,
+            f"{row_id} must retain blocker/non-parity term",
+        )
+    a11 = table_row_for(coverage, "A11")
+    require("partial" in a11 and "blocked" in a11 and "no live memory" in a11, "A11 must retain durable partial/no-live-memory terms")
 
     require_terms(
         COVERAGE,
         [
-            "Funds and positions acceptance must come from an authorized TWS API login / owner runtime source / Account Mirror projection chain.",
-            "Screenshots may confirm local operator/window state only",
-            "they must not be used as funds truth, positions truth, account truth, execution report truth or trading-readiness evidence.",
-            "positive per-currency funds evidence obtained through authorized TWS API / owner runtime source",
-            "screenshot evidence is forbidden for funds and positions truth",
-            "Funds and positions closeout requires TWS API / owner runtime source data",
-            "Synthetic ready-path fixtures may prove contract mapping from TWS API query artifacts, normalized report batches and durable-store reload checkpoints into source packages and Account Mirror projections",
-            "they cannot close real U3028269 funds parity, positions parity, real order/fill callback parity, UI parity, P018 owner source-package acceptance or ADR-0005 direct observation acceptance",
-            "Synthetic ready-path fixtures are contract guards only",
-            "P019_PREACCEPTANCE_COVERAGE_OK: acceptance=14 gates=9 status=partial",
+            "Current real U3028269 TWS API evidence proves funds/positions collection and UI parity are ready",
+            "Real `reqExecutions` success with zero rows must remain a typed empty-state blocker, not a real report parity pass.",
+            "Durable reload from persisted artifacts with zero report rows must remain `partial` / `blocked`, not complete.",
+            "P019_PREACCEPTANCE_COVERAGE_OK: acceptance=14 gates=9 status=historical_retained",
         ],
     )
     require_terms(
         ACCEPTANCE,
         [
-            "pre-acceptance partial",
-            "positive per-currency TWS parity remains required",
-            "TWS U3028269 UI readback is compared against same-slice TWS/API/source data",
-            "Screenshot evidence proves broker/account/order truth.",
-        ],
-    )
-    require_terms(
-        FOUNDATION,
-        [
-            "PREACCEPTANCE_COVERAGE",
-            "P019_PREACCEPTANCE_COVERAGE_OK: acceptance=14 gates=9 status=partial",
+            "accepted_with_residual_runtime_blockers",
+            "real U3028269 TWS API funds and positions render through Account Mirror with parity pass",
+            "residual runtime blocker",
         ],
     )
 
-    print("P019_PREACCEPTANCE_COVERAGE_OK: acceptance=14 gates=9 status=partial")
+    print("P019_PREACCEPTANCE_COVERAGE_OK: acceptance=14 gates=9 status=historical_retained")
 
 
 if __name__ == "__main__":

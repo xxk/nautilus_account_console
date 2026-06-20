@@ -9,14 +9,158 @@ const evidencePath = path.resolve(
   "acceptance",
   "2026-06-20-p019-u3028269-blocked-ui-parity-evidence.json"
 );
+const accountId = "acct.ib.live.u3028269";
+const sourceRef = "contract://p019/u3028269/blocked-projection.synthetic.v1";
+const readinessRef = "output/debug/p019-tws-api-readiness/tws-api-readiness-probe.json";
+const sourceChecksum = "sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee";
+const projectionChecksum = "sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff";
+const projectionCheckpoint = "mirror.blocked.u3028269.tws-api-readiness-missing.001";
+
+const blockedProjection = {
+  schema_version: "account_mirror_projection.v1",
+  account_id: accountId,
+  display_alias: "U3028269",
+  source_kind: "ib_tws_observation",
+  source_mode: "live_observation",
+  account_domain: "live",
+  capabilities: {
+    observation: { enabled: true, mirror_state: "blocked" },
+    command: { enabled: false, mode: "disabled" }
+  },
+  balances: [],
+  positions: [],
+  orders: [],
+  fills: [],
+  source_health: {
+    state: "blocked",
+    api_transport: "ib_tws_api",
+    blocker_id: "tws_api_readiness_missing",
+    raw_secret_values_recorded: false,
+    screenshot_used_for_values: false,
+    direct_session_allowed: false,
+    readiness_probe_ref: readinessRef
+  },
+  blockers: [
+    {
+      type: "source_unavailable",
+      blocker_id: "tws_api_readiness_missing",
+      source_ref: readinessRef,
+      message: "source unavailable until TWS API readiness probe and source package pass"
+    }
+  ],
+  projection_checkpoint_id: projectionCheckpoint,
+  projection_checksum: projectionChecksum,
+  source_ref: sourceRef,
+  source_checksum: sourceChecksum,
+  route_context: {
+    route_id: "route.ib.live.u3028269.account-readonly",
+    account_truth: "blocked_until_tws_api_source_package",
+    blocker_id: "tws_api_readiness_missing"
+  },
+  boundaries: {
+    read_only_projection: true,
+    runtime_truth: false,
+    capital_truth: false,
+    broker_truth: false,
+    order_action: false,
+    account_truth: false,
+    raw_secret_values_recorded: false,
+    screenshot_used_for_funds_positions: false
+  }
+};
+
+const blockedList = {
+  schema_version: "account_mirror_list.v1",
+  accounts: [
+    {
+      account_id: accountId,
+      display_alias: "U3028269",
+      source_kind: "ib_tws_observation",
+      source_mode: "live_observation",
+      account_domain: "live",
+      route_id: "route.ib.live.u3028269.account-readonly",
+      evidence_partition: "account_mirror/ib-live-u3028269/blocked",
+      mirror_state: "blocked",
+      command_enabled: false,
+      command_mode: "disabled",
+      balance_count: 0,
+      position_count: 0,
+      order_count: 0,
+      fill_count: 0,
+      blocker_count: 1,
+      projection_checkpoint_id: projectionCheckpoint,
+      projection_checksum: projectionChecksum,
+      source_ref: sourceRef,
+      source_checksum: sourceChecksum
+    }
+  ]
+};
+
+const blockedSourceHealth = {
+  schema_version: "account_mirror_source_health.v1",
+  account_id: accountId,
+  state: "blocked",
+  source_ref: sourceRef,
+  source_checksum: sourceChecksum,
+  projection_checkpoint_id: projectionCheckpoint,
+  projection_checksum: projectionChecksum,
+  blockers: blockedProjection.blockers,
+  boundaries: {
+    raw_secret_values_recorded: false,
+    screenshot_used_for_funds_positions: false,
+    order_action: false,
+    broker_truth: false
+  }
+};
+
+const blockedEvidence = {
+  schema_version: "account_mirror_evidence.v1",
+  account_id: accountId,
+  projection_checkpoint_id: projectionCheckpoint,
+  projection_checksum: projectionChecksum,
+  source_ref: sourceRef,
+  source_checksum: sourceChecksum,
+  evidence: [
+    {
+      kind: "typed_blocker",
+      owner: "account-console-broker-observation-session",
+      source_ref: readinessRef,
+      checksum: sourceChecksum,
+      authority: "blocked Account Mirror projection; not broker/account/order truth"
+    }
+  ],
+  blockers: blockedProjection.blockers,
+  boundaries: {
+    raw_secret_values_recorded: false,
+    screenshot_used_for_funds_positions: false,
+    order_action: false,
+    broker_truth: false
+  }
+};
 
 test("P019 U3028269 route renders Account Mirror TWS API readiness blocker without command drift", async ({ page }, testInfo) => {
-  const accountId = "acct.ib.live.u3028269";
-  const projectionResponse = await page.request.get(
-    `http://127.0.0.1:8775/api/mirror/accounts/${encodeURIComponent(accountId)}`
-  );
-  expect(projectionResponse.ok()).toBeTruthy();
-  const projection = await projectionResponse.json();
+  await page.route("**/api/mirror/**", async (route) => {
+    const url = new URL(route.request().url());
+    if (url.pathname === "/api/mirror/accounts") {
+      await route.fulfill({ json: blockedList });
+      return;
+    }
+    if (url.pathname === `/api/mirror/accounts/${accountId}`) {
+      await route.fulfill({ json: blockedProjection });
+      return;
+    }
+    if (url.pathname === `/api/mirror/accounts/${accountId}/source-health`) {
+      await route.fulfill({ json: blockedSourceHealth });
+      return;
+    }
+    if (url.pathname === `/api/mirror/accounts/${accountId}/evidence`) {
+      await route.fulfill({ json: blockedEvidence });
+      return;
+    }
+    await route.fallback();
+  });
+
+  const projection = blockedProjection;
 
   expect(projection.account_id).toBe(accountId);
   expect(projection.display_alias).toBe("U3028269");
@@ -51,7 +195,7 @@ test("P019 U3028269 route renders Account Mirror TWS API readiness blocker witho
   await expect(page.getByTestId("account-positions-table")).toContainText(
     "No position rows in this fixture projection."
   );
-  await expect(page.getByTestId("account-bottom-tape")).toContainText("No order rows in this fixture projection.");
+  await expect(page.getByTestId("account-bottom-tape")).toContainText("No open order rows in this mirror projection.");
   await expect(page.getByTestId("tws-execution-reports-table")).toBeVisible();
   await expect(page.getByTestId("tws-execution-reports-table")).toContainText("Report type");
   await expect(page.getByTestId("tws-execution-reports-table")).toContainText("Client order");

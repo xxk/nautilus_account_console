@@ -17,6 +17,8 @@ FIREWALL_DIAGNOSTIC = ROOT / "output" / "debug" / "p019-tws-api-readiness" / "wi
 CONFIG_DIAGNOSTIC = ROOT / "output" / "debug" / "p019-tws-api-readiness" / "tws-api-config-diagnostic.json"
 ACCOUNT_SUMMARY = ROOT / "output" / "account_capability" / "ib-live-u3028269" / "tws-api" / "account_summary.json"
 POSITIONS = ROOT / "output" / "account_capability" / "ib-live-u3028269" / "tws-api" / "positions.json"
+EXECUTIONS = ROOT / "output" / "account_capability" / "ib-live-u3028269" / "tws-api" / "executions.json"
+OPEN_ORDERS = ROOT / "output" / "account_capability" / "ib-live-u3028269" / "tws-api" / "open_orders.json"
 SOURCE_PACKAGE = ROOT / "output" / "account_capability" / "ib-live-u3028269" / "source-package.json"
 
 
@@ -53,6 +55,14 @@ def _load(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
 
 
+def _checksum(payload: dict[str, Any], *keys: str) -> str | None:
+    for key in keys:
+        value = payload.get(key)
+        if isinstance(value, str) and value.startswith("sha256:"):
+            return value
+    return None
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Run the P019 IB U3028269 TWS API readiness/query/source-package pipeline.")
     parser.add_argument("--summary", type=Path, default=SUMMARY)
@@ -80,6 +90,8 @@ def main() -> int:
     config_diagnostic = _load(CONFIG_DIAGNOSTIC)
     account_summary = _load(ACCOUNT_SUMMARY)
     positions = _load(POSITIONS)
+    executions = _load(EXECUTIONS)
+    open_orders = _load(OPEN_ORDERS)
     source_package = _load(SOURCE_PACKAGE)
     status = "ready" if source_package.get("source_health", {}).get("state") == "ready" else "blocked"
     summary = {
@@ -97,7 +109,17 @@ def main() -> int:
         "readiness_ref": _source_ref(READINESS),
         "account_summary_ref": _source_ref(ACCOUNT_SUMMARY),
         "positions_ref": _source_ref(POSITIONS),
+        "executions_ref": _source_ref(EXECUTIONS),
+        "open_orders_ref": _source_ref(OPEN_ORDERS),
         "source_package_ref": _source_ref(SOURCE_PACKAGE),
+        "artifact_checksums": {
+            "readiness_probe": _checksum(readiness, "probe_checksum"),
+            "account_summary_query": _checksum(account_summary, "query_checksum"),
+            "positions_query": _checksum(positions, "query_checksum"),
+            "executions_query": _checksum(executions, "query_checksum"),
+            "open_orders_query": _checksum(open_orders, "query_checksum"),
+            "source_package": _checksum(source_package, "source_checksum"),
+        },
         "ibapi_available": readiness.get("ibapi_available"),
         "ibapi_runtime_ref": readiness.get("ibapi_runtime_ref"),
         "socket_primary_blocker": socket_diagnostic.get("typed_blocker", {}).get("reasons", [None])[0]
@@ -110,6 +132,10 @@ def main() -> int:
         "ready_for_tws_api_funds_positions_query": readiness.get("ready_for_tws_api_funds_positions_query"),
         "account_summary_success": account_summary.get("success"),
         "positions_success": positions.get("success"),
+        "executions_success": executions.get("success"),
+        "open_orders_success": open_orders.get("success"),
+        "execution_report_rows": executions.get("execution_report_rows"),
+        "open_order_rows": open_orders.get("open_order_rows"),
         "source_package_state": source_package.get("source_health", {}).get("state"),
         "boundaries": {
             "raw_secret_values_recorded": False,

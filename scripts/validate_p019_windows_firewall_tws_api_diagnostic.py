@@ -38,13 +38,15 @@ def main() -> None:
     require(payload["account_id"] == "acct.ib.live.u3028269", "account mismatch")
     require(payload["display_alias"] == "U3028269", "alias mismatch")
     require(payload["diagnostic_kind"] == "windows_firewall_tws_api", "diagnostic kind mismatch")
-    require(payload["tws_process"]["present"] is True, "TWS process must be present")
-    require(payload["tws_process"]["window_title_ref"] == "U3028269_account_window", "TWS window ref mismatch")
+    tws_present = payload["tws_process"]["present"] is True
+    if tws_present:
+        require(payload["tws_process"]["window_title_ref"] == "U3028269_account_window", "TWS window ref mismatch")
 
     diagnosis = payload["diagnosis"]
     require(diagnosis["matching_allow_rules_present"] is True, "expected matching allow rules")
     require(diagnosis["matching_block_rules_present"] is False, "must not have matching enabled block rules")
     if diagnosis["known_tws_api_ports_listening"] is True:
+        require(tws_present, "listener-ready firewall diagnostic must see TWS process")
         require(diagnosis["firewall_is_primary_blocker"] is None, "firewall primary blocker must be unknown after socket opens")
         require(diagnosis["primary_blocker"] == "unknown", "ready-listener primary blocker mismatch")
         require(payload["known_api_listeners"], "known API listener rows are required after socket opens")

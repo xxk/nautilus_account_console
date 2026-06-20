@@ -3,8 +3,8 @@
   "proposal_id": "p019-broker-observation-session-foundation",
   "account_id": "acct.ib.live.u3028269",
   "display_alias": "U3028269",
-  "started_at": "2026-06-20T10:45:56Z",
-  "completed_at": "2026-06-20T10:46:29Z",
+  "started_at": "2026-06-20T15:09:26Z",
+  "completed_at": "2026-06-20T15:09:59Z",
   "status": "ready",
   "blocker_id": null,
   "socket_diagnostic_ref": "output/debug/p019-tws-api-readiness/tws-api-socket-diagnostic.json",
@@ -13,7 +13,17 @@
   "readiness_ref": "output/debug/p019-tws-api-readiness/tws-api-readiness-probe.json",
   "account_summary_ref": "output/account_capability/ib-live-u3028269/tws-api/account_summary.json",
   "positions_ref": "output/account_capability/ib-live-u3028269/tws-api/positions.json",
+  "executions_ref": "output/account_capability/ib-live-u3028269/tws-api/executions.json",
+  "open_orders_ref": "output/account_capability/ib-live-u3028269/tws-api/open_orders.json",
   "source_package_ref": "output/account_capability/ib-live-u3028269/source-package.json",
+  "artifact_checksums": {
+    "readiness_probe": null,
+    "account_summary_query": "sha256:b28f620c3371364a42d7fe8598a3c9fee041197976a7fb4c857015d80739d300",
+    "positions_query": "sha256:4534472b0a091414c58b40f0b2cb934e3b80c22d3a0594b18aca0c3e8467c61c",
+    "executions_query": "sha256:ac3e8c6038bab56b3cfb3996eabe4d4b5d1d2698abd0073871c506a09c7774b5",
+    "open_orders_query": "sha256:70205a021d344b74b410007328c361291477dc9729101e8ffaae610134092851",
+    "source_package": "sha256:001bcc422d6575b3fa803c13be9dfc229cf0366a0b8a741f6adb7ae9a41e870c"
+  },
   "ibapi_available": true,
   "ibapi_runtime_ref": "output/runtime/python",
   "socket_primary_blocker": null,
@@ -22,6 +32,10 @@
   "ready_for_tws_api_funds_positions_query": true,
   "account_summary_success": true,
   "positions_success": true,
+  "executions_success": true,
+  "open_orders_success": true,
+  "execution_report_rows": 0,
+  "open_order_rows": 2,
   "source_package_state": "ready",
   "boundaries": {
     "raw_secret_values_recorded": false,
@@ -116,7 +130,7 @@
       "returncode": 0,
       "ok": true,
       "stdout_tail": [
-        "P019_IB_U3028269_TWS_API_QUERIES_OK: status=ready order_action_sent=false screenshot_values=false"
+        "P019_IB_U3028269_TWS_API_QUERIES_OK: status=ready executions=0 open_orders=2 order_action_sent=false screenshot_values=false"
       ],
       "stderr_tail": []
     },

@@ -6,8 +6,8 @@
   "source_kind": "ib_tws_api",
   "success": true,
   "tws_api_login_confirmed": true,
-  "query_started_at": "2026-06-20T10:46:27Z",
-  "query_completed_at": "2026-06-20T10:46:28Z",
+  "query_started_at": "2026-06-20T15:09:56Z",
+  "query_completed_at": "2026-06-20T15:09:58Z",
   "raw_secret_values_recorded": false,
   "raw_broker_endpoint_recorded": false,
   "screenshot_used_for_values": false,
@@ -22,31 +22,10 @@
       "unrealized_pnl": null
     },
     {
-      "instrument": "MSFT",
-      "exchange": "NASDAQ",
-      "net_qty": 50.0,
-      "avg_cost": 393.27,
-      "unrealized_pnl": null
-    },
-    {
       "instrument": "700",
       "exchange": "SEHK",
       "net_qty": 500.0,
       "avg_cost": 427.1575,
-      "unrealized_pnl": null
-    },
-    {
-      "instrument": "NDAQ",
-      "exchange": "NASDAQ",
-      "net_qty": 10.0,
-      "avg_cost": 73.19,
-      "unrealized_pnl": null
-    },
-    {
-      "instrument": "ICE",
-      "exchange": "NYSE",
-      "net_qty": 180.0,
-      "avg_cost": 172.30666665,
       "unrealized_pnl": null
     },
     {
@@ -71,17 +50,45 @@
       "unrealized_pnl": null
     },
     {
-      "instrument": "9988",
-      "exchange": "SEHK",
-      "net_qty": 2000.0,
-      "avg_cost": 124.4023734,
-      "unrealized_pnl": null
-    },
-    {
       "instrument": "1069",
       "exchange": "SEHK",
       "net_qty": 2000.0,
       "avg_cost": 0.1003874,
+      "unrealized_pnl": null
+    },
+    {
+      "instrument": "TLT",
+      "exchange": "NASDAQ",
+      "net_qty": 200.0,
+      "avg_cost": 89.497143,
+      "unrealized_pnl": null
+    },
+    {
+      "instrument": "MSFT",
+      "exchange": "NASDAQ",
+      "net_qty": 50.0,
+      "avg_cost": 393.27,
+      "unrealized_pnl": null
+    },
+    {
+      "instrument": "NDAQ",
+      "exchange": "NASDAQ",
+      "net_qty": 10.0,
+      "avg_cost": 73.19,
+      "unrealized_pnl": null
+    },
+    {
+      "instrument": "ICE",
+      "exchange": "NYSE",
+      "net_qty": 180.0,
+      "avg_cost": 172.30666665,
+      "unrealized_pnl": null
+    },
+    {
+      "instrument": "9988",
+      "exchange": "SEHK",
+      "net_qty": 2000.0,
+      "avg_cost": 124.4023734,
       "unrealized_pnl": null
     },
     {
@@ -111,14 +118,7 @@
       "net_qty": 15400.0,
       "avg_cost": 9.2088844,
       "unrealized_pnl": null
-    },
-    {
-      "instrument": "TLT",
-      "exchange": "NASDAQ",
-      "net_qty": 200.0,
-      "avg_cost": 89.497143,
-      "unrealized_pnl": null
     }
   ],
-  "query_checksum": "sha256:306e4a7940db01564af4b2d863ca1e10de1a3c5e363d2c42c424667dcc4d288f"
+  "query_checksum": "sha256:4534472b0a091414c58b40f0b2cb934e3b80c22d3a0594b18aca0c3e8467c61c"
 }

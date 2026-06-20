@@ -104,7 +104,7 @@ def main() -> int:
             timeout=120,
         )
     summary = _load(pipeline_summary)
-    status = "ready" if summary.get("status") == "ready" else "blocked"
+    status = "ready" if ready and summary.get("status") == "ready" else "blocked"
     blocker_id = None if status == "ready" else "tws_api_readiness_missing"
     payload = {
         "schema": "account-console.p019-tws-api-wait-collect-summary.v1",

@@ -1,6 +1,6 @@
 {
   "schema_version": "account_source_artifact.v1",
-  "artifact_id": "source.ib.live.u3028269.20260620104628",
+  "artifact_id": "source.ib.live.u3028269.20260620150958",
   "account_id": "acct.ib.live.u3028269",
   "display_alias": "U3028269",
   "source_owner": "account-console-broker-observation-session",
@@ -10,24 +10,81 @@
   "observation_mode": "snapshot",
   "event_stream": "not_implemented",
   "trading_day": "2026-06-20",
-  "query_window_id": "ib-u3028269.20260620104628",
-  "query_started_at": "2026-06-20T10:46:28Z",
-  "query_completed_at": "2026-06-20T10:46:28Z",
-  "observed_at": "2026-06-20T10:46:28Z",
+  "query_window_id": "ib-u3028269.20260620150958",
+  "query_started_at": "2026-06-20T15:09:58Z",
+  "query_completed_at": "2026-06-20T15:09:58Z",
+  "observed_at": "2026-06-20T15:09:58Z",
   "source_ref": "output/account_capability/ib-live-u3028269/source-package.json",
-  "source_checksum": "sha256:a51cee3f4e3ab8eec1fd2b0508fd3b31052c0419a8e358c87dca65be75be6d58",
+  "source_checksum": "sha256:001bcc422d6575b3fa803c13be9dfc229cf0366a0b8a741f6adb7ae9a41e870c",
   "source_inputs": {
     "readiness_probe": "output/debug/p019-tws-api-readiness/tws-api-readiness-probe.json",
     "account_summary_query": "output/account_capability/ib-live-u3028269/tws-api/account_summary.json",
-    "positions_query": "output/account_capability/ib-live-u3028269/tws-api/positions.json"
+    "positions_query": "output/account_capability/ib-live-u3028269/tws-api/positions.json",
+    "executions_query": "output/account_capability/ib-live-u3028269/tws-api/executions.json",
+    "open_orders_query": "output/account_capability/ib-live-u3028269/tws-api/open_orders.json"
+  },
+  "source_input_checksums": {
+    "readiness_probe": "sha256:04d0354fad0ed8ff8f8f19d7f186a1294e957cf2dee4b2a1fdcf4c84fcdcdb32",
+    "account_summary_query": "sha256:b28f620c3371364a42d7fe8598a3c9fee041197976a7fb4c857015d80739d300",
+    "positions_query": "sha256:4534472b0a091414c58b40f0b2cb934e3b80c22d3a0594b18aca0c3e8467c61c",
+    "executions_query": "sha256:ac3e8c6038bab56b3cfb3996eabe4d4b5d1d2698abd0073871c506a09c7774b5",
+    "open_orders_query": "sha256:70205a021d344b74b410007328c361291477dc9729101e8ffaae610134092851"
   },
   "balances": [
+    {
+      "currency": "BASE",
+      "equity": 178744.9462,
+      "available_cash": -69647.3413,
+      "cash": -69647.3413,
+      "total_cash": -69647.3413,
+      "net_liquidation_by_currency": 178744.9462,
+      "margin_used": 0.0,
+      "unrealized_pnl": -49779.44,
+      "exchange_rate": 1.0
+    },
+    {
+      "currency": "CNH",
+      "equity": 67784.82,
+      "available_cash": 67784.82,
+      "cash": 67784.82,
+      "total_cash": 67784.82,
+      "net_liquidation_by_currency": 67784.82,
+      "margin_used": 0.0,
+      "unrealized_pnl": 0.0,
+      "exchange_rate": 0.1473981
+    },
+    {
+      "currency": "HKD",
+      "equity": 903922.946,
+      "available_cash": -274301.73,
+      "cash": -274301.73,
+      "total_cash": -274301.73,
+      "net_liquidation_by_currency": 903922.946,
+      "margin_used": 0.0,
+      "unrealized_pnl": 113740.37,
+      "exchange_rate": 0.1276031
+    },
+    {
+      "currency": "JPY",
+      "equity": -7791191.0,
+      "available_cash": -7783583.0,
+      "cash": -7783583.0,
+      "total_cash": -7783583.0,
+      "net_liquidation_by_currency": -7791191.0,
+      "margin_used": 0.0,
+      "unrealized_pnl": 0.0,
+      "exchange_rate": 0.0061995
+    },
     {
       "currency": "USD",
       "equity": 178744.95,
       "available_cash": 73196.81,
+      "cash": 3617.52,
+      "total_cash": 3617.52,
+      "net_liquidation_by_currency": 101711.8503,
       "margin_used": 67394.39,
-      "unrealized_pnl": 0.0
+      "unrealized_pnl": -64293.06,
+      "exchange_rate": 1.0
     }
   ],
   "positions": [
@@ -41,39 +98,12 @@
       "unrealized_pnl": null
     },
     {
-      "instrument": "MSFT",
-      "exchange": "NASDAQ",
-      "direction": "long",
-      "net_qty": 50.0,
-      "available_qty": 50.0,
-      "avg_price": 393.27,
-      "unrealized_pnl": null
-    },
-    {
       "instrument": "700",
       "exchange": "SEHK",
       "direction": "long",
       "net_qty": 500.0,
       "available_qty": 500.0,
       "avg_price": 427.1575,
-      "unrealized_pnl": null
-    },
-    {
-      "instrument": "NDAQ",
-      "exchange": "NASDAQ",
-      "direction": "long",
-      "net_qty": 10.0,
-      "available_qty": 10.0,
-      "avg_price": 73.19,
-      "unrealized_pnl": null
-    },
-    {
-      "instrument": "ICE",
-      "exchange": "NYSE",
-      "direction": "long",
-      "net_qty": 180.0,
-      "available_qty": 180.0,
-      "avg_price": 172.30666665,
       "unrealized_pnl": null
     },
     {
@@ -104,21 +134,57 @@
       "unrealized_pnl": null
     },
     {
-      "instrument": "9988",
-      "exchange": "SEHK",
-      "direction": "long",
-      "net_qty": 2000.0,
-      "available_qty": 2000.0,
-      "avg_price": 124.4023734,
-      "unrealized_pnl": null
-    },
-    {
       "instrument": "1069",
       "exchange": "SEHK",
       "direction": "long",
       "net_qty": 2000.0,
       "available_qty": 2000.0,
       "avg_price": 0.1003874,
+      "unrealized_pnl": null
+    },
+    {
+      "instrument": "TLT",
+      "exchange": "NASDAQ",
+      "direction": "long",
+      "net_qty": 200.0,
+      "available_qty": 200.0,
+      "avg_price": 89.497143,
+      "unrealized_pnl": null
+    },
+    {
+      "instrument": "MSFT",
+      "exchange": "NASDAQ",
+      "direction": "long",
+      "net_qty": 50.0,
+      "available_qty": 50.0,
+      "avg_price": 393.27,
+      "unrealized_pnl": null
+    },
+    {
+      "instrument": "NDAQ",
+      "exchange": "NASDAQ",
+      "direction": "long",
+      "net_qty": 10.0,
+      "available_qty": 10.0,
+      "avg_price": 73.19,
+      "unrealized_pnl": null
+    },
+    {
+      "instrument": "ICE",
+      "exchange": "NYSE",
+      "direction": "long",
+      "net_qty": 180.0,
+      "available_qty": 180.0,
+      "avg_price": 172.30666665,
+      "unrealized_pnl": null
+    },
+    {
+      "instrument": "9988",
+      "exchange": "SEHK",
+      "direction": "long",
+      "net_qty": 2000.0,
+      "available_qty": 2000.0,
+      "avg_price": 124.4023734,
       "unrealized_pnl": null
     },
     {
@@ -156,18 +222,58 @@
       "available_qty": 15400.0,
       "avg_price": 9.2088844,
       "unrealized_pnl": null
-    },
-    {
-      "instrument": "TLT",
-      "exchange": "NASDAQ",
-      "direction": "long",
-      "net_qty": 200.0,
-      "available_qty": 200.0,
-      "avg_price": 89.497143,
-      "unrealized_pnl": null
     }
   ],
-  "orders": [],
+  "orders": [
+    {
+      "report_id": "report.ib.u3028269.open_order.000001",
+      "nautilus_report_type": "OrderStatusReport",
+      "client_order_id": "-23",
+      "venue_order_id": "1158429861",
+      "instrument_id": "UCZ26",
+      "instrument": "UC",
+      "exchange": "SGX",
+      "destination": "SGX",
+      "side": "BUY",
+      "order_type": "LMT",
+      "quantity": 1.0,
+      "filled_quantity": 0.0,
+      "remaining_quantity": 1.0,
+      "limit_price": 6.4838,
+      "price": 6.4838,
+      "time_in_force": "GTC",
+      "status": "PreSubmitted",
+      "order_status": "PreSubmitted",
+      "sequence": 1,
+      "source_ref": "output/account_capability/ib-live-u3028269/tws-api/open_orders.json#open-order-1",
+      "source_checksum": "sha256:70205a021d344b74b410007328c361291477dc9729101e8ffaae610134092851",
+      "report_provenance_ref": "output/account_capability/ib-live-u3028269/tws-api/open_orders.json#open-order-1"
+    },
+    {
+      "report_id": "report.ib.u3028269.open_order.000002",
+      "nautilus_report_type": "OrderStatusReport",
+      "client_order_id": "-22",
+      "venue_order_id": "1358997123",
+      "instrument_id": "981",
+      "instrument": "981",
+      "exchange": "SEHK",
+      "destination": "SEHK",
+      "side": "SELL",
+      "order_type": "LMT",
+      "quantity": 1000.0,
+      "filled_quantity": 0.0,
+      "remaining_quantity": 1000.0,
+      "limit_price": 88.35,
+      "price": 88.35,
+      "time_in_force": "GTC",
+      "status": "PreSubmitted",
+      "order_status": "PreSubmitted",
+      "sequence": 2,
+      "source_ref": "output/account_capability/ib-live-u3028269/tws-api/open_orders.json#open-order-2",
+      "source_checksum": "sha256:70205a021d344b74b410007328c361291477dc9729101e8ffaae610134092851",
+      "report_provenance_ref": "output/account_capability/ib-live-u3028269/tws-api/open_orders.json#open-order-2"
+    }
+  ],
   "fills": [],
   "source_health": {
     "state": "ready",
@@ -177,6 +283,36 @@
     "readiness_probe_ref": "output/debug/p019-tws-api-readiness/tws-api-readiness-probe.json",
     "account_summary_query_ref": "output/account_capability/ib-live-u3028269/tws-api/account_summary.json",
     "positions_query_ref": "output/account_capability/ib-live-u3028269/tws-api/positions.json",
+    "executions_query_ref": "output/account_capability/ib-live-u3028269/tws-api/executions.json",
+    "open_orders_query_ref": "output/account_capability/ib-live-u3028269/tws-api/open_orders.json",
+    "executions_query_success": true,
+    "executions_readonly_query": {
+      "api_call": "reqExecutions",
+      "filter_type": "ExecutionFilter",
+      "filter_account_ref": "ib-account-ref://U3028269",
+      "filter_account_raw_value_recorded": false,
+      "query_scope": "current_tws_session_matching_account_filter",
+      "complete_history_claimed": false,
+      "order_action_sent": false
+    },
+    "execution_report_rows": 0,
+    "execution_report_state": "not_available_or_empty",
+    "open_orders_query_success": true,
+    "open_orders_readonly_query": {
+      "api_call": "reqAllOpenOrders",
+      "callback_rows": [
+        "openOrder",
+        "orderStatus",
+        "openOrderEnd"
+      ],
+      "query_scope": "current_tws_session_open_orders_visible_to_api_client",
+      "complete_history_claimed": false,
+      "order_action_sent": false,
+      "cancel_order_sent": false,
+      "replace_order_sent": false
+    },
+    "open_order_rows": 2,
+    "open_orders_state": "available",
     "raw_secret_values_recorded": false,
     "screenshot_used_for_values": false,
     "api_transport": "ib_tws_api"
@@ -186,6 +322,8 @@
     "raw_secret_values_recorded": false,
     "screenshot_used_for_funds_positions": false,
     "tws_api_account_query_required": true,
-    "order_action_sent": false
+    "order_action_sent": false,
+    "cancel_order_sent": false,
+    "replace_order_sent": false
   }
 }

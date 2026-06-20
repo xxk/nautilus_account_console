@@ -35,8 +35,9 @@ Do not paste passwords, 2FA values, auth codes, raw `tws.xml`, raw broker endpoi
 | Latest sanitized API setting observed by P019 | runtime `handshake_ok=true`; latest static XML candidate may still report `socketClient=false`, `allowOnlyLocalhost=true`, `port=7497` |
 | Required API access posture | socket clients enabled, localhost-only, no remote access policy unless explicitly owner-approved |
 | Readiness proof | IB API `serverVersion` `handshake_ok`, not merely TCP connectable |
-| Collection proof | read-only TWS API `reqAccountSummary` and `reqPositions` success |
+| Collection proof | read-only TWS API `reqAccountSummary`, `reqPositions` and `reqExecutions`/`ExecutionFilter` success |
 | Projection proof | source package -> Account Mirror -> Account Workbench UI parity |
+| Report/store non-claim | current real `reqExecutions` returned zero rows, so report parity and durable reload parity remain blocked |
 
 ## Repeatable Recovery Flow
 
@@ -72,7 +73,10 @@ The following current-state artifacts must exist and agree:
 | `output/debug/p019-tws-api-readiness/tws-api-config-diagnostic.json` | `ready_for_tws_api_funds_positions_query=true`, connectable API port ref exists; static XML candidate is sanitized reference evidence and may lag runtime state |
 | `output/account_capability/ib-live-u3028269/tws-api/account_summary.json` | `success=true`, `tws_api_login_confirmed=true` |
 | `output/account_capability/ib-live-u3028269/tws-api/positions.json` | `success=true`, `tws_api_login_confirmed=true` |
+| `output/account_capability/ib-live-u3028269/tws-api/executions.json` | `success=true`, `execution_report_rows=0`, `readonly_query.complete_history_claimed=false`, `readonly_query.order_action_sent=false` |
 | `output/account_capability/ib-live-u3028269/source-package.json` | `source_health.state=ready`, `source_health.api_transport=ib_tws_api` |
+| `output/account_capability/ib-live-u3028269/durable-store-reload.json` | `replay_state.state=partial`, `reload_proof.parity_status=blocked` while real execution rows are absent |
+| `docs/proposals/p019-broker-observation-session-foundation/p019-completion-audit.json` | `overall_status=not_complete`, `completion_must_not_be_claimed=true` |
 | `docs/acceptance/2026-06-20-p019-u3028269-real-ui-parity-evidence.json` | `verdict=pass` |
 | `output/account_capability/ib-live-u3028269/real-acceptance-closeout.json` | `status=ready`, `blocker_id=null` |
 
@@ -134,10 +138,14 @@ The draft artifact is `output/account_capability/ib-live-u3028269/knowledge-back
 - config_diagnostic_ref: output/debug/p019-tws-api-readiness/tws-api-config-diagnostic.json
 - account_summary_ref: output/account_capability/ib-live-u3028269/tws-api/account_summary.json
 - positions_ref: output/account_capability/ib-live-u3028269/tws-api/positions.json
+- executions_ref: output/account_capability/ib-live-u3028269/tws-api/executions.json
 - source_package_ref: output/account_capability/ib-live-u3028269/source-package.json
+- durable_store_reload_ref: output/account_capability/ib-live-u3028269/durable-store-reload.json
+- completion_audit_ref: docs/proposals/p019-broker-observation-session-foundation/p019-completion-audit.json
 - real_ui_parity_ref: docs/acceptance/2026-06-20-p019-u3028269-real-ui-parity-evidence.json
 - sanitized_config_shape: runtime_handshake_ok=true, latest_static_socketClient=false, allowOnlyLocalhost=true, port_ref=7497
 - readiness_shape: handshake_ok=true, account_summary_success=true, positions_success=true, source_package_state=ready, real_ui_parity_verdict=pass
+- report_store_non_claims: executions_query_success=true, execution_report_rows=0, complete_history_claimed=false, durable_reload_state=partial, durable_reload_parity=blocked, completion_overall_status=not_complete
 - non_secret_operator_steps_required: logged-in TWS API socket was enabled by local operator before collection; no external config write or reinstall was performed by this worktree
 - verification_commands:
   - python scripts/validate_p019_u3028269_current_state_closeout_refresh.py
@@ -161,10 +169,14 @@ The draft artifact is `output/account_capability/ib-live-u3028269/knowledge-back
 - config_diagnostic_ref: output/debug/p019-tws-api-readiness/tws-api-config-diagnostic.json
 - account_summary_ref: output/account_capability/ib-live-u3028269/tws-api/account_summary.json
 - positions_ref: output/account_capability/ib-live-u3028269/tws-api/positions.json
+- executions_ref: output/account_capability/ib-live-u3028269/tws-api/executions.json
 - source_package_ref: output/account_capability/ib-live-u3028269/source-package.json
+- durable_store_reload_ref: output/account_capability/ib-live-u3028269/durable-store-reload.json
+- completion_audit_ref: docs/proposals/p019-broker-observation-session-foundation/p019-completion-audit.json
 - real_ui_parity_ref: docs/acceptance/2026-06-20-p019-u3028269-real-ui-parity-evidence.json
 - sanitized_config_shape: socketClient=true, allowOnlyLocalhost=true, port_ref=7497
 - readiness_shape: handshake_ok=true, account_summary_success=true, positions_success=true
+- report_store_non_claims: executions_query_success=<true|false>, execution_report_rows=<n>, complete_history_claimed=false, durable_reload_state=<partial|complete>, durable_reload_parity=<blocked|passed>, completion_overall_status=<not_complete|complete>
 - non_secret_operator_steps_required: <for example restart/reconnect/API popup acknowledgement, or none>
 - verification_commands:
   - python scripts/validate_p019_u3028269_current_state_closeout_refresh.py

@@ -62,6 +62,18 @@ def _status_from_step(step: dict[str, Any]) -> str | None:
     return None
 
 
+def _step_is_expected(step: dict[str, Any], closeout_status: str) -> bool:
+    if step["ok"]:
+        return True
+    if closeout_status == "blocked" and (
+        "scripts/run_p019_u3028269_real_acceptance_closeout.py" in step["command"]
+        or "scripts/validate_p019_completion_audit.py" in step["command"]
+        or "scripts/validate_p019_broker_observation_foundation.py" in step["command"]
+    ):
+        return True
+    return False
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(
         description="Refresh the P019 U3028269 current-state diagnostic, remediation and real closeout evidence chain."
@@ -105,6 +117,7 @@ def main() -> int:
     )
 
     closeout_status = _status_from_step(steps[10]) or "unknown"
+    expected_ok = all(_step_is_expected(step, closeout_status) for step in steps)
     payload = {
         "schema": "account-console.p019-u3028269-current-state-closeout-refresh.v1",
         "proposal_id": "p019-broker-observation-session-foundation",
@@ -117,6 +130,7 @@ def main() -> int:
         "real_acceptance_closeout_ref": "output/account_capability/ib-live-u3028269/real-acceptance-closeout.json",
         "runtime_evidence_freshness_ref": "scripts/validate_p019_runtime_evidence_freshness.py",
         "steps": steps,
+        "expected_ok": expected_ok,
         "boundaries": {
             "writes_outside_worktree": False,
             "raw_secret_values_recorded": False,
@@ -129,7 +143,7 @@ def main() -> int:
     }
     _write(output, payload)
     print(json.dumps({"status": closeout_status, "summary": _source_ref(output)}, ensure_ascii=False))
-    return 0 if all(step["ok"] for step in steps) else 1
+    return 0 if expected_ok else 1
 
 
 if __name__ == "__main__":

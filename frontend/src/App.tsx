@@ -375,7 +375,7 @@ function sideLabel(value: unknown): AccountOrderRow["side"] {
 
 function orderStatusLabel(value: unknown): AccountOrderRow["status"] {
   const normalized = asText(value).toLowerCase();
-  if (normalized === "submitted" || normalized === "working" || normalized === "accepted") {
+  if (normalized === "submitted" || normalized === "presubmitted" || normalized === "working" || normalized === "accepted") {
     return "working";
   }
   if (normalized === "filled") {
@@ -394,6 +394,17 @@ function orderStatusLabel(value: unknown): AccountOrderRow["status"] {
     return normalized;
   }
   return "unknown";
+}
+
+function orderTypeLabel(value: unknown): AccountOrderRow["order_type"] {
+  const normalized = asText(value).toUpperCase();
+  if (normalized === "LMT" || normalized === "LIMIT") {
+    return "LIMIT";
+  }
+  if (normalized === "MKT" || normalized === "MARKET") {
+    return "MARKET";
+  }
+  return "UNKNOWN";
 }
 
 function reportStatusLabel(value: unknown): string {
@@ -519,8 +530,20 @@ function mirrorBoundaries(readback: MirrorWorkbenchReadback) {
 
 function mirrorSummaryReadModel(readback: MirrorWorkbenchReadback): AccountSummaryPanelReadModel {
   const selected = readback.selected;
-  const balance = selected.balances[0] ?? {};
+  const balance = selected.balances.find((row) => row.currency === "USD") ?? selected.balances[0] ?? {};
   const blockers = mirrorBlockers([...(selected.blockers ?? []), ...(readback.sourceHealth?.blockers ?? [])]);
+  const currencyBalances = selected.balances.filter((row) => row.currency !== "BASE").map((row) => ({
+    currency: asText(row.currency, "unknown"),
+    cash: asNumber(row.cash ?? row.total_cash ?? row.equity),
+    available_cash: asNumber(row.available_cash),
+    buying_power: asNumber(row.available_cash),
+    margin_used: asNumber(row.margin_used),
+    equity: asNumber(row.equity ?? row.net_liquidation_by_currency),
+    unrealized_pnl: asNumber(row.unrealized_pnl),
+    exchange_rate: asNumber(row.exchange_rate),
+    source_ref: asText(row.source_ref, selected.source_ref),
+    checksum: asText(row.checksum, selected.source_checksum)
+  }));
   return {
     schema_version: "account_summary_panel.v1",
     workbench: "Account Workbench",
@@ -558,6 +581,7 @@ function mirrorSummaryReadModel(readback: MirrorWorkbenchReadback): AccountSumma
       latest_settlement_ref: selected.source_ref,
       position_carryover_ref: selected.source_ref
     },
+    currency_balances: currencyBalances,
     positions: selected.positions.map((position) => ({
       instrument: asText(position.instrument),
       net_qty: asNumber(position.net_qty),
@@ -629,17 +653,20 @@ function mirrorOrdersReadModel(readback: MirrorWorkbenchReadback): AccountOrders
     orders: readback.selected.orders.map((order) => {
       const quantity = asNumber(order.quantity);
       const filledQuantity = asNumber(order.filled_quantity) ?? 0;
+      const remainingQuantity = asNumber(order.remaining_quantity);
       return {
         account_id: readback.selected.account_id,
         client_order_id: asText(order.client_order_id),
         instrument: asText(order.instrument),
         side: sideLabel(order.side),
         offset: "UNKNOWN",
-        order_type: "UNKNOWN",
-        limit_price: asNumber(order.limit_price),
+        order_type: orderTypeLabel(order.order_type),
+        limit_price: asNumber(order.limit_price ?? order.price),
         quantity,
         filled_quantity: filledQuantity,
-        remaining_quantity: quantity === null ? null : quantity - filledQuantity,
+        remaining_quantity: remainingQuantity ?? (quantity === null ? null : quantity - filledQuantity),
+        time_in_force: asText(order.time_in_force, "missing"),
+        destination: asText(order.destination ?? order.exchange, "missing"),
         status: orderStatusLabel(order.status),
         lifecycle_ref: asText(order.venue_order_id, readback.selected.source_ref),
         report_provenance_ref: asText(order.report_provenance_ref, readback.selected.source_ref),
@@ -1628,6 +1655,36 @@ function AccountWorkbenchTerminalPanel({
                           </td>
                         </tr>
                       ))
+                    ) : (summary.currency_balances ?? []).length > 0 ? (
+                      (summary.currency_balances ?? []).map((balance) => (
+                      <tr data-testid="tws-currency-balance-row" key={`funds-${balance.currency}`}>
+                        <td data-label="Currency">{balance.currency}</td>
+                        <td className="numeric-cell" data-label="Cash">
+                          {formatMoney(balance.cash, balance.currency)}
+                        </td>
+                        <td className="numeric-cell" data-label="Available">
+                          {formatMoney(balance.available_cash, balance.currency)}
+                        </td>
+                        <td className="numeric-cell" data-label="Buying power">
+                          {formatMoney(balance.buying_power, balance.currency)}
+                        </td>
+                        <td className="numeric-cell" data-label="Margin">
+                          {formatMoney(balance.margin_used, balance.currency)}
+                        </td>
+                        <td className="numeric-cell" data-label="Equity/net liq">
+                          {formatMoney(balance.equity, balance.currency)}
+                        </td>
+                        <td className={`numeric-cell ${numberTone(balance.unrealized_pnl)}`} data-label="Unrealized PnL">
+                          {formatMoney(balance.unrealized_pnl, balance.currency)}
+                        </td>
+                        <td data-label="FX/provenance" data-testid="tws-fx-provenance">
+                          {balance.exchange_rate === null ? "source currency" : `FX ${balance.exchange_rate.toLocaleString()}`}
+                        </td>
+                        <td data-label="Source">
+                          <CopyableCode label="funds source ref" value={balance.source_ref} />
+                        </td>
+                      </tr>
+                      ))
                     ) : summary.balances.cash !== null ||
                       summary.balances.available_cash !== null ||
                       summary.margin.initial_margin !== null ||
@@ -1742,11 +1799,11 @@ function AccountWorkbenchTerminalPanel({
 
           <section className="terminal-panel terminal-bottom-tape" data-testid="account-bottom-tape">
             <div className="terminal-panel-header">
-              <h3>Orders Tape</h3>
-              <span>{orders.context.reducer_checkpoint_id}</span>
+              <h3>Open Orders / 挂单</h3>
+              <span data-testid="tws-open-order-count">{visibleOrders.length}</span>
             </div>
             <div className="terminal-data-table-wrap">
-              <table className="terminal-data-table compact">
+              <table className="terminal-data-table compact" data-testid="tws-open-orders-table">
                 <thead>
                   <tr>
                     <th>Client order</th>
@@ -1763,35 +1820,102 @@ function AccountWorkbenchTerminalPanel({
                 <tbody>
                   {visibleOrders.length > 0 ? (
                     visibleOrders.map((order) => (
-                      <tr key={order.checksum}>
-                        <td data-label="Client order">{order.client_order_id}</td>
-                        <td data-label="Instrument">{order.instrument}</td>
-                        <td data-label="Side">
+                      <tr data-testid="tws-open-order-row" key={`${order.source_ref}-${order.client_order_id}`}>
+                        <td data-label="Client order" data-testid="tws-open-order-client-order-id">{order.client_order_id}</td>
+                        <td data-label="Instrument" data-testid="tws-open-order-instrument">{order.instrument}</td>
+                        <td data-label="Side" data-testid="tws-open-order-side">
                           <StateBadge value={order.side} />
                         </td>
-                        <td data-label="Status">
+                        <td data-label="Status" data-testid="tws-open-order-status">
                           <StateBadge value={order.status} />
                         </td>
-                        <td className="numeric-cell" data-label="Limit">
+                        <td className="numeric-cell" data-label="Limit" data-testid="tws-open-order-limit-price">
                           {order.limit_price ?? "missing"}
                         </td>
-                        <td className="numeric-cell" data-label="Qty">
+                        <td className="numeric-cell" data-label="Qty" data-testid="tws-open-order-quantity">
                           {order.quantity ?? "missing"}
                         </td>
-                        <td className="numeric-cell" data-label="Filled">
+                        <td className="numeric-cell" data-label="Filled" data-testid="tws-open-order-filled">
                           {order.filled_quantity ?? "missing"}
                         </td>
-                        <td className="numeric-cell" data-label="Remaining">
+                        <td className="numeric-cell" data-label="Remaining" data-testid="tws-open-order-remaining">
                           {order.remaining_quantity ?? "missing"}
                         </td>
-                        <td data-label="Evidence">
+                        <td data-label="Evidence" data-testid="tws-open-order-source-ref">
                           <CopyableCode label="order source ref" value={order.source_ref} />
                         </td>
                       </tr>
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={9}>No order rows in this fixture projection.</td>
+                      <td colSpan={9} data-testid="tws-open-order-empty-state">No open order rows in this mirror projection.</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <section className="terminal-panel" data-testid="account-fills-tape">
+            <div className="terminal-panel-header">
+              <h3>Fills / 成交单</h3>
+              <span data-testid="tws-fill-count">
+                {executionReportRows.filter((report) => report.report_type === "FillReport").length}
+              </span>
+            </div>
+            <div className="terminal-data-table-wrap">
+              <table className="terminal-data-table compact" data-testid="tws-fills-table">
+                <thead>
+                  <tr>
+                    <th>Report id</th>
+                    <th>Client order</th>
+                    <th>Venue order</th>
+                    <th>Instrument</th>
+                    <th>Side</th>
+                    <th>Trade/status</th>
+                    <th>Filled</th>
+                    <th>Last price</th>
+                    <th>Sequence</th>
+                    <th>Source</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {executionReportRows.filter((report) => report.report_type === "FillReport").length > 0 ? (
+                    executionReportRows
+                      .filter((report) => report.report_type === "FillReport")
+                      .map((report) => (
+                        <tr data-testid="tws-fill-row" key={`${report.report_id}-${report.source_ref}`}>
+                          <td data-label="Report id" data-testid="tws-fill-report-id">{report.report_id}</td>
+                          <td data-label="Client order" data-testid="tws-fill-client-order-id">
+                            {report.client_order_id}
+                          </td>
+                          <td data-label="Venue order" data-testid="tws-fill-venue-order-id">
+                            {report.venue_order_id ?? "missing"}
+                          </td>
+                          <td data-label="Instrument" data-testid="tws-fill-instrument">{report.instrument}</td>
+                          <td data-label="Side" data-testid="tws-fill-side">
+                            <StateBadge value={report.side} />
+                          </td>
+                          <td data-label="Trade/status" data-testid="tws-fill-status-or-trade">
+                            {report.status_or_trade}
+                          </td>
+                          <td className="numeric-cell" data-label="Filled" data-testid="tws-fill-filled-quantity">
+                            {report.filled_quantity ?? "missing"}
+                          </td>
+                          <td className="numeric-cell" data-label="Last price" data-testid="tws-fill-last-price">
+                            {report.limit_or_last_price ?? "missing"}
+                          </td>
+                          <td data-label="Sequence" data-testid="tws-fill-sequence">
+                            {report.sequence ?? "missing"}
+                          </td>
+                          <td data-label="Source" data-testid="tws-fill-source-ref">
+                            <CopyableCode label="fill source ref" value={report.source_ref} />
+                          </td>
+                        </tr>
+                      ))
+                  ) : (
+                    <tr data-testid="tws-fill-empty-state">
+                      <td colSpan={10}>No fill rows in this mirror projection.</td>
                     </tr>
                   )}
                 </tbody>
@@ -2374,7 +2498,7 @@ function AccountOrdersPanel({
           {fixture.orders.length > 0 ? (
             <div className="order-list">
               {fixture.orders.map((order) => (
-                <OrderRowCard order={order} key={order.checksum} />
+                <OrderRowCard order={order} key={`${order.source_ref}-${order.client_order_id}`} />
               ))}
             </div>
           ) : (
@@ -3241,12 +3365,15 @@ function OrderRowCard({ order }: { order: AccountOrderRow }) {
     <article className="order-card" data-testid="account-order-row">
       <div className="order-card-head">
         <div>
-          <strong>{order.client_order_id}</strong>
+          <strong data-testid="tws-open-order-client-order-id">{order.client_order_id}</strong>
           <span>
-            {order.instrument} · {order.side} · {order.offset}
+            <span data-testid="tws-open-order-instrument">{order.instrument}</span> ·{" "}
+            <span data-testid="tws-open-order-side">{order.side}</span> · {order.offset}
           </span>
         </div>
-        <StateBadge value={order.status} />
+        <span data-testid="tws-open-order-status">
+          <StateBadge value={order.status} />
+        </span>
       </div>
       <dl className="detail-list two-column">
         <div>
@@ -3255,26 +3382,36 @@ function OrderRowCard({ order }: { order: AccountOrderRow }) {
         </div>
         <div>
           <dt>Limit</dt>
-          <dd>{order.limit_price ?? "missing"}</dd>
+          <dd data-testid="tws-open-order-limit-price">{order.limit_price ?? "missing"}</dd>
         </div>
         <div>
           <dt>Quantity</dt>
-          <dd>{order.quantity ?? "missing"}</dd>
+          <dd data-testid="tws-open-order-quantity">{order.quantity ?? "missing"}</dd>
         </div>
         <div>
           <dt>Filled</dt>
-          <dd>{order.filled_quantity ?? "missing"}</dd>
+          <dd data-testid="tws-open-order-filled">{order.filled_quantity ?? "missing"}</dd>
         </div>
         <div>
           <dt>Remaining</dt>
-          <dd>{order.remaining_quantity ?? "missing"}</dd>
+          <dd data-testid="tws-open-order-remaining">{order.remaining_quantity ?? "missing"}</dd>
+        </div>
+        <div>
+          <dt>TIF</dt>
+          <dd data-testid="tws-open-order-time-in-force">{order.time_in_force ?? "missing"}</dd>
+        </div>
+        <div>
+          <dt>Destination</dt>
+          <dd data-testid="tws-open-order-destination">{order.destination ?? "missing"}</dd>
         </div>
         <div>
           <dt>Lifecycle ref</dt>
           <dd>{order.lifecycle_ref ? <CopyableCode label="lifecycle ref" value={order.lifecycle_ref} /> : "missing"}</dd>
         </div>
       </dl>
-      <CopyableCode label="order source ref" value={order.source_ref} />
+      <span data-testid="tws-open-order-source-ref">
+        <CopyableCode label="order source ref" value={order.source_ref} />
+      </span>
     </article>
   );
 }

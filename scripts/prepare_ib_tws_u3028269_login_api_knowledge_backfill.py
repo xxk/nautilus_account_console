@@ -14,7 +14,10 @@ SOCKET_DIAGNOSTIC = ROOT / "output" / "debug" / "p019-tws-api-readiness" / "tws-
 CONFIG_DIAGNOSTIC = ROOT / "output" / "debug" / "p019-tws-api-readiness" / "tws-api-config-diagnostic.json"
 ACCOUNT_SUMMARY = ROOT / "output" / "account_capability" / "ib-live-u3028269" / "tws-api" / "account_summary.json"
 POSITIONS = ROOT / "output" / "account_capability" / "ib-live-u3028269" / "tws-api" / "positions.json"
+EXECUTIONS = ROOT / "output" / "account_capability" / "ib-live-u3028269" / "tws-api" / "executions.json"
 SOURCE_PACKAGE = ROOT / "output" / "account_capability" / "ib-live-u3028269" / "source-package.json"
+COMPLETION_AUDIT = ROOT / "docs" / "proposals" / "p019-broker-observation-session-foundation" / "p019-completion-audit.json"
+DURABLE_RELOAD = ROOT / "output" / "account_capability" / "ib-live-u3028269" / "durable-store-reload.json"
 REAL_UI_PARITY = ROOT / "docs" / "acceptance" / "2026-06-20-p019-u3028269-real-ui-parity-evidence.json"
 
 
@@ -34,6 +37,9 @@ def main() -> None:
     closeout = load(REAL_CLOSEOUT)
     socket = load(SOCKET_DIAGNOSTIC)
     config = load(CONFIG_DIAGNOSTIC)
+    executions = load(EXECUTIONS)
+    audit = load(COMPLETION_AUDIT)
+    durable_reload = load(DURABLE_RELOAD)
     status = "ready" if closeout.get("status") == "ready" else "blocked_not_ready"
     latest_config = config.get("latest_config_candidate", {})
     api_settings = latest_config.get("api_settings", {})
@@ -51,7 +57,10 @@ def main() -> None:
         f"- config_diagnostic_ref: {ref(CONFIG_DIAGNOSTIC)}",
         f"- account_summary_ref: {ref(ACCOUNT_SUMMARY)}",
         f"- positions_ref: {ref(POSITIONS)}",
+        f"- executions_ref: {ref(EXECUTIONS)}",
         f"- source_package_ref: {ref(SOURCE_PACKAGE)}",
+        f"- durable_store_reload_ref: {ref(DURABLE_RELOAD)}",
+        f"- completion_audit_ref: {ref(COMPLETION_AUDIT)}",
         f"- real_ui_parity_ref: {ref(REAL_UI_PARITY)}",
         "- sanitized_config_shape: "
         f"socketClient={api_settings.get('socketClient')}, "
@@ -60,7 +69,16 @@ def main() -> None:
         "- readiness_shape: "
         f"handshake_ok={str(handshake_ok).lower()}, "
         f"account_summary_success={str(closeout.get('account_summary_success') is True).lower()}, "
-        f"positions_success={str(closeout.get('positions_success') is True).lower()}",
+        f"positions_success={str(closeout.get('positions_success') is True).lower()}, "
+        f"source_package_state={closeout.get('source_package_state')}, "
+        f"real_ui_parity_verdict={closeout.get('real_ui_parity_verdict')}",
+        "- report_store_non_claims: "
+        f"executions_query_success={str(executions.get('success') is True).lower()}, "
+        f"execution_report_rows={executions.get('execution_report_rows')}, "
+        f"complete_history_claimed={str(executions.get('readonly_query', {}).get('complete_history_claimed') is True).lower()}, "
+        f"durable_reload_state={durable_reload.get('replay_state', {}).get('state')}, "
+        f"durable_reload_parity={durable_reload.get('reload_proof', {}).get('parity_status')}, "
+        f"completion_overall_status={audit.get('overall_status')}",
         "- non_secret_operator_steps_required: <fill non-secret step, or none>",
         "- verification_commands:",
         "  - python scripts/validate_p019_u3028269_current_state_closeout_refresh.py",
@@ -91,7 +109,10 @@ def main() -> None:
             "config_diagnostic": ref(CONFIG_DIAGNOSTIC),
             "account_summary": ref(ACCOUNT_SUMMARY),
             "positions": ref(POSITIONS),
+            "executions": ref(EXECUTIONS),
             "source_package": ref(SOURCE_PACKAGE),
+            "durable_store_reload": ref(DURABLE_RELOAD),
+            "completion_audit": ref(COMPLETION_AUDIT),
             "real_ui_parity": ref(REAL_UI_PARITY),
         },
         "required_before_append": [
@@ -101,6 +122,9 @@ def main() -> None:
             "positions_success=true",
             "source_package_state=ready",
             "real_ui_parity_verdict=pass",
+            "executions_query_success=true",
+            "execution_report_rows=0 keeps real report parity blocked until rows exist",
+            "durable_reload_parity=blocked while real execution rows are absent",
         ],
         "sanitized_config_shape": {
             "socketClient": api_settings.get("socketClient"),
@@ -113,6 +137,16 @@ def main() -> None:
             "positions_success": closeout.get("positions_success") is True,
             "source_package_state": closeout.get("source_package_state"),
             "real_ui_parity_verdict": closeout.get("real_ui_parity_verdict"),
+        },
+        "report_store_non_claims": {
+            "executions_query_success": executions.get("success") is True,
+            "execution_report_rows": executions.get("execution_report_rows"),
+            "complete_history_claimed": executions.get("readonly_query", {}).get("complete_history_claimed") is True,
+            "order_action_sent": executions.get("readonly_query", {}).get("order_action_sent") is True,
+            "durable_reload_state": durable_reload.get("replay_state", {}).get("state"),
+            "durable_reload_parity": durable_reload.get("reload_proof", {}).get("parity_status"),
+            "completion_overall_status": audit.get("overall_status"),
+            "completion_must_not_be_claimed": audit.get("completion_must_not_be_claimed"),
         },
         "knowledge_card_entry_markdown": entry_markdown,
         "boundaries": {

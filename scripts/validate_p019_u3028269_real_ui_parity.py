@@ -78,14 +78,54 @@ def main() -> None:
         require(parity["positions_parity"] == "pass", "ready evidence must pass positions parity")
         require(payload["compared_against"]["api_route"] == "/api/mirror/accounts/acct.ib.live.u3028269", "API route mismatch")
         require(payload["compared_against"]["balance_count"] > 0, "ready parity must include balance rows")
+        rendered_currencies = payload["compared_against"].get("rendered_balance_currencies", [])
+        require(isinstance(rendered_currencies, list), "rendered balance currencies missing")
+        require(payload["compared_against"].get("rendered_balance_count") == len(rendered_currencies), "rendered balance count mismatch")
+        require("USD" in rendered_currencies, "rendered balances must include USD")
+        require(any(currency != "USD" for currency in rendered_currencies), "rendered balances must include non-USD currency")
         require(payload["compared_against"]["position_count"] >= 0, "position count missing")
+        compared = payload["compared_against"]
+        require(compared["order_count"] >= 0, "order count missing")
+        require(
+            compared.get("rendered_open_order_count") == compared["order_count"],
+            "rendered open order count mismatch",
+        )
+        require(
+            isinstance(compared.get("rendered_open_order_client_order_ids"), list),
+            "rendered open order ids missing",
+        )
+        require(compared["executions_query_success"] is True, "ready parity must include executions query state")
+        require(compared["execution_report_rows"] == compared["fill_count"], "execution report/fill count mismatch")
+        require(compared.get("rendered_fill_count") == compared["fill_count"], "rendered fill count mismatch")
+        require(isinstance(compared.get("rendered_fill_report_ids"), list), "rendered fill report ids missing")
+        if compared["execution_report_rows"] == 0:
+            require(
+                compared["execution_report_state"] == "not_available_or_empty",
+                "empty execution reports must carry typed empty state",
+            )
+        require(
+            compared["executions_complete_history_claimed"] is False,
+            "UI evidence must not claim complete executions history",
+        )
+        require(compared["executions_order_action_sent"] is False, "UI evidence must not send order action")
+        require(parity["open_orders_parity"] == "pass", "ready evidence must pass open orders parity")
+        require(parity["fills_parity"] == "pass", "ready evidence must pass fills parity or typed zero-row empty state")
 
     for term in [
         "/api/mirror/accounts/",
         "tws-multi-currency-funds-table",
         "account-position-projection-row",
+        "tws-open-orders-table",
+        "tws-open-order-row",
+        "tws-fills-table",
+        "tws-fill-row",
+        "tws-fill-empty-state",
         "formatMoney",
         "screenshot_used_for_funds_positions: false",
+        "executions_complete_history_claimed",
+        "rendered_balance_currencies",
+        "rendered_open_order_count",
+        "rendered_fill_count",
     ]:
         require(term in spec, f"spec missing {term}")
 
@@ -100,6 +140,22 @@ def main() -> None:
     for term in [
         "UI-TWS-13",
         "UI-TWS-14",
+        "UI-TWS-15",
+        "UI-TWS-17",
+        "UI-TWS-18",
+        "UI-TWS-20",
+        "UI-TWS-21",
+        "UI-TWS-22",
+        "executions_query_success=true",
+        "execution_report_rows=0",
+        "complete_history_claimed=false",
+        "order_action_sent=false",
+        "open_orders_parity=pass",
+        "fills_parity=pass",
+        "execution_reports_persistence_parity=blocked",
+        "durable_reload_state=partial",
+        "durable_reload_parity=blocked",
+        "closes UI-TWS-20 through UI-TWS-22 for open orders",
         "machine-readable parity evidence compares Web UI rendered values against TWS API/source package values",
     ]:
         require(term in ui_acceptance, f"UI acceptance missing {term}")

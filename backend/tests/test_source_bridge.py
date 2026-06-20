@@ -58,6 +58,16 @@ def test_source_bridge_emits_ready_read_only_bundles() -> None:
             assert bundle["observations"]["source_health"]["raw_secret_values_recorded"] is False
             if bundle["capabilities"]["observation"]["mirror_state"] == "ready":
                 assert bundle["observations"]["source_health"]["state"] == "ready"
+                readonly = bundle["observations"]["source_health"]["executions_readonly_query"]
+                assert readonly["api_call"] == "reqExecutions"
+                assert readonly["filter_type"] == "ExecutionFilter"
+                assert readonly["complete_history_claimed"] is False
+                assert readonly["order_action_sent"] is False
+                open_orders = bundle["observations"]["source_health"]["open_orders_readonly_query"]
+                assert open_orders["api_call"] == "reqAllOpenOrders"
+                assert open_orders["order_action_sent"] is False
+                assert open_orders["cancel_order_sent"] is False
+                assert open_orders["replace_order_sent"] is False
                 assert bundle["route_context"]["account_truth"] == "ib_tws_api_source_package"
                 assert bundle["observations"]["balances"]
                 assert bundle["observations"]["positions"]
@@ -66,7 +76,7 @@ def test_source_bridge_emits_ready_read_only_bundles() -> None:
                 assert bundle["route_context"]["account_truth"] == "blocked_until_tws_api_source_package"
                 assert bundle["observations"]["balances"] == []
                 assert bundle["observations"]["positions"] == []
-            assert bundle["observations"]["orders"] == []
+                assert bundle["observations"]["orders"] == []
             assert bundle["observations"]["fills"] == []
             assert bundle["boundaries"]["broker_truth"] is False
 
@@ -84,7 +94,7 @@ def test_source_bridge_bundles_project_through_account_mirror() -> None:
     states = {projection.account_id: projection.source_health["state"] for projection in projections}
     assert states["acct.nautilus.paper.demo"] == "ready"
     assert states["simulated-001"] == "ready"
-    assert states["acct.ctp.paper.19053"] == "blocked"
+    assert states["acct.ctp.paper.19053"] == "ready"
     assert states["acct.ctp.live.025292"] == "blocked"
     assert states["acct.ib.live.u3028269"] in {"blocked", "ready"}
 
@@ -178,6 +188,7 @@ def test_ib_tws_ready_source_package_projects_ready_without_command() -> None:
     assert projection["capabilities"]["command"] == {"enabled": False, "mode": "disabled"}
     assert projection["source_health"]["state"] == "ready"
     assert projection["source_health"]["api_transport"] == "ib_tws_api"
+    assert projection["source_health"].get("execution_report_state") != "available"
     assert projection["balances"][0]["currency"] == "USD"
     assert projection["positions"][0]["instrument"] == "AAPL"
     assert projection["blockers"] == []

@@ -159,8 +159,10 @@ def load_capability_bundles(artifact_dir: Path = DEFAULT_ARTIFACT_DIR) -> list[d
 
 def _with_provenance(row: dict[str, Any], payload: dict[str, Any]) -> dict[str, Any]:
     enriched = dict(row)
-    enriched["source_ref"] = payload["source_ref"]
-    enriched["checksum"] = payload["source_checksum"]
+    enriched["source_package_ref"] = payload["source_ref"]
+    enriched["source_package_checksum"] = payload["source_checksum"]
+    enriched["source_ref"] = row.get("source_ref", payload["source_ref"])
+    enriched["checksum"] = row.get("source_checksum", row.get("checksum", payload["source_checksum"]))
     enriched["observed_at"] = payload["observed_at"]
     return enriched
 
@@ -388,13 +390,13 @@ def load_ib_u3028269_observation_blocker_bundle() -> dict[str, Any]:
         "route_id": "route.ib.live.u3028269.account-readonly",
         "account_alias": "U3028269",
         "market_data_source": "not_in_scope_for_account_readback",
-        "execution_adapter": "ib_tws_observation.blocked_until_adr0005_accepted",
-        "account_truth": "blocked_until_adr0005_accepted_and_owner_source_package",
+        "execution_adapter": "ib_tws_observation.readonly_account_mirror",
+        "account_truth": "blocked_until_tws_api_source_package",
         "risk_domain": "live",
         "evidence_partition": "account/acct.ib.live.u3028269/broker-observation-blocked",
         "context_ref": source_ref,
         "context_checksum": checksum,
-        "blocker_id": "adr0005_not_accepted",
+        "blocker_id": "tws_api_source_package_missing",
     }
     return {
         "schema_version": "account_capability_bundle.v1",
@@ -443,7 +445,7 @@ def load_ib_u3028269_observation_blocker_bundle() -> dict[str, Any]:
             "fills": [],
             "source_health": {
                 "state": "blocked",
-                "blocker_id": "adr0005_not_accepted",
+                "blocker_id": "tws_api_source_package_missing",
                 "source_ref": source_ref,
                 "checksum": checksum,
                 "observed_at": "2026-06-20T00:00:00Z",
@@ -455,12 +457,11 @@ def load_ib_u3028269_observation_blocker_bundle() -> dict[str, Any]:
             },
             "blockers": [
                 {
-                    "blocker_id": "adr0005_not_accepted",
+                    "blocker_id": "tws_api_source_package_missing",
                     "type": "architecture_gate",
                     "owner": "architecture",
                     "next_action": (
-                        "Accept ADR-0005 and provide owner-produced IB TWS observation source refs before "
-                        "opening a direct read-only broker observation session."
+                        "Provide a validated read-only IB TWS API source package before projecting U3028269 values."
                     ),
                     "source_ref": source_ref,
                     "checksum": checksum,
@@ -479,7 +480,7 @@ def load_ib_u3028269_observation_blocker_bundle() -> dict[str, Any]:
             "trading_readiness_truth": False,
         },
         "rejection_rules": [
-            "Do not open a direct IB TWS observation session while ADR-0005 is proposed.",
+            "Do not project IB TWS values without a validated TWS API source package.",
             "Do not infer broker truth, readiness or command capability from the blocked Account Mirror projection.",
             "Do not store raw IB username, password, 2FA, host, port, client id or account secrets in this repo.",
         ],

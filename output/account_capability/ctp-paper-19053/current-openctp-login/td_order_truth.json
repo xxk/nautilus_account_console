@@ -1,0 +1,37 @@
+{
+  "baseline": "td-order-truth-v1",
+  "success": true,
+  "failure_reason": null,
+  "flow_mode": "explicit_override",
+  "session_label": "account-console-ctp19053-current-login-20260620",
+  "flow_path": "D:\\Nautilus\\_worktrees\\r1-hb-contract\\nautilus_account_console\\output\\account_capability\\ctp-paper-19053\\current-openctp-login\\td_flow",
+  "ready": true,
+  "login_success": true,
+  "settlement_code": 0,
+  "disconnect_count": 0,
+  "disconnect_reasons": [],
+  "observed_callback_count": 0,
+  "observed_order_event_count": 0,
+  "observed_trade_event_count": 0,
+  "no_callbacks_observed": true,
+  "first_order_id": null,
+  "first_order_ref": null,
+  "first_session_id": null,
+  "first_front_id": null,
+  "first_is_trade": null,
+  "observed_callbacks": [],
+  "export": {
+    "path": "D:\\Nautilus\\_worktrees\\r1-hb-contract\\nautilus_account_console\\output\\account_capability\\ctp-paper-19053\\current-openctp-login\\td_order_truth.json",
+    "written": true,
+    "session_label": "account-console-ctp19053-current-login-20260620",
+    "evidence_root": null,
+    "explicit_path": true
+  },
+  "bridge_command_kinds": [
+    "connect"
+  ],
+  "bridge_event_kinds": [
+    "login_succeeded",
+    "settlement_confirmed"
+  ]
+}

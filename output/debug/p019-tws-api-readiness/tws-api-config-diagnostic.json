@@ -3,12 +3,12 @@
   "proposal_id": "p019-broker-observation-session-foundation",
   "account_id": "acct.ib.live.u3028269",
   "display_alias": "U3028269",
-  "observed_at": "2026-06-20T10:46:23Z",
+  "observed_at": "2026-06-20T15:09:53Z",
   "diagnostic_kind": "tws_api_config",
   "tws_process": {
     "present": true,
     "process_name": "tws",
-    "process_id": 31044,
+    "process_id": 12764,
     "window_title_ref": "U3028269_account_window",
     "responding": true
   },
@@ -16,7 +16,7 @@
   "candidate_config_count": 4,
   "latest_config_candidate": {
     "config_ref": "local-file-ref://C:/Jts/1045/gffiklmeamhoiehlgjoifpcbcjmdkpaijiiacdbc/tws.xml",
-    "last_write_time": "2026-06-19T22:30:14Z",
+    "last_write_time": "2026-06-20T14:21:03Z",
     "length_bytes": 3381029,
     "api_settings": {
       "socketClient": "false",
@@ -28,7 +28,7 @@
   "config_candidates": [
     {
       "config_ref": "local-file-ref://C:/Jts/1045/gffiklmeamhoiehlgjoifpcbcjmdkpaijiiacdbc/tws.xml",
-      "last_write_time": "2026-06-19T22:30:14Z",
+      "last_write_time": "2026-06-20T14:21:03Z",
       "length_bytes": 3381029,
       "api_settings": {
         "socketClient": "false",

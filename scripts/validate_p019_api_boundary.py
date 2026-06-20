@@ -50,7 +50,6 @@ FORBIDDEN_SOURCE_TERMS = [
     "cancelOrder(",
     "reqAccountUpdates(",
     "reqPositions(",
-    "reqExecutions(",
     "/api/broker",
     "/api/tws",
     "/api/ib-tws",
@@ -141,9 +140,28 @@ def main() -> None:
     if projection["capabilities"]["observation"]["mirror_state"] == "ready":
         require(projection["source_health"]["state"] == "ready", "ready U3028269 source health drifted")
         require(projection["source_health"].get("blocker_id") is None, "ready U3028269 must not carry blocker")
+        readonly = projection["source_health"]["executions_readonly_query"]
+        require(readonly["api_call"] == "reqExecutions", "mirror lost executions readonly API")
+        require(readonly["filter_type"] == "ExecutionFilter", "mirror lost executions filter type")
+        require(readonly["filter_account_raw_value_recorded"] is False, "mirror recorded raw executions filter")
+        require(readonly["complete_history_claimed"] is False, "mirror must not claim complete execution history")
+        require(readonly["order_action_sent"] is False, "mirror executions metadata must not send order action")
         require(projection["blockers"] == [], "ready U3028269 must not carry blockers")
         require(projection["balances"], "ready U3028269 should project TWS API balances")
         require(projection["positions"], "ready U3028269 should project TWS API positions")
+        open_orders = projection["source_health"]["open_orders_readonly_query"]
+        require(open_orders["api_call"] == "reqAllOpenOrders", "mirror lost open orders readonly API")
+        require(open_orders["order_action_sent"] is False, "mirror open orders metadata must not send order action")
+        require(open_orders["cancel_order_sent"] is False, "mirror open orders metadata must not send cancel")
+        require(open_orders["replace_order_sent"] is False, "mirror open orders metadata must not send replace")
+        require(projection["source_health"]["open_order_rows"] == len(projection["orders"]), "open order count drifted")
+        for order in projection["orders"]:
+            require(order.get("nautilus_report_type") == "OrderStatusReport", "open order must be normalized OrderStatusReport")
+            require(
+                str(order.get("source_ref", "")).startswith("output/account_capability/ib-live-u3028269/tws-api/open_orders.json#"),
+                "open order source ref must point to open_orders artifact",
+            )
+            require(str(order.get("checksum", "")).startswith("sha256:"), "open order checksum missing")
     else:
         require(
             projection["source_health"]["blocker_id"] in {"adr0005_not_accepted", "tws_api_readiness_missing"},
@@ -152,8 +170,20 @@ def main() -> None:
         require(projection["source_health"]["api_transport"] == "ib_tws_api", "TWS API blocker must name API transport")
         require(projection["source_health"]["screenshot_used_for_values"] is False, "screenshots must not back funds/positions")
         require(projection["balances"] == [] and projection["positions"] == [], "blocked U3028269 must not invent balance/position rows")
+        require(projection["orders"] == [], "blocked U3028269 must not invent order rows")
     require(projection["capabilities"]["command"] == {"enabled": False, "mode": "disabled"}, "command capability drifted")
-    require(projection["orders"] == [] and projection["fills"] == [], "U3028269 must not invent order/fill rows")
+    if projection["fills"]:
+        require(
+            projection["source_health"].get("executions_query_success") is True,
+            "U3028269 fills require successful read-only executions query",
+        )
+        for fill in projection["fills"]:
+            require(fill.get("nautilus_report_type") == "FillReport", "U3028269 fills must be normalized FillReport rows")
+    else:
+        require(
+            projection["source_health"].get("execution_report_state") in {None, "not_available_or_empty"},
+            "empty fills must carry typed execution report state",
+        )
     require(projection["boundaries"]["broker_truth"] is False, "U3028269 must not claim broker truth")
     require(projection["boundaries"]["order_action"] is False, "U3028269 must not allow order action")
 

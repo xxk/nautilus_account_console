@@ -63,10 +63,23 @@ def main() -> None:
         "config_diagnostic",
         "account_summary",
         "positions",
+        "executions",
         "source_package",
+        "durable_store_reload",
+        "completion_audit",
         "real_ui_parity",
     ]:
         require(key in draft["source_refs"], f"missing source ref {key}")
+
+    non_claims = draft["report_store_non_claims"]
+    require(non_claims["executions_query_success"] is True, "draft must record executions query success")
+    require(non_claims["execution_report_rows"] == 0, "draft must record zero real execution rows")
+    require(non_claims["complete_history_claimed"] is False, "draft must not claim complete execution history")
+    require(non_claims["order_action_sent"] is False, "draft must not send order action")
+    require(non_claims["durable_reload_state"] == "partial", "draft must record partial durable reload")
+    require(non_claims["durable_reload_parity"] == "blocked", "draft must record blocked durable parity")
+    require(non_claims["completion_overall_status"] == "not_complete", "draft must preserve not_complete audit")
+    require(non_claims["completion_must_not_be_claimed"] is True, "draft must preserve completion non-claim")
 
     entry = draft["knowledge_card_entry_markdown"]
     if draft["status"] == "blocked_not_ready":
@@ -79,6 +92,14 @@ def main() -> None:
             "socket_diagnostic_ref: output/debug/p019-tws-api-readiness/tws-api-socket-diagnostic.json",
             "account_summary_ref: output/account_capability/ib-live-u3028269/tws-api/account_summary.json",
             "positions_ref: output/account_capability/ib-live-u3028269/tws-api/positions.json",
+            "executions_ref: output/account_capability/ib-live-u3028269/tws-api/executions.json",
+            "durable_store_reload_ref: output/account_capability/ib-live-u3028269/durable-store-reload.json",
+            "completion_audit_ref: docs/proposals/p019-broker-observation-session-foundation/p019-completion-audit.json",
+            "report_store_non_claims: executions_query_success=true, execution_report_rows=0",
+            "complete_history_claimed=false",
+            "durable_reload_state=partial",
+            "durable_reload_parity=blocked",
+            "completion_overall_status=not_complete",
             "funds_positions_values_recorded_in_knowledge=false",
             "raw_secret_values_recorded=false",
             "order_action_sent=false",
@@ -103,11 +124,16 @@ def main() -> None:
         "raw_tws_xml_contents=true",
         "funds_positions_values_recorded_in_knowledge=true",
         "order_action_sent=true",
+        "complete_history_claimed=true",
+        "completion_overall_status=complete",
     ]:
         require(forbidden not in json.dumps(draft, ensure_ascii=False).lower(), f"draft contains forbidden {forbidden}")
 
     for term in [
         "knowledge-backfill-draft.json",
+        "executions_ref: output/account_capability/ib-live-u3028269/tws-api/executions.json",
+        "durable_store_reload_ref: output/account_capability/ib-live-u3028269/durable-store-reload.json",
+        "report_store_non_claims: executions_query_success=true, execution_report_rows=0",
         "funds_positions_values_recorded_in_knowledge=false",
         "If closeout remains blocked, do not create a success entry",
     ]:
@@ -119,7 +145,15 @@ def main() -> None:
     ]:
         require(term in acceptance, f"acceptance missing {term}")
         require(term in phase_plan, f"phase plan missing {term}")
-    for term in ["REAL_CLOSEOUT", "knowledge_card_entry_markdown", "funds_positions_values_recorded_in_knowledge"]:
+    for term in [
+        "REAL_CLOSEOUT",
+        "EXECUTIONS",
+        "DURABLE_RELOAD",
+        "COMPLETION_AUDIT",
+        "knowledge_card_entry_markdown",
+        "report_store_non_claims",
+        "funds_positions_values_recorded_in_knowledge",
+    ]:
         require(term in script, f"backfill script missing {term}")
 
     print(f"IB_TWS_U3028269_LOGIN_API_KNOWLEDGE_BACKFILL_OK: status={draft['status']}")

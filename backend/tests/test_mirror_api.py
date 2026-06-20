@@ -27,13 +27,17 @@ def test_mirror_account_detail_is_read_only_and_provenanced() -> None:
     assert response.status_code == 200
     payload = response.json()
     assert payload["capabilities"]["command"] == {"enabled": False, "mode": "disabled"}
-    assert payload["capabilities"]["observation"]["mirror_state"] == "blocked"
+    assert payload["capabilities"]["observation"]["mirror_state"] == "ready"
     assert payload["source_ref"].endswith("output/account_capability/ctp-paper-19053/source-package.json")
-    assert payload["blockers"][0]["blocker_id"] == "ctp19053_real_login_source_unavailable"
     assert payload["route_context"]["route_id"] == "route.ctp.paper.19053.account-readonly"
-    assert payload["route_context"]["account_truth"] == "blocked_until_pinned_source_package"
-    assert payload["positions"] == []
+    assert payload["route_context"]["account_truth"] == "nautilus_ctp_adapter_source_package"
+    assert payload["blockers"] == []
+    assert payload["balances"]
+    assert payload["positions"]
     assert payload["orders"] == []
+    assert payload["source_health"]["open_orders_state"] == "empty"
+    assert payload["source_health"]["open_order_rows"] == 0
+    assert payload["source_health"]["order_action_sent"] is False
     assert payload["boundaries"]["read_only_projection"] is True
     assert payload["boundaries"]["order_action"] is False
 
@@ -73,6 +77,18 @@ def test_mirror_api_shows_ib_tws_u3028269_as_read_only_projection() -> None:
     if payload["capabilities"]["observation"]["mirror_state"] == "ready":
         assert payload["source_health"]["state"] == "ready"
         assert payload["source_health"].get("blocker_id") is None
+        readonly = payload["source_health"]["executions_readonly_query"]
+        assert readonly["api_call"] == "reqExecutions"
+        assert readonly["filter_type"] == "ExecutionFilter"
+        assert readonly["complete_history_claimed"] is False
+        assert readonly["order_action_sent"] is False
+        open_orders = payload["source_health"]["open_orders_readonly_query"]
+        assert open_orders["api_call"] == "reqAllOpenOrders"
+        assert open_orders["order_action_sent"] is False
+        assert open_orders["cancel_order_sent"] is False
+        assert open_orders["replace_order_sent"] is False
+        assert payload["source_health"]["open_order_rows"] == len(payload["orders"])
+        assert payload["source_health"]["execution_report_rows"] == len(payload["fills"])
         assert payload["route_context"]["account_truth"] == "ib_tws_api_source_package"
         assert payload["blockers"] == []
         assert payload["positions"]
@@ -84,7 +100,7 @@ def test_mirror_api_shows_ib_tws_u3028269_as_read_only_projection() -> None:
         assert payload["route_context"]["account_truth"] == "blocked_until_tws_api_source_package"
         assert payload["positions"] == []
         assert payload["balances"] == []
-    assert payload["orders"] == []
+        assert payload["orders"] == []
     assert payload["fills"] == []
     assert payload["boundaries"]["read_only_projection"] is True
     assert payload["boundaries"]["broker_truth"] is False
@@ -133,7 +149,7 @@ def test_mirror_source_health_and_evidence_are_structured() -> None:
     assert health.status_code == 200
     health_payload = health.json()
     assert health_payload["schema_version"] == "account_mirror_source_health.v1"
-    assert health_payload["state"] == "blocked"
+    assert health_payload["state"] == "ready"
     assert health_payload["source_ref"].endswith("output/account_capability/ctp-paper-19053/source-package.json")
     assert health_payload["boundaries"]["order_action"] is False
 

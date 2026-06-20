@@ -31,6 +31,8 @@
 
 Today only develops TWS / IB Gateway read-only observation under ADR-0005.
 
+Current real U3028269 baseline: read-only TWS API account summary and positions collection are ready through Account Mirror/UI parity. Read-only `reqExecutions` / `ExecutionFilter` also succeeds, but currently returns `execution_report_rows=0` with `complete_history_claimed=false` and `order_action_sent=false`. This is typed empty-state evidence, not report parity. The real durable reload artifact remains `partial` / `blocked` until non-empty same-slice execution/report rows exist.
+
 In scope today:
 
 1. `source_kind=ib_tws_observation`.
@@ -64,11 +66,11 @@ Out of scope today:
 | TWS-A5 | F5 Positions | positions preserve instrument id, quantity, avg price, market price/value, PnL and provenance | empty/inferred rows replace missing source data | projection/API test |
 | TWS-A6 | F6 Orders | observed orders include client/venue order ids, status, side, type, quantity, filled qty, price and timestamps | order row enables action controls | projection/API test + UI/API negative |
 | TWS-A7 | F7 OrderStatusReport | TWS order callback/status row maps to Nautilus-compatible `OrderStatusReport` fields | broker-native order object becomes canonical report truth | mapper contract test |
-| TWS-A8 | F8 FillReport | TWS execution/fill maps to Nautilus-compatible `FillReport` fields | fill exists only as raw broker payload | mapper contract test |
+| TWS-A8 | F8 FillReport | TWS execution/fill maps to Nautilus-compatible `FillReport` fields; current real `reqExecutions` success with `execution_report_rows=0` must stay a typed empty state | fill exists only as raw broker payload, or zero rows are treated as real FillReport parity | mapper contract test + real executions artifact |
 | TWS-A9 | F9 Raw provenance | raw TWS payload is linked by ref/checksum and redacted excerpt only | browser parses raw payload as order/account truth | backend schema + browser/API negative |
 | TWS-A10 | F10 Execution Reports table | normalized order/fill reports render as a table with report type, report id, client/venue order ids, instrument, side, status/trade id, quantity, filled/remaining quantity, price, timestamp, sequence/cursor and provenance | reports render only as cards/free text or raw payload dump | Playwright table/column assertion |
-| TWS-A11 | F10 Execution Reports parity | table rows match Nautilus-compatible `OrderStatusReport` / `FillReport` source rows and preserve deterministic sort by sequence/cursor or timestamp/report id fallback | UI drops/merges rows, loses report id/provenance or changes report ordering without an explicit user sort | Playwright + report parity artifact |
-| TWS-A12 | F11 Durable store | order/fill reports, funds snapshots, positions snapshots, session health and freshness cursors survive process restart or reload from local store | reports exist only in memory/startup callback stream and disappear after restart | persistence/reload test |
+| TWS-A11 | F10 Execution Reports parity | table rows match Nautilus-compatible `OrderStatusReport` / `FillReport` source rows and preserve deterministic sort by sequence/cursor or timestamp/report id fallback; current real baseline has `execution_report_rows=0` so table/report parity remains blocked | UI drops/merges rows, loses report id/provenance, changes report ordering without an explicit user sort, or claims pass from zero rows | Playwright + report parity artifact |
+| TWS-A12 | F11 Durable store | order/fill reports, funds snapshots, positions snapshots, session health and freshness cursors survive process restart or reload from local store; current real persisted-artifact reload is `partial` / `blocked` with no live-memory reload while report rows are absent | reports exist only in memory/startup callback stream, disappear after restart, or zero report rows are treated as complete durable parity | persistence/reload test |
 | TWS-A13 | F11 Replay gaps | missing startup replay, sequence gap, report-store gap or store checksum mismatch produces typed blocker in API and Execution Reports table | UI claims complete order lifecycle from partial local data | gap/replay negative test + browser blocked-state assertion |
 | TWS-A14 | F12 Mirror | TWS observation appears through Account Mirror/API shape, not a broker-specific UI path | frontend calls a TWS adapter endpoint directly for account truth | API route test |
 | TWS-A15 | F13 Freshness | projection exposes observed/received/projected timestamps and sequence/cursor/staleness | UI claims realtime from unordered or snapshot-only data | API contract test |
@@ -85,10 +87,10 @@ Out of scope today:
 | F5 Position Observation | covered | TWS-A5 | Position rows must preserve source fields |
 | F6 Order Observation | covered | TWS-A6 | Observed orders only, no actions |
 | F7 Nautilus-Compatible OrderStatusReport | covered | TWS-A7 | Mapper contract required |
-| F8 Nautilus-Compatible FillReport | covered | TWS-A8 | Mapper contract required |
+| F8 Nautilus-Compatible FillReport | covered | TWS-A8 | Mapper contract required; current real executions empty-state is not FillReport parity |
 | F9 Raw Payload Provenance | covered | TWS-A9 | Provenance only, not truth |
-| F10 Execution Reports Table | covered | TWS-A10, TWS-A11 | Required for report review, row-level parity and deterministic readback |
-| F11 Durable Observation Store | covered | TWS-A12, TWS-A13 | Required for post-session review, table reload and replay-gap blockers |
+| F10 Execution Reports Table | covered | TWS-A10, TWS-A11 | Required for report review, row-level parity and deterministic readback; current real zero-row report state remains blocked |
+| F11 Durable Observation Store | covered | TWS-A12, TWS-A13 | Required for post-session review, table reload and replay-gap blockers; current real durable reload is partial/blocked until non-empty report rows exist |
 | F12 Account Mirror Projection | covered | TWS-A14 | No broker-specific UI truth path |
 | F13 Freshness / Lag / Sequence | covered | TWS-A15 | Required before realtime claims |
 | F14 UI/API Readback | conditionally covered | TWS-A14, TWS-A16 | API required; UI only if backend/API slice reaches UI today |
@@ -115,3 +117,5 @@ tests/test_ib_tws_execution_reports_table_contract.py
 ## 6. Closeout Rule / 收口规则
 
 The TWS slice can close only when TWS-A1 through TWS-A16 pass or produce typed blockers. Passing TWS does not imply CTP, stock, CQG or TT support, and does not authorize command capability.
+
+Current zero-row executions and partial durable reload are acceptable typed blockers for report/store parity only when they explicitly carry `complete_history_claimed=false`, `order_action_sent=false`, and no live-memory reload. This current baseline does not close TWS-A8, TWS-A11 or TWS-A12 as passed.

@@ -2,8 +2,8 @@
   "schema": "account-console.p019-evidence-lane-manifest.v1",
   "proposal_id": "p019-broker-observation-session-foundation",
   "adr_id": "ADR-0005",
-  "status": "pre_acceptance_blocked",
-  "blocker_id": "adr0005_not_accepted",
+  "status": "accepted_with_lane_separation",
+  "blocker_id": null,
   "raw_secret_values_recorded": false,
   "lanes": [
     {
@@ -39,21 +39,23 @@
       "proposal_id": "p019-broker-observation-session-foundation",
       "lane_kind": "governed_observation_session",
       "authority_owner": "account-console-broker-observation-session",
-      "purpose": "ADR-0005 governed read-only broker observation session contracts, blockers and future accepted direct observation evidence.",
+      "purpose": "ADR-0005 governed read-only broker observation session contracts, accepted U3028269 TWS API funds/positions evidence and residual typed runtime blockers.",
       "allowed_evidence_roots": [
         "contracts/broker_observation/",
         "docs/proposals/p019-broker-observation-session-foundation/",
         "docs/acceptance/2026-06-20-p019-u3028269-blocked-ui-parity-evidence.json",
-        "output/debug/p019-tws-local-window-confirmation/"
+        "docs/acceptance/2026-06-20-p019-u3028269-real-ui-parity-evidence.json",
+        "docs/acceptance/2026-06-20-adr0005-broker-observation-session-acceptance.json",
+        "output/debug/p019-tws-local-window-confirmation/",
+        "output/account_capability/ib-live-u3028269/"
       ],
       "forbidden_claims": [
-        "ADR-0005 accepted",
-        "direct TWS observation session allowed before ADR-0005 acceptance",
         "Account Console owns broker runtime truth",
         "Account Console owns account/order/fill truth",
         "Account Console stores raw broker secrets",
         "observation session connectivity proves live readiness",
-        "observation session connectivity permits submit/cancel/replace/modify"
+        "observation session connectivity permits submit/cancel/replace/modify",
+        "zero real executions proves complete order/fill history"
       ],
       "direct_session_allowed": false,
       "may_satisfy_p018_owner_source_package_acceptance": false,
@@ -63,7 +65,9 @@
         "typed_blockers",
         "negative_tests",
         "blocked_ui_states",
-        "owner_map_pending_guard"
+        "owner_map_accepted_guard",
+        "real_funds_positions_parity",
+        "residual_runtime_blockers"
       ]
     },
     {
@@ -85,7 +89,6 @@
         "synthetic ready fixture proves real U3028269 positions",
         "synthetic ready fixture closes UI funds/positions parity",
         "synthetic ready fixture satisfies P018 owner source-package acceptance",
-        "synthetic ready fixture accepts ADR-0005",
         "synthetic ready fixture authorizes direct broker session",
         "synthetic ready fixture authorizes order action"
       ],

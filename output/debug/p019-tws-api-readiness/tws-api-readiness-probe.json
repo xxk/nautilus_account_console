@@ -3,7 +3,7 @@
   "proposal_id": "p019-broker-observation-session-foundation",
   "account_id": "acct.ib.live.u3028269",
   "display_alias": "U3028269",
-  "observed_at": "2026-06-20T10:46:27Z",
+  "observed_at": "2026-06-20T15:09:56Z",
   "probe_kind": "local_tws_api_readiness",
   "evidence_kind": "api_readiness_probe",
   "ibapi_available": true,

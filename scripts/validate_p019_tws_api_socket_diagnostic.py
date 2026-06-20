@@ -43,9 +43,12 @@ def main() -> None:
     require(payload["host_ref"] == "localhost_tws_api", "host ref mismatch")
 
     tws_process = payload["tws_process"]
-    require(tws_process["present"] is True, "TWS process must be present for this diagnostic")
-    require(tws_process["window_title_ref"] == "U3028269_account_window", "TWS window title ref mismatch")
-    require(tws_process["responding"] is True, "TWS process must be responding")
+    tws_present = tws_process["present"] is True
+    if tws_present:
+        require(tws_process["window_title_ref"] == "U3028269_account_window", "TWS window title ref mismatch")
+        require(tws_process["responding"] is True, "TWS process must be responding")
+    else:
+        require(payload["ready_for_tws_api_funds_positions_query"] is False, "absent TWS process cannot be ready")
 
     expected_refs = {"tws_live_default", "tws_paper_default", "gateway_live_default", "gateway_paper_default"}
     require(set(payload["listener_port_refs"]) == expected_refs, "listener port refs drifted")
@@ -62,6 +65,7 @@ def main() -> None:
     require(boundaries["order_action_sent"] is False, "diagnostic must not send order action")
 
     if payload["ready_for_tws_api_funds_positions_query"]:
+        require(tws_present, "ready diagnostic must see TWS process")
         require(payload["typed_blocker"] is None, "ready diagnostic must not carry blocker")
         require(
             any(item["status"] == "handshake_ok" for item in payload["handshake_port_refs"].values()),
@@ -91,7 +95,8 @@ def main() -> None:
 
     status = "ready" if payload["ready_for_tws_api_funds_positions_query"] else "blocked"
     handshake = "handshake_ok" if status == "ready" else "handshake_not_ok"
-    print(f"P019_TWS_API_SOCKET_DIAGNOSTIC_OK: status={status} tws_process=present {handshake}")
+    process_label = "present" if tws_present else "absent"
+    print(f"P019_TWS_API_SOCKET_DIAGNOSTIC_OK: status={status} tws_process={process_label} {handshake}")
 
 
 if __name__ == "__main__":

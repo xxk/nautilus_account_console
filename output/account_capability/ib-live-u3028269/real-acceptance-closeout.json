@@ -3,10 +3,12 @@
   "proposal_id": "p019-broker-observation-session-foundation",
   "account_id": "acct.ib.live.u3028269",
   "display_alias": "U3028269",
-  "started_at": "2026-06-20T10:45:54Z",
-  "completed_at": "2026-06-20T10:46:34Z",
+  "started_at": "2026-06-20T15:03:37Z",
+  "completed_at": "2026-06-20T15:04:18Z",
   "status": "ready",
   "blocker_id": null,
+  "wait_collect_summary_ref": "output/account_capability/ib-live-u3028269/wait-collect-summary.json",
+  "wait_collect_status": "ready",
   "pipeline_summary_ref": "output/account_capability/ib-live-u3028269/pipeline-summary.json",
   "real_ui_parity_ref": "docs/acceptance/2026-06-20-p019-u3028269-real-ui-parity-evidence.json",
   "pipeline_status": "ready",
@@ -14,6 +16,26 @@
   "account_summary_success": true,
   "positions_success": true,
   "source_package_state": "ready",
+  "execution_report_closeout": {
+    "executions_query_ref": "output/account_capability/ib-live-u3028269/tws-api/executions.json",
+    "executions_query_success": true,
+    "executions_readonly_api_call": "reqExecutions",
+    "executions_filter_type": "ExecutionFilter",
+    "executions_complete_history_claimed": false,
+    "executions_order_action_sent": false,
+    "execution_report_rows": 0,
+    "fill_count": 0,
+    "ui_execution_report_rows": 0,
+    "ui_fill_count": 0,
+    "execution_report_state": "not_available_or_empty",
+    "ui_execution_report_state": "not_available_or_empty",
+    "orders_fills_parity": "pass",
+    "execution_reports_table_parity": "pass",
+    "execution_reports_persistence_parity": "blocked",
+    "report_parity_status": "blocked",
+    "blocker_id": "real_report_rows_absent",
+    "synthetic_evidence_used": false
+  },
   "required_ready_chain": [
     "ready_for_tws_api_funds_positions_query=true",
     "account_summary_success=true",
@@ -21,12 +43,14 @@
     "source_package_state=ready",
     "query_source_parity=pass",
     "real_ui_parity_verdict=pass",
+    "executions_query_success=true",
+    "execution_report_parity=blocked_when_no_real_rows",
     "command_enabled=false",
     "order_action=false"
   ],
   "steps": [
     {
-      "command": "C:\\Users\\Administrator\\anaconda3\\python.exe scripts/wait_p019_tws_api_ready_and_collect.py --timeout-seconds 30 --interval-seconds 5",
+      "command": "C:\\Users\\Administrator\\anaconda3\\python.exe scripts/wait_p019_tws_api_ready_and_collect.py --timeout-seconds 10 --interval-seconds 2",
       "cwd": ".",
       "returncode": 0,
       "ok": true,
@@ -51,7 +75,7 @@
       "returncode": 0,
       "ok": true,
       "stdout_tail": [
-        "P019_IB_U3028269_TWS_API_PIPELINE_OK: status=ready blocker_id=none steps=13"
+        "P019_IB_U3028269_TWS_API_PIPELINE_OK: status=ready blocker_id=none steps=13 checksum_drift=rejected"
       ],
       "stderr_tail": []
     },
@@ -61,7 +85,7 @@
       "returncode": 0,
       "ok": true,
       "stdout_tail": [
-        "P019_IB_U3028269_TWS_API_QUERIES_OK: status=ready order_action_sent=false screenshot_values=false"
+        "P019_IB_U3028269_TWS_API_QUERIES_OK: status=ready executions=0 open_orders=1 order_action_sent=false screenshot_values=false"
       ],
       "stderr_tail": []
     },
@@ -81,7 +105,27 @@
       "returncode": 0,
       "ok": true,
       "stdout_tail": [
-        "P019_IB_U3028269_QUERY_SOURCE_PARITY_OK: current=ready synthetic_ready=pass"
+        "P019_IB_U3028269_QUERY_SOURCE_PARITY_OK: current=ready synthetic_ready=pass synthetic_fills=1 synthetic_open_orders=1 checksum_drift=rejected"
+      ],
+      "stderr_tail": []
+    },
+    {
+      "command": "C:\\Users\\Administrator\\anaconda3\\python.exe scripts/build_p019_u3028269_real_durable_store_reload.py",
+      "cwd": ".",
+      "returncode": 0,
+      "ok": true,
+      "stdout_tail": [
+        "{\"status\": \"partial\", \"parity_status\": \"blocked\", \"execution_report_rows\": 0, \"output\": \"D:\\\\Nautilus\\\\_worktrees\\\\r1-hb-contract\\\\nautilus_account_console\\\\output\\\\account_capability\\\\ib-live-u3028269\\\\durable-store-reload.json\"}"
+      ],
+      "stderr_tail": []
+    },
+    {
+      "command": "C:\\Users\\Administrator\\anaconda3\\python.exe scripts/validate_p019_u3028269_real_durable_store_reload.py",
+      "cwd": ".",
+      "returncode": 0,
+      "ok": true,
+      "stdout_tail": [
+        "P019_U3028269_REAL_DURABLE_STORE_RELOAD_OK: state=partial parity=blocked records=22 synthetic_complete=pass"
       ],
       "stderr_tail": []
     },
@@ -102,12 +146,12 @@
       "ok": true,
       "stdout_tail": [
         "",
-        "  ok 1 [desktop] › tests\\e2e\\p019-ib-tws-real-ui-parity.spec.ts:29:1 › P019 U3028269 real UI parity is blocked until same-slice TWS API source package is ready (992ms)",
+        "  ok 1 [desktop] › tests\\e2e\\p019-ib-tws-real-ui-parity.spec.ts:40:1 › P019 U3028269 real UI parity is blocked until same-slice TWS API source package is ready (1.2s)",
         "",
         "  1 passed (3.2s)"
       ],
       "stderr_tail": [
-        "\u001b[2m[WebServer] \u001b[22mINFO:     Started server process [38684]",
+        "\u001b[2m[WebServer] \u001b[22mINFO:     Started server process [18092]",
         "\u001b[2m[WebServer] \u001b[22mINFO:     Waiting for application startup.",
         "\u001b[2m[WebServer] \u001b[22mINFO:     Application startup complete.",
         "\u001b[2m[WebServer] \u001b[22mINFO:     Uvicorn running on http://127.0.0.1:8775 (Press CTRL+C to quit)"
@@ -124,22 +168,22 @@
       "stderr_tail": []
     },
     {
-      "command": "C:\\Users\\Administrator\\anaconda3\\python.exe scripts/validate_p019_broker_observation_foundation.py",
-      "cwd": ".",
-      "returncode": 0,
-      "ok": true,
-      "stdout_tail": [
-        "P019_BROKER_OBSERVATION_FOUNDATION_OK: status=proposed pre_acceptance=partial blockers=typed"
-      ],
-      "stderr_tail": []
-    },
-    {
       "command": "C:\\Users\\Administrator\\anaconda3\\python.exe scripts/validate_p019_completion_audit.py",
       "cwd": ".",
       "returncode": 0,
       "ok": true,
       "stdout_tail": [
-        "P019_COMPLETION_AUDIT_OK: overall=not_complete blockers=adr0005,real_parity"
+        "P019_COMPLETION_AUDIT_OK: overall=accepted residual_blockers=real_parity"
+      ],
+      "stderr_tail": []
+    },
+    {
+      "command": "C:\\Users\\Administrator\\anaconda3\\python.exe scripts/validate_p019_broker_observation_foundation.py",
+      "cwd": ".",
+      "returncode": 0,
+      "ok": true,
+      "stdout_tail": [
+        "P019_BROKER_OBSERVATION_FOUNDATION_OK: status=accepted residual_blockers=real_parity"
       ],
       "stderr_tail": []
     }
@@ -150,5 +194,6 @@
     "screenshot_used_for_funds_positions": false,
     "order_action_sent": false,
     "synthetic_evidence_used_for_real_closeout": false
-  }
+  },
+  "expected_ok": true
 }

@@ -3,12 +3,12 @@
   "proposal_id": "p019-broker-observation-session-foundation",
   "account_id": "acct.ib.live.u3028269",
   "display_alias": "U3028269",
-  "observed_at": "2026-06-20T10:46:04Z",
+  "observed_at": "2026-06-20T15:09:34Z",
   "diagnostic_kind": "local_tws_api_socket",
   "tws_process": {
     "present": true,
     "process_name": "tws",
-    "process_id": 31044,
+    "process_id": 12764,
     "window_title_ref": "U3028269_account_window",
     "responding": true
   },
@@ -22,7 +22,7 @@
     },
     "tws_paper_default": {
       "listening": true,
-      "owning_process": 31044
+      "owning_process": 12764
     },
     "gateway_live_default": {
       "listening": false,
@@ -60,7 +60,7 @@
       "tcp_connected": true,
       "bytes_received": 39,
       "server_version": 155,
-      "connect_time": "20260620 18:46:20 ������������"
+      "connect_time": "20260620 23:09:44 ������������"
     },
     "gateway_live_default": {
       "status": "connect_timeout",

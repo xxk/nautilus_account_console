@@ -3,8 +3,8 @@
   "proposal_id": "p019-broker-observation-session-foundation",
   "account_id": "acct.ib.live.u3028269",
   "display_alias": "U3028269",
-  "started_at": "2026-06-20T10:44:33Z",
-  "completed_at": "2026-06-20T10:45:44Z",
+  "started_at": "2026-06-20T14:47:48Z",
+  "completed_at": "2026-06-20T14:48:58Z",
   "status": "ready",
   "blocker_id": null,
   "real_acceptance_closeout_ref": "output/account_capability/ib-live-u3028269/real-acceptance-closeout.json",
@@ -101,7 +101,7 @@
       "stderr_tail": []
     },
     {
-      "command": "python scripts/run_p019_u3028269_real_acceptance_closeout.py --wait-timeout-seconds 1 --wait-interval-seconds 1",
+      "command": "python scripts/run_p019_u3028269_real_acceptance_closeout.py --wait-timeout-seconds 10 --wait-interval-seconds 2",
       "returncode": 0,
       "ok": true,
       "stdout_tail": [
@@ -132,7 +132,7 @@
       "returncode": 0,
       "ok": true,
       "stdout_tail": [
-        "P019_COMPLETION_AUDIT_OK: overall=not_complete blockers=adr0005,real_parity"
+        "P019_COMPLETION_AUDIT_OK: overall=accepted residual_blockers=real_parity"
       ],
       "stderr_tail": []
     },
@@ -141,11 +141,12 @@
       "returncode": 0,
       "ok": true,
       "stdout_tail": [
-        "P019_BROKER_OBSERVATION_FOUNDATION_OK: status=proposed pre_acceptance=partial blockers=typed"
+        "P019_BROKER_OBSERVATION_FOUNDATION_OK: status=accepted residual_blockers=real_parity"
       ],
       "stderr_tail": []
     }
   ],
+  "expected_ok": true,
   "boundaries": {
     "writes_outside_worktree": false,
     "raw_secret_values_recorded": false,

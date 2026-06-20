@@ -42,11 +42,11 @@ def main() -> None:
     require(payload["decision"] == "do_not_reinstall_yet", "current decision must not recommend reinstall")
     require(payload["reinstall_recommended"] is False, "reinstall must not be recommended for current evidence")
     evidence = payload["current_evidence"]
-    require(evidence["tws_process_present"] is True, "TWS process should be present")
     require(evidence["firewall_allow_rules_present"] is True, "firewall allow rules should be present")
     require(evidence["firewall_enabled_block_rules_present"] is False, "firewall block rules should be absent")
     ready_for_query = evidence.get("ready_for_tws_api_funds_positions_query") is True
     if ready_for_query:
+        require(evidence["tws_process_present"] is True, "ready decision must see TWS process")
         require(payload["primary_next_action"] == "run_real_acceptance_closeout", "ready next action mismatch")
         require(evidence["known_api_ports_connectable"] is True, "ready decision needs connectable API port")
         require(evidence["config_primary_blocker"] is None, "ready decision must not carry config blocker")

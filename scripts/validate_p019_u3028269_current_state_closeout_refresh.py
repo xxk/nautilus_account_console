@@ -8,6 +8,9 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 SUMMARY = ROOT / "output" / "account_capability" / "ib-live-u3028269" / "current-state-closeout-refresh.json"
+REAL_CLOSEOUT = ROOT / "output" / "account_capability" / "ib-live-u3028269" / "real-acceptance-closeout.json"
+COMPLETION_AUDIT = ROOT / "docs" / "proposals" / "p019-broker-observation-session-foundation" / "p019-completion-audit.json"
+EXECUTIONS = ROOT / "output" / "account_capability" / "ib-live-u3028269" / "tws-api" / "executions.json"
 ACCEPTANCE = ROOT / "docs" / "proposals" / "p019-broker-observation-session-foundation" / "acceptance.md"
 PHASE_PLAN = ROOT / "docs" / "proposals" / "p019-broker-observation-session-foundation" / "phase-plan.md"
 
@@ -44,6 +47,9 @@ def step_by_command(summary: dict[str, Any], command_term: str) -> dict[str, Any
 
 def main() -> None:
     summary = load(SUMMARY)
+    real_closeout = load(REAL_CLOSEOUT)
+    completion_audit = load(COMPLETION_AUDIT)
+    executions = load(EXECUTIONS)
     require(
         summary["schema"] == "account-console.p019-u3028269-current-state-closeout-refresh.v1",
         "refresh summary schema drifted",
@@ -56,6 +62,7 @@ def main() -> None:
     else:
         require(summary["blocker_id"] is None, "ready refresh must not carry blocker")
     require(summary["real_acceptance_closeout_ref"].endswith("real-acceptance-closeout.json"), "closeout ref drifted")
+    require(summary.get("expected_ok") is True, "refresh did not classify expected blocked/ready outcomes")
 
     started_at = parse_time(summary["started_at"], "refresh started_at")
     completed_at = parse_time(summary["completed_at"], "refresh completed_at")
@@ -82,7 +89,17 @@ def main() -> None:
     require(len(commands) == len(expected_order), "refresh step count drifted")
     for index, expected in enumerate(expected_order):
         require(expected in commands[index], f"refresh step {index + 1} should run {expected}")
-        require(summary["steps"][index]["ok"] is True, f"refresh step failed: {expected}")
+        if summary["steps"][index]["ok"] is False:
+            require(
+                summary["status"] == "blocked"
+                and expected
+                in {
+                    "run_p019_u3028269_real_acceptance_closeout.py",
+                    "validate_p019_completion_audit.py",
+                    "validate_p019_broker_observation_foundation.py",
+                },
+                f"refresh step failed unexpectedly: {expected}",
+            )
 
     socket_step = step_by_command(summary, "diagnose_p019_tws_api_socket.py")
     config_step = step_by_command(summary, "diagnose_p019_tws_api_config.py")
@@ -90,7 +107,38 @@ def main() -> None:
     freshness_step = step_by_command(summary, "validate_p019_runtime_evidence_freshness.py")
     require(socket_step["returncode"] in {0, 2}, "socket diagnostic return code drifted")
     require(config_step["returncode"] in {0, 2}, "config diagnostic return code drifted")
-    require(closeout_step["returncode"] == 0, "real closeout runner failed")
+    if summary["status"] == "blocked":
+        require(closeout_step["returncode"] in {0, 1, 2}, "blocked real closeout runner return code drifted")
+        require(real_closeout["status"] == "blocked", "blocked refresh must point at blocked real closeout")
+        require(real_closeout["blocker_id"] == "tws_api_readiness_missing", "blocked real closeout blocker mismatch")
+    else:
+        require(closeout_step["returncode"] == 0, "real closeout runner failed")
+        require(real_closeout["status"] == "ready", "ready refresh must point at ready real closeout")
+    closeout_commands = [step["command"] for step in real_closeout["steps"]]
+    for term in [
+        "scripts/build_p019_u3028269_real_durable_store_reload.py",
+        "scripts/validate_p019_u3028269_real_durable_store_reload.py",
+    ]:
+        require(any(term in command for command in closeout_commands), f"real closeout did not refresh durable reload: {term}")
+    durable_summary = completion_audit["real_durable_store_reload"]
+    require(
+        durable_summary["artifact_ref"] == "output/account_capability/ib-live-u3028269/durable-store-reload.json",
+        "completion audit durable artifact ref mismatch",
+    )
+    require(
+        durable_summary["source_report_batch_checksum"] == executions["query_checksum"],
+        "current-state refresh left durable summary on a stale executions checksum",
+    )
+    require(durable_summary["records_loaded_from_live_memory"] == 0, "durable reload used live memory")
+    require(durable_summary["synthetic_evidence_used"] is False, "durable reload used synthetic evidence")
+    require(durable_summary["order_action_sent"] is False, "durable reload sent order action")
+    if executions["execution_report_rows"] == 0:
+        require(durable_summary["state"] == "partial", "zero executions must keep durable reload partial")
+        require(durable_summary["parity_status"] == "blocked", "zero executions must keep durable parity blocked")
+        require(
+            durable_summary["blocker_id"] == "real_order_fill_callbacks_not_available",
+            "zero executions durable blocker mismatch",
+        )
     require(
         "P019_RUNTIME_EVIDENCE_FRESHNESS_OK: status=blocked evidence=fresh" in freshness_step["stdout_tail"]
         or "P019_RUNTIME_EVIDENCE_FRESHNESS_OK: status=ready evidence=fresh" in freshness_step["stdout_tail"],
@@ -114,6 +162,7 @@ def main() -> None:
         [
             "refresh_p019_u3028269_current_state_closeout.py",
             "validate_p019_u3028269_current_state_closeout_refresh.py",
+            "durable reload rebuild/validation",
             "P019_U3028269_CURRENT_STATE_CLOSEOUT_REFRESH_OK",
         ],
     )
@@ -122,6 +171,7 @@ def main() -> None:
         [
             "refresh_p019_u3028269_current_state_closeout.py",
             "validate_p019_u3028269_current_state_closeout_refresh.py",
+            "durable reload rebuild/validation",
             "P019_U3028269_CURRENT_STATE_CLOSEOUT_REFRESH_OK",
         ],
     )

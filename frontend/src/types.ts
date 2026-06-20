@@ -364,6 +364,19 @@ export interface AccountSummaryBalances {
   buying_power: number | null;
 }
 
+export interface AccountSummaryCurrencyBalance {
+  currency: string;
+  cash: number | null;
+  available_cash: number | null;
+  buying_power: number | null;
+  margin_used: number | null;
+  equity: number | null;
+  unrealized_pnl: number | null;
+  exchange_rate: number | null;
+  source_ref: string;
+  checksum: string;
+}
+
 export interface AccountSummaryPnl {
   realized: number | null;
   unrealized: number | null;
@@ -417,6 +430,7 @@ export interface AccountSummaryPanelReadModel {
   pnl: AccountSummaryPnl;
   margin: AccountSummaryMargin;
   settlement: AccountSummarySettlement;
+  currency_balances?: AccountSummaryCurrencyBalance[];
   positions: AccountSummaryPosition[];
   blockers: AccountSummaryBlocker[];
   source_refs: EvidenceRef[];
@@ -456,6 +470,8 @@ export interface AccountOrderRow {
   quantity: number | null;
   filled_quantity: number | null;
   remaining_quantity: number | null;
+  time_in_force?: string | null;
+  destination?: string | null;
   status: "filled" | "working" | "canceled" | "rejected" | "blocked" | "stale" | "unknown" | "partial";
   lifecycle_ref: string | null;
   report_provenance_ref: string | null;

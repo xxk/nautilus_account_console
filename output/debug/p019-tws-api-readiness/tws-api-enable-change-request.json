@@ -3,7 +3,7 @@
   "proposal_id": "p019-broker-observation-session-foundation",
   "account_id": "acct.ib.live.u3028269",
   "display_alias": "U3028269",
-  "prepared_at": "2026-06-20T10:45:02Z",
+  "prepared_at": "2026-06-20T14:48:16Z",
   "status": "already_ready_no_change_required",
   "purpose": "enable_logged_in_tws_api_socket_for_readonly_funds_positions_collection",
   "change_owner": "local_tws_operator",

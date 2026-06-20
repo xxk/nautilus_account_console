@@ -59,8 +59,6 @@ def main() -> None:
         "<tws",
         "placeOrder",
         "cancelOrder",
-        "reqOpenOrders",
-        "reqAllOpenOrders",
         "screenshot proves funds",
         "screenshot proves positions",
         "can_trade=true",

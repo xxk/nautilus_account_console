@@ -3,15 +3,15 @@
   "proposal_id": "p019-broker-observation-session-foundation",
   "account_id": "acct.ib.live.u3028269",
   "display_alias": "U3028269",
-  "started_at": "2026-06-20T10:45:54Z",
-  "completed_at": "2026-06-20T10:46:29Z",
+  "started_at": "2026-06-20T15:09:23Z",
+  "completed_at": "2026-06-20T15:09:59Z",
   "status": "ready",
   "blocker_id": null,
   "attempt_count": 1,
   "attempts": [
     {
       "attempt_index": 1,
-      "observed_at": "2026-06-20T10:45:56Z",
+      "observed_at": "2026-06-20T15:09:26Z",
       "readiness_ref": "output/debug/p019-tws-api-readiness/tws-api-readiness-probe.json",
       "ready_for_tws_api_funds_positions_query": true,
       "blocker_id": null,

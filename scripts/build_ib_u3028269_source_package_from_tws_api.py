@@ -34,6 +34,14 @@ def _checksum_payload(payload: dict[str, Any]) -> str:
     return "sha256:" + sha256(encoded).hexdigest()
 
 
+def _artifact_checksum(payload: dict[str, Any]) -> str:
+    for key in ["query_checksum", "source_checksum"]:
+        value = payload.get(key)
+        if isinstance(value, str) and value.startswith("sha256:"):
+            return value
+    return _checksum_payload(payload)
+
+
 def _source_ref(path: Path) -> str:
     try:
         return str(path.relative_to(ROOT)).replace("\\", "/")
@@ -99,8 +107,14 @@ def _extract_balances(account_summary: dict[str, Any]) -> list[dict[str, Any]]:
                 "currency": currency,
                 "equity": float(row["net_liquidation"]),
                 "available_cash": float(row["available_funds"]),
+                "cash": None if row.get("cash_balance") is None else float(row["cash_balance"]),
+                "total_cash": None if row.get("total_cash_balance") is None else float(row["total_cash_balance"]),
+                "net_liquidation_by_currency": None
+                if row.get("net_liquidation_by_currency") is None
+                else float(row["net_liquidation_by_currency"]),
                 "margin_used": float(row.get("margin_used") or 0.0),
                 "unrealized_pnl": float(row.get("unrealized_pnl") or 0.0),
+                "exchange_rate": None if row.get("exchange_rate") is None else float(row["exchange_rate"]),
             }
         )
     return balances
@@ -130,6 +144,144 @@ def _extract_positions(positions_query: dict[str, Any]) -> list[dict[str, Any]]:
     return positions
 
 
+def _extract_fills(executions_query: dict[str, Any] | None) -> list[dict[str, Any]]:
+    if executions_query is None:
+        return []
+    _validate_common_query(executions_query, expected_kind="executions")
+    rows = executions_query.get("executions")
+    _require(isinstance(rows, list), "executions: executions must be list")
+    commissions = {
+        str(row.get("exec_id") or ""): row
+        for row in executions_query.get("commissions", [])
+        if isinstance(row, dict)
+    }
+    fills: list[dict[str, Any]] = []
+    for index, row in enumerate(rows, start=1):
+        _require(isinstance(row, dict), "execution row must be object")
+        exec_id = str(row.get("exec_id") or "")
+        _require(exec_id, "execution row missing exec_id")
+        commission = commissions.get(exec_id, {})
+        source_ref = f"output/account_capability/ib-live-u3028269/tws-api/executions.json#execution-{index}"
+        fills.append(
+            {
+                "report_id": f"report.ib.u3028269.fill.{index:06d}",
+                "nautilus_report_type": "FillReport",
+                "trade_id": exec_id,
+                "client_order_id": str(row.get("order_ref") or row.get("order_id") or "unknown"),
+                "venue_order_id": str(row.get("perm_id") or row.get("order_id") or "unknown"),
+                "instrument_id": str(row.get("instrument_id") or row.get("symbol") or "unknown"),
+                "instrument": str(row.get("symbol") or row.get("instrument_id") or "unknown"),
+                "exchange": row.get("exchange"),
+                "side": str(row.get("side") or "UNKNOWN").upper(),
+                "quantity": float(row.get("shares") or 0.0),
+                "filled_quantity": float(row.get("shares") or 0.0),
+                "remaining_quantity": 0.0,
+                "last_px": float(row.get("price") or 0.0),
+                "last_qty": float(row.get("shares") or 0.0),
+                "price": float(row.get("price") or 0.0),
+                "commission": commission.get("commission"),
+                "commission_currency": commission.get("currency"),
+                "realized_pnl": commission.get("realized_pnl"),
+                "event_timestamp": str(row.get("time") or ""),
+                "sequence": index,
+                "source_ref": source_ref,
+                "source_checksum": str(executions_query["query_checksum"]),
+            }
+        )
+    return fills
+
+
+def _extract_orders(open_orders_query: dict[str, Any] | None) -> list[dict[str, Any]]:
+    if open_orders_query is None:
+        return []
+    _validate_common_query(open_orders_query, expected_kind="open_orders")
+    readonly = open_orders_query.get("readonly_query")
+    _require(isinstance(readonly, dict), "open_orders: readonly query metadata missing")
+    _require(readonly.get("api_call") == "reqAllOpenOrders", "open_orders: readonly api mismatch")
+    _require(readonly.get("order_action_sent") is False, "open_orders: order action sent")
+    _require(readonly.get("cancel_order_sent") is False, "open_orders: cancel sent")
+    _require(readonly.get("replace_order_sent") is False, "open_orders: replace sent")
+    _require(readonly.get("complete_history_claimed") is False, "open_orders: complete history claimed")
+    rows = open_orders_query.get("open_orders")
+    _require(isinstance(rows, list), "open_orders: open_orders must be list")
+    orders: list[dict[str, Any]] = []
+    for index, row in enumerate(rows, start=1):
+        _require(isinstance(row, dict), "open order row must be object")
+        order_id = str(row.get("order_id") or "")
+        _require(order_id, "open order row missing order_id")
+        source_ref = f"output/account_capability/ib-live-u3028269/tws-api/open_orders.json#open-order-{index}"
+        orders.append(
+            {
+                "report_id": f"report.ib.u3028269.open_order.{index:06d}",
+                "nautilus_report_type": "OrderStatusReport",
+                "client_order_id": str(row.get("order_ref") or order_id),
+                "venue_order_id": str(row.get("perm_id") or order_id),
+                "instrument_id": str(row.get("instrument") or row.get("symbol") or "unknown"),
+                "instrument": str(row.get("symbol") or row.get("instrument") or "unknown"),
+                "exchange": row.get("exchange"),
+                "destination": row.get("destination") or row.get("exchange"),
+                "side": str(row.get("side") or "UNKNOWN").upper(),
+                "order_type": str(row.get("order_type") or "UNKNOWN").upper(),
+                "quantity": None if row.get("quantity") is None else float(row["quantity"]),
+                "filled_quantity": None if row.get("filled_quantity") is None else float(row["filled_quantity"]),
+                "remaining_quantity": None if row.get("remaining_quantity") is None else float(row["remaining_quantity"]),
+                "limit_price": None if row.get("limit_price") is None else float(row["limit_price"]),
+                "price": None if row.get("limit_price") is None else float(row["limit_price"]),
+                "time_in_force": str(row.get("time_in_force") or ""),
+                "status": str(row.get("status") or "unknown"),
+                "order_status": str(row.get("status") or "unknown"),
+                "sequence": int(row.get("sequence") or index),
+                "source_ref": source_ref,
+                "source_checksum": str(open_orders_query["query_checksum"]),
+                "report_provenance_ref": source_ref,
+            }
+        )
+    return orders
+
+
+def _executions_readonly_query_health(executions_query: dict[str, Any] | None) -> dict[str, Any] | None:
+    if executions_query is None:
+        return None
+    readonly = executions_query.get("readonly_query")
+    _require(isinstance(readonly, dict), "executions: readonly query metadata missing")
+    _require(readonly.get("api_call") == "reqExecutions", "executions: readonly api mismatch")
+    _require(readonly.get("filter_type") == "ExecutionFilter", "executions: filter type mismatch")
+    _require(readonly.get("filter_account_ref") == "ib-account-ref://U3028269", "executions: filter account ref mismatch")
+    _require(readonly.get("filter_account_raw_value_recorded") is False, "executions: raw account filter recorded")
+    _require(readonly.get("order_action_sent") is False, "executions: order action sent")
+    _require(readonly.get("complete_history_claimed") is False, "executions: complete history claimed")
+    return {
+        "api_call": readonly["api_call"],
+        "filter_type": readonly["filter_type"],
+        "filter_account_ref": readonly["filter_account_ref"],
+        "filter_account_raw_value_recorded": False,
+        "query_scope": readonly.get("query_scope"),
+        "complete_history_claimed": False,
+        "order_action_sent": False,
+    }
+
+
+def _open_orders_readonly_query_health(open_orders_query: dict[str, Any] | None) -> dict[str, Any] | None:
+    if open_orders_query is None:
+        return None
+    readonly = open_orders_query.get("readonly_query")
+    _require(isinstance(readonly, dict), "open_orders: readonly query metadata missing")
+    _require(readonly.get("api_call") == "reqAllOpenOrders", "open_orders: readonly api mismatch")
+    _require(readonly.get("order_action_sent") is False, "open_orders: order action sent")
+    _require(readonly.get("cancel_order_sent") is False, "open_orders: cancel sent")
+    _require(readonly.get("replace_order_sent") is False, "open_orders: replace sent")
+    _require(readonly.get("complete_history_claimed") is False, "open_orders: complete history claimed")
+    return {
+        "api_call": readonly["api_call"],
+        "callback_rows": readonly.get("callback_rows", []),
+        "query_scope": readonly.get("query_scope"),
+        "complete_history_claimed": False,
+        "order_action_sent": False,
+        "cancel_order_sent": False,
+        "replace_order_sent": False,
+    }
+
+
 def _blocked_package(output_path: Path, readiness_probe_path: Path, reason: str) -> dict[str, Any]:
     observed_at = datetime.now(UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
     source_ref = _source_ref(output_path)
@@ -156,6 +308,15 @@ def _blocked_package(output_path: Path, readiness_probe_path: Path, reason: str)
             "readiness_probe": readiness_ref,
             "account_summary_query": None,
             "positions_query": None,
+            "executions_query": None,
+            "open_orders_query": None,
+        },
+        "source_input_checksums": {
+            "readiness_probe": "sha256:pending",
+            "account_summary_query": None,
+            "positions_query": None,
+            "executions_query": None,
+            "open_orders_query": None,
         },
         "balances": [],
         "positions": [],
@@ -202,6 +363,8 @@ def build_source_package(
     *,
     account_summary_path: Path,
     positions_path: Path,
+    executions_query_path: Path | None,
+    open_orders_query_path: Path | None,
     readiness_probe_path: Path,
     output_path: Path,
     allow_blocked: bool,
@@ -216,12 +379,25 @@ def build_source_package(
 
     account_summary = _read_json(account_summary_path)
     positions_query = _read_json(positions_path)
+    executions_query = _read_json(executions_query_path) if executions_query_path and executions_query_path.exists() else None
+    open_orders_query = _read_json(open_orders_query_path) if open_orders_query_path and open_orders_query_path.exists() else None
     observed_at = datetime.now(UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
     source_inputs = {
         "readiness_probe": _source_ref(readiness_probe_path),
         "account_summary_query": _source_ref(account_summary_path),
         "positions_query": _source_ref(positions_path),
+        "executions_query": _source_ref(executions_query_path) if executions_query_path and executions_query_path.exists() else None,
+        "open_orders_query": _source_ref(open_orders_query_path) if open_orders_query_path and open_orders_query_path.exists() else None,
     }
+    source_input_checksums = {
+        "readiness_probe": _artifact_checksum(readiness),
+        "account_summary_query": _artifact_checksum(account_summary),
+        "positions_query": _artifact_checksum(positions_query),
+        "executions_query": _artifact_checksum(executions_query) if executions_query else None,
+        "open_orders_query": _artifact_checksum(open_orders_query) if open_orders_query else None,
+    }
+    fills = _extract_fills(executions_query)
+    orders = _extract_orders(open_orders_query)
     payload: dict[str, Any] = {
         "schema_version": "account_source_artifact.v1",
         "artifact_id": f"source.ib.live.u3028269.{datetime.now(UTC):%Y%m%d%H%M%S}",
@@ -241,10 +417,11 @@ def build_source_package(
         "source_ref": _source_ref(output_path),
         "source_checksum": "sha256:pending",
         "source_inputs": source_inputs,
+        "source_input_checksums": source_input_checksums,
         "balances": _extract_balances(account_summary),
         "positions": _extract_positions(positions_query),
-        "orders": [],
-        "fills": [],
+        "orders": orders,
+        "fills": fills,
         "source_health": {
             "state": "ready",
             "lag_ms": 0,
@@ -253,6 +430,16 @@ def build_source_package(
             "readiness_probe_ref": source_inputs["readiness_probe"],
             "account_summary_query_ref": source_inputs["account_summary_query"],
             "positions_query_ref": source_inputs["positions_query"],
+            "executions_query_ref": source_inputs["executions_query"],
+            "open_orders_query_ref": source_inputs["open_orders_query"],
+            "executions_query_success": executions_query.get("success") is True if executions_query else False,
+            "executions_readonly_query": _executions_readonly_query_health(executions_query),
+            "execution_report_rows": len(fills),
+            "execution_report_state": "available" if fills else "not_available_or_empty",
+            "open_orders_query_success": open_orders_query.get("success") is True if open_orders_query else False,
+            "open_orders_readonly_query": _open_orders_readonly_query_health(open_orders_query),
+            "open_order_rows": len(orders),
+            "open_orders_state": "available" if orders else "empty",
             "raw_secret_values_recorded": False,
             "screenshot_used_for_values": False,
             "api_transport": "ib_tws_api",
@@ -263,6 +450,8 @@ def build_source_package(
             "screenshot_used_for_funds_positions": False,
             "tws_api_account_query_required": True,
             "order_action_sent": False,
+            "cancel_order_sent": False,
+            "replace_order_sent": False,
         },
     }
     payload["source_checksum"] = _checksum_payload({**payload, "source_checksum": "sha256:pending"})
@@ -274,6 +463,8 @@ def main() -> int:
     parser.add_argument("--input-dir", type=Path, default=DEFAULT_INPUT_DIR)
     parser.add_argument("--account-summary", type=Path)
     parser.add_argument("--positions", type=Path)
+    parser.add_argument("--executions", type=Path)
+    parser.add_argument("--open-orders", type=Path)
     parser.add_argument("--readiness-probe", type=Path, default=READINESS_PROBE)
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
     parser.add_argument("--allow-blocked", action="store_true", help="Write a typed blocker package when readiness/query inputs are missing")
@@ -281,9 +472,13 @@ def main() -> int:
 
     account_summary = args.account_summary or args.input_dir / "account_summary.json"
     positions = args.positions or args.input_dir / "positions.json"
+    executions = args.executions or args.input_dir / "executions.json"
+    open_orders = args.open_orders or args.input_dir / "open_orders.json"
     payload = build_source_package(
         account_summary_path=account_summary,
         positions_path=positions,
+        executions_query_path=executions,
+        open_orders_query_path=open_orders,
         readiness_probe_path=args.readiness_probe,
         output_path=args.output,
         allow_blocked=args.allow_blocked,

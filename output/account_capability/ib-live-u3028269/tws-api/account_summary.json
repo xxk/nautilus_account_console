@@ -6,8 +6,8 @@
   "source_kind": "ib_tws_api",
   "success": true,
   "tws_api_login_confirmed": true,
-  "query_started_at": "2026-06-20T10:46:27Z",
-  "query_completed_at": "2026-06-20T10:46:28Z",
+  "query_started_at": "2026-06-20T15:09:56Z",
+  "query_completed_at": "2026-06-20T15:09:58Z",
   "raw_secret_values_recorded": false,
   "raw_broker_endpoint_recorded": false,
   "screenshot_used_for_values": false,
@@ -15,12 +15,60 @@
   "account_ref": "ib-account-ref://U3028269",
   "balances": [
     {
+      "currency": "BASE",
+      "net_liquidation": 178744.9462,
+      "available_funds": -69647.3413,
+      "cash_balance": -69647.3413,
+      "total_cash_balance": -69647.3413,
+      "net_liquidation_by_currency": 178744.9462,
+      "margin_used": 0.0,
+      "unrealized_pnl": -49779.44,
+      "exchange_rate": 1.0
+    },
+    {
+      "currency": "CNH",
+      "net_liquidation": 67784.82,
+      "available_funds": 67784.82,
+      "cash_balance": 67784.82,
+      "total_cash_balance": 67784.82,
+      "net_liquidation_by_currency": 67784.82,
+      "margin_used": 0.0,
+      "unrealized_pnl": 0.0,
+      "exchange_rate": 0.1473981
+    },
+    {
+      "currency": "HKD",
+      "net_liquidation": 903922.946,
+      "available_funds": -274301.73,
+      "cash_balance": -274301.73,
+      "total_cash_balance": -274301.73,
+      "net_liquidation_by_currency": 903922.946,
+      "margin_used": 0.0,
+      "unrealized_pnl": 113740.37,
+      "exchange_rate": 0.1276031
+    },
+    {
+      "currency": "JPY",
+      "net_liquidation": -7791191.0,
+      "available_funds": -7783583.0,
+      "cash_balance": -7783583.0,
+      "total_cash_balance": -7783583.0,
+      "net_liquidation_by_currency": -7791191.0,
+      "margin_used": 0.0,
+      "unrealized_pnl": 0.0,
+      "exchange_rate": 0.0061995
+    },
+    {
       "currency": "USD",
       "net_liquidation": 178744.95,
       "available_funds": 73196.81,
+      "cash_balance": 3617.52,
+      "total_cash_balance": 3617.52,
+      "net_liquidation_by_currency": 101711.8503,
       "margin_used": 67394.39,
-      "unrealized_pnl": 0.0
+      "unrealized_pnl": -64293.06,
+      "exchange_rate": 1.0
     }
   ],
-  "query_checksum": "sha256:84ed1833507f577679b8de61dd78031c43db43274bd3e92914a5134027e226a6"
+  "query_checksum": "sha256:b28f620c3371364a42d7fe8598a3c9fee041197976a7fb4c857015d80739d300"
 }

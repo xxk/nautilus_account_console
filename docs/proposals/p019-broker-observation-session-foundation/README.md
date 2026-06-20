@@ -3,7 +3,7 @@
 <!-- PROPOSAL-ANTI-DRIFT-GATE:v1 -->
 
 - Proposal ID: `p019-broker-observation-session-foundation`
-- Status: proposed
+- Status: accepted_with_residual_runtime_blockers
 - Created: 2026-06-20
 - Updated: 2026-06-20
 - Owner: account-console-architecture / account-console-contracts
@@ -15,7 +15,7 @@
 
 P019 is the successor proposal for ADR-0005. It prepares Account Console to own governed, read-only broker observation sessions for CTP, IB TWS / IB Gateway, stock broker APIs, CQG and TT without becoming an execution owner.
 
-The proposal focuses on contracts, owner boundaries, durable observation storage, report mapping and drift guards before any live broker connection is implemented. Every observed broker order/fill callback must be recorded as a Nautilus-compatible `OrderStatusReport` or `FillReport` projection, with raw broker payloads retained only as provenance.
+The proposal closes the ADR-0005 foundation acceptance for contracts, owner boundaries, durable observation storage, report mapping, Account Mirror projection, real U3028269 funds/positions parity and drift guards. Every observed broker order/fill callback must be recorded as a Nautilus-compatible `OrderStatusReport` or `FillReport` projection, with raw broker payloads retained only as provenance.
 
 ## 2. Scope / 范围
 
@@ -101,16 +101,16 @@ Command remains outside this proposal and requires a separate ADR/proposal.
 
 ## 6. Review Verdict / 评审结论
 
-**Current verdict**: `proposed`
+**Current verdict**: `accepted_with_residual_runtime_blockers`
 
 | Item | Verdict |
 | --- | --- |
 | Formal proposal needed | yes |
-| Requires ADR acceptance | yes, ADR-0005 |
+| Requires ADR acceptance | satisfied, ADR-0005 accepted |
 | Requires child changes | yes |
 | Allows broker order action | no |
 | Allows raw broker secrets | no |
-| Allows direct broker observation session | only if ADR-0005 is accepted and conflict policy passes |
+| Allows direct broker observation session | read-only only when readiness, conflict, secret and no-command gates pass |
 
 ## 7. Document Map / 文档地图
 
@@ -127,4 +127,21 @@ Command remains outside this proposal and requires a separate ADR/proposal.
 | `workspace-home-runbook-intake.md` | read-only intake of workspace/home runbooks adopted for TWS API handshake and firewall/network recovery posture | present |
 | `../../topics/ib-tws/README.md` | long-lived non-secret IB TWS topic entry, including the U3028269 login/API knowledge card | present |
 | `../../topics/ib-tws/u3028269-tws-login-and-api-knowledge.md` | repeatable non-secret U3028269 TWS login/API enablement knowledge, safe success backfill template and forbidden secret/truth boundaries | present |
-| `p019-completion-audit.json` | machine-readable completion audit proving P019 remains not complete until ADR-0005, real TWS API funds/positions, source package and UI parity evidence close | present |
+| `p019-completion-audit.json` | machine-readable completion audit proving P019 foundation acceptance, real TWS API funds/positions/source package/UI parity, and residual real order/fill report-row blockers | present |
+
+## 8. Accepted Foundation Closeout
+
+P019 is accepted as the ADR-0005 foundation. The accepted scope includes shared broker-observation contracts, no-secret/no-command/no-truth validators, Account Mirror projection, U3028269 read-only TWS API source-package pipeline, real funds/positions UI parity, synthetic positive report-row UI contract evidence and real persisted-artifact durable reload evidence.
+
+Residual runtime blockers remain typed and do not close as pass:
+
+1. `real_order_fill_callbacks_not_available`: the authorized same-slice read-only `reqExecutions` query succeeded but returned zero execution rows.
+2. `real_durable_store_reload_partial_empty_executions`: durable reload is proven from persisted artifacts without live memory, but complete report-row parity requires non-empty real execution rows.
+
+Closeout gates:
+
+```text
+ADR0005_ACCEPTANCE_OK: status=accepted
+P019_COMPLETION_AUDIT_OK: overall=accepted residual_blockers=real_parity
+P019_BROKER_OBSERVATION_FOUNDATION_OK: status=accepted residual_blockers=real_parity
+```

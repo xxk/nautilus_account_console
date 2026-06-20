@@ -38,8 +38,11 @@ def main() -> None:
     require(payload["account_id"] == "acct.ib.live.u3028269", "account mismatch")
     require(payload["display_alias"] == "U3028269", "alias mismatch")
     require(payload["diagnostic_kind"] == "tws_api_config", "diagnostic kind mismatch")
-    require(payload["tws_process"]["present"] is True, "TWS process must be present")
-    require(payload["tws_process"]["window_title_ref"] == "U3028269_account_window", "TWS account window ref mismatch")
+    tws_present = payload["tws_process"]["present"] is True
+    if tws_present:
+        require(payload["tws_process"]["window_title_ref"] == "U3028269_account_window", "TWS account window ref mismatch")
+    else:
+        require(payload["ready_for_tws_api_funds_positions_query"] is False, "absent TWS process cannot be ready")
     require(payload["candidate_config_count"] >= 1, "expected at least one TWS config candidate")
 
     latest = payload["latest_config_candidate"]
@@ -69,6 +72,7 @@ def main() -> None:
     require(boundaries["order_action_sent"] is False, "diagnostic must not send order action")
 
     if payload["ready_for_tws_api_funds_positions_query"]:
+        require(tws_present, "ready config diagnostic must see TWS process")
         require(payload["typed_blocker"] is None, "ready config diagnostic must not carry blocker")
     else:
         blocker = payload["typed_blocker"]

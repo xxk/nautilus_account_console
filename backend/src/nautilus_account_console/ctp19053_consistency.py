@@ -171,10 +171,17 @@ def _validate_source_package(payload: dict[str, Any], path: Path) -> None:
 
 def _contains_sensitive_key(value: Any) -> bool:
     sensitive = {"password", "auth_code", "authcode", "token", "secret", "session_password"}
+    allowed_boundary_keys = {
+        "raw_secret_values_recorded",
+        "raw_broker_endpoint_recorded",
+        "screenshot_used_for_values",
+    }
     if isinstance(value, dict):
         for key, item in value.items():
             normalized = str(key).lower()
-            if normalized in sensitive or "password" in normalized or "secret" in normalized:
+            if normalized not in allowed_boundary_keys and (
+                normalized in sensitive or "password" in normalized or "secret" in normalized
+            ):
                 return True
             if _contains_sensitive_key(item):
                 return True
