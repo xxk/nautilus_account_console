@@ -93,6 +93,13 @@ P024_PARTIAL_FILL_REMAINING_ACCEPTANCE_CURRENT_STATE = (
     / "p024-account-console-paper-command-controls"
     / "partial-fill-remaining-acceptance-current-state.json"
 )
+P024_PARTIAL_FILL_OWNER_REPAIR_IMPLEMENTATION_PLAN = (
+    ROOT
+    / "docs"
+    / "acceptance"
+    / "p024-account-console-paper-command-controls"
+    / "partial-fill-owner-repair-implementation-plan.json"
+)
 P024_RUNTIME_HANDOFF_EVIDENCE = (
     ROOT
     / "docs"
@@ -304,7 +311,7 @@ def validate_readme() -> None:
     text = read(PROPOSAL / "README.md")
     for phrase in [
         "Proposal ID: `p024-account-console-paper-command-controls`",
-        "Status: phase4q_remaining_acceptance_current_state_audited",
+        "Status: phase4r_owner_close_offset_repair_implementation_plan_ready",
         "ADR carrier: yes",
         "Primary ADR: ADR-0007",
         "Predecessor: [P023 OpenCTP 19053 Paper Command Capability]",
@@ -335,6 +342,7 @@ def validate_readme() -> None:
         "validate_p024_partial_fill_close_offset_owner_rule_gap_audit.py",
         "validate_p024_partial_fill_owner_repair_approval_packet.py",
         "validate_p024_partial_fill_remaining_acceptance_current_state.py",
+        "validate_p024_partial_fill_owner_repair_implementation_plan.py",
         "validate_p024_partial_fill_runtime_approval_packet_browser_evidence.py",
         "validate_p024_partial_fill_runtime_handoff_bundle_browser_evidence.py",
         "browser_triggered_broker_order=false",
@@ -357,6 +365,7 @@ def validate_readme() -> None:
         "partial-fill close-offset owner rule gap audit",
         "partial-fill owner repair approval packet",
         "remaining acceptance current state",
+        "owner close-offset repair implementation plan",
     ]:
         require(phrase in text, f"P024 README missing phrase: {phrase}")
 
@@ -452,6 +461,7 @@ def validate_phase_plan() -> None:
         "Phase 4o close-yesterday owner rule gap audit is complete",
         "Phase 4p owner close-offset repair approval packet is ready",
         "Phase 4q remaining acceptance current state audit is complete",
+        "Phase 4r owner close-offset repair implementation plan is ready",
         "external write approval",
     ]:
         require(phrase in text, f"P024 phase plan missing phrase: {phrase}")
@@ -1404,6 +1414,79 @@ def validate_p024_partial_fill_remaining_acceptance_current_state() -> None:
         require(negative[key] is False, f"P024 remaining acceptance negative assertion mismatch: {key}")
 
 
+def validate_p024_partial_fill_owner_repair_implementation_plan() -> None:
+    payload = load_json(P024_PARTIAL_FILL_OWNER_REPAIR_IMPLEMENTATION_PLAN)
+    require(
+        payload["schema"] == "account-console.p024.partial-fill-owner-repair-implementation-plan.v1",
+        "P024 owner repair plan schema mismatch",
+    )
+    require(
+        payload["status"] == "phase4r_owner_close_offset_repair_implementation_plan_ready",
+        "P024 owner repair plan status mismatch",
+    )
+    require(
+        payload["verdict"] == "owner_repair_plan_ready_no_owner_write_attempted",
+        "P024 owner repair plan verdict mismatch",
+    )
+    context = payload["owner_read_context"]
+    require(context["owner_repo_path"] == "D:/Nautilus/nautilus_ctp_adapter", "P024 owner repair plan path mismatch")
+    require(context["owner_repo_write_attempted"] is False, "P024 owner repair plan write flag mismatch")
+    source_refs = {item["source_id"]: item for item in context["source_refs"]}
+    require(
+        "CLOSEYESTERDAY -> 4" in source_refs["execution_client_mapping"]["observed_current_behavior"],
+        "P024 owner repair plan mapping mismatch",
+    )
+    changes = {item["change_id"]: item for item in payload["planned_owner_changes_after_exact_approval"]}
+    require(
+        set(changes)
+        == {
+            "owner_rule_generalize_close_offset_submit_observed",
+            "owner_rule_wording_include_close_yesterday",
+            "focused_close_yesterday_test",
+        },
+        "P024 owner repair plan change set mismatch",
+    )
+    require(
+        "CLOSEYESTERDAY expected/submit offset 4"
+        in changes["owner_rule_generalize_close_offset_submit_observed"]["implementation_shape"],
+        "P024 owner repair plan generalization mismatch",
+    )
+    focused_asserts = set(changes["focused_close_yesterday_test"]["must_assert"])
+    for expected in [
+        "expected_submit_offset_from_position_effect == 4 for CLOSEYESTERDAY",
+        "observed_submit_boundary_offset == 4 for CLOSEYESTERDAY",
+        "callback_offset_flags == [1]",
+        "callback_sources == [OnRspOrderInsert]",
+    ]:
+        require(expected in focused_asserts, f"P024 owner repair plan focused assert missing: {expected}")
+    validators = {item["stage"]: item for item in payload["post_repair_validator_sequence"]}
+    require(
+        validators["owner_unit_focus"]["command"] == "python -m pytest tests/test_guarded_paper_order_loop.py -q",
+        "P024 owner repair plan focus validator mismatch",
+    )
+    require(
+        validators["owner_integration_regression"]["command"] == "python -m pytest tests/test_nautilus_integration.py -q",
+        "P024 owner repair plan integration validator mismatch",
+    )
+    runtime = payload["post_repair_runtime_attempt_gate"]
+    require(runtime["runtime_attempt_allowed_by_this_plan"] is False, "P024 owner repair plan retry flag mismatch")
+    require(runtime["fresh_approval_required"] is True, "P024 owner repair plan fresh approval mismatch")
+    require(runtime["maximum_additional_attempts_after_repair"] == 1, "P024 owner repair plan attempt count mismatch")
+    negative = payload["negative_assertions"]
+    for key in [
+        "owner_repo_write_attempted_by_this_plan",
+        "owner_runtime_invocation_attempted",
+        "owner_repair_claimed_complete",
+        "runtime_retry_authorized",
+        "partial_fill_claimed",
+        "full_acceptance_claimed",
+        "raw_secret_values_recorded",
+        "raw_broker_endpoint_recorded",
+        "config_raw_content_recorded",
+    ]:
+        require(negative[key] is False, f"P024 owner repair plan negative assertion mismatch: {key}")
+
+
 def validate_p024_runtime_execution_gap_audit() -> None:
     payload = load_json(P024_RUNTIME_EXECUTION_GAP_AUDIT)
     require(
@@ -1978,6 +2061,7 @@ def main() -> None:
     validate_p024_partial_fill_close_offset_owner_rule_gap_audit()
     validate_p024_partial_fill_owner_repair_approval_packet()
     validate_p024_partial_fill_remaining_acceptance_current_state()
+    validate_p024_partial_fill_owner_repair_implementation_plan()
     validate_p024_runtime_execution_gap_audit()
     validate_p024_runtime_execution_gap_ui_evidence()
     validate_p024_full_acceptance_closeout()
@@ -1993,7 +2077,7 @@ def main() -> None:
     validate_backend_command_routes_are_p024_only()
     print(
         "P024_PAPER_COMMAND_CONTROLS_DESIGN_OK: "
-        "status=phase4q_remaining_acceptance_current_state_audited current_ui_command=guarded runtime_closeout=browser_projection_passed partial_fill_cancel_ui=browser_contract_passed runtime_handoff=browser_handoff_passed runtime_invocation_readiness=blocked_by_external_approval runtime_readiness_ui=browser_projection_passed full_closeout=residual_blocker_audit_passed approval_packet=ready_runtime_not_invoked runtime_approval_packet_ui=browser_projection_passed handoff_bundle=ready_runtime_not_invoked runtime_handoff_bundle_ui=browser_projection_passed runtime_execution_gap=blocked_final_claim_false partial_fill_runtime=blocked_until_owner_runtime_partial_fill_state_available partial_fill_artifact_scan=no_qualifying_candidate partial_fill_approval=ready_runtime_not_invoked partial_fill_approval_ui=browser_projection_passed partial_fill_handoff=ready_runtime_not_invoked partial_fill_handoff_ui=browser_projection_passed partial_fill_attempt=rejected_before_partial_fill_not_partial_fill close_yesterday_owner_rule_gap=blocked_retry_not_authorized owner_repair_approval=required_before_retry remaining_acceptance=owner_repair_and_real_partial_fill_missing"
+        "status=phase4r_owner_close_offset_repair_implementation_plan_ready current_ui_command=guarded runtime_closeout=browser_projection_passed partial_fill_cancel_ui=browser_contract_passed runtime_handoff=browser_handoff_passed runtime_invocation_readiness=blocked_by_external_approval runtime_readiness_ui=browser_projection_passed full_closeout=residual_blocker_audit_passed approval_packet=ready_runtime_not_invoked runtime_approval_packet_ui=browser_projection_passed handoff_bundle=ready_runtime_not_invoked runtime_handoff_bundle_ui=browser_projection_passed runtime_execution_gap=blocked_final_claim_false partial_fill_runtime=blocked_until_owner_runtime_partial_fill_state_available partial_fill_artifact_scan=no_qualifying_candidate partial_fill_approval=ready_runtime_not_invoked partial_fill_approval_ui=browser_projection_passed partial_fill_handoff=ready_runtime_not_invoked partial_fill_handoff_ui=browser_projection_passed partial_fill_attempt=rejected_before_partial_fill_not_partial_fill close_yesterday_owner_rule_gap=blocked_retry_not_authorized owner_repair_approval=required_before_retry remaining_acceptance=owner_repair_and_real_partial_fill_missing owner_repair_plan=ready_no_owner_write"
     )
 
 
