@@ -1,7 +1,7 @@
 # P024 Acceptance / Account Console Paper Command Controls
 
 - Proposal ID: `p024-account-console-paper-command-controls`
-- Status: phase4o_close_yesterday_owner_rule_gap_audited
+- Status: phase4p_owner_close_offset_repair_approval_packet_ready
 - Primary ADR: ADR-0007
 
 ## Scope
@@ -37,6 +37,7 @@ Out of scope: live trading, replace order, Account Mirror write authority, direc
 | P024 partial-fill runtime handoff bundle UI projection | `npx playwright test tests/e2e/p024-partial-fill-runtime-execution-handoff-bundle.spec.ts --project=desktop` then `python scripts\validate_p024_partial_fill_runtime_handoff_bundle_browser_evidence.py` | `P024_PARTIAL_FILL_RUNTIME_HANDOFF_BUNDLE_BROWSER_EVIDENCE_OK` | Web UI renders partial-fill runtime inputs, owner sequence, success formulas and fallback classifications while `execution_allowed=false` |
 | P024 partial-fill runtime execution attempt audit | `python scripts\validate_p024_partial_fill_runtime_execution_attempt_audit.py` | `P024_PARTIAL_FILL_RUNTIME_EXECUTION_ATTEMPT_AUDIT_OK` | Owner-owned guarded paper attempt is recorded as rejected-before-partial-fill with checksum-backed refs; no cancel identity was available and full acceptance remains false |
 | P024 partial-fill close-offset owner rule gap audit | `python scripts\validate_p024_partial_fill_close_offset_owner_rule_gap_audit.py` | `P024_PARTIAL_FILL_CLOSE_OFFSET_OWNER_RULE_GAP_AUDIT_OK` | CLOSEYESTERDAY submit-boundary offset 4 versus rejected callback offset 1 is source-closed as an owner repair prerequisite before any retry |
+| P024 partial-fill owner repair approval packet | `python scripts\validate_p024_partial_fill_owner_repair_approval_packet.py` | `P024_PARTIAL_FILL_OWNER_REPAIR_APPROVAL_PACKET_OK` | Current runtime-script approval is not enough for the repair-first next action; owner repair approval and post-repair retry gates are required before another paper attempt |
 | P023 runtime predecessor | `python scripts\validate_p023_openctp19053_command_run.py --run-dir output\account_command\ctp-paper-19053\p023-armed-20260621t0748z --source-package output\account_capability\ctp-paper-19053\source-package.json` | `P023_OPENCTP19053_COMMAND_RUN_OK` | Predecessor paper command evidence |
 | Proposal docs | `python scripts\check_proposal_docs.py --root . --proposal-id p024-account-console-paper-command-controls` | `PROPOSAL_DOCS_OK` | Proposal structure |
 
@@ -74,6 +75,7 @@ The close-offset semantic gap audit is
 | A17 | positive | Partial-fill runtime approval packet appears in Web UI before any owner submit/cancel | Playwright + API route audit + browser evidence JSON | UI hides exact approval text/formulas or claims new order/cancel was sent | phase4l_partial_fill_runtime_approval_packet_ui_projection_passed |
 | A18 | positive | Partial-fill runtime handoff bundle appears in Web UI with success formulas and fallback classifications | Playwright + API route audit + browser evidence JSON | UI claims execution allowed, hides formulas, or promotes fixture evidence to runtime truth | phase4m_partial_fill_runtime_handoff_bundle_ui_projection_passed |
 | A19 | blocker | Real owner-runtime partial-fill attempt is classified if it fails before partial fill | owner artifact refs/checksums + validator | rejected/no-fill attempt is counted as partial-fill acceptance or retry is authorized without new approval | phase4n_partial_fill_runtime_attempt_rejected_blocker_recorded |
+| A20 | blocker | Owner close-offset repair approval is required before retry | repair approval packet validator + gap audit dependency | runtime-script approval is treated as owner code repair approval or a post-gap retry is authorized before repair evidence | phase4p_owner_close_offset_repair_approval_packet_ready |
 
 ## Phase 4e Runtime Execution Gap Audit
 
@@ -336,3 +338,4 @@ This remains browser/control contract evidence. It does not claim real Web UI Op
 ## Evidence Boundary
 
 Implementation/browser evidence is required before implementation closeout. Phase 1, Phase 2, Phase 3a, Phase 3b, Phase 3c, Phase 3d readiness, Phase 3e readiness UI projection, Phase 4 residual blocker audit, Phase 4a owner-runtime execution approval packet, Phase 4b runtime approval packet UI projection, Phase 4c owner-runtime execution handoff bundle, Phase 4d runtime handoff bundle UI projection, Phase 4e runtime execution gap audit and Phase 4g owner-runtime submit/cancel callback closeout gates are accepted; full real partial-fill acceptance remains blocked pending real or owner-approved partial-fill runtime state.
+

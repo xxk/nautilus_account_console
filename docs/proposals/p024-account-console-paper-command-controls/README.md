@@ -1,7 +1,7 @@
 # P024 Account Console Paper Command Controls
 
 - Proposal ID: `p024-account-console-paper-command-controls`
-- Status: phase4o_close_yesterday_owner_rule_gap_audited
+- Status: phase4p_owner_close_offset_repair_approval_packet_ready
 - ADR carrier: yes
 - Primary ADR: ADR-0007
 - Predecessor: [P023 OpenCTP 19053 Paper Command Capability](../p023-openctp-19053-paper-command-capability/README.md)
@@ -71,6 +71,7 @@ P024 does not enable `live_armed`, production admission, capital approval, or Ac
 | Phase 4m partial-fill runtime handoff bundle UI projection | Web UI renders partial-fill runtime inputs, owner sequence, success formulas and fallback classifications while execution remains disallowed | `python scripts\validate_p024_partial_fill_runtime_handoff_bundle_browser_evidence.py` |
 | Phase 4n partial-fill runtime execution attempt audit | Owner-owned guarded paper attempt ran and was rejected before any fill; the blocker is recorded with refs/checksums | `python scripts\validate_p024_partial_fill_runtime_execution_attempt_audit.py` |
 | Phase 4o close-yesterday owner rule gap audit | CLOSEYESTERDAY submit-boundary offset 4 versus rejected callback offset 1 is locked as an owner semantic gap before any retry | `python scripts\validate_p024_partial_fill_close_offset_owner_rule_gap_audit.py` |
+| Phase 4p owner close-offset repair approval packet | The current runtime-script approval is classified as insufficient for the new repair-first next action; owner repair approval text and post-repair retry gates are frozen | `python scripts\validate_p024_partial_fill_owner_repair_approval_packet.py` |
 
 ## Document Map
 
@@ -91,6 +92,7 @@ P024 does not enable `live_armed`, production admission, capital approval, or Ac
 | `docs/acceptance/browser-evidence/p024-account-console-paper-command-controls/partial-fill-runtime-handoff-bundle-ui.json` | Web UI projection evidence for the partial-fill handoff bundle |
 | `docs/acceptance/p024-account-console-paper-command-controls/partial-fill-runtime-execution-attempt-audit.json` | owner-runtime partial-fill attempt audit for the rejected real paper attempt |
 | `docs/acceptance/p024-account-console-paper-command-controls/partial-fill-close-offset-owner-rule-gap-audit.json` | partial-fill close-offset owner rule gap audit for the rejected CLOSEYESTERDAY attempt |
+| `docs/acceptance/p024-account-console-paper-command-controls/partial-fill-owner-repair-approval-packet.json` | partial-fill owner repair approval packet proving repair approval is required before retry |
 
 ## Graduation / Closeout Matrix
 
@@ -120,6 +122,8 @@ P024 does not enable `live_armed`, production admission, capital approval, or Ac
 | Partial-fill runtime handoff bundle UI projection | archive_only | Browser evidence proves partial-fill runtime inputs, owner sequence, success formulas and fallback classifications are visible while `execution_allowed=false` | phase4m_partial_fill_runtime_handoff_bundle_ui_projection_passed |
 | Partial-fill runtime execution attempt audit | archive_only | `partial-fill-runtime-execution-attempt-audit.json` records the owner-owned paper attempt, rejected order-insert callback, zero fill and no cancel identity | phase4n_partial_fill_runtime_attempt_rejected_blocker_recorded |
 | Close-yesterday owner rule gap audit | archive_only | `partial-fill-close-offset-owner-rule-gap-audit.json` records that retry is blocked until owner CLOSEYESTERDAY close-offset semantics are repaired or source-closed | phase4o_close_yesterday_owner_rule_gap_audited |
+| Owner close-offset repair approval packet | archive_only | `partial-fill-owner-repair-approval-packet.json` records that the current runtime-script approval does not authorize owner code repair or another retry before repair evidence exists | phase4p_owner_close_offset_repair_approval_packet_ready |
 | Proposal-local evidence | archive_only | `acceptance.md`, browser command-controls evidence, runtime closeout projection evidence, P024 partial-fill display evidence, runtime handoff request evidence, owner-runtime invocation readiness evidence, runtime readiness UI projection evidence, full acceptance closeout audit, owner-runtime execution approval packet, runtime approval packet UI evidence, owner-runtime execution handoff bundle, runtime handoff bundle UI evidence and runtime execution gap audit evidence; runtime Web UI broker command execution remains blocked pending external approval | phase4e_runtime_execution_gap_audit_passed |
 
 No stable rule graduation: proposal-local evidence only until implementation and runtime gates pass.
+
