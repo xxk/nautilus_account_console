@@ -452,6 +452,30 @@ def test_partial_fill_owner_repair_preflight_source_audit_projects_blind_retry_r
     assert payload["negative_assertions"]["full_acceptance_claimed"] is False
 
 
+def test_partial_fill_owner_repair_patch_preview_projects_no_write_no_retry() -> None:
+    client = TestClient(app)
+    response = client.get(
+        "/api/commands/accounts/acct.ctp.paper.19053/partial-fill-owner-repair-patch-preview"
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["schema"] == "account-console.p024.partial-fill-owner-repair-patch-preview.v1"
+    assert payload["status"] == "phase4x_owner_repair_patch_preview_ready"
+    assert payload["verdict"] == "patch_preview_ready_owner_write_not_authorized"
+    assert payload["owner_baseline"]["owner_repo_write_attempted_by_preview"] is False
+    assert len(payload["previewed_owner_patch"]) == 3
+    assert {item["patch_id"] for item in payload["previewed_owner_patch"]} == {
+        "generalize_close_offset_submit_observed",
+        "expand_owner_rule_wording",
+        "add_close_yesterday_focused_test",
+    }
+    assert payload["post_patch_runtime_gate"]["runtime_retry_authorized_by_preview"] is False
+    assert payload["post_patch_runtime_gate"]["fresh_runtime_retry_approval_required_after_patch"] is True
+    assert payload["negative_assertions"]["owner_patch_applied"] is False
+    assert payload["negative_assertions"]["full_acceptance_claimed"] is False
+
+
 def test_command_api_rejects_live_mode_and_account_mismatch() -> None:
     client = TestClient(app)
     live = deepcopy(submit_intent())

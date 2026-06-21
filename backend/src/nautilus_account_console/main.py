@@ -14,6 +14,7 @@ from .command_api import (
     load_partial_fill_owner_repair_implementation_plan,
     load_partial_fill_owner_repair_evidence_ingest_gate,
     load_partial_fill_owner_repair_preflight_source_audit,
+    load_partial_fill_owner_repair_patch_preview,
     load_partial_fill_runtime_execution_approval_packet,
     load_partial_fill_runtime_execution_handoff_bundle,
     load_runtime_execution_approval_packet,
@@ -39,6 +40,7 @@ from .schemas import (
     CommandPartialFillOwnerRepairEvidenceIngestGate,
     CommandPartialFillOwnerRepairImplementationPlan,
     CommandPartialFillOwnerRepairPreflightSourceAudit,
+    CommandPartialFillOwnerRepairPatchPreview,
     CommandPartialFillRuntimeExecutionApprovalPacket,
     CommandPartialFillRuntimeExecutionHandoffBundle,
     CommandRuntimeCloseout,
@@ -356,6 +358,17 @@ def command_partial_fill_owner_repair_preflight_source_audit(
     account_id: str,
 ) -> CommandPartialFillOwnerRepairPreflightSourceAudit:
     return load_partial_fill_owner_repair_preflight_source_audit(account_id)
+
+
+@app.get(
+    "/api/commands/accounts/{account_id}/partial-fill-owner-repair-patch-preview",
+    response_model=CommandPartialFillOwnerRepairPatchPreview,
+    response_model_exclude_none=True,
+)
+def command_partial_fill_owner_repair_patch_preview(
+    account_id: str,
+) -> CommandPartialFillOwnerRepairPatchPreview:
+    return load_partial_fill_owner_repair_patch_preview(account_id)
 
 
 @app.get("/api/accounts/{account_id}", response_model=AccountDetail)

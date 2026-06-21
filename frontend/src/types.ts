@@ -792,6 +792,61 @@ export interface CommandPartialFillOwnerRepairPreflightSourceAudit {
   };
 }
 
+export interface CommandPartialFillOwnerRepairPatchPreview {
+  schema: "account-console.p024.partial-fill-owner-repair-patch-preview.v1";
+  proposal_id: "p024-account-console-paper-command-controls";
+  account_id: "acct.ctp.paper.19053";
+  reviewed_at: string;
+  status: "phase4x_owner_repair_patch_preview_ready";
+  verdict: "patch_preview_ready_owner_write_not_authorized";
+  depends_on: Record<string, unknown>;
+  owner_baseline: {
+    owner_repo_ref: string;
+    owner_repo_path: string;
+    head_ref: string;
+    owner_repo_write_attempted_by_preview: false;
+    baseline_files: Array<{
+      path: string;
+      sha256: string;
+      required_current_text: string[];
+    }>;
+  };
+  previewed_owner_patch: Array<{
+    patch_id: string;
+    target_path: string;
+    target_symbol: string;
+    edit_shape: string;
+    required_new_text: string[];
+    must_preserve: string[];
+  }>;
+  post_patch_required_validators: Array<{
+    command: string;
+    required_exit_code: number;
+    evidence_id: string;
+  }>;
+  post_patch_runtime_gate: {
+    runtime_retry_authorized_by_preview: false;
+    fresh_runtime_retry_approval_required_after_patch: true;
+    maximum_runtime_attempts_after_repair: number;
+    success_formula: string;
+    terminal_cancel_formula: string;
+  };
+  forbidden_preview_shapes: string[];
+  negative_assertions: {
+    owner_repo_write_attempted: false;
+    owner_patch_applied: false;
+    owner_validator_run_claimed: false;
+    owner_runtime_invocation_attempted: false;
+    runtime_retry_authorized: false;
+    real_partial_fill_claimed: false;
+    web_ui_real_partial_fill_claimed: false;
+    full_acceptance_claimed: false;
+    raw_secret_values_recorded: false;
+    raw_broker_endpoint_recorded: false;
+    config_raw_content_recorded: false;
+  };
+}
+
 export type AccountHealthPanelFixtureState =
   | "happy_path"
   | "empty"

@@ -1,0 +1,37 @@
+{
+  "schema": "account-console.p024.partial-fill-owner-repair-patch-preview-ui.v1",
+  "proposal_id": "p024-account-console-paper-command-controls",
+  "account_id": "acct.ctp.paper.19053",
+  "route": "/accounts/acct.ctp.paper.19053",
+  "verdict": "pass",
+  "api_owner_repair_patch_preview": {
+    "schema": "account-console.p024.partial-fill-owner-repair-patch-preview.v1",
+    "status": "phase4x_owner_repair_patch_preview_ready",
+    "verdict": "patch_preview_ready_owner_write_not_authorized",
+    "baseline_file_count": 2,
+    "patch_count": 3,
+    "validator_count": 3,
+    "owner_repo_write_attempted": false,
+    "runtime_retry_authorized": false,
+    "fresh_retry_approval_required": true,
+    "owner_patch_applied": false,
+    "full_acceptance_claimed": false
+  },
+  "browser_checks": {
+    "patch_preview_panel_visible": true,
+    "baseline_files_displayed": true,
+    "patches_displayed": true,
+    "validators_displayed": true,
+    "owner_write_displayed_false": true,
+    "runtime_retry_displayed_false": true,
+    "fresh_approval_displayed_true": true,
+    "patch_applied_displayed_false": true,
+    "full_acceptance_claimed_displayed_false": true,
+    "sensitive_endpoint_wording_absent": true
+  },
+  "browser_evidence": [
+    {
+      "screenshot": "docs/acceptance/browser-evidence/p024-account-console-paper-command-controls/p024-partial-fill-owner-repair-patch-preview-ui.png"
+    }
+  ]
+}

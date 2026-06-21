@@ -91,6 +91,7 @@ import type {
   CommandApiResult,
   CommandPartialFillOwnerRepairEvidenceIngestGate,
   CommandPartialFillOwnerRepairImplementationPlan,
+  CommandPartialFillOwnerRepairPatchPreview,
   CommandPartialFillOwnerRepairPreflightSourceAudit,
   CommandPartialFillRuntimeExecutionApprovalPacket,
   CommandPartialFillRuntimeExecutionHandoffBundle,
@@ -132,6 +133,7 @@ import {
   cancelPaperOrderIntent,
   fetchCommandPartialFillOwnerRepairEvidenceIngestGate,
   fetchCommandPartialFillOwnerRepairImplementationPlan,
+  fetchCommandPartialFillOwnerRepairPatchPreview,
   fetchCommandPartialFillOwnerRepairPreflightSourceAudit,
   fetchCommandPartialFillRuntimeExecutionApprovalPacket,
   fetchCommandPartialFillRuntimeExecutionHandoffBundle,
@@ -1529,6 +1531,10 @@ function AccountWorkbenchTerminalPanel({
     useState<CommandPartialFillOwnerRepairPreflightSourceAudit | null>(null);
   const [partialFillOwnerRepairPreflightError, setPartialFillOwnerRepairPreflightError] =
     useState<string | null>(null);
+  const [partialFillOwnerRepairPatchPreview, setPartialFillOwnerRepairPatchPreview] =
+    useState<CommandPartialFillOwnerRepairPatchPreview | null>(null);
+  const [partialFillOwnerRepairPatchPreviewError, setPartialFillOwnerRepairPatchPreviewError] =
+    useState<string | null>(null);
   const [runtimeCloseout, setRuntimeCloseout] = useState<CommandRuntimeCloseout | null>(null);
   const [runtimeCloseoutError, setRuntimeCloseoutError] = useState<string | null>(null);
   const paperArmed = isP024PaperArmed(mirrorReadback);
@@ -1631,6 +1637,8 @@ function AccountWorkbenchTerminalPanel({
       setPartialFillOwnerRepairIngestGateError(null);
       setPartialFillOwnerRepairPreflight(null);
       setPartialFillOwnerRepairPreflightError(null);
+      setPartialFillOwnerRepairPatchPreview(null);
+      setPartialFillOwnerRepairPatchPreviewError(null);
       return;
     }
     let active = true;
@@ -1645,7 +1653,8 @@ function AccountWorkbenchTerminalPanel({
         gapAuditResult,
         ownerRepairPlanResult,
         ownerRepairIngestGateResult,
-        ownerRepairPreflightResult
+        ownerRepairPreflightResult,
+        ownerRepairPatchPreviewResult
       ] =
         await Promise.allSettled([
           fetchCommandRuntimeCloseout(summary.account.account_id),
@@ -1657,7 +1666,8 @@ function AccountWorkbenchTerminalPanel({
           fetchCommandRuntimeExecutionGapAudit(summary.account.account_id),
           fetchCommandPartialFillOwnerRepairImplementationPlan(summary.account.account_id),
           fetchCommandPartialFillOwnerRepairEvidenceIngestGate(summary.account.account_id),
-          fetchCommandPartialFillOwnerRepairPreflightSourceAudit(summary.account.account_id)
+          fetchCommandPartialFillOwnerRepairPreflightSourceAudit(summary.account.account_id),
+          fetchCommandPartialFillOwnerRepairPatchPreview(summary.account.account_id)
         ]);
       if (!active) {
         return;
@@ -1767,6 +1777,17 @@ function AccountWorkbenchTerminalPanel({
             : "partial-fill owner repair preflight source audit unavailable";
         setPartialFillOwnerRepairPreflight(null);
         setPartialFillOwnerRepairPreflightError(message);
+      }
+      if (ownerRepairPatchPreviewResult.status === "fulfilled") {
+        setPartialFillOwnerRepairPatchPreview(ownerRepairPatchPreviewResult.value);
+        setPartialFillOwnerRepairPatchPreviewError(null);
+      } else {
+        const message =
+          ownerRepairPatchPreviewResult.reason instanceof Error
+            ? ownerRepairPatchPreviewResult.reason.message
+            : "partial-fill owner repair patch preview unavailable";
+        setPartialFillOwnerRepairPatchPreview(null);
+        setPartialFillOwnerRepairPatchPreviewError(message);
       }
     }
     void loadRuntimeEvidence();
@@ -2641,6 +2662,11 @@ function AccountWorkbenchTerminalPanel({
           <CommandPartialFillOwnerRepairPreflightSourceAuditPanel
             audit={partialFillOwnerRepairPreflight}
             error={partialFillOwnerRepairPreflightError}
+          />
+
+          <CommandPartialFillOwnerRepairPatchPreviewPanel
+            error={partialFillOwnerRepairPatchPreviewError}
+            preview={partialFillOwnerRepairPatchPreview}
           />
 
           <CommandRuntimeCloseoutPanel closeout={runtimeCloseout} error={runtimeCloseoutError} />
@@ -5622,6 +5648,109 @@ function CommandPartialFillOwnerRepairPreflightSourceAuditPanel({
         </div>
       ) : (
         <p className="muted">No partial-fill owner repair preflight source audit is mounted for this account.</p>
+      )}
+    </section>
+  );
+}
+
+function CommandPartialFillOwnerRepairPatchPreviewPanel({
+  preview,
+  error
+}: {
+  preview: CommandPartialFillOwnerRepairPatchPreview | null;
+  error: string | null;
+}) {
+  return (
+    <section className="terminal-panel" data-testid="account-partial-fill-owner-repair-patch-preview-panel">
+      <div className="terminal-panel-header">
+        <h3>Repair Patch Preview</h3>
+        <StateBadge value={preview ? "blocked" : error ? "blocked" : "empty"} />
+      </div>
+      {preview ? (
+        <div className="evidence-stack compact-evidence-stack">
+          <div className="evidence-item">
+            <strong>Status</strong>
+            <span data-testid="account-partial-fill-owner-repair-patch-preview-status">{preview.status}</span>
+          </div>
+          <div className="evidence-item">
+            <strong>Verdict</strong>
+            <span data-testid="account-partial-fill-owner-repair-patch-preview-verdict">{preview.verdict}</span>
+          </div>
+          <div className="evidence-item">
+            <strong>Owner path</strong>
+            <span data-testid="account-partial-fill-owner-repair-patch-preview-owner-path">
+              {preview.owner_baseline.owner_repo_path}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Owner write</strong>
+            <span data-testid="account-partial-fill-owner-repair-patch-preview-owner-write">
+              {String(preview.owner_baseline.owner_repo_write_attempted_by_preview)}
+            </span>
+          </div>
+          {preview.owner_baseline.baseline_files.map((item) => (
+            <div
+              className="evidence-item"
+              data-testid="account-partial-fill-owner-repair-patch-preview-baseline"
+              key={item.path}
+            >
+              <strong>{item.path}</strong>
+              <span>{item.sha256.slice(0, 12)}</span>
+            </div>
+          ))}
+          {preview.previewed_owner_patch.map((item) => (
+            <div
+              className="evidence-item"
+              data-testid="account-partial-fill-owner-repair-patch-preview-patch"
+              key={item.patch_id}
+            >
+              <strong>{item.patch_id}</strong>
+              <span>
+                {item.target_symbol} / {item.edit_shape}
+              </span>
+            </div>
+          ))}
+          {preview.post_patch_required_validators.map((item) => (
+            <div
+              className="evidence-item"
+              data-testid="account-partial-fill-owner-repair-patch-preview-validator"
+              key={item.evidence_id}
+            >
+              <strong>{item.evidence_id}</strong>
+              <span>{item.command}</span>
+            </div>
+          ))}
+          <div className="evidence-item">
+            <strong>Runtime retry</strong>
+            <span data-testid="account-partial-fill-owner-repair-patch-preview-runtime-retry">
+              {String(preview.post_patch_runtime_gate.runtime_retry_authorized_by_preview)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Fresh approval</strong>
+            <span data-testid="account-partial-fill-owner-repair-patch-preview-fresh-approval">
+              {String(preview.post_patch_runtime_gate.fresh_runtime_retry_approval_required_after_patch)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Patch applied</strong>
+            <span data-testid="account-partial-fill-owner-repair-patch-preview-applied">
+              {String(preview.negative_assertions.owner_patch_applied)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Full acceptance</strong>
+            <span data-testid="account-partial-fill-owner-repair-patch-preview-full-claimed">
+              {String(preview.negative_assertions.full_acceptance_claimed)}
+            </span>
+          </div>
+        </div>
+      ) : error ? (
+        <div className="state-callout blocked" data-testid="account-partial-fill-owner-repair-patch-preview-error">
+          {error}
+        </div>
+      ) : (
+        <p className="muted">No partial-fill owner repair patch preview is mounted for this account.</p>
       )}
     </section>
   );

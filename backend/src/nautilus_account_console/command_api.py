@@ -15,6 +15,7 @@ from .schemas import (
     CommandPartialFillOwnerRepairImplementationPlan,
     CommandPartialFillOwnerRepairEvidenceIngestGate,
     CommandPartialFillOwnerRepairPreflightSourceAudit,
+    CommandPartialFillOwnerRepairPatchPreview,
     CommandRuntimeExecutionApprovalPacket,
     CommandRuntimeExecutionGapAudit,
     CommandRuntimeExecutionHandoffBundle,
@@ -92,6 +93,13 @@ PARTIAL_FILL_OWNER_REPAIR_PREFLIGHT_SOURCE_AUDIT = (
     / "acceptance"
     / "p024-account-console-paper-command-controls"
     / "partial-fill-owner-repair-preflight-source-audit.json"
+)
+PARTIAL_FILL_OWNER_REPAIR_PATCH_PREVIEW = (
+    ROOT
+    / "docs"
+    / "acceptance"
+    / "p024-account-console-paper-command-controls"
+    / "partial-fill-owner-repair-patch-preview.json"
 )
 DEFAULT_RUNTIME_RUN_ID = "p023-armed-20260621t0748z"
 REQUIRED_RUNTIME_FILES = [
@@ -710,6 +718,49 @@ def load_partial_fill_owner_repair_preflight_source_audit(
         if negative.get(key) is not False:
             raise HTTPException(status_code=409, detail=f"partial-fill owner repair preflight source audit negative assertion failed: {key}")
     return CommandPartialFillOwnerRepairPreflightSourceAudit(**payload)
+
+
+def load_partial_fill_owner_repair_patch_preview(
+    account_id: str,
+) -> CommandPartialFillOwnerRepairPatchPreview:
+    if account_id != PAPER_ACCOUNT_ID:
+        raise HTTPException(status_code=403, detail="P024 owner repair patch preview is scoped to acct.ctp.paper.19053 only")
+    if not PARTIAL_FILL_OWNER_REPAIR_PATCH_PREVIEW.exists():
+        raise HTTPException(status_code=404, detail="partial-fill owner repair patch preview not found")
+    text = PARTIAL_FILL_OWNER_REPAIR_PATCH_PREVIEW.read_text(encoding="utf-8")
+    if any(fragment.lower() in text.lower() for fragment in SENSITIVE_RUNTIME_FRAGMENTS):
+        raise HTTPException(status_code=409, detail="partial-fill owner repair patch preview contains forbidden sensitive fragments")
+    payload = json.loads(text)
+    if payload.get("account_id") != PAPER_ACCOUNT_ID:
+        raise HTTPException(status_code=409, detail="partial-fill owner repair patch preview account_id mismatch")
+    baseline = payload.get("owner_baseline") or {}
+    if baseline.get("owner_repo_write_attempted_by_preview") is not False:
+        raise HTTPException(status_code=409, detail="partial-fill owner repair patch preview attempted owner write")
+    patches = payload.get("previewed_owner_patch") or []
+    if len(patches) != 3 or not any(item.get("patch_id") == "add_close_yesterday_focused_test" for item in patches):
+        raise HTTPException(status_code=409, detail="partial-fill owner repair patch preview patch set drifted")
+    gate = payload.get("post_patch_runtime_gate") or {}
+    if gate.get("runtime_retry_authorized_by_preview") is not False:
+        raise HTTPException(status_code=409, detail="partial-fill owner repair patch preview authorized runtime retry")
+    if gate.get("fresh_runtime_retry_approval_required_after_patch") is not True:
+        raise HTTPException(status_code=409, detail="partial-fill owner repair patch preview missing fresh retry approval gate")
+    negative = payload.get("negative_assertions") or {}
+    for key in [
+        "owner_repo_write_attempted",
+        "owner_patch_applied",
+        "owner_validator_run_claimed",
+        "owner_runtime_invocation_attempted",
+        "runtime_retry_authorized",
+        "real_partial_fill_claimed",
+        "web_ui_real_partial_fill_claimed",
+        "full_acceptance_claimed",
+        "raw_secret_values_recorded",
+        "raw_broker_endpoint_recorded",
+        "config_raw_content_recorded",
+    ]:
+        if negative.get(key) is not False:
+            raise HTTPException(status_code=409, detail=f"partial-fill owner repair patch preview negative assertion failed: {key}")
+    return CommandPartialFillOwnerRepairPatchPreview(**payload)
 
 
 def accept_submit_intent(account_id: str, intent: OrderIntentRequest) -> CommandApiResult:

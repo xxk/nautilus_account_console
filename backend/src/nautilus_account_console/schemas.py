@@ -480,6 +480,24 @@ class CommandPartialFillOwnerRepairPreflightSourceAudit(BaseModel):
     negative_assertions: dict
 
 
+class CommandPartialFillOwnerRepairPatchPreview(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    schema_: Literal["account-console.p024.partial-fill-owner-repair-patch-preview.v1"] = Field(alias="schema")
+    proposal_id: Literal["p024-account-console-paper-command-controls"]
+    account_id: Literal["acct.ctp.paper.19053"]
+    reviewed_at: str
+    status: Literal["phase4x_owner_repair_patch_preview_ready"]
+    verdict: Literal["patch_preview_ready_owner_write_not_authorized"]
+    depends_on: dict
+    owner_baseline: dict
+    previewed_owner_patch: list[dict]
+    post_patch_required_validators: list[dict]
+    post_patch_runtime_gate: dict
+    forbidden_preview_shapes: list[str]
+    negative_assertions: dict
+
+
 class Health(BaseModel):
     ok: bool
     service: str
