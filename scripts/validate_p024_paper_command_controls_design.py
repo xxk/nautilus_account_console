@@ -72,6 +72,13 @@ P024_PARTIAL_FILL_RUNTIME_EXECUTION_ATTEMPT_AUDIT = (
     / "p024-account-console-paper-command-controls"
     / "partial-fill-runtime-execution-attempt-audit.json"
 )
+P024_PARTIAL_FILL_CLOSE_OFFSET_OWNER_RULE_GAP_AUDIT = (
+    ROOT
+    / "docs"
+    / "acceptance"
+    / "p024-account-console-paper-command-controls"
+    / "partial-fill-close-offset-owner-rule-gap-audit.json"
+)
 P024_RUNTIME_HANDOFF_EVIDENCE = (
     ROOT
     / "docs"
@@ -283,7 +290,7 @@ def validate_readme() -> None:
     text = read(PROPOSAL / "README.md")
     for phrase in [
         "Proposal ID: `p024-account-console-paper-command-controls`",
-        "Status: phase4n_partial_fill_runtime_attempt_rejected_blocker_recorded",
+        "Status: phase4o_close_yesterday_owner_rule_gap_audited",
         "ADR carrier: yes",
         "Primary ADR: ADR-0007",
         "Predecessor: [P023 OpenCTP 19053 Paper Command Capability]",
@@ -311,6 +318,7 @@ def validate_readme() -> None:
         "validate_p024_partial_fill_runtime_execution_approval_packet.py",
         "validate_p024_partial_fill_runtime_execution_handoff_bundle.py",
         "validate_p024_partial_fill_runtime_execution_attempt_audit.py",
+        "validate_p024_partial_fill_close_offset_owner_rule_gap_audit.py",
         "validate_p024_partial_fill_runtime_approval_packet_browser_evidence.py",
         "validate_p024_partial_fill_runtime_handoff_bundle_browser_evidence.py",
         "browser_triggered_broker_order=false",
@@ -330,6 +338,7 @@ def validate_readme() -> None:
         "partial-fill runtime approval packet UI projection",
         "partial-fill runtime handoff bundle UI projection",
         "partial-fill runtime execution attempt audit",
+        "partial-fill close-offset owner rule gap audit",
     ]:
         require(phrase in text, f"P024 README missing phrase: {phrase}")
 
@@ -422,6 +431,7 @@ def validate_phase_plan() -> None:
         "Phase 4l partial-fill runtime approval packet UI projection is complete",
         "Phase 4m partial-fill runtime handoff bundle UI projection is complete",
         "Phase 4n partial-fill runtime execution attempt audit is complete",
+        "Phase 4o close-yesterday owner rule gap audit is complete",
         "external write approval",
     ]:
         require(phrase in text, f"P024 phase plan missing phrase: {phrase}")
@@ -451,6 +461,7 @@ def validate_acceptance() -> None:
         "P024_PARTIAL_FILL_RUNTIME_APPROVAL_PACKET_BROWSER_EVIDENCE_OK",
         "P024_PARTIAL_FILL_RUNTIME_EXECUTION_HANDOFF_BUNDLE_OK",
         "P024_PARTIAL_FILL_RUNTIME_EXECUTION_ATTEMPT_AUDIT_OK",
+        "P024_PARTIAL_FILL_CLOSE_OFFSET_OWNER_RULE_GAP_AUDIT_OK",
         "P024_PARTIAL_FILL_RUNTIME_HANDOFF_BUNDLE_BROWSER_EVIDENCE_OK",
         "Implementation/browser evidence is required before implementation closeout",
         "UI Anti-Drift Acceptance",
@@ -505,6 +516,7 @@ def validate_acceptance() -> None:
         "partial-fill-runtime-approval-packet-ui.json",
         "partial-fill-runtime-handoff-bundle-ui.json",
         "partial-fill-runtime-execution-attempt-audit.json",
+        "partial-fill-close-offset-owner-rule-gap-audit.json",
         "runtime-execution-gap-audit.json",
         "account-runtime-execution-gap-panel",
         "account-runtime-execution-gap-final-claimed",
@@ -1198,6 +1210,51 @@ def validate_p024_partial_fill_runtime_execution_attempt_audit() -> None:
         require(negative[key] is False, f"P024 partial-fill attempt negative assertion mismatch: {key}")
 
 
+def validate_p024_partial_fill_close_offset_owner_rule_gap_audit() -> None:
+    payload = load_json(P024_PARTIAL_FILL_CLOSE_OFFSET_OWNER_RULE_GAP_AUDIT)
+    require(
+        payload["schema"] == "account-console.p024.partial-fill-close-offset-owner-rule-gap-audit.v1",
+        "P024 close-offset gap schema mismatch",
+    )
+    require(
+        payload["status"] == "phase4o_close_yesterday_owner_rule_gap_audited",
+        "P024 close-offset gap status mismatch",
+    )
+    require(
+        payload["verdict"] == "blocked_pending_owner_close_offset_semantics_repair_or_primary_rule_source",
+        "P024 close-offset gap verdict mismatch",
+    )
+    observed = payload["observed_runtime_semantics"]
+    require(observed["position_effect"] == "CLOSEYESTERDAY", "P024 close-offset position effect mismatch")
+    require(observed["submit_native_comb_offset"] == "4", "P024 close-offset submit offset mismatch")
+    require(observed["callback_offset_flags"] == ["1"], "P024 close-offset callback mismatch")
+    require(observed["order_insert_response_offset_mismatch"] is True, "P024 close-offset mismatch flag mismatch")
+    require(observed["partial_fill_observed"] is False, "P024 close-offset partial fill claim mismatch")
+    source_refs = {item["source_id"]: item for item in payload["owner_source_refs"]}
+    require(
+        set(source_refs) == {"guarded_order_loop", "execution_client", "guarded_order_loop_tests"},
+        "P024 close-offset source ref mismatch",
+    )
+    retry = payload["retry_policy"]
+    require(retry["additional_partial_fill_order_authorized"] is False, "P024 close-offset retry flag mismatch")
+    require("repair owner close-offset semantics" in retry["required_exact_approval_before_retry"], "P024 close-offset approval text mismatch")
+    blockers = {blocker["blocker_id"] for blocker in payload["residual_blockers"]}
+    require(
+        blockers == {"p024_close_yesterday_owner_rule_gap", "p024_real_partial_fill_runtime_missing"},
+        "P024 close-offset blocker set mismatch",
+    )
+    negative = payload["negative_assertions"]
+    for key in [
+        "owner_repo_write_attempted_by_this_audit",
+        "additional_order_authorized",
+        "partial_fill_claimed",
+        "full_acceptance_claimed",
+        "raw_secret_values_recorded",
+        "raw_broker_endpoint_recorded",
+    ]:
+        require(negative[key] is False, f"P024 close-offset negative assertion mismatch: {key}")
+
+
 def validate_p024_runtime_execution_gap_audit() -> None:
     payload = load_json(P024_RUNTIME_EXECUTION_GAP_AUDIT)
     require(
@@ -1769,6 +1826,7 @@ def main() -> None:
     validate_p024_partial_fill_runtime_approval_packet_ui_evidence()
     validate_p024_partial_fill_runtime_handoff_bundle_ui_evidence()
     validate_p024_partial_fill_runtime_execution_attempt_audit()
+    validate_p024_partial_fill_close_offset_owner_rule_gap_audit()
     validate_p024_runtime_execution_gap_audit()
     validate_p024_runtime_execution_gap_ui_evidence()
     validate_p024_full_acceptance_closeout()
@@ -1784,7 +1842,7 @@ def main() -> None:
     validate_backend_command_routes_are_p024_only()
     print(
         "P024_PAPER_COMMAND_CONTROLS_DESIGN_OK: "
-        "status=phase4n_partial_fill_runtime_attempt_rejected_blocker_recorded current_ui_command=guarded runtime_closeout=browser_projection_passed partial_fill_cancel_ui=browser_contract_passed runtime_handoff=browser_handoff_passed runtime_invocation_readiness=blocked_by_external_approval runtime_readiness_ui=browser_projection_passed full_closeout=residual_blocker_audit_passed approval_packet=ready_runtime_not_invoked runtime_approval_packet_ui=browser_projection_passed handoff_bundle=ready_runtime_not_invoked runtime_handoff_bundle_ui=browser_projection_passed runtime_execution_gap=blocked_final_claim_false partial_fill_runtime=blocked_until_owner_runtime_partial_fill_state_available partial_fill_artifact_scan=no_qualifying_candidate partial_fill_approval=ready_runtime_not_invoked partial_fill_approval_ui=browser_projection_passed partial_fill_handoff=ready_runtime_not_invoked partial_fill_handoff_ui=browser_projection_passed partial_fill_attempt=rejected_before_partial_fill_not_partial_fill"
+        "status=phase4o_close_yesterday_owner_rule_gap_audited current_ui_command=guarded runtime_closeout=browser_projection_passed partial_fill_cancel_ui=browser_contract_passed runtime_handoff=browser_handoff_passed runtime_invocation_readiness=blocked_by_external_approval runtime_readiness_ui=browser_projection_passed full_closeout=residual_blocker_audit_passed approval_packet=ready_runtime_not_invoked runtime_approval_packet_ui=browser_projection_passed handoff_bundle=ready_runtime_not_invoked runtime_handoff_bundle_ui=browser_projection_passed runtime_execution_gap=blocked_final_claim_false partial_fill_runtime=blocked_until_owner_runtime_partial_fill_state_available partial_fill_artifact_scan=no_qualifying_candidate partial_fill_approval=ready_runtime_not_invoked partial_fill_approval_ui=browser_projection_passed partial_fill_handoff=ready_runtime_not_invoked partial_fill_handoff_ui=browser_projection_passed partial_fill_attempt=rejected_before_partial_fill_not_partial_fill close_yesterday_owner_rule_gap=blocked_retry_not_authorized"
     )
 
 

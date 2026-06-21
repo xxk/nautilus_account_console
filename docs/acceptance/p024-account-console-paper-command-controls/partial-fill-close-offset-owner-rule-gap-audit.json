@@ -1,0 +1,99 @@
+{
+  "schema": "account-console.p024.partial-fill-close-offset-owner-rule-gap-audit.v1",
+  "proposal_id": "p024-account-console-paper-command-controls",
+  "account_id": "acct.ctp.paper.19053",
+  "reviewed_at": "2026-06-21T18:12:00+08:00",
+  "status": "phase4o_close_yesterday_owner_rule_gap_audited",
+  "verdict": "blocked_pending_owner_close_offset_semantics_repair_or_primary_rule_source",
+  "depends_on": {
+    "attempt_audit_ref": "docs/acceptance/p024-account-console-paper-command-controls/partial-fill-runtime-execution-attempt-audit.json",
+    "attempt_audit_status": "phase4n_partial_fill_runtime_attempt_rejected_blocker_recorded",
+    "owner_attempt_result_ref": "owner-repo://nautilus_ctp_adapter/output/account_command/ctp-paper-19053/p024-partial-fill-runtime-20260621T174616p0800/submit_owner_runtime_result.json",
+    "owner_attempt_result_sha256": "5bc122ae2051d3bd92ab5d5b8f517da7a2f070bce6b395f9fc7fe79d801ba688"
+  },
+  "observed_runtime_semantics": {
+    "position_effect": "CLOSEYESTERDAY",
+    "submit_native_comb_offset": "4",
+    "submit_offset_authority": "submit_request_provenance",
+    "native_submit_boundary_offset_flags": [
+      "4"
+    ],
+    "native_submit_boundary_matches_command_payload": true,
+    "callback_source": "OnRspOrderInsert",
+    "callback_offset_flags": [
+      "1"
+    ],
+    "callback_offset_authority": "front_response_diagnostic",
+    "callback_offset_rewrites_submit_truth": false,
+    "order_insert_response_offset_mismatch": true,
+    "response_error_id": 1009,
+    "filled_quantity": 0,
+    "partial_fill_observed": false
+  },
+  "owner_source_refs": [
+    {
+      "source_id": "guarded_order_loop",
+      "ref": "owner-repo://nautilus_ctp_adapter/scripts/ctp_guarded_paper_order_loop.py",
+      "sha256": "632c42352952def2f31f97d42dfbb834b23baf6086346fee7c5717588112e7c5",
+      "relevant_symbol": "build_close_offset_owner_rule_semantics",
+      "observed_gap": "rule currently blocks callback-offset-as-submit-truth only for CLOSETODAY; the latest rejected attempt used CLOSEYESTERDAY"
+    },
+    {
+      "source_id": "execution_client",
+      "ref": "owner-repo://nautilus_ctp_adapter/src/nautilus_ctp_adapter/adapters/ctp/execution_client.py",
+      "sha256": "f6984dc2315a3f7047e2402a8aa61fbd7dd99fde20139dfc29db88bfb212a2de",
+      "relevant_symbol": "_native_comb_offset_value",
+      "observed_gap": "mapping itself declares CLOSEYESTERDAY -> 4, so retry must preserve submit-boundary provenance rather than trust rejected OnRspOrderInsert echo"
+    },
+    {
+      "source_id": "guarded_order_loop_tests",
+      "ref": "owner-repo://nautilus_ctp_adapter/tests/test_guarded_paper_order_loop.py",
+      "sha256": "f5b776eb1abc216ffc0a1e325bc2274a4fb730c01236494a749e56f00d485fd9",
+      "relevant_symbol": "close-offset owner rule tests",
+      "observed_gap": "existing coverage contains CLOSETODAY offset mismatch cases; no equivalent CLOSEYESTERDAY rejected-callback rule is proven"
+    }
+  ],
+  "repair_acceptance_shape": {
+    "owner_repo_write_required": true,
+    "approval_required_before_owner_write": true,
+    "expected_owner_changes": [
+      "extend close-offset rejection owner rule coverage to CLOSEYESTERDAY when submit-boundary offset 4 is observed and OnRspOrderInsert echoes offset 1",
+      "add owner-side focused tests proving rejected callback offset cannot rewrite CLOSEYESTERDAY submit truth",
+      "preserve no-retry rule until primary broker/front rule source or stronger owner-side repair evidence is available"
+    ],
+    "required_owner_validators": [
+      "python -m pytest tests/test_guarded_paper_order_loop.py -q",
+      "python -m pytest tests/test_nautilus_integration.py -q"
+    ],
+    "required_account_console_followup": [
+      "record owner commit checksum/ref",
+      "update partial-fill runtime approval packet before any retry",
+      "require a fresh explicit approval before any additional paper order"
+    ]
+  },
+  "retry_policy": {
+    "additional_partial_fill_order_authorized": false,
+    "reason": "latest owner-runtime attempt consumed the prior approval and failed before any fill; repeating without owner semantic repair or primary rule evidence would not move toward acceptance",
+    "required_exact_approval_before_retry": "I approve writes to D:/Nautilus/nautilus_ctp_adapter to repair owner close-offset semantics for P024 and, only after validators pass and account-console approval packets are updated, run at most one additional guarded OpenCTP paper partial-fill attempt in the 19053 simulation account; expected impact: create owner-owned code/runtime/debug/readback/reconciliation artifacts outside this worktree and may submit/cancel up to one small exposure-reduction paper order."
+  },
+  "residual_blockers": [
+    {
+      "blocker_id": "p024_close_yesterday_owner_rule_gap",
+      "type": "owner_runtime_close_offset_semantics_gap",
+      "next_action": "repair or source-close CLOSEYESTERDAY rejected-callback offset semantics in owner repo before any retry"
+    },
+    {
+      "blocker_id": "p024_real_partial_fill_runtime_missing",
+      "type": "owner_runtime_partial_fill_state_missing",
+      "next_action": "after owner repair and fresh approval, produce a qualifying partial-fill then cancel artifact set or preserve the typed blocker"
+    }
+  ],
+  "negative_assertions": {
+    "owner_repo_write_attempted_by_this_audit": false,
+    "additional_order_authorized": false,
+    "partial_fill_claimed": false,
+    "full_acceptance_claimed": false,
+    "raw_secret_values_recorded": false,
+    "raw_broker_endpoint_recorded": false
+  }
+}

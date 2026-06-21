@@ -1,7 +1,7 @@
 # P024 Acceptance / Account Console Paper Command Controls
 
 - Proposal ID: `p024-account-console-paper-command-controls`
-- Status: phase4n_partial_fill_runtime_attempt_rejected_blocker_recorded
+- Status: phase4o_close_yesterday_owner_rule_gap_audited
 - Primary ADR: ADR-0007
 
 ## Scope
@@ -36,6 +36,7 @@ Out of scope: live trading, replace order, Account Mirror write authority, direc
 | P024 partial-fill runtime execution handoff bundle | `python scripts\validate_p024_partial_fill_runtime_execution_handoff_bundle.py` | `P024_PARTIAL_FILL_RUNTIME_EXECUTION_HANDOFF_BUNDLE_OK` | Freezes post-approval runtime inputs, success formulas and fallback classifications while `execution_allowed=false` |
 | P024 partial-fill runtime handoff bundle UI projection | `npx playwright test tests/e2e/p024-partial-fill-runtime-execution-handoff-bundle.spec.ts --project=desktop` then `python scripts\validate_p024_partial_fill_runtime_handoff_bundle_browser_evidence.py` | `P024_PARTIAL_FILL_RUNTIME_HANDOFF_BUNDLE_BROWSER_EVIDENCE_OK` | Web UI renders partial-fill runtime inputs, owner sequence, success formulas and fallback classifications while `execution_allowed=false` |
 | P024 partial-fill runtime execution attempt audit | `python scripts\validate_p024_partial_fill_runtime_execution_attempt_audit.py` | `P024_PARTIAL_FILL_RUNTIME_EXECUTION_ATTEMPT_AUDIT_OK` | Owner-owned guarded paper attempt is recorded as rejected-before-partial-fill with checksum-backed refs; no cancel identity was available and full acceptance remains false |
+| P024 partial-fill close-offset owner rule gap audit | `python scripts\validate_p024_partial_fill_close_offset_owner_rule_gap_audit.py` | `P024_PARTIAL_FILL_CLOSE_OFFSET_OWNER_RULE_GAP_AUDIT_OK` | CLOSEYESTERDAY submit-boundary offset 4 versus rejected callback offset 1 is source-closed as an owner repair prerequisite before any retry |
 | P023 runtime predecessor | `python scripts\validate_p023_openctp19053_command_run.py --run-dir output\account_command\ctp-paper-19053\p023-armed-20260621t0748z --source-package output\account_capability\ctp-paper-19053\source-package.json` | `P023_OPENCTP19053_COMMAND_RUN_OK` | Predecessor paper command evidence |
 | Proposal docs | `python scripts\check_proposal_docs.py --root . --proposal-id p024-account-console-paper-command-controls` | `PROPOSAL_DOCS_OK` | Proposal structure |
 
@@ -46,6 +47,9 @@ and
 
 The latest owner-runtime attempt audit is
 `docs/acceptance/p024-account-console-paper-command-controls/partial-fill-runtime-execution-attempt-audit.json`.
+
+The close-offset semantic gap audit is
+`docs/acceptance/p024-account-console-paper-command-controls/partial-fill-close-offset-owner-rule-gap-audit.json`.
 
 ## Scenario Matrix
 
