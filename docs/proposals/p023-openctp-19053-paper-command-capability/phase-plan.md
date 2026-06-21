@@ -11,7 +11,7 @@
 | Phase 0 | ADR/proposal acceptance design | ADR-0007 exists | P023 docs and validator pass | completed_design |
 | Phase 1 | Command contracts | P023 design accepted | `OrderIntent`, `CancelIntent`, risk/approval/gateway/readback/reconcile schemas and fixtures pass | completed_contract_gate |
 | Phase 2 | Disabled default gates | Phase 1 | Existing accounts remain `command.enabled=false`; command API absent until explicitly enabled | completed_disabled_gate |
-| Phase 3 | Paper gateway dry-run | Phase 2 | Gateway validates intent without broker mutation and writes audit evidence | completed_dry_run |
+| Phase 3 | Paper gateway dry-run | Phase 2 | Gateway validates intent without broker mutation, writes audit evidence and locks submit idempotency replay by checksum | completed_dry_run |
 | Phase 4 | OpenCTP 19053 paper submit | Phase 3 | Real paper submit event plus `ReqQryOrder` post-submit readback match | completed_paper_submit |
 | Phase 5 | OpenCTP 19053 paper cancel | Phase 4 | Cancel event plus `ReqQryOrder` terminal readback match | completed_paper_cancel |
 | Phase 5b | OpenCTP 19053 partial-fill lifecycle | Phase 5 | `ReqQryTrade` partial fill, `ReqQryOrder` remaining quantity, cancel remaining quantity and reconciliation match, or typed runtime blocker | designed_runtime_blocker_until_partial_state |
@@ -46,6 +46,10 @@ Primary ADR: ADR-0007
 10. Build reconciliation result.
 11. Project UI status only from command audit and Account Mirror readback.
 
+## Submit Idempotency Replay Contract
+
+A4 is landed as a contract-lock gate, not as a second live or paper broker send. `submit_idempotency_replay_valid.json` pins the real P023 submit intent, gateway event, post-submit readback and command audit by SHA256. The validator requires one idempotency key, one command result, `same_broker_order_identity=true`, `duplicate_broker_order_created=false`, `gateway_send_replayed=false`, and `runtime_duplicate_send_attempted=false`. Negative fixtures reject a second broker identity and a missing source ref.
+
 ## Partial-Fill Runtime Sequence
 
 Phase 5b is entered only for a real or owner-approved partial-fill state. It cannot be satisfied by screenshots, UI table text or gateway ack.
@@ -60,4 +64,4 @@ Phase 5b is entered only for a real or owner-approved partial-fill state. It can
 
 ## Current Blockers
 
-Browser command-control implementation remains blocked. True OpenCTP paper submit/cancel evidence exists at `output/account_command/ctp-paper-19053/p023-armed-20260621t0748z/`; partial-fill runtime evidence is designed but remains blocked until a real or owner-approved partial-fill state is produced. Live trading readiness and web/API command controls remain disabled.
+Browser command-control implementation remains blocked. True OpenCTP paper submit/cancel evidence exists at `output/account_command/ctp-paper-19053/p023-armed-20260621t0748z/`; submit idempotency is contract-locked without sending a duplicate broker order; partial-fill runtime evidence is designed but remains blocked until a real or owner-approved partial-fill state is produced. Live trading readiness and web/API command controls remain disabled.

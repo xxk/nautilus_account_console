@@ -64,6 +64,7 @@ def validate_proposal_docs() -> None:
         "validate_p023_openctp19053_command_run.py",
         "Account Mirror as broker writer",
         "P023 paper runtime is accepted",
+        "submit idempotency replay contract-lock evidence",
     ]:
         require(phrase in readme, f"P023 README missing {phrase}")
 
@@ -78,6 +79,9 @@ def validate_proposal_docs() -> None:
         "completed_paper_submit",
         "completed_paper_cancel",
         "designed_runtime_blocker_until_partial_state",
+        "Submit Idempotency Replay Contract",
+        "submit_idempotency_replay_valid.json",
+        "runtime_duplicate_send_attempted=false",
         "ReqQryOrder",
         "Partial-Fill Runtime Sequence",
         "partial_fill_reconciliation_result.json",
@@ -100,6 +104,10 @@ def validate_proposal_docs() -> None:
         "runtime_accepted",
         "19053 7x24 paper preflight ready",
         "Paper submit accepted by gateway",
+        "contract_lock_ready_runtime_duplicate_not_sent",
+        "account_command.submit_idempotency_replay.v1",
+        "runtime_duplicate_send_attempted=false",
+        "same broker order identity",
         "Paper cancel uses readback identity",
         "Post-cancel readback reconciles",
         "Partial fill then cancel",
@@ -169,6 +177,11 @@ def validate_proposal_docs() -> None:
         "NU-01",
         "NU-14",
         "NU-15",
+        "Submit Idempotency Non-UI Acceptance",
+        "validate_submit_idempotency_replay",
+        "same_broker_order_identity=true",
+        "duplicate_broker_order_created=false",
+        "runtime_duplicate_send_attempted=false",
         "Partial Fill Non-UI Acceptance",
         "NUN-01",
         "NUN-12",
@@ -279,10 +292,13 @@ def validate_contract_gate_landed() -> None:
         "order_intent_valid.json",
         "cancel_intent_valid.json",
         "command_audit_valid.json",
+        "submit_idempotency_replay_valid.json",
         "invalid_order_intent_missing_idempotency.json",
         "invalid_order_intent_raw_secret_flag.json",
         "invalid_cancel_intent_missing_identity.json",
         "invalid_audit_ack_final_state.json",
+        "invalid_submit_idempotency_replay_second_broker_order.json",
+        "invalid_submit_idempotency_replay_missing_source_ref.json",
     ]:
         require((fixture_dir / filename).exists(), f"missing command contract fixture {filename}")
 

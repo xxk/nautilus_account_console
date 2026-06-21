@@ -55,7 +55,7 @@ output/account_command/ctp-paper-19053/<run-id>/
 | --- | --- | --- | --- |
 | NU-01 | G1 | 19053 preflight ready from OpenCTP readback | `validate_preflight_readback` |
 | NU-02 | G2 | submit intent schema valid | `validate_order_intent_schema` |
-| NU-03 | G2 | submit idempotency creates one broker order | `validate_submit_idempotency` |
+| NU-03 | G2 | submit idempotency creates one broker order | `validate_submit_idempotency_replay` |
 | NU-04 | G2 | post-submit readback sees venue identity | `validate_post_submit_readback` |
 | NU-05 | G3 | cancel intent schema valid and identity-bound | `validate_cancel_intent_schema` |
 | NU-06 | G3 | post-cancel readback terminal or typed blocker | `validate_post_cancel_readback` |
@@ -68,6 +68,10 @@ output/account_command/ctp-paper-19053/<run-id>/
 | NU-13 | G9 | redaction report proves no raw secrets/endpoints | `validate_command_redaction` |
 | NU-14 | G10 | command API projection remains disabled by default | `validate_command_projection_default` |
 | NU-15 | G4 | partial fill then cancel reconciles filled and remaining quantities | `validate_partial_fill_then_cancel_reconciliation` |
+
+## Submit Idempotency Non-UI Acceptance
+
+NU-03 is accepted at the contract-lock level by `submit_idempotency_replay_valid.json` and `validate_submit_idempotency_replay`. The verifier must prove the original submit intent, retry intent, command audit, gateway event and post-submit readback refs have valid SHA256 checksums; the original and retry share one idempotency key; the retry maps to the same command result and `same_broker_order_identity=true`; `duplicate_broker_order_created=false`; `gateway_send_replayed=false`; and `runtime_duplicate_send_attempted=false`. A second broker order identity, missing source ref, bad checksum, gateway replay or raw secret artifact must be rejected.
 
 ## Partial Fill Non-UI Acceptance
 

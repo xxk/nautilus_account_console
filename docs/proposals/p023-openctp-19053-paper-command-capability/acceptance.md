@@ -29,13 +29,15 @@ The 10 scenario groups have two acceptance surfaces:
 | A1 | positive | Contract family exists for command path | schema validator | missing `OrderIntent`, `CancelIntent`, `RiskDecision`, `ApprovalDecision`, `ExecutionCommand`, `ExecutionEvent`, `MirrorReadback`, `ReconciliationResult` | contract_gate_ready |
 | A2 | positive | 19053 7x24 paper preflight ready | real OpenCTP query artifact | login/query/readback unavailable without typed blocker | runtime_accepted |
 | A3 | positive | Paper submit accepted by gateway | integration test + command audit | Account Mirror or UI sends broker mutation | runtime_accepted |
-| A4 | positive | Submit idempotency | duplicate submit test | duplicate click creates duplicate broker order | planned |
+| A4 | positive | Submit idempotency | idempotency replay contract + artifact checksum gate | duplicate click creates duplicate broker order | contract_lock_ready_runtime_duplicate_not_sent |
 | A5 | positive | Post-submit readback reconciles | `ReqQryOrder` evidence + reconciliation artifact | gateway ack alone marks final state | runtime_accepted |
 | A6 | positive | Paper cancel uses readback identity | cancel integration test | cancel uses screenshot/UI text/latest path | runtime_accepted |
 | A7 | positive | Post-cancel readback reconciles | `ReqQryOrder` terminal state evidence | missing terminal state is hidden as success | runtime_accepted |
 | A8 | positive | Secret redaction | artifact redaction validator | raw password/front/auth/token recorded | runtime_accepted |
 | A9 | positive | UI status evidence | Playwright + API projection | UI shows command complete without readback/reconcile | planned |
 | A10 | positive | Partial fill then cancel | `ReqQryTrade` + `ReqQryOrder` + reconciliation validator plus browser order-display gate | partial fill inferred from UI/gateway ack/screenshot | browser_order_display_contract_ready_runtime_blocked |
+
+A4 is contract-locked by `account_command.submit_idempotency_replay.v1`: the replay fixture pins the original submit intent, gateway event, readback and command audit by SHA256, requires the same idempotency key to map to the same command result and same broker order identity, and requires `runtime_duplicate_send_attempted=false`. This is not a real duplicate runtime send claim; it prevents a second broker order from being accepted by contract while command controls remain disabled.
 
 A10 supersedes the earlier `designed_runtime_blocker_until_partial_state` design-only state for the Web UI order-display surface: the browser order display contract is ready, while real OpenCTP partial-fill runtime and command action controls remain typed blockers. The Web UI contract must also prove `partial_cancel_display_verdict=pass`: S2 fill rows sum to the displayed filled quantity, the S2 cancel target equals the readback remaining quantity, S3 preserves quantities while cancel is pending, and S4 preserves filled trades while showing remaining quantity `0` and cancelled quantity equal to S2 remaining.
 
