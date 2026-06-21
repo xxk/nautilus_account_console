@@ -10,6 +10,20 @@ CLOSEOUT = ROOT / "docs" / "acceptance" / "p024-account-console-paper-command-co
 OWNER_READINESS = (
     ROOT / "docs" / "acceptance" / "p024-account-console-paper-command-controls" / "owner-runtime-invocation-readiness.json"
 )
+OWNER_APPROVAL_PACKET = (
+    ROOT
+    / "docs"
+    / "acceptance"
+    / "p024-account-console-paper-command-controls"
+    / "owner-runtime-execution-approval-packet.json"
+)
+OWNER_HANDOFF_BUNDLE = (
+    ROOT
+    / "docs"
+    / "acceptance"
+    / "p024-account-console-paper-command-controls"
+    / "owner-runtime-execution-handoff-bundle.json"
+)
 P024_EVIDENCE_DIR = ROOT / "docs" / "acceptance" / "browser-evidence" / "p024-account-console-paper-command-controls"
 PROPOSAL = ROOT / "docs" / "proposals" / "p024-account-console-paper-command-controls"
 PROPOSAL_INDEX = ROOT / "docs" / "proposals" / "README.md"
@@ -39,7 +53,7 @@ def text(path: Path) -> str:
 def scan_forbidden_text() -> list[str]:
     fragments = ["password=", "auth_code=", "api_key=", "secret=", "tcp://", "trading.openctp", "live_armed=true"]
     matches: list[str] = []
-    for path in [CLOSEOUT, OWNER_READINESS]:
+    for path in [CLOSEOUT, OWNER_READINESS, OWNER_APPROVAL_PACKET, OWNER_HANDOFF_BUNDLE]:
         payload = path.read_text(encoding="utf-8", errors="ignore").lower()
         if any(fragment.lower() in payload for fragment in fragments):
             matches.append(str(path))
@@ -56,6 +70,9 @@ def validate_required_gates(payload: dict[str, Any]) -> None:
         "p024_runtime_handoff_request": "P024_RUNTIME_HANDOFF_BROWSER_EVIDENCE_OK",
         "p024_owner_runtime_invocation_readiness": "P024_OWNER_RUNTIME_INVOCATION_READINESS_OK",
         "p024_runtime_readiness_ui_projection": "P024_RUNTIME_READINESS_BROWSER_EVIDENCE_OK",
+        "p024_owner_runtime_execution_approval_packet": "P024_OWNER_RUNTIME_EXECUTION_APPROVAL_PACKET_OK",
+        "p024_runtime_approval_packet_ui_projection": "P024_RUNTIME_APPROVAL_PACKET_BROWSER_EVIDENCE_OK",
+        "p024_owner_runtime_execution_handoff_bundle": "P024_OWNER_RUNTIME_EXECUTION_HANDOFF_BUNDLE_OK",
         "p024_design_and_adr": "P024_PAPER_COMMAND_CONTROLS_DESIGN_OK",
         "p019_boundary": "P019_API_BOUNDARY_OK",
         "proposal_docs": "PROPOSAL_DOCS_OK",
@@ -158,8 +175,14 @@ def validate_evidence_files() -> None:
         P024_EVIDENCE_DIR / "partial-fill-cancel-order-display.json",
         P024_EVIDENCE_DIR / "runtime-handoff-ui.json",
         P024_EVIDENCE_DIR / "runtime-readiness-ui.json",
+        P024_EVIDENCE_DIR / "runtime-approval-packet-ui.json",
+        OWNER_APPROVAL_PACKET,
+        OWNER_HANDOFF_BUNDLE,
         ROOT / "frontend" / "tests" / "e2e" / "p024-runtime-invocation-readiness.spec.ts",
+        ROOT / "frontend" / "tests" / "e2e" / "p024-runtime-execution-approval-packet.spec.ts",
         ROOT / "scripts" / "validate_p024_runtime_readiness_browser_evidence.py",
+        ROOT / "scripts" / "validate_p024_runtime_approval_packet_browser_evidence.py",
+        ROOT / "scripts" / "validate_p024_owner_runtime_execution_handoff_bundle.py",
     ]:
         require(path.exists(), f"missing referenced evidence path: {path}")
 
@@ -202,6 +225,9 @@ def validate_payload(payload: dict[str, Any]) -> None:
         "owner_runtime_handoff_request_projection",
         "owner_runtime_invocation_readiness",
         "runtime_readiness_ui_projection",
+        "owner_runtime_execution_approval_packet",
+        "runtime_approval_packet_ui_projection",
+        "owner_runtime_execution_handoff_bundle",
         "proposal_docs_and_adr_boundary",
     ]:
         require(item in accepted, f"accepted scope missing: {item}")

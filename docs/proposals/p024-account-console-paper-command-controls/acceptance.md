@@ -1,7 +1,7 @@
 # P024 Acceptance / Account Console Paper Command Controls
 
 - Proposal ID: `p024-account-console-paper-command-controls`
-- Status: phase4b_runtime_approval_packet_ui_projection_passed
+- Status: phase4c_owner_runtime_execution_handoff_bundle_ready
 - Primary ADR: ADR-0007
 
 ## Scope
@@ -25,6 +25,7 @@ Out of scope: live trading, replace order, Account Mirror write authority, direc
 | P024 full acceptance closeout audit | `python scripts\validate_p024_full_acceptance_closeout.py` | `P024_FULL_ACCEPTANCE_CLOSEOUT_OK` | A1-A14, accepted scope, non-accepted runtime scope and residual owner-runtime blockers are machine-checked |
 | P024 owner-runtime execution approval packet | `python scripts\validate_p024_owner_runtime_execution_approval_packet.py` | `P024_OWNER_RUNTIME_EXECUTION_APPROVAL_PACKET_OK` | Exact owner path, reason, expected impact, approval text, guarded command templates and post-run artifact set are machine-checked while `approval_obtained=false` and `runtime_invocation_attempted=false` |
 | P024 runtime approval packet UI projection | `npx playwright test tests/e2e/p024-runtime-execution-approval-packet.spec.ts --project=desktop` then `python scripts\validate_p024_runtime_approval_packet_browser_evidence.py` | `P024_RUNTIME_APPROVAL_PACKET_BROWSER_EVIDENCE_OK` | Web UI renders the exact approval packet and preserves `approval_obtained=false`, `runtime_invocation_attempted=false`, `owner_repo_write_attempted=false` and `broker_order_created=false` |
+| P024 owner-runtime execution handoff bundle | `python scripts\validate_p024_owner_runtime_execution_handoff_bundle.py` | `P024_OWNER_RUNTIME_EXECUTION_HANDOFF_BUNDLE_OK` | Post-approval operator sequence, runtime input requirements, required owner artifacts and post-handoff gates are machine-checked while `execution_allowed=false` |
 | P023 runtime predecessor | `python scripts\validate_p023_openctp19053_command_run.py --run-dir output\account_command\ctp-paper-19053\p023-armed-20260621t0748z --source-package output\account_capability\ctp-paper-19053\source-package.json` | `P023_OPENCTP19053_COMMAND_RUN_OK` | Predecessor paper command evidence |
 | Proposal docs | `python scripts\check_proposal_docs.py --root . --proposal-id p024-account-console-paper-command-controls` | `PROPOSAL_DOCS_OK` | Proposal structure |
 
@@ -89,6 +90,22 @@ The Web UI must render the Phase 4a approval packet as an explicit pre-execution
 5. UI text must not include raw broker endpoints, raw front-address wording, live-ready wording or browser-submitted broker-order claims.
 
 Accepted evidence: `python scripts\validate_p024_runtime_approval_packet_browser_evidence.py` returns `P024_RUNTIME_APPROVAL_PACKET_BROWSER_EVIDENCE_OK`.
+
+## Phase 4c Owner Runtime Execution Handoff Bundle
+
+P024 Phase 4c freezes the post-approval execution sequence without invoking owner runtime.
+
+Required artifact:
+
+1. `docs/acceptance/p024-account-console-paper-command-controls/owner-runtime-execution-handoff-bundle.json`.
+2. `status=phase4c_owner_runtime_execution_handoff_bundle_ready`.
+3. `verdict=handoff_bundle_ready_runtime_not_invoked`.
+4. `execution_allowed=false`, `approval_obtained=false`, `runtime_invocation_attempted=false` and `owner_repo_write_attempted=false`.
+5. Runtime input requirements include fresh owner pre/post snapshot refs, instrument, side, quantity, price and readback order identity.
+6. Operator sequence is gated: approval, owner repo context, submit runtime, submit readback, cancel runtime, post-run ingest and browser closeout.
+7. Required owner artifacts and post-handoff gates match the approval packet and closeout gates.
+
+Accepted evidence: `python scripts\validate_p024_owner_runtime_execution_handoff_bundle.py` returns `P024_OWNER_RUNTIME_EXECUTION_HANDOFF_BUNDLE_OK`.
 
 ## Phase 3e Runtime Readiness UI Projection Acceptance
 
@@ -218,4 +235,4 @@ This remains browser/control contract evidence. It does not claim real Web UI Op
 
 ## Evidence Boundary
 
-Implementation/browser evidence is required before implementation closeout. Phase 1, Phase 2, Phase 3a, Phase 3b, Phase 3c, Phase 3d readiness, Phase 3e readiness UI projection, Phase 4 residual blocker audit, Phase 4a owner-runtime execution approval packet and Phase 4b runtime approval packet UI projection gates are accepted; real Web UI submit/cancel runtime execution remains blocked pending external owner-runtime approval and artifacts.
+Implementation/browser evidence is required before implementation closeout. Phase 1, Phase 2, Phase 3a, Phase 3b, Phase 3c, Phase 3d readiness, Phase 3e readiness UI projection, Phase 4 residual blocker audit, Phase 4a owner-runtime execution approval packet, Phase 4b runtime approval packet UI projection and Phase 4c owner-runtime execution handoff bundle gates are accepted; real Web UI submit/cancel runtime execution remains blocked pending external owner-runtime approval and artifacts.

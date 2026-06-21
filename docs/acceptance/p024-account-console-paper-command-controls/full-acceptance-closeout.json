@@ -13,6 +13,9 @@
     "owner_runtime_handoff_request_projection",
     "owner_runtime_invocation_readiness",
     "runtime_readiness_ui_projection",
+    "owner_runtime_execution_approval_packet",
+    "runtime_approval_packet_ui_projection",
+    "owner_runtime_execution_handoff_bundle",
     "proposal_docs_and_adr_boundary"
   ],
   "not_accepted_scope": [
@@ -65,6 +68,24 @@
       "id": "p024_runtime_readiness_ui_projection",
       "command": "npx playwright test tests/e2e/p024-runtime-invocation-readiness.spec.ts --project=desktop && python scripts\\validate_p024_runtime_readiness_browser_evidence.py",
       "pass_signal": "P024_RUNTIME_READINESS_BROWSER_EVIDENCE_OK",
+      "status": "passed"
+    },
+    {
+      "id": "p024_owner_runtime_execution_approval_packet",
+      "command": "python scripts\\validate_p024_owner_runtime_execution_approval_packet.py",
+      "pass_signal": "P024_OWNER_RUNTIME_EXECUTION_APPROVAL_PACKET_OK",
+      "status": "passed"
+    },
+    {
+      "id": "p024_runtime_approval_packet_ui_projection",
+      "command": "npx playwright test tests/e2e/p024-runtime-execution-approval-packet.spec.ts --project=desktop && python scripts\\validate_p024_runtime_approval_packet_browser_evidence.py",
+      "pass_signal": "P024_RUNTIME_APPROVAL_PACKET_BROWSER_EVIDENCE_OK",
+      "status": "passed"
+    },
+    {
+      "id": "p024_owner_runtime_execution_handoff_bundle",
+      "command": "python scripts\\validate_p024_owner_runtime_execution_handoff_bundle.py",
+      "pass_signal": "P024_OWNER_RUNTIME_EXECUTION_HANDOFF_BUNDLE_OK",
       "status": "passed"
     },
     {
