@@ -465,6 +465,22 @@ class CommandPartialFillOwnerRepairApprovalPacket(BaseModel):
     negative_assertions: dict
 
 
+class CommandPartialFillRemainingAcceptanceCurrentState(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    schema_: Literal["account-console.p024.partial-fill-remaining-acceptance-current-state.v1"] = Field(alias="schema")
+    proposal_id: Literal["p024-account-console-paper-command-controls"]
+    account_id: Literal["acct.ctp.paper.19053"]
+    reviewed_at: str
+    status: Literal["phase4q_remaining_acceptance_current_state_audited"]
+    verdict: Literal["not_fully_accepted_pending_owner_repair_and_real_partial_fill"]
+    current_authoritative_state: dict
+    accepted_evidence_groups: list[dict]
+    remaining_acceptance_requirements: list[dict]
+    next_authorized_action: dict
+    negative_assertions: dict
+
+
 class CommandPartialFillOwnerRepairEvidenceIngestGate(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
 

@@ -766,6 +766,51 @@ export interface CommandPartialFillOwnerRepairApprovalPacket {
   };
 }
 
+export interface CommandPartialFillRemainingAcceptanceCurrentState {
+  schema: "account-console.p024.partial-fill-remaining-acceptance-current-state.v1";
+  proposal_id: "p024-account-console-paper-command-controls";
+  account_id: "acct.ctp.paper.19053";
+  reviewed_at: string;
+  status: "phase4q_remaining_acceptance_current_state_audited";
+  verdict: "not_fully_accepted_pending_owner_repair_and_real_partial_fill";
+  current_authoritative_state: {
+    account_console_worktree_clean_at_review: boolean;
+    owner_repo_code_change_recorded_for_close_offset_repair: false;
+    owner_repo_runtime_artifacts_present: boolean;
+    latest_real_partial_fill_attempt_classification: string;
+    latest_owner_repair_gate: string;
+    full_acceptance_claimed: false;
+  };
+  accepted_evidence_groups: Array<{
+    group_id: string;
+    status: string;
+    evidence_refs: string[];
+  }>;
+  remaining_acceptance_requirements: Array<{
+    requirement_id: string;
+    required_evidence_shape: string;
+    current_status: "missing";
+    current_blocker_id?: string;
+    required_commands?: string[];
+  }>;
+  next_authorized_action: {
+    owner_code_repair_allowed: false;
+    owner_runtime_retry_allowed: false;
+    account_console_only_work_allowed: true;
+    required_exact_approval_before_owner_repair_or_retry: string;
+  };
+  negative_assertions: {
+    full_acceptance_claimed: false;
+    owner_repair_claimed: false;
+    post_repair_runtime_retry_claimed: false;
+    real_partial_fill_claimed: false;
+    web_ui_real_partial_fill_claimed: false;
+    raw_secret_values_recorded: false;
+    raw_broker_endpoint_recorded: false;
+    config_raw_content_recorded: false;
+  };
+}
+
 export interface CommandPartialFillOwnerRepairEvidenceIngestGate {
   schema: "account-console.p024.partial-fill-owner-repair-evidence-ingest-gate.v1";
   proposal_id: "p024-account-console-paper-command-controls";

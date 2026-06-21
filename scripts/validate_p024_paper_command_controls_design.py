@@ -184,6 +184,14 @@ P024_PARTIAL_FILL_OWNER_REPAIR_APPROVAL_PACKET_UI_EVIDENCE = (
     / "p024-account-console-paper-command-controls"
     / "partial-fill-owner-repair-approval-packet-ui.json"
 )
+P024_PARTIAL_FILL_REMAINING_ACCEPTANCE_STATE_UI_EVIDENCE = (
+    ROOT
+    / "docs"
+    / "acceptance"
+    / "browser-evidence"
+    / "p024-account-console-paper-command-controls"
+    / "partial-fill-remaining-acceptance-state-ui.json"
+)
 P024_PARTIAL_FILL_OWNER_REPAIR_PLAN_UI_EVIDENCE = (
     ROOT
     / "docs"
@@ -292,6 +300,7 @@ ALLOWED_COMMAND_ROUTES = {
     "/api/commands/accounts/{account_id}/partial-fill-runtime-execution-handoff-bundle": {"GET"},
     "/api/commands/accounts/{account_id}/runtime-execution-gap-audit": {"GET"},
     "/api/commands/accounts/{account_id}/partial-fill-owner-repair-approval-packet": {"GET"},
+    "/api/commands/accounts/{account_id}/partial-fill-remaining-acceptance-current-state": {"GET"},
     "/api/commands/accounts/{account_id}/partial-fill-owner-repair-implementation-plan": {"GET"},
     "/api/commands/accounts/{account_id}/partial-fill-owner-repair-evidence-ingest-gate": {"GET"},
     "/api/commands/accounts/{account_id}/partial-fill-owner-repair-preflight-source-audit": {"GET"},
@@ -393,7 +402,7 @@ def validate_readme() -> None:
     text = read(PROPOSAL / "README.md")
     for phrase in [
         "Proposal ID: `p024-account-console-paper-command-controls`",
-        "Status: phase4zb_owner_repair_approval_packet_ui_projection_passed",
+        "Status: phase4zc_remaining_acceptance_state_ui_projection_passed",
         "ADR carrier: yes",
         "Primary ADR: ADR-0007",
         "Predecessor: [P023 OpenCTP 19053 Paper Command Capability]",
@@ -435,6 +444,7 @@ def validate_readme() -> None:
         "validate_p024_partial_fill_owner_repair_execution_handoff_bundle.py",
         "validate_p024_partial_fill_owner_repair_execution_handoff_browser_evidence.py",
         "validate_p024_partial_fill_owner_repair_approval_packet_browser_evidence.py",
+        "validate_p024_partial_fill_remaining_acceptance_state_browser_evidence.py",
         "validate_p024_partial_fill_runtime_approval_packet_browser_evidence.py",
         "validate_p024_partial_fill_runtime_handoff_bundle_browser_evidence.py",
         "browser_triggered_broker_order=false",
@@ -468,6 +478,7 @@ def validate_readme() -> None:
         "owner repair execution handoff bundle",
         "owner repair execution handoff UI projection",
         "owner repair approval packet UI projection",
+        "remaining acceptance state UI projection",
     ]:
         require(phrase in text, f"P024 README missing phrase: {phrase}")
 
@@ -574,6 +585,7 @@ def validate_phase_plan() -> None:
         "Phase 4z owner repair execution handoff bundle is ready",
         "Phase 4za owner repair execution handoff UI projection is complete",
         "Phase 4zb owner repair approval packet UI projection is complete",
+        "Phase 4zc remaining acceptance state UI projection is complete",
         "external write approval",
     ]:
         require(phrase in text, f"P024 phase plan missing phrase: {phrase}")
@@ -613,6 +625,7 @@ def validate_acceptance() -> None:
         "P024_PARTIAL_FILL_OWNER_REPAIR_EXECUTION_HANDOFF_BUNDLE_OK",
         "P024_PARTIAL_FILL_OWNER_REPAIR_EXECUTION_HANDOFF_BROWSER_EVIDENCE_OK",
         "P024_PARTIAL_FILL_OWNER_REPAIR_APPROVAL_PACKET_BROWSER_EVIDENCE_OK",
+        "P024_PARTIAL_FILL_REMAINING_ACCEPTANCE_STATE_BROWSER_EVIDENCE_OK",
         "P024_PARTIAL_FILL_RUNTIME_HANDOFF_BUNDLE_BROWSER_EVIDENCE_OK",
         "Implementation/browser evidence is required before implementation closeout",
         "UI Anti-Drift Acceptance",
@@ -677,6 +690,7 @@ def validate_acceptance() -> None:
         "partial-fill-owner-repair-execution-handoff-bundle.json",
         "partial-fill-owner-repair-execution-handoff-ui.json",
         "partial-fill-owner-repair-approval-packet-ui.json",
+        "partial-fill-remaining-acceptance-state-ui.json",
         "runtime-execution-gap-audit.json",
         "account-runtime-execution-gap-panel",
         "account-runtime-execution-gap-final-claimed",
@@ -702,6 +716,7 @@ def validate_acceptance() -> None:
         "A30",
         "A31",
         "A32",
+        "A33",
         "phase4u_owner_repair_ingest_gate_ui_projection_passed",
         "phase4v_owner_repair_preflight_source_audited",
         "phase4w_owner_repair_preflight_ui_projection_passed",
@@ -710,6 +725,7 @@ def validate_acceptance() -> None:
         "phase4z_owner_repair_execution_handoff_bundle_ready",
         "phase4za_owner_repair_execution_handoff_ui_projection_passed",
         "phase4zb_owner_repair_approval_packet_ui_projection_passed",
+        "phase4zc_remaining_acceptance_state_ui_projection_passed",
     ]:
         require(phrase in text, f"P024 acceptance missing phrase: {phrase}")
 
@@ -798,6 +814,10 @@ def validate_ui_docs() -> None:
         "account-partial-fill-owner-repair-approval-packet-runtime-retry",
         "account-partial-fill-owner-repair-approval-packet-owner-write",
         "account-partial-fill-owner-repair-approval-packet-full-claimed",
+        "account-partial-fill-remaining-acceptance-panel",
+        "account-partial-fill-remaining-acceptance-requirement",
+        "account-partial-fill-remaining-acceptance-full-claimed",
+        "account-partial-fill-remaining-acceptance-runtime-retry",
         "After terminal cancel",
     ]:
         require(phrase in design, f"P024 UI design missing phrase: {phrase}")
@@ -847,6 +867,10 @@ def validate_ui_docs() -> None:
         "owner repair approval packet projection",
         "account-partial-fill-owner-repair-approval-packet-panel",
         "P024_PARTIAL_FILL_OWNER_REPAIR_APPROVAL_PACKET_BROWSER_EVIDENCE_OK",
+        "UI-19",
+        "remaining acceptance state projection",
+        "account-partial-fill-remaining-acceptance-panel",
+        "P024_PARTIAL_FILL_REMAINING_ACCEPTANCE_STATE_BROWSER_EVIDENCE_OK",
         "UI-15",
         "runtime execution gap audit projection",
         "account-runtime-execution-gap-panel",
@@ -857,6 +881,7 @@ def validate_ui_docs() -> None:
         "NUI-16",
         "NUI-17",
         "NUI-18",
+        "NUI-19",
     ]:
         require(phrase in ui_acceptance, f"P024 UI acceptance missing phrase: {phrase}")
 
@@ -2160,6 +2185,58 @@ def validate_p024_partial_fill_owner_repair_approval_packet_ui_evidence() -> Non
     require(screenshot_refs, "P024 owner repair approval packet UI screenshot ref missing")
 
 
+def validate_p024_partial_fill_remaining_acceptance_state_ui_evidence() -> None:
+    payload = load_json(P024_PARTIAL_FILL_REMAINING_ACCEPTANCE_STATE_UI_EVIDENCE)
+    require(
+        payload["schema"] == "account-console.p024.partial-fill-remaining-acceptance-state-ui.v1",
+        "P024 remaining acceptance state UI schema mismatch",
+    )
+    require(payload["verdict"] == "pass", "P024 remaining acceptance state UI verdict mismatch")
+    state = payload["api_remaining_acceptance_state"]
+    require(
+        state["schema"] == "account-console.p024.partial-fill-remaining-acceptance-current-state.v1",
+        "P024 remaining acceptance state UI API schema mismatch",
+    )
+    require(
+        state["status"] == "phase4q_remaining_acceptance_current_state_audited",
+        "P024 remaining acceptance state UI API status mismatch",
+    )
+    require(state["requirement_count"] == 5, "P024 remaining acceptance state UI requirement count mismatch")
+    require(
+        set(state["missing_requirement_ids"])
+        == {
+            "R1_owner_repair_approval",
+            "R2_owner_close_offset_repair",
+            "R3_owner_validators",
+            "R4_post_repair_partial_fill_runtime",
+            "R5_web_ui_real_partial_fill_projection",
+        },
+        "P024 remaining acceptance state UI requirement ids mismatch",
+    )
+    require(state["accepted_evidence_group_count"] == 4, "P024 remaining acceptance state UI evidence group count mismatch")
+    require(state["owner_code_repair_allowed"] is False, "P024 remaining acceptance state UI owner repair mismatch")
+    require(state["owner_runtime_retry_allowed"] is False, "P024 remaining acceptance state UI retry mismatch")
+    require(state["full_acceptance_claimed"] is False, "P024 remaining acceptance state UI full claim mismatch")
+    require(state["real_partial_fill_claimed"] is False, "P024 remaining acceptance state UI real partial mismatch")
+    require(state["web_ui_real_partial_fill_claimed"] is False, "P024 remaining acceptance state UI Web UI claim mismatch")
+    checks = payload["browser_checks"]
+    for key in [
+        "remaining_panel_visible",
+        "r1_to_r5_displayed",
+        "all_requirements_displayed_missing",
+        "evidence_groups_displayed",
+        "owner_repair_allowed_displayed_false",
+        "runtime_retry_displayed_false",
+        "full_acceptance_displayed_false",
+        "real_partial_fill_claimed_displayed_false",
+        "web_ui_real_partial_fill_claimed_displayed_false",
+        "sensitive_endpoint_wording_absent",
+    ]:
+        require(checks[key] is True, f"P024 remaining acceptance state UI check mismatch: {key}")
+    screenshot_refs = payload.get("browser_evidence") or []
+    require(screenshot_refs, "P024 remaining acceptance state UI screenshot ref missing")
+
+
 def validate_p024_runtime_execution_gap_audit() -> None:
     payload = load_json(P024_RUNTIME_EXECUTION_GAP_AUDIT)
     require(
@@ -2745,6 +2822,7 @@ def main() -> None:
     validate_p024_partial_fill_owner_repair_execution_handoff_bundle()
     validate_p024_partial_fill_owner_repair_execution_handoff_ui_evidence()
     validate_p024_partial_fill_owner_repair_approval_packet_ui_evidence()
+    validate_p024_partial_fill_remaining_acceptance_state_ui_evidence()
     validate_p024_runtime_execution_gap_audit()
     validate_p024_runtime_execution_gap_ui_evidence()
     validate_p024_full_acceptance_closeout()
@@ -2760,7 +2838,7 @@ def main() -> None:
     validate_backend_command_routes_are_p024_only()
     print(
         "P024_PAPER_COMMAND_CONTROLS_DESIGN_OK: "
-        "status=phase4zb_owner_repair_approval_packet_ui_projection_passed current_ui_command=guarded runtime_closeout=browser_projection_passed partial_fill_cancel_ui=browser_contract_passed runtime_handoff=browser_handoff_passed runtime_invocation_readiness=blocked_by_external_approval runtime_readiness_ui=browser_projection_passed full_closeout=residual_blocker_audit_passed approval_packet=ready_runtime_not_invoked runtime_approval_packet_ui=browser_projection_passed handoff_bundle=ready_runtime_not_invoked runtime_handoff_bundle_ui=browser_projection_passed runtime_execution_gap=blocked_final_claim_false partial_fill_runtime=blocked_until_owner_runtime_partial_fill_state_available partial_fill_artifact_scan=no_qualifying_candidate partial_fill_approval=ready_runtime_not_invoked partial_fill_approval_ui=browser_projection_passed partial_fill_handoff=ready_runtime_not_invoked partial_fill_handoff_ui=browser_projection_passed partial_fill_attempt=rejected_before_partial_fill_not_partial_fill close_yesterday_owner_rule_gap=blocked_retry_not_authorized owner_repair_approval=required_before_retry owner_repair_approval_ui=browser_projection_passed remaining_acceptance=owner_repair_and_real_partial_fill_missing owner_repair_plan=ready_no_owner_write owner_repair_plan_ui=browser_projection_passed owner_repair_ingest_gate=ready_missing_evidence owner_repair_ingest_gate_ui=browser_projection_passed owner_repair_preflight=blind_retry_rejected owner_repair_preflight_ui=browser_projection_passed owner_repair_patch_preview=ready_owner_write_false owner_repair_patch_preview_ui=browser_projection_passed owner_repair_execution_handoff=ready_owner_write_false owner_repair_execution_handoff_ui=browser_projection_passed"
+        "status=phase4zc_remaining_acceptance_state_ui_projection_passed current_ui_command=guarded runtime_closeout=browser_projection_passed partial_fill_cancel_ui=browser_contract_passed runtime_handoff=browser_handoff_passed runtime_invocation_readiness=blocked_by_external_approval runtime_readiness_ui=browser_projection_passed full_closeout=residual_blocker_audit_passed approval_packet=ready_runtime_not_invoked runtime_approval_packet_ui=browser_projection_passed handoff_bundle=ready_runtime_not_invoked runtime_handoff_bundle_ui=browser_projection_passed runtime_execution_gap=blocked_final_claim_false partial_fill_runtime=blocked_until_owner_runtime_partial_fill_state_available partial_fill_artifact_scan=no_qualifying_candidate partial_fill_approval=ready_runtime_not_invoked partial_fill_approval_ui=browser_projection_passed partial_fill_handoff=ready_runtime_not_invoked partial_fill_handoff_ui=browser_projection_passed partial_fill_attempt=rejected_before_partial_fill_not_partial_fill close_yesterday_owner_rule_gap=blocked_retry_not_authorized owner_repair_approval=required_before_retry owner_repair_approval_ui=browser_projection_passed remaining_acceptance=owner_repair_and_real_partial_fill_missing remaining_acceptance_ui=browser_projection_passed owner_repair_plan=ready_no_owner_write owner_repair_plan_ui=browser_projection_passed owner_repair_ingest_gate=ready_missing_evidence owner_repair_ingest_gate_ui=browser_projection_passed owner_repair_preflight=blind_retry_rejected owner_repair_preflight_ui=browser_projection_passed owner_repair_patch_preview=ready_owner_write_false owner_repair_patch_preview_ui=browser_projection_passed owner_repair_execution_handoff=ready_owner_write_false owner_repair_execution_handoff_ui=browser_projection_passed"
     )
 
 

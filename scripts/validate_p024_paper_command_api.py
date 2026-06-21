@@ -28,6 +28,7 @@ ALLOWED_COMMAND_ROUTES = {
     "/api/commands/accounts/{account_id}/partial-fill-runtime-execution-handoff-bundle": {"GET"},
     "/api/commands/accounts/{account_id}/runtime-execution-gap-audit": {"GET"},
     "/api/commands/accounts/{account_id}/partial-fill-owner-repair-approval-packet": {"GET"},
+    "/api/commands/accounts/{account_id}/partial-fill-remaining-acceptance-current-state": {"GET"},
     "/api/commands/accounts/{account_id}/partial-fill-owner-repair-implementation-plan": {"GET"},
     "/api/commands/accounts/{account_id}/partial-fill-owner-repair-evidence-ingest-gate": {"GET"},
     "/api/commands/accounts/{account_id}/partial-fill-owner-repair-preflight-source-audit": {"GET"},
@@ -389,6 +390,29 @@ def validate_api_behavior() -> None:
         "partial-fill owner repair approval packet owner write flag mismatch",
     )
 
+    remaining_state_response = client.get(
+        f"/api/commands/accounts/{ACCOUNT_ID}/partial-fill-remaining-acceptance-current-state"
+    )
+    require(
+        remaining_state_response.status_code == 200,
+        f"partial-fill remaining acceptance state status mismatch: {remaining_state_response.status_code}",
+    )
+    remaining_state_payload = remaining_state_response.json()
+    require(
+        remaining_state_payload["schema"] == "account-console.p024.partial-fill-remaining-acceptance-current-state.v1",
+        "partial-fill remaining acceptance state schema mismatch",
+    )
+    requirements = {item["requirement_id"]: item for item in remaining_state_payload["remaining_acceptance_requirements"]}
+    require(len(requirements) == 5, "partial-fill remaining acceptance requirement count mismatch")
+    require(
+        all(item["current_status"] == "missing" for item in requirements.values()),
+        "partial-fill remaining acceptance state unexpectedly accepted evidence",
+    )
+    require(
+        remaining_state_payload["negative_assertions"]["full_acceptance_claimed"] is False,
+        "partial-fill remaining acceptance state claimed full acceptance",
+    )
+
     ingest_gate_response = client.get(
         f"/api/commands/accounts/{ACCOUNT_ID}/partial-fill-owner-repair-evidence-ingest-gate"
     )
@@ -527,7 +551,7 @@ def main() -> None:
     validate_api_behavior()
     print(
         "P024_PAPER_COMMAND_API_OK: "
-        "phase=1 routes=17 status=accepted_for_risk runtime_handoff=blocked runtime_closeout=reconciled runtime_readiness=blocked runtime_approval_packet=ready runtime_handoff_bundle=ready partial_fill_runtime_approval_packet=ready partial_fill_runtime_handoff_bundle=ready runtime_execution_gap=blocked owner_repair_approval=required owner_repair_plan=ready owner_repair_ingest_gate=ready owner_repair_preflight=blind_retry_rejected owner_repair_patch_preview=ready owner_repair_execution_handoff=ready mirror_read_only=true"
+        "phase=1 routes=18 status=accepted_for_risk runtime_handoff=blocked runtime_closeout=reconciled runtime_readiness=blocked runtime_approval_packet=ready runtime_handoff_bundle=ready partial_fill_runtime_approval_packet=ready partial_fill_runtime_handoff_bundle=ready runtime_execution_gap=blocked owner_repair_approval=required remaining_acceptance=missing_r1_to_r5 owner_repair_plan=ready owner_repair_ingest_gate=ready owner_repair_preflight=blind_retry_rejected owner_repair_patch_preview=ready owner_repair_execution_handoff=ready mirror_read_only=true"
     )
 
 

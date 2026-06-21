@@ -90,6 +90,7 @@ import type {
   CancelIntentRequest,
   CommandApiResult,
   CommandPartialFillOwnerRepairApprovalPacket,
+  CommandPartialFillRemainingAcceptanceCurrentState,
   CommandPartialFillOwnerRepairEvidenceIngestGate,
   CommandPartialFillOwnerRepairExecutionHandoffBundle,
   CommandPartialFillOwnerRepairImplementationPlan,
@@ -134,6 +135,7 @@ import type {
 import {
   cancelPaperOrderIntent,
   fetchCommandPartialFillOwnerRepairApprovalPacket,
+  fetchCommandPartialFillRemainingAcceptanceCurrentState,
   fetchCommandPartialFillOwnerRepairEvidenceIngestGate,
   fetchCommandPartialFillOwnerRepairExecutionHandoffBundle,
   fetchCommandPartialFillOwnerRepairImplementationPlan,
@@ -1531,6 +1533,10 @@ function AccountWorkbenchTerminalPanel({
     useState<CommandPartialFillOwnerRepairApprovalPacket | null>(null);
   const [partialFillOwnerRepairApprovalPacketError, setPartialFillOwnerRepairApprovalPacketError] =
     useState<string | null>(null);
+  const [partialFillRemainingAcceptanceState, setPartialFillRemainingAcceptanceState] =
+    useState<CommandPartialFillRemainingAcceptanceCurrentState | null>(null);
+  const [partialFillRemainingAcceptanceStateError, setPartialFillRemainingAcceptanceStateError] =
+    useState<string | null>(null);
   const [partialFillOwnerRepairIngestGate, setPartialFillOwnerRepairIngestGate] =
     useState<CommandPartialFillOwnerRepairEvidenceIngestGate | null>(null);
   const [partialFillOwnerRepairIngestGateError, setPartialFillOwnerRepairIngestGateError] =
@@ -1647,6 +1653,8 @@ function AccountWorkbenchTerminalPanel({
       setPartialFillOwnerRepairPlanError(null);
       setPartialFillOwnerRepairApprovalPacket(null);
       setPartialFillOwnerRepairApprovalPacketError(null);
+      setPartialFillRemainingAcceptanceState(null);
+      setPartialFillRemainingAcceptanceStateError(null);
       setPartialFillOwnerRepairIngestGate(null);
       setPartialFillOwnerRepairIngestGateError(null);
       setPartialFillOwnerRepairPreflight(null);
@@ -1669,6 +1677,7 @@ function AccountWorkbenchTerminalPanel({
         gapAuditResult,
         ownerRepairPlanResult,
         ownerRepairApprovalPacketResult,
+        remainingAcceptanceStateResult,
         ownerRepairIngestGateResult,
         ownerRepairPreflightResult,
         ownerRepairPatchPreviewResult,
@@ -1684,6 +1693,7 @@ function AccountWorkbenchTerminalPanel({
           fetchCommandRuntimeExecutionGapAudit(summary.account.account_id),
           fetchCommandPartialFillOwnerRepairImplementationPlan(summary.account.account_id),
           fetchCommandPartialFillOwnerRepairApprovalPacket(summary.account.account_id),
+          fetchCommandPartialFillRemainingAcceptanceCurrentState(summary.account.account_id),
           fetchCommandPartialFillOwnerRepairEvidenceIngestGate(summary.account.account_id),
           fetchCommandPartialFillOwnerRepairPreflightSourceAudit(summary.account.account_id),
           fetchCommandPartialFillOwnerRepairPatchPreview(summary.account.account_id),
@@ -1786,6 +1796,17 @@ function AccountWorkbenchTerminalPanel({
             : "partial-fill owner repair approval packet unavailable";
         setPartialFillOwnerRepairApprovalPacket(null);
         setPartialFillOwnerRepairApprovalPacketError(message);
+      }
+      if (remainingAcceptanceStateResult.status === "fulfilled") {
+        setPartialFillRemainingAcceptanceState(remainingAcceptanceStateResult.value);
+        setPartialFillRemainingAcceptanceStateError(null);
+      } else {
+        const message =
+          remainingAcceptanceStateResult.reason instanceof Error
+            ? remainingAcceptanceStateResult.reason.message
+            : "partial-fill remaining acceptance current state unavailable";
+        setPartialFillRemainingAcceptanceState(null);
+        setPartialFillRemainingAcceptanceStateError(message);
       }
       if (ownerRepairIngestGateResult.status === "fulfilled") {
         setPartialFillOwnerRepairIngestGate(ownerRepairIngestGateResult.value);
@@ -2694,6 +2715,11 @@ function AccountWorkbenchTerminalPanel({
           <CommandPartialFillOwnerRepairApprovalPacketPanel
             error={partialFillOwnerRepairApprovalPacketError}
             packet={partialFillOwnerRepairApprovalPacket}
+          />
+
+          <CommandPartialFillRemainingAcceptanceStatePanel
+            error={partialFillRemainingAcceptanceStateError}
+            state={partialFillRemainingAcceptanceState}
           />
 
           <CommandPartialFillOwnerRepairImplementationPlanPanel
@@ -5510,6 +5536,99 @@ function CommandPartialFillOwnerRepairApprovalPacketPanel({
         </div>
       ) : (
         <p className="muted">No partial-fill owner repair approval packet is mounted for this account.</p>
+      )}
+    </section>
+  );
+}
+
+function CommandPartialFillRemainingAcceptanceStatePanel({
+  state,
+  error
+}: {
+  state: CommandPartialFillRemainingAcceptanceCurrentState | null;
+  error: string | null;
+}) {
+  return (
+    <section className="terminal-panel" data-testid="account-partial-fill-remaining-acceptance-panel">
+      <div className="terminal-panel-header">
+        <h3>Remaining Acceptance</h3>
+        <StateBadge value={state ? "blocked" : error ? "blocked" : "empty"} />
+      </div>
+      {state ? (
+        <div className="evidence-stack compact-evidence-stack">
+          <div className="evidence-item">
+            <strong>Status</strong>
+            <span data-testid="account-partial-fill-remaining-acceptance-status">{state.status}</span>
+          </div>
+          <div className="evidence-item">
+            <strong>Verdict</strong>
+            <span data-testid="account-partial-fill-remaining-acceptance-verdict">{state.verdict}</span>
+          </div>
+          <div className="evidence-item">
+            <strong>Full claimed</strong>
+            <span data-testid="account-partial-fill-remaining-acceptance-full-claimed">
+              {String(state.negative_assertions.full_acceptance_claimed)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Owner repair allowed</strong>
+            <span data-testid="account-partial-fill-remaining-acceptance-owner-repair-allowed">
+              {String(state.next_authorized_action.owner_code_repair_allowed)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Runtime retry allowed</strong>
+            <span data-testid="account-partial-fill-remaining-acceptance-runtime-retry">
+              {String(state.next_authorized_action.owner_runtime_retry_allowed)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Latest attempt</strong>
+            <span data-testid="account-partial-fill-remaining-acceptance-latest-attempt">
+              {state.current_authoritative_state.latest_real_partial_fill_attempt_classification}
+            </span>
+          </div>
+          {state.remaining_acceptance_requirements.map((requirement) => (
+            <div
+              className="evidence-item"
+              data-testid="account-partial-fill-remaining-acceptance-requirement"
+              key={requirement.requirement_id}
+            >
+              <strong>{requirement.requirement_id}</strong>
+              <span>
+                {requirement.current_status} / {requirement.required_evidence_shape}
+              </span>
+            </div>
+          ))}
+          {state.accepted_evidence_groups.map((group) => (
+            <div
+              className="evidence-item"
+              data-testid="account-partial-fill-remaining-acceptance-evidence-group"
+              key={group.group_id}
+            >
+              <strong>{group.group_id}</strong>
+              <span>{group.status}</span>
+            </div>
+          ))}
+          <div className="evidence-item">
+            <strong>Real partial claimed</strong>
+            <span data-testid="account-partial-fill-remaining-acceptance-real-partial-claimed">
+              {String(state.negative_assertions.real_partial_fill_claimed)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Web UI real partial claimed</strong>
+            <span data-testid="account-partial-fill-remaining-acceptance-web-ui-claimed">
+              {String(state.negative_assertions.web_ui_real_partial_fill_claimed)}
+            </span>
+          </div>
+        </div>
+      ) : error ? (
+        <div className="state-callout blocked" data-testid="account-partial-fill-remaining-acceptance-error">
+          {error}
+        </div>
+      ) : (
+        <p className="muted">No partial-fill remaining acceptance state is mounted for this account.</p>
       )}
     </section>
   );

@@ -1,7 +1,7 @@
 # P024 UI Acceptance / Paper Command Controls
 
 - Proposal ID: `p024-account-console-paper-command-controls`
-- Status: phase4zb_owner_repair_approval_packet_ui_projection_passed
+- Status: phase4zc_remaining_acceptance_state_ui_projection_passed
 
 ## Browser Acceptance
 
@@ -25,6 +25,20 @@
 | UI-16 | partial-fill runtime approval packet projection | exact partial-fill approval text, owner path, formulas, entrypoints, blockers and false new-order/cancel flags render in UI | phase4l_partial_fill_runtime_approval_packet_ui_projection_passed |
 | UI-17 | partial-fill runtime handoff bundle projection | runtime inputs, owner sequence, success formulas, fallback classifications and false execution flags render in UI | phase4m_partial_fill_runtime_handoff_bundle_ui_projection_passed |
 | UI-18 | owner repair approval packet projection | exact owner repair approval text, current approval mismatch, owner changes, validators, blockers and false owner-write/runtime-retry flags render in UI | phase4zb_owner_repair_approval_packet_ui_projection_passed |
+| UI-19 | remaining acceptance state projection | R1-R5 missing requirements, accepted evidence groups and false owner-repair/runtime-retry/full-acceptance flags render in UI | phase4zc_remaining_acceptance_state_ui_projection_passed |
+
+## UI-19 Remaining Acceptance State Projection
+
+The browser test must load `/accounts/acct.ctp.paper.19053`, call the read-only remaining acceptance endpoint, and verify:
+
+1. `account-partial-fill-remaining-acceptance-panel` is visible.
+2. `account-partial-fill-remaining-acceptance-status` is `phase4q_remaining_acceptance_current_state_audited`.
+3. `account-partial-fill-remaining-acceptance-verdict` is `not_fully_accepted_pending_owner_repair_and_real_partial_fill`.
+4. `account-partial-fill-remaining-acceptance-requirement` displays exactly R1-R5 and every row is `missing`.
+5. `account-partial-fill-remaining-acceptance-evidence-group` displays accepted-but-insufficient evidence groups.
+6. `account-partial-fill-remaining-acceptance-owner-repair-allowed`, `account-partial-fill-remaining-acceptance-runtime-retry`, `account-partial-fill-remaining-acceptance-full-claimed`, `account-partial-fill-remaining-acceptance-real-partial-claimed` and `account-partial-fill-remaining-acceptance-web-ui-claimed` are all `false`.
+
+Accepted evidence: `python scripts\validate_p024_partial_fill_remaining_acceptance_state_browser_evidence.py` returns `P024_PARTIAL_FILL_REMAINING_ACCEPTANCE_STATE_BROWSER_EVIDENCE_OK`.
 
 ## UI-18 Owner Repair Approval Packet Projection
 
@@ -204,6 +218,7 @@ Accepted evidence: `python scripts\validate_p024_partial_fill_cancel_browser_evi
 | NUI-16 | partial-fill approval packet panel claims approval obtained, owner runtime invoked, owner repo written, new order submitted, cancel sent or hides formulas | test failure |
 | NUI-17 | partial-fill handoff bundle panel claims execution allowed, new order submitted, cancel sent, full acceptance claimed or promotes fixture evidence to runtime truth | test failure |
 | NUI-18 | owner repair approval packet panel hides exact approval text, treats current scripts-only approval as matching the repair action, or claims owner write/runtime retry/partial-fill/full acceptance | test failure |
+| NUI-19 | remaining acceptance panel hides any R1-R5 missing requirement or claims owner repair/runtime retry/real partial-fill/Web UI real partial-fill/full acceptance | test failure |
 
 ## Blocker
 
@@ -212,6 +227,7 @@ Every blocked command-control state must include reason, stage, source ref and n
 ## Evidence
 
 P024 cannot close on UI design text alone. Browser evidence and command artifacts are required before implementation closeout.
+
 
 
 

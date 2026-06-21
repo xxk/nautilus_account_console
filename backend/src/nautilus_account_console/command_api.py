@@ -18,6 +18,7 @@ from .schemas import (
     CommandPartialFillOwnerRepairPreflightSourceAudit,
     CommandPartialFillOwnerRepairPatchPreview,
     CommandPartialFillOwnerRepairExecutionHandoffBundle,
+    CommandPartialFillRemainingAcceptanceCurrentState,
     CommandRuntimeExecutionApprovalPacket,
     CommandRuntimeExecutionGapAudit,
     CommandRuntimeExecutionHandoffBundle,
@@ -88,6 +89,13 @@ PARTIAL_FILL_OWNER_REPAIR_APPROVAL_PACKET = (
     / "acceptance"
     / "p024-account-console-paper-command-controls"
     / "partial-fill-owner-repair-approval-packet.json"
+)
+PARTIAL_FILL_REMAINING_ACCEPTANCE_CURRENT_STATE = (
+    ROOT
+    / "docs"
+    / "acceptance"
+    / "p024-account-console-paper-command-controls"
+    / "partial-fill-remaining-acceptance-current-state.json"
 )
 PARTIAL_FILL_OWNER_REPAIR_EVIDENCE_INGEST_GATE = (
     ROOT
@@ -699,6 +707,53 @@ def load_partial_fill_owner_repair_approval_packet(
         if negative.get(key) is not False:
             raise HTTPException(status_code=409, detail=f"partial-fill owner repair approval packet negative assertion failed: {key}")
     return CommandPartialFillOwnerRepairApprovalPacket(**payload)
+
+
+def load_partial_fill_remaining_acceptance_current_state(
+    account_id: str,
+) -> CommandPartialFillRemainingAcceptanceCurrentState:
+    if account_id != PAPER_ACCOUNT_ID:
+        raise HTTPException(status_code=403, detail="P024 remaining acceptance state is scoped to acct.ctp.paper.19053 only")
+    if not PARTIAL_FILL_REMAINING_ACCEPTANCE_CURRENT_STATE.exists():
+        raise HTTPException(status_code=404, detail="partial-fill remaining acceptance current state evidence not found")
+    text = PARTIAL_FILL_REMAINING_ACCEPTANCE_CURRENT_STATE.read_text(encoding="utf-8")
+    if any(fragment.lower() in text.lower() for fragment in SENSITIVE_RUNTIME_FRAGMENTS):
+        raise HTTPException(status_code=409, detail="partial-fill remaining acceptance current state contains forbidden sensitive fragments")
+    payload = json.loads(text)
+    if payload.get("account_id") != PAPER_ACCOUNT_ID:
+        raise HTTPException(status_code=409, detail="partial-fill remaining acceptance current state account_id mismatch")
+    current = payload.get("current_authoritative_state") or {}
+    if current.get("full_acceptance_claimed") is not False:
+        raise HTTPException(status_code=409, detail="partial-fill remaining acceptance state claimed full acceptance")
+    requirements = {item.get("requirement_id"): item for item in payload.get("remaining_acceptance_requirements") or []}
+    expected = {
+        "R1_owner_repair_approval",
+        "R2_owner_close_offset_repair",
+        "R3_owner_validators",
+        "R4_post_repair_partial_fill_runtime",
+        "R5_web_ui_real_partial_fill_projection",
+    }
+    if set(requirements) != expected:
+        raise HTTPException(status_code=409, detail="partial-fill remaining acceptance state requirement set drifted")
+    if any(item.get("current_status") != "missing" for item in requirements.values()):
+        raise HTTPException(status_code=409, detail="partial-fill remaining acceptance state accepted missing evidence")
+    next_action = payload.get("next_authorized_action") or {}
+    if next_action.get("owner_code_repair_allowed") is not False or next_action.get("owner_runtime_retry_allowed") is not False:
+        raise HTTPException(status_code=409, detail="partial-fill remaining acceptance state allowed owner action too early")
+    negative = payload.get("negative_assertions") or {}
+    for key in [
+        "full_acceptance_claimed",
+        "owner_repair_claimed",
+        "post_repair_runtime_retry_claimed",
+        "real_partial_fill_claimed",
+        "web_ui_real_partial_fill_claimed",
+        "raw_secret_values_recorded",
+        "raw_broker_endpoint_recorded",
+        "config_raw_content_recorded",
+    ]:
+        if negative.get(key) is not False:
+            raise HTTPException(status_code=409, detail=f"partial-fill remaining acceptance state negative assertion failed: {key}")
+    return CommandPartialFillRemainingAcceptanceCurrentState(**payload)
 
 
 def load_partial_fill_owner_repair_evidence_ingest_gate(

@@ -1,7 +1,7 @@
 # P024 UI Design / Paper Command Controls
 
 - Proposal ID: `p024-account-console-paper-command-controls`
-- Status: phase4zb_owner_repair_approval_packet_ui_projection_passed
+- Status: phase4zc_remaining_acceptance_state_ui_projection_passed
 
 ## Design Intent
 
@@ -151,6 +151,17 @@ No controls are reserved or visible in disabled mode.
 | `account-partial-fill-owner-repair-approval-packet-additional-order` | additional paper order authorization flag; must remain false in this projection |
 | `account-partial-fill-owner-repair-approval-packet-partial-claimed` | partial-fill claim flag; must remain false until real owner runtime evidence exists |
 | `account-partial-fill-owner-repair-approval-packet-full-claimed` | full acceptance claim flag; must remain false |
+| `account-partial-fill-remaining-acceptance-panel` | remaining acceptance state projection panel |
+| `account-partial-fill-remaining-acceptance-status` | remaining acceptance audit status |
+| `account-partial-fill-remaining-acceptance-verdict` | not-fully-accepted verdict |
+| `account-partial-fill-remaining-acceptance-full-claimed` | full acceptance claim flag; must remain false |
+| `account-partial-fill-remaining-acceptance-owner-repair-allowed` | owner repair allowed flag; must remain false until exact approval |
+| `account-partial-fill-remaining-acceptance-runtime-retry` | runtime retry allowed flag; must remain false until owner repair evidence and fresh retry approval |
+| `account-partial-fill-remaining-acceptance-latest-attempt` | latest real partial-fill attempt classification |
+| `account-partial-fill-remaining-acceptance-requirement` | each R1-R5 missing requirement row |
+| `account-partial-fill-remaining-acceptance-evidence-group` | accepted evidence groups that do not complete full acceptance |
+| `account-partial-fill-remaining-acceptance-real-partial-claimed` | real partial-fill claim flag; must remain false |
+| `account-partial-fill-remaining-acceptance-web-ui-claimed` | Web UI real partial-fill claim flag; must remain false |
 
 ## Layout Rules
 
@@ -166,10 +177,12 @@ No controls are reserved or visible in disabled mode.
 10. Runtime readiness is displayed as a blocker projection: owner refs and config refs are visible, but raw config, endpoints, secrets, owner writes and runtime invocation remain false.
 11. Partial-fill runtime approval and handoff panels are read-only: they show exact approval text, success formulas, fallback classifications and blockers, but never render a browser-side broker execution trigger.
 12. Owner repair approval packet projection is read-only: it shows the exact owner repair approval text and why the current scripts-only approval is insufficient, while owner write, runtime retry, partial-fill claim and full acceptance remain false.
+13. Remaining acceptance state projection is read-only: it shows R1-R5 missing requirements and accepted evidence groups, but does not turn blocker evidence into owner repair, runtime retry or full acceptance authority.
 
 ## Disabled Mode
 
 When disabled, the view keeps the observation-only layout and renders no submit/cancel/replace affordance. Disabled mode may display status/evidence panels but no action controls.
+
 
 
 

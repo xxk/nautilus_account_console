@@ -434,6 +434,32 @@ def test_partial_fill_owner_repair_approval_packet_projects_required_exact_appro
     assert payload["negative_assertions"]["full_acceptance_claimed"] is False
 
 
+def test_partial_fill_remaining_acceptance_current_state_projects_r1_to_r5() -> None:
+    client = TestClient(app)
+    response = client.get(
+        "/api/commands/accounts/acct.ctp.paper.19053/partial-fill-remaining-acceptance-current-state"
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["schema"] == "account-console.p024.partial-fill-remaining-acceptance-current-state.v1"
+    assert payload["status"] == "phase4q_remaining_acceptance_current_state_audited"
+    assert payload["verdict"] == "not_fully_accepted_pending_owner_repair_and_real_partial_fill"
+    requirements = {item["requirement_id"]: item for item in payload["remaining_acceptance_requirements"]}
+    assert set(requirements) == {
+        "R1_owner_repair_approval",
+        "R2_owner_close_offset_repair",
+        "R3_owner_validators",
+        "R4_post_repair_partial_fill_runtime",
+        "R5_web_ui_real_partial_fill_projection",
+    }
+    assert all(item["current_status"] == "missing" for item in requirements.values())
+    assert payload["next_authorized_action"]["owner_code_repair_allowed"] is False
+    assert payload["next_authorized_action"]["owner_runtime_retry_allowed"] is False
+    assert payload["negative_assertions"]["full_acceptance_claimed"] is False
+    assert payload["negative_assertions"]["web_ui_real_partial_fill_claimed"] is False
+
+
 def test_partial_fill_owner_repair_ingest_gate_projects_missing_evidence() -> None:
     client = TestClient(app)
     response = client.get(

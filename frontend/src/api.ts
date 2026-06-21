@@ -2,6 +2,7 @@ import type {
   AccountSnapshot,
   CancelIntentRequest,
   CommandPartialFillOwnerRepairApprovalPacket,
+  CommandPartialFillRemainingAcceptanceCurrentState,
   CommandPartialFillOwnerRepairEvidenceIngestGate,
   CommandPartialFillOwnerRepairExecutionHandoffBundle,
   CommandPartialFillOwnerRepairImplementationPlan,
@@ -257,6 +258,18 @@ export async function fetchCommandPartialFillOwnerRepairApprovalPacket(
   );
   if (!response.ok) {
     throw new Error(`partial-fill owner repair approval packet failed: ${response.status}`);
+  }
+  return response.json();
+}
+
+export async function fetchCommandPartialFillRemainingAcceptanceCurrentState(
+  accountId: string
+): Promise<CommandPartialFillRemainingAcceptanceCurrentState> {
+  const response = await fetch(
+    `${API_BASE}/api/commands/accounts/${encodeURIComponent(accountId)}/partial-fill-remaining-acceptance-current-state`
+  );
+  if (!response.ok) {
+    throw new Error(`partial-fill remaining acceptance current state failed: ${response.status}`);
   }
   return response.json();
 }

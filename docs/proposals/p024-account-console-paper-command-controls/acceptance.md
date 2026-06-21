@@ -1,7 +1,7 @@
 # P024 Acceptance / Account Console Paper Command Controls
 
 - Proposal ID: `p024-account-console-paper-command-controls`
-- Status: phase4zb_owner_repair_approval_packet_ui_projection_passed
+- Status: phase4zc_remaining_acceptance_state_ui_projection_passed
 - Primary ADR: ADR-0007
 
 ## Scope
@@ -39,6 +39,7 @@ Out of scope: live trading, replace order, Account Mirror write authority, direc
 | P024 partial-fill close-offset owner rule gap audit | `python scripts\validate_p024_partial_fill_close_offset_owner_rule_gap_audit.py` | `P024_PARTIAL_FILL_CLOSE_OFFSET_OWNER_RULE_GAP_AUDIT_OK` | CLOSEYESTERDAY submit-boundary offset 4 versus rejected callback offset 1 is source-closed as an owner repair prerequisite before any retry |
 | P024 partial-fill owner repair approval packet | `python scripts\validate_p024_partial_fill_owner_repair_approval_packet.py` | `P024_PARTIAL_FILL_OWNER_REPAIR_APPROVAL_PACKET_OK` | Current runtime-script approval is not enough for the repair-first next action; owner repair approval and post-repair retry gates are required before another paper attempt |
 | P024 partial-fill owner repair approval packet UI projection | `npx playwright test tests/e2e/p024-partial-fill-owner-repair-approval-packet.spec.ts --project=desktop` then `python scripts\validate_p024_partial_fill_owner_repair_approval_packet_browser_evidence.py` | `P024_PARTIAL_FILL_OWNER_REPAIR_APPROVAL_PACKET_BROWSER_EVIDENCE_OK` | Web UI renders the exact owner repair approval text, current-approval mismatch, owner changes, validators and blockers while owner write, runtime retry and full acceptance remain false |
+| P024 partial-fill remaining acceptance state UI projection | `npx playwright test tests/e2e/p024-partial-fill-remaining-acceptance-state.spec.ts --project=desktop` then `python scripts\validate_p024_partial_fill_remaining_acceptance_state_browser_evidence.py` | `P024_PARTIAL_FILL_REMAINING_ACCEPTANCE_STATE_BROWSER_EVIDENCE_OK` | Web UI renders R1-R5 remaining requirements, accepted evidence groups and false owner-repair/runtime-retry/full-acceptance flags |
 | P024 partial-fill remaining acceptance current state | `python scripts\validate_p024_partial_fill_remaining_acceptance_current_state.py` | `P024_PARTIAL_FILL_REMAINING_ACCEPTANCE_CURRENT_STATE_OK` | Full acceptance remains false and the five remaining evidence requirements are machine-checked |
 | P024 partial-fill owner repair implementation plan | `python scripts\validate_p024_partial_fill_owner_repair_implementation_plan.py` | `P024_PARTIAL_FILL_OWNER_REPAIR_IMPLEMENTATION_PLAN_OK` | Owner guarded-loop repair target, CLOSEYESTERDAY focused test requirements and no-retry gates are machine-checked before any owner write |
 | P024 partial-fill owner repair plan UI projection | `npx playwright test tests/e2e/p024-partial-fill-owner-repair-plan.spec.ts --project=desktop` then `python scripts\validate_p024_partial_fill_owner_repair_plan_browser_evidence.py` | `P024_PARTIAL_FILL_OWNER_REPAIR_PLAN_BROWSER_EVIDENCE_OK` | Web UI renders the owner repair plan and keeps owner write, runtime retry, partial-fill claim and full acceptance claim false |
@@ -60,6 +61,9 @@ and
 
 Browser evidence for the owner repair approval packet UI projection is
 `docs/acceptance/browser-evidence/p024-account-console-paper-command-controls/partial-fill-owner-repair-approval-packet-ui.json`.
+
+Browser evidence for the remaining acceptance state UI projection is
+`docs/acceptance/browser-evidence/p024-account-console-paper-command-controls/partial-fill-remaining-acceptance-state-ui.json`.
 
 The latest owner-runtime attempt audit is
 `docs/acceptance/p024-account-console-paper-command-controls/partial-fill-runtime-execution-attempt-audit.json`.
@@ -103,6 +107,7 @@ The close-offset semantic gap audit is
 | A30 | blocker | Owner repair execution handoff bundle freezes post-approval sequence without execution claims | handoff bundle validator | sequence omits patch application, owner validators, evidence ingest or fresh retry approval packet, or claims execution/owner write/runtime retry/full acceptance | phase4z_owner_repair_execution_handoff_bundle_ready |
 | A31 | blocker | Owner repair execution handoff is visible from Web UI without execution claims | Playwright + API route audit + browser evidence JSON | UI hides operator sequence or artifacts, or claims execution/owner write/runtime retry/full acceptance | phase4za_owner_repair_execution_handoff_ui_projection_passed |
 | A32 | blocker | Owner repair approval packet is visible from Web UI before owner repair approval | Playwright + API route audit + browser evidence JSON | UI hides exact repair approval text, treats current scripts-only approval as sufficient, or claims owner write/runtime retry/partial-fill/full acceptance | phase4zb_owner_repair_approval_packet_ui_projection_passed |
+| A33 | blocker | Remaining acceptance R1-R5 state is visible from Web UI without completion claims | Playwright + API route audit + browser evidence JSON | UI hides any R1-R5 missing requirement or claims owner repair/runtime retry/real partial-fill/Web UI real partial-fill/full acceptance | phase4zc_remaining_acceptance_state_ui_projection_passed |
 
 ## Phase 4e Runtime Execution Gap Audit
 
@@ -365,6 +370,7 @@ This remains browser/control contract evidence. It does not claim real Web UI Op
 ## Evidence Boundary
 
 Implementation/browser evidence is required before implementation closeout. Phase 1, Phase 2, Phase 3a, Phase 3b, Phase 3c, Phase 3d readiness, Phase 3e readiness UI projection, Phase 4 residual blocker audit, Phase 4a owner-runtime execution approval packet, Phase 4b runtime approval packet UI projection, Phase 4c owner-runtime execution handoff bundle, Phase 4d runtime handoff bundle UI projection, Phase 4e runtime execution gap audit and Phase 4g owner-runtime submit/cancel callback closeout gates are accepted; full real partial-fill acceptance remains blocked pending real or owner-approved partial-fill runtime state.
+
 
 
 
