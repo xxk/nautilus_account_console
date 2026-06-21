@@ -447,6 +447,24 @@ class CommandPartialFillOwnerRepairImplementationPlan(BaseModel):
     negative_assertions: dict
 
 
+class CommandPartialFillOwnerRepairApprovalPacket(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    schema_: Literal["account-console.p024.partial-fill-owner-repair-approval-packet.v1"] = Field(alias="schema")
+    proposal_id: Literal["p024-account-console-paper-command-controls"]
+    account_id: Literal["acct.ctp.paper.19053"]
+    reviewed_at: str
+    status: Literal["phase4p_owner_close_offset_repair_approval_packet_ready"]
+    verdict: Literal["owner_repair_approval_required_before_retry"]
+    depends_on: dict
+    current_thread_approval_assessment: dict
+    required_owner_repair_approval: dict
+    required_owner_repair_scope: dict
+    retry_gate: dict
+    residual_blockers: list[dict]
+    negative_assertions: dict
+
+
 class CommandPartialFillOwnerRepairEvidenceIngestGate(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
 

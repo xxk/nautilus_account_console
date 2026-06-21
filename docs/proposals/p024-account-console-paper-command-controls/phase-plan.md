@@ -1,7 +1,7 @@
 # P024 Phase Plan / Account Console Paper Command Controls
 
 - Proposal ID: `p024-account-console-paper-command-controls`
-- Status: phase4za_owner_repair_execution_handoff_ui_projection_passed
+- Status: phase4zb_owner_repair_approval_packet_ui_projection_passed
 - Primary ADR: ADR-0007
 
 ## Artifact Trust Boundary
@@ -40,7 +40,7 @@ Primary ADR: ADR-0007
 <!-- AI-PHASE-STATUS-BEGIN
 reviewed_at: 2026-06-21
 reviewer: codex
-overall_status: phase4za_owner_repair_execution_handoff_ui_projection_passed
+overall_status: phase4zb_owner_repair_approval_packet_ui_projection_passed
 phases:
   - id: phase_0_design_gate
     status: completed
@@ -170,6 +170,10 @@ phases:
     status: completed_browser_owner_repair_execution_handoff_projection_gate
     ai_progress: 100
     evidence: "npx playwright test tests/e2e/p024-partial-fill-owner-repair-execution-handoff.spec.ts --project=desktop; python scripts\\validate_p024_partial_fill_owner_repair_execution_handoff_browser_evidence.py"
+  - id: phase_4zb_owner_repair_approval_packet_ui_projection
+    status: completed_browser_owner_repair_approval_packet_projection_gate
+    ai_progress: 100
+    evidence: "npx playwright test tests/e2e/p024-partial-fill-owner-repair-approval-packet.spec.ts --project=desktop; python scripts\\validate_p024_partial_fill_owner_repair_approval_packet_browser_evidence.py"
 AI-PHASE-STATUS-END -->
 
 ## Phase Status Board
@@ -212,6 +216,7 @@ AI-PHASE-STATUS-END -->
 | Phase 4y Owner repair patch preview UI projection | Render the phase4x patch preview in Web UI with baseline files, patch steps, validator commands and no-write/no-retry flags | completed_browser_owner_repair_patch_preview_projection_gate | `npx playwright test tests/e2e/p024-partial-fill-owner-repair-patch-preview.spec.ts --project=desktop`; `python scripts\validate_p024_partial_fill_owner_repair_patch_preview_browser_evidence.py` | Apply the preview only after exact owner repair approval, then run owner validators and ingest evidence |
 | Phase 4z Owner repair execution handoff bundle | Freeze post-approval owner repair operator sequence, validator commands, evidence ingest and retry packet requirements while execution remains disallowed | handoff_bundle_ready_owner_write_not_invoked | `python scripts\validate_p024_partial_fill_owner_repair_execution_handoff_bundle.py` | Obtain exact owner repair approval, then execute this bundle in owner repo and ingest evidence |
 | Phase 4za Owner repair execution handoff UI projection | Render the phase4z handoff bundle in Web UI with operator sequence, post-handoff artifacts and no-execution/no-retry flags | completed_browser_owner_repair_execution_handoff_projection_gate | `npx playwright test tests/e2e/p024-partial-fill-owner-repair-execution-handoff.spec.ts --project=desktop`; `python scripts\validate_p024_partial_fill_owner_repair_execution_handoff_browser_evidence.py` | Obtain exact owner repair approval, then execute this bundle in owner repo and ingest evidence |
+| Phase 4zb Owner repair approval packet UI projection | Render the phase4p repair approval packet in Web UI with exact approval text, current approval mismatch, validators, blockers and no-write/no-retry flags | completed_browser_owner_repair_approval_packet_projection_gate | `npx playwright test tests/e2e/p024-partial-fill-owner-repair-approval-packet.spec.ts --project=desktop`; `python scripts\validate_p024_partial_fill_owner_repair_approval_packet_browser_evidence.py` | Obtain exact owner repair approval, then execute the owner repair handoff bundle |
 
 ## Runtime / Command Freeze
 
@@ -254,6 +259,8 @@ Phase 0 does not run broker mutation. Phase 1 may add API contracts but must not
 33. Phase 4y owner repair patch preview UI projection is complete; `P024_PARTIAL_FILL_OWNER_REPAIR_PATCH_PREVIEW_BROWSER_EVIDENCE_OK` proves the patch preview renders in Web UI while owner write, patch applied, runtime retry and full acceptance remain false.
 34. Phase 4z owner repair execution handoff bundle is ready; `P024_PARTIAL_FILL_OWNER_REPAIR_EXECUTION_HANDOFF_BUNDLE_OK` proves the post-approval owner repair sequence, validators, evidence ingest and retry packet requirement are frozen while execution, owner write, runtime retry and full acceptance remain false.
 35. Phase 4za owner repair execution handoff UI projection is complete; `P024_PARTIAL_FILL_OWNER_REPAIR_EXECUTION_HANDOFF_BROWSER_EVIDENCE_OK` proves the handoff sequence renders in Web UI while execution, owner write, runtime retry and full acceptance remain false.
+36. Phase 4zb owner repair approval packet UI projection is complete; `P024_PARTIAL_FILL_OWNER_REPAIR_APPROVAL_PACKET_BROWSER_EVIDENCE_OK` proves the exact repair approval text, current approval mismatch, owner changes, validators and blockers render in Web UI while owner write, runtime retry, partial-fill claim and full acceptance remain false.
+
 
 
 

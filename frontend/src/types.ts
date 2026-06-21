@@ -707,6 +707,65 @@ export interface CommandPartialFillOwnerRepairImplementationPlan {
   };
 }
 
+export interface CommandPartialFillOwnerRepairApprovalPacket {
+  schema: "account-console.p024.partial-fill-owner-repair-approval-packet.v1";
+  proposal_id: "p024-account-console-paper-command-controls";
+  account_id: "acct.ctp.paper.19053";
+  reviewed_at: string;
+  status: "phase4p_owner_close_offset_repair_approval_packet_ready";
+  verdict: "owner_repair_approval_required_before_retry";
+  depends_on: Record<string, unknown>;
+  current_thread_approval_assessment: {
+    approval_text_observed: boolean;
+    approval_scope: string;
+    approval_path: string;
+    approved_expected_impact: string;
+    matches_current_next_action: false;
+    reason: string;
+    runtime_retry_authorized_by_this_packet: false;
+    owner_code_repair_authorized_by_this_packet: false;
+  };
+  required_owner_repair_approval: {
+    required: true;
+    obtained: false;
+    approval_path: string;
+    exact_approval_text_required: string;
+    reason: string;
+  };
+  required_owner_repair_scope: {
+    owner_repo_ref: string;
+    owner_repo_path: string;
+    allowed_write_scope_after_approval: string[];
+    expected_owner_changes: string[];
+    required_owner_validators_before_retry: string[];
+    required_account_console_followup_before_retry: string[];
+  };
+  retry_gate: {
+    additional_partial_fill_order_authorized: false;
+    runtime_invocation_allowed: false;
+    owner_repair_required_first: true;
+    owner_repair_evidence_required: true;
+    fresh_post_repair_runtime_attempt_approval_required: true;
+    reason: string;
+  };
+  residual_blockers: Array<{
+    blocker_id: string;
+    type: string;
+    next_action: string;
+  }>;
+  negative_assertions: {
+    owner_repo_write_attempted_by_this_packet: false;
+    owner_runtime_invocation_attempted: false;
+    owner_code_repair_authorized_by_current_thread_text: false;
+    additional_order_authorized: false;
+    partial_fill_claimed: false;
+    full_acceptance_claimed: false;
+    raw_secret_values_recorded: false;
+    raw_broker_endpoint_recorded: false;
+    config_raw_content_recorded: false;
+  };
+}
+
 export interface CommandPartialFillOwnerRepairEvidenceIngestGate {
   schema: "account-console.p024.partial-fill-owner-repair-evidence-ingest-gate.v1";
   proposal_id: "p024-account-console-paper-command-controls";

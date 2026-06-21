@@ -412,6 +412,28 @@ def test_partial_fill_owner_repair_plan_projects_no_retry_gate() -> None:
     assert payload["negative_assertions"]["partial_fill_claimed"] is False
 
 
+def test_partial_fill_owner_repair_approval_packet_projects_required_exact_approval() -> None:
+    client = TestClient(app)
+    response = client.get(
+        "/api/commands/accounts/acct.ctp.paper.19053/partial-fill-owner-repair-approval-packet"
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["schema"] == "account-console.p024.partial-fill-owner-repair-approval-packet.v1"
+    assert payload["status"] == "phase4p_owner_close_offset_repair_approval_packet_ready"
+    assert payload["verdict"] == "owner_repair_approval_required_before_retry"
+    assert payload["current_thread_approval_assessment"]["matches_current_next_action"] is False
+    assert payload["required_owner_repair_approval"]["required"] is True
+    assert payload["required_owner_repair_approval"]["obtained"] is False
+    assert "repair owner close-offset semantics for P024" in payload["required_owner_repair_approval"]["exact_approval_text_required"]
+    assert payload["retry_gate"]["runtime_invocation_allowed"] is False
+    assert payload["retry_gate"]["additional_partial_fill_order_authorized"] is False
+    assert payload["negative_assertions"]["owner_repo_write_attempted_by_this_packet"] is False
+    assert payload["negative_assertions"]["owner_runtime_invocation_attempted"] is False
+    assert payload["negative_assertions"]["full_acceptance_claimed"] is False
+
+
 def test_partial_fill_owner_repair_ingest_gate_projects_missing_evidence() -> None:
     client = TestClient(app)
     response = client.get(

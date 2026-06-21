@@ -1,7 +1,7 @@
 # P024 UI Design / Paper Command Controls
 
 - Proposal ID: `p024-account-console-paper-command-controls`
-- Status: phase4za_owner_repair_execution_handoff_ui_projection_passed
+- Status: phase4zb_owner_repair_approval_packet_ui_projection_passed
 
 ## Design Intent
 
@@ -136,6 +136,21 @@ No controls are reserved or visible in disabled mode.
 | `account-runtime-execution-gap-artifact-count` | required owner artifact count |
 | `account-runtime-execution-gap-required` | concrete items required before all acceptance can be claimed |
 | `account-runtime-execution-gap-blocker` | residual blockers preventing final runtime acceptance |
+| `account-partial-fill-owner-repair-approval-packet-panel` | owner repair approval packet projection panel |
+| `account-partial-fill-owner-repair-approval-packet-status` | repair approval packet status; must remain packet-ready rather than executed |
+| `account-partial-fill-owner-repair-approval-packet-verdict` | repair approval packet verdict requiring owner repair approval before retry |
+| `account-partial-fill-owner-repair-approval-packet-owner-path` | owner repo path requiring exact repair approval |
+| `account-partial-fill-owner-repair-approval-packet-obtained` | owner repair approval obtained flag; must remain false until exact approval is supplied |
+| `account-partial-fill-owner-repair-approval-packet-current-matches` | current scripts-only approval match flag; must remain false for repair-first next action |
+| `account-partial-fill-owner-repair-approval-packet-runtime-retry` | runtime retry allowed flag; must remain false before owner repair evidence and fresh retry packet |
+| `account-partial-fill-owner-repair-approval-packet-exact-text` | exact owner repair approval text required before owner source/test writes |
+| `account-partial-fill-owner-repair-approval-packet-change` | expected owner-side repair changes after approval |
+| `account-partial-fill-owner-repair-approval-packet-validator` | owner validator commands required before retry |
+| `account-partial-fill-owner-repair-approval-packet-blocker` | residual owner repair and real partial-fill blockers |
+| `account-partial-fill-owner-repair-approval-packet-owner-write` | owner write attempted flag; must remain false in this projection |
+| `account-partial-fill-owner-repair-approval-packet-additional-order` | additional paper order authorization flag; must remain false in this projection |
+| `account-partial-fill-owner-repair-approval-packet-partial-claimed` | partial-fill claim flag; must remain false until real owner runtime evidence exists |
+| `account-partial-fill-owner-repair-approval-packet-full-claimed` | full acceptance claim flag; must remain false |
 
 ## Layout Rules
 
@@ -150,10 +165,12 @@ No controls are reserved or visible in disabled mode.
 9. Runtime handoff requests are displayed as blocked owner-runtime preparation, not as browser-triggered broker execution.
 10. Runtime readiness is displayed as a blocker projection: owner refs and config refs are visible, but raw config, endpoints, secrets, owner writes and runtime invocation remain false.
 11. Partial-fill runtime approval and handoff panels are read-only: they show exact approval text, success formulas, fallback classifications and blockers, but never render a browser-side broker execution trigger.
+12. Owner repair approval packet projection is read-only: it shows the exact owner repair approval text and why the current scripts-only approval is insufficient, while owner write, runtime retry, partial-fill claim and full acceptance remain false.
 
 ## Disabled Mode
 
 When disabled, the view keeps the observation-only layout and renders no submit/cancel/replace affordance. Disabled mode may display status/evidence panels but no action controls.
+
 
 
 

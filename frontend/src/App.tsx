@@ -89,6 +89,7 @@ import type {
   AccountKind,
   CancelIntentRequest,
   CommandApiResult,
+  CommandPartialFillOwnerRepairApprovalPacket,
   CommandPartialFillOwnerRepairEvidenceIngestGate,
   CommandPartialFillOwnerRepairExecutionHandoffBundle,
   CommandPartialFillOwnerRepairImplementationPlan,
@@ -132,6 +133,7 @@ import type {
 } from "./types";
 import {
   cancelPaperOrderIntent,
+  fetchCommandPartialFillOwnerRepairApprovalPacket,
   fetchCommandPartialFillOwnerRepairEvidenceIngestGate,
   fetchCommandPartialFillOwnerRepairExecutionHandoffBundle,
   fetchCommandPartialFillOwnerRepairImplementationPlan,
@@ -1525,6 +1527,10 @@ function AccountWorkbenchTerminalPanel({
   const [partialFillOwnerRepairPlan, setPartialFillOwnerRepairPlan] =
     useState<CommandPartialFillOwnerRepairImplementationPlan | null>(null);
   const [partialFillOwnerRepairPlanError, setPartialFillOwnerRepairPlanError] = useState<string | null>(null);
+  const [partialFillOwnerRepairApprovalPacket, setPartialFillOwnerRepairApprovalPacket] =
+    useState<CommandPartialFillOwnerRepairApprovalPacket | null>(null);
+  const [partialFillOwnerRepairApprovalPacketError, setPartialFillOwnerRepairApprovalPacketError] =
+    useState<string | null>(null);
   const [partialFillOwnerRepairIngestGate, setPartialFillOwnerRepairIngestGate] =
     useState<CommandPartialFillOwnerRepairEvidenceIngestGate | null>(null);
   const [partialFillOwnerRepairIngestGateError, setPartialFillOwnerRepairIngestGateError] =
@@ -1639,6 +1645,8 @@ function AccountWorkbenchTerminalPanel({
       setRuntimeExecutionGapAuditError(null);
       setPartialFillOwnerRepairPlan(null);
       setPartialFillOwnerRepairPlanError(null);
+      setPartialFillOwnerRepairApprovalPacket(null);
+      setPartialFillOwnerRepairApprovalPacketError(null);
       setPartialFillOwnerRepairIngestGate(null);
       setPartialFillOwnerRepairIngestGateError(null);
       setPartialFillOwnerRepairPreflight(null);
@@ -1660,6 +1668,7 @@ function AccountWorkbenchTerminalPanel({
         partialFillHandoffResult,
         gapAuditResult,
         ownerRepairPlanResult,
+        ownerRepairApprovalPacketResult,
         ownerRepairIngestGateResult,
         ownerRepairPreflightResult,
         ownerRepairPatchPreviewResult,
@@ -1674,6 +1683,7 @@ function AccountWorkbenchTerminalPanel({
           fetchCommandPartialFillRuntimeExecutionHandoffBundle(summary.account.account_id),
           fetchCommandRuntimeExecutionGapAudit(summary.account.account_id),
           fetchCommandPartialFillOwnerRepairImplementationPlan(summary.account.account_id),
+          fetchCommandPartialFillOwnerRepairApprovalPacket(summary.account.account_id),
           fetchCommandPartialFillOwnerRepairEvidenceIngestGate(summary.account.account_id),
           fetchCommandPartialFillOwnerRepairPreflightSourceAudit(summary.account.account_id),
           fetchCommandPartialFillOwnerRepairPatchPreview(summary.account.account_id),
@@ -1765,6 +1775,17 @@ function AccountWorkbenchTerminalPanel({
             : "partial-fill owner repair plan unavailable";
         setPartialFillOwnerRepairPlan(null);
         setPartialFillOwnerRepairPlanError(message);
+      }
+      if (ownerRepairApprovalPacketResult.status === "fulfilled") {
+        setPartialFillOwnerRepairApprovalPacket(ownerRepairApprovalPacketResult.value);
+        setPartialFillOwnerRepairApprovalPacketError(null);
+      } else {
+        const message =
+          ownerRepairApprovalPacketResult.reason instanceof Error
+            ? ownerRepairApprovalPacketResult.reason.message
+            : "partial-fill owner repair approval packet unavailable";
+        setPartialFillOwnerRepairApprovalPacket(null);
+        setPartialFillOwnerRepairApprovalPacketError(message);
       }
       if (ownerRepairIngestGateResult.status === "fulfilled") {
         setPartialFillOwnerRepairIngestGate(ownerRepairIngestGateResult.value);
@@ -2668,6 +2689,11 @@ function AccountWorkbenchTerminalPanel({
           <CommandRuntimeExecutionGapAuditPanel
             audit={runtimeExecutionGapAudit}
             error={runtimeExecutionGapAuditError}
+          />
+
+          <CommandPartialFillOwnerRepairApprovalPacketPanel
+            error={partialFillOwnerRepairApprovalPacketError}
+            packet={partialFillOwnerRepairApprovalPacket}
           />
 
           <CommandPartialFillOwnerRepairImplementationPlanPanel
@@ -5367,6 +5393,123 @@ function CommandRuntimeExecutionGapAuditPanel({
         </div>
       ) : (
         <p className="muted">No runtime execution gap audit is mounted for this account.</p>
+      )}
+    </section>
+  );
+}
+
+function CommandPartialFillOwnerRepairApprovalPacketPanel({
+  packet,
+  error
+}: {
+  packet: CommandPartialFillOwnerRepairApprovalPacket | null;
+  error: string | null;
+}) {
+  return (
+    <section className="terminal-panel" data-testid="account-partial-fill-owner-repair-approval-packet-panel">
+      <div className="terminal-panel-header">
+        <h3>Owner Repair Approval Packet</h3>
+        <StateBadge value={packet ? "blocked" : error ? "blocked" : "empty"} />
+      </div>
+      {packet ? (
+        <div className="evidence-stack compact-evidence-stack">
+          <div className="evidence-item">
+            <strong>Status</strong>
+            <span data-testid="account-partial-fill-owner-repair-approval-packet-status">{packet.status}</span>
+          </div>
+          <div className="evidence-item">
+            <strong>Verdict</strong>
+            <span data-testid="account-partial-fill-owner-repair-approval-packet-verdict">{packet.verdict}</span>
+          </div>
+          <div className="evidence-item">
+            <strong>Owner path</strong>
+            <span data-testid="account-partial-fill-owner-repair-approval-packet-owner-path">
+              {packet.required_owner_repair_approval.approval_path}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Approval obtained</strong>
+            <span data-testid="account-partial-fill-owner-repair-approval-packet-obtained">
+              {String(packet.required_owner_repair_approval.obtained)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Current approval matches</strong>
+            <span data-testid="account-partial-fill-owner-repair-approval-packet-current-matches">
+              {String(packet.current_thread_approval_assessment.matches_current_next_action)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Runtime retry</strong>
+            <span data-testid="account-partial-fill-owner-repair-approval-packet-runtime-retry">
+              {String(packet.retry_gate.runtime_invocation_allowed)}
+            </span>
+          </div>
+          <div className="evidence-item" data-testid="account-partial-fill-owner-repair-approval-packet-exact-text">
+            <strong>Exact approval</strong>
+            <span>{packet.required_owner_repair_approval.exact_approval_text_required}</span>
+          </div>
+          {packet.required_owner_repair_scope.expected_owner_changes.map((change) => (
+            <div
+              className="evidence-item"
+              data-testid="account-partial-fill-owner-repair-approval-packet-change"
+              key={change}
+            >
+              <strong>Owner change</strong>
+              <span>{change}</span>
+            </div>
+          ))}
+          {packet.required_owner_repair_scope.required_owner_validators_before_retry.map((validator) => (
+            <div
+              className="evidence-item"
+              data-testid="account-partial-fill-owner-repair-approval-packet-validator"
+              key={validator}
+            >
+              <strong>Validator</strong>
+              <span>{validator}</span>
+            </div>
+          ))}
+          {packet.residual_blockers.map((blocker) => (
+            <div
+              className="evidence-item"
+              data-testid="account-partial-fill-owner-repair-approval-packet-blocker"
+              key={blocker.blocker_id}
+            >
+              <strong>{blocker.type}</strong>
+              <span>{blocker.next_action}</span>
+            </div>
+          ))}
+          <div className="evidence-item">
+            <strong>Owner write</strong>
+            <span data-testid="account-partial-fill-owner-repair-approval-packet-owner-write">
+              {String(packet.negative_assertions.owner_repo_write_attempted_by_this_packet)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Additional order</strong>
+            <span data-testid="account-partial-fill-owner-repair-approval-packet-additional-order">
+              {String(packet.negative_assertions.additional_order_authorized)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Partial-fill claimed</strong>
+            <span data-testid="account-partial-fill-owner-repair-approval-packet-partial-claimed">
+              {String(packet.negative_assertions.partial_fill_claimed)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Full claimed</strong>
+            <span data-testid="account-partial-fill-owner-repair-approval-packet-full-claimed">
+              {String(packet.negative_assertions.full_acceptance_claimed)}
+            </span>
+          </div>
+        </div>
+      ) : error ? (
+        <div className="state-callout blocked" data-testid="account-partial-fill-owner-repair-approval-packet-error">
+          {error}
+        </div>
+      ) : (
+        <p className="muted">No partial-fill owner repair approval packet is mounted for this account.</p>
       )}
     </section>
   );

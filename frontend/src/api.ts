@@ -1,6 +1,7 @@
 import type {
   AccountSnapshot,
   CancelIntentRequest,
+  CommandPartialFillOwnerRepairApprovalPacket,
   CommandPartialFillOwnerRepairEvidenceIngestGate,
   CommandPartialFillOwnerRepairExecutionHandoffBundle,
   CommandPartialFillOwnerRepairImplementationPlan,
@@ -244,6 +245,18 @@ export async function fetchCommandPartialFillOwnerRepairImplementationPlan(
   );
   if (!response.ok) {
     throw new Error(`partial-fill owner repair implementation plan failed: ${response.status}`);
+  }
+  return response.json();
+}
+
+export async function fetchCommandPartialFillOwnerRepairApprovalPacket(
+  accountId: string
+): Promise<CommandPartialFillOwnerRepairApprovalPacket> {
+  const response = await fetch(
+    `${API_BASE}/api/commands/accounts/${encodeURIComponent(accountId)}/partial-fill-owner-repair-approval-packet`
+  );
+  if (!response.ok) {
+    throw new Error(`partial-fill owner repair approval packet failed: ${response.status}`);
   }
   return response.json();
 }

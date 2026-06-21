@@ -27,6 +27,7 @@ ALLOWED_COMMAND_ROUTES = {
     "/api/commands/accounts/{account_id}/partial-fill-runtime-execution-approval-packet": {"GET"},
     "/api/commands/accounts/{account_id}/partial-fill-runtime-execution-handoff-bundle": {"GET"},
     "/api/commands/accounts/{account_id}/runtime-execution-gap-audit": {"GET"},
+    "/api/commands/accounts/{account_id}/partial-fill-owner-repair-approval-packet": {"GET"},
     "/api/commands/accounts/{account_id}/partial-fill-owner-repair-implementation-plan": {"GET"},
     "/api/commands/accounts/{account_id}/partial-fill-owner-repair-evidence-ingest-gate": {"GET"},
     "/api/commands/accounts/{account_id}/partial-fill-owner-repair-preflight-source-audit": {"GET"},
@@ -354,6 +355,40 @@ def validate_api_behavior() -> None:
         "partial-fill owner repair plan claim mismatch",
     )
 
+    repair_approval_response = client.get(
+        f"/api/commands/accounts/{ACCOUNT_ID}/partial-fill-owner-repair-approval-packet"
+    )
+    require(
+        repair_approval_response.status_code == 200,
+        f"partial-fill owner repair approval packet status mismatch: {repair_approval_response.status_code}",
+    )
+    repair_approval_payload = repair_approval_response.json()
+    require(
+        repair_approval_payload["schema"] == "account-console.p024.partial-fill-owner-repair-approval-packet.v1",
+        "partial-fill owner repair approval packet schema mismatch",
+    )
+    require(
+        repair_approval_payload["status"] == "phase4p_owner_close_offset_repair_approval_packet_ready",
+        "partial-fill owner repair approval packet status mismatch",
+    )
+    require(
+        repair_approval_payload["required_owner_repair_approval"]["obtained"] is False,
+        "partial-fill owner repair approval packet unexpectedly obtained approval",
+    )
+    require(
+        "repair owner close-offset semantics for P024"
+        in repair_approval_payload["required_owner_repair_approval"]["exact_approval_text_required"],
+        "partial-fill owner repair approval packet exact text missing repair scope",
+    )
+    require(
+        repair_approval_payload["retry_gate"]["runtime_invocation_allowed"] is False,
+        "partial-fill owner repair approval packet allowed runtime invocation",
+    )
+    require(
+        repair_approval_payload["negative_assertions"]["owner_repo_write_attempted_by_this_packet"] is False,
+        "partial-fill owner repair approval packet owner write flag mismatch",
+    )
+
     ingest_gate_response = client.get(
         f"/api/commands/accounts/{ACCOUNT_ID}/partial-fill-owner-repair-evidence-ingest-gate"
     )
@@ -492,7 +527,7 @@ def main() -> None:
     validate_api_behavior()
     print(
         "P024_PAPER_COMMAND_API_OK: "
-        "phase=1 routes=16 status=accepted_for_risk runtime_handoff=blocked runtime_closeout=reconciled runtime_readiness=blocked runtime_approval_packet=ready runtime_handoff_bundle=ready partial_fill_runtime_approval_packet=ready partial_fill_runtime_handoff_bundle=ready runtime_execution_gap=blocked owner_repair_plan=ready owner_repair_ingest_gate=ready owner_repair_preflight=blind_retry_rejected owner_repair_patch_preview=ready owner_repair_execution_handoff=ready mirror_read_only=true"
+        "phase=1 routes=17 status=accepted_for_risk runtime_handoff=blocked runtime_closeout=reconciled runtime_readiness=blocked runtime_approval_packet=ready runtime_handoff_bundle=ready partial_fill_runtime_approval_packet=ready partial_fill_runtime_handoff_bundle=ready runtime_execution_gap=blocked owner_repair_approval=required owner_repair_plan=ready owner_repair_ingest_gate=ready owner_repair_preflight=blind_retry_rejected owner_repair_patch_preview=ready owner_repair_execution_handoff=ready mirror_read_only=true"
     )
 
 

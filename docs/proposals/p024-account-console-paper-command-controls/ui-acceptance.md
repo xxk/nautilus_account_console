@@ -1,7 +1,7 @@
 # P024 UI Acceptance / Paper Command Controls
 
 - Proposal ID: `p024-account-console-paper-command-controls`
-- Status: phase4za_owner_repair_execution_handoff_ui_projection_passed
+- Status: phase4zb_owner_repair_approval_packet_ui_projection_passed
 
 ## Browser Acceptance
 
@@ -24,6 +24,23 @@
 | UI-15 | runtime execution gap audit projection | A4 not-accepted status, approval blocker, owner artifact count and false final-acceptance/execution flags render in UI | phase4e_runtime_execution_gap_audit_passed |
 | UI-16 | partial-fill runtime approval packet projection | exact partial-fill approval text, owner path, formulas, entrypoints, blockers and false new-order/cancel flags render in UI | phase4l_partial_fill_runtime_approval_packet_ui_projection_passed |
 | UI-17 | partial-fill runtime handoff bundle projection | runtime inputs, owner sequence, success formulas, fallback classifications and false execution flags render in UI | phase4m_partial_fill_runtime_handoff_bundle_ui_projection_passed |
+| UI-18 | owner repair approval packet projection | exact owner repair approval text, current approval mismatch, owner changes, validators, blockers and false owner-write/runtime-retry flags render in UI | phase4zb_owner_repair_approval_packet_ui_projection_passed |
+
+## UI-18 Owner Repair Approval Packet Projection
+
+The browser test must load `/accounts/acct.ctp.paper.19053`, call the read-only owner repair approval packet endpoint, and verify:
+
+1. `account-partial-fill-owner-repair-approval-packet-panel` is visible.
+2. `account-partial-fill-owner-repair-approval-packet-status` is `phase4p_owner_close_offset_repair_approval_packet_ready`.
+3. `account-partial-fill-owner-repair-approval-packet-verdict` is `owner_repair_approval_required_before_retry`.
+4. `account-partial-fill-owner-repair-approval-packet-obtained` and `account-partial-fill-owner-repair-approval-packet-current-matches` are `false`.
+5. `account-partial-fill-owner-repair-approval-packet-runtime-retry`, `account-partial-fill-owner-repair-approval-packet-owner-write`, `account-partial-fill-owner-repair-approval-packet-additional-order`, `account-partial-fill-owner-repair-approval-packet-partial-claimed` and `account-partial-fill-owner-repair-approval-packet-full-claimed` are all `false`.
+6. `account-partial-fill-owner-repair-approval-packet-exact-text` includes `repair owner close-offset semantics for P024`.
+7. `account-partial-fill-owner-repair-approval-packet-change` shows the owner repair changes.
+8. `account-partial-fill-owner-repair-approval-packet-validator` shows owner validators required before retry.
+9. `account-partial-fill-owner-repair-approval-packet-blocker` shows owner repair approval, close-offset gap and real partial-fill runtime blockers.
+
+Accepted evidence: `python scripts\validate_p024_partial_fill_owner_repair_approval_packet_browser_evidence.py` returns `P024_PARTIAL_FILL_OWNER_REPAIR_APPROVAL_PACKET_BROWSER_EVIDENCE_OK`.
 
 ## UI-17 Partial-Fill Runtime Handoff Bundle Projection
 
@@ -186,6 +203,7 @@ Accepted evidence: `python scripts\validate_p024_partial_fill_cancel_browser_evi
 | NUI-15 | runtime handoff bundle panel claims execution allowed, approval obtained, owner runtime invoked, owner repo written, broker order created or raw endpoint/secret material | test failure |
 | NUI-16 | partial-fill approval packet panel claims approval obtained, owner runtime invoked, owner repo written, new order submitted, cancel sent or hides formulas | test failure |
 | NUI-17 | partial-fill handoff bundle panel claims execution allowed, new order submitted, cancel sent, full acceptance claimed or promotes fixture evidence to runtime truth | test failure |
+| NUI-18 | owner repair approval packet panel hides exact approval text, treats current scripts-only approval as matching the repair action, or claims owner write/runtime retry/partial-fill/full acceptance | test failure |
 
 ## Blocker
 
@@ -194,6 +212,7 @@ Every blocked command-control state must include reason, stage, source ref and n
 ## Evidence
 
 P024 cannot close on UI design text alone. Browser evidence and command artifacts are required before implementation closeout.
+
 
 
 
