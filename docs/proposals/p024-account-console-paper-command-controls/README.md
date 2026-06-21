@@ -1,7 +1,7 @@
 # P024 Account Console Paper Command Controls
 
 - Proposal ID: `p024-account-console-paper-command-controls`
-- Status: phase4_residual_blocker_audit_passed
+- Status: phase4a_owner_runtime_execution_approval_packet_ready
 - ADR carrier: yes
 - Primary ADR: ADR-0007
 - Predecessor: [P023 OpenCTP 19053 Paper Command Capability](../p023-openctp-19053-paper-command-capability/README.md)
@@ -25,6 +25,7 @@ P024 does not enable `live_armed`, production admission, capital approval, or Ac
 8. Prepare typed Web UI owner-runtime submit/cancel handoff requests while preserving `runtime_invocation_attempted=false` and `browser_triggered_broker_order=false`.
 9. Freeze the external owner-runtime invocation readiness package: owner repo, guarded entrypoints, argument shape, expected write scope, required approval and post-run artifact requirements.
 10. Render the owner-runtime readiness package in the Web UI as an explicit blocker with owner refs, entrypoints, approval state and non-claims.
+11. Freeze an owner-runtime execution approval packet with the exact operator approval text required before guarded owner scripts may write outside this worktree.
 
 ## Non-Goals
 
@@ -51,6 +52,7 @@ P024 does not enable `live_armed`, production admission, capital approval, or Ac
 | Phase 3d runtime invocation readiness | Owner-runtime readiness package records external write approval scope, owner entrypoint checksums and post-run artifact requirements while runtime remains uninvoked | `python scripts\validate_p024_owner_runtime_invocation_readiness.py` |
 | Phase 3e runtime readiness UI projection | Web UI renders owner-runtime readiness blocker, owner repo refs, entrypoints, approval state and non-claims while `runtime_invocation_attempted=false` | `python scripts\validate_p024_runtime_readiness_browser_evidence.py` |
 | Phase 4 residual blocker closeout | Full P024 gate matrix records accepted scope, non-accepted runtime scope and remaining owner-runtime blockers as a full residual blocker closeout audit | `python scripts\validate_p024_full_acceptance_closeout.py` |
+| Phase 4a owner-runtime execution approval packet | The exact external write approval text, owner path, expected impact, command templates and post-run artifact requirements are machine-checked while `approval_obtained=false` and `runtime_invocation_attempted=false` | `python scripts\validate_p024_owner_runtime_execution_approval_packet.py` |
 
 ## Document Map
 
@@ -62,6 +64,7 @@ P024 does not enable `live_armed`, production admission, capital approval, or Ac
 | `ui-acceptance.md` | Web UI acceptance and negative cases |
 | `partial-fill-cancel-ui-acceptance.md` | Web UI partial-fill then cancel order-display correctness scenario |
 | `runtime-invocation-readiness.md` | owner-runtime invocation readiness and external approval boundary |
+| `docs/acceptance/p024-account-console-paper-command-controls/owner-runtime-execution-approval-packet.json` | owner-runtime execution approval packet and exact approval text |
 
 ## Graduation / Closeout Matrix
 
@@ -77,6 +80,7 @@ P024 does not enable `live_armed`, production admission, capital approval, or Ac
 | Runtime readiness UI projection | archive_only | Browser evidence proves the readiness blocker is visible in Web UI with no owner-runtime invocation, owner write, browser-triggered broker order or raw secret claim | phase3e_runtime_readiness_ui_projection_passed |
 | Architecture / ownership backfill | required before implementation closeout | command gateway owner map | phase4_owner_boundary_backfill_passed |
 | Phase 4 residual blocker closeout | archive_only | `full-acceptance-closeout.json` maps A1-A14, required gates, non-accepted runtime scope and residual owner-runtime blockers | phase4_residual_blocker_audit_passed |
-| Proposal-local evidence | archive_only | `acceptance.md`, browser command-controls evidence, runtime closeout projection evidence, P024 partial-fill display evidence, runtime handoff request evidence, owner-runtime invocation readiness evidence, runtime readiness UI projection evidence and full acceptance closeout audit; runtime Web UI broker command execution remains blocked pending external approval | phase4_residual_blocker_audit_passed |
+| Owner-runtime execution approval packet | archive_only | `owner-runtime-execution-approval-packet.json` freezes exact approval text: `I approve writes to D:/Nautilus/nautilus_ctp_adapter ...`; runtime Web UI broker command execution remains blocked until approval and owner artifacts exist | phase4a_owner_runtime_execution_approval_packet_ready |
+| Proposal-local evidence | archive_only | `acceptance.md`, browser command-controls evidence, runtime closeout projection evidence, P024 partial-fill display evidence, runtime handoff request evidence, owner-runtime invocation readiness evidence, runtime readiness UI projection evidence, full acceptance closeout audit and owner-runtime execution approval packet; runtime Web UI broker command execution remains blocked pending external approval | phase4a_owner_runtime_execution_approval_packet_ready |
 
 No stable rule graduation: proposal-local evidence only until implementation and runtime gates pass.

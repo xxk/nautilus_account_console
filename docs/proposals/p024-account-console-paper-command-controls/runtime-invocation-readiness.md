@@ -1,13 +1,16 @@
 # P024 Runtime Invocation Readiness / Owner Runtime Approval Gate
 
 - Proposal ID: `p024-account-console-paper-command-controls`
-- Status: phase3e_runtime_readiness_ui_projection_passed
+- Status: phase4a_owner_runtime_execution_approval_packet_ready
+- Previous readiness UI status: phase3e_runtime_readiness_ui_projection_passed
 
 ## Scope
 
 This gate prepares the real owner-runtime invocation path without running it from this worktree. It records the owner repo, guarded script entrypoints, argument shape, expected owner write scope and explicit non-claims required before P024 can move from browser handoff to real OpenCTP paper runtime execution.
 
 This is not broker execution evidence. It is a readiness and approval package.
+
+Phase 4a adds an owner-runtime execution approval packet on top of this readiness package. That packet is also not broker execution evidence; it freezes the exact operator approval text and command templates needed before owner scripts may be invoked.
 
 ## Required Artifact
 
@@ -32,6 +35,18 @@ Before any owner runtime execution, the operator must explicitly approve:
 3. Expected impact: create owner-owned runtime/debug/readback/reconciliation artifacts outside this worktree and potentially submit/cancel one paper order in the 19053 simulation account.
 
 Without that approval, P024 remains blocked for real owner-runtime execution and must not claim real Web UI broker execution. The external write approval is required before any owner-runtime invocation.
+
+The exact approval text required by the Phase 4a owner-runtime execution approval packet is:
+
+```text
+I approve writes to D:/Nautilus/nautilus_ctp_adapter to run owner-owned guarded OpenCTP paper submit/cancel scripts for P024; expected impact: create owner-owned runtime/debug/readback/reconciliation artifacts outside this worktree and may submit/cancel one paper order in the 19053 simulation account.
+```
+
+Machine artifact:
+
+```text
+docs/acceptance/p024-account-console-paper-command-controls/owner-runtime-execution-approval-packet.json
+```
 
 ## Web UI Projection Gate
 
@@ -68,4 +83,18 @@ Pass signal:
 
 ```text
 P024_OWNER_RUNTIME_INVOCATION_READINESS_OK: readiness=pass runtime_invocation_attempted=false external_write_approval=required
+```
+
+## Execution Approval Packet Gate
+
+Run:
+
+```powershell
+python scripts\validate_p024_owner_runtime_execution_approval_packet.py
+```
+
+Pass signal:
+
+```text
+P024_OWNER_RUNTIME_EXECUTION_APPROVAL_PACKET_OK: status=phase4a_owner_runtime_execution_approval_packet_ready approval_required=true approval_obtained=false runtime_invocation_attempted=false
 ```
