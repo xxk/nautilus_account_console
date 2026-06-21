@@ -1,7 +1,7 @@
 # P024 Phase Plan / Account Console Paper Command Controls
 
 - Proposal ID: `p024-account-console-paper-command-controls`
-- Status: phase4p_owner_close_offset_repair_approval_packet_ready
+- Status: phase4q_remaining_acceptance_current_state_audited
 - Primary ADR: ADR-0007
 
 ## Artifact Trust Boundary
@@ -40,7 +40,7 @@ Primary ADR: ADR-0007
 <!-- AI-PHASE-STATUS-BEGIN
 reviewed_at: 2026-06-21
 reviewer: codex
-overall_status: phase4p_owner_close_offset_repair_approval_packet_ready
+overall_status: phase4q_remaining_acceptance_current_state_audited
 phases:
   - id: phase_0_design_gate
     status: completed
@@ -126,6 +126,10 @@ phases:
     status: repair_approval_packet_ready_runtime_retry_not_authorized
     ai_progress: 100
     evidence: "python scripts\\validate_p024_partial_fill_owner_repair_approval_packet.py"
+  - id: phase_4q_remaining_acceptance_current_state
+    status: remaining_acceptance_current_state_audited
+    ai_progress: 100
+    evidence: "python scripts\\validate_p024_partial_fill_remaining_acceptance_current_state.py"
 AI-PHASE-STATUS-END -->
 
 ## Phase Status Board
@@ -157,6 +161,7 @@ AI-PHASE-STATUS-END -->
 | Phase 4n Partial-fill runtime execution attempt audit | Record approved owner-owned guarded paper attempt, rejected callback, zero fill and no cancel identity | completed_rejected_attempt_audit_gate_partial_fill_still_blocked | `python scripts\validate_p024_partial_fill_runtime_execution_attempt_audit.py`; `python scripts\validate_p024_partial_fill_runtime_feasibility_audit.py`; `python scripts\validate_p024_partial_fill_owner_artifact_scan.py` | Do not retry without new explicit approval or qualifying external owner partial-fill artifacts |
 | Phase 4o Close-yesterday owner rule gap audit | Lock CLOSEYESTERDAY rejected callback offset mismatch as an owner repair/source-closure prerequisite | completed_close_yesterday_owner_rule_gap_audit | `python scripts\validate_p024_partial_fill_close_offset_owner_rule_gap_audit.py` | Obtain approval for owner repair before any additional paper order attempt |
 | Phase 4p Owner close-offset repair approval packet | Classify the current runtime-script approval as insufficient for the new repair-first next action and freeze exact repair approval text | repair_approval_packet_ready_runtime_retry_not_authorized | `python scripts\validate_p024_partial_fill_owner_repair_approval_packet.py` | Obtain exact owner repair approval before editing owner repo or running another paper partial-fill attempt |
+| Phase 4q Remaining acceptance current state audit | Enumerate the concrete missing evidence before full acceptance can be claimed | remaining_acceptance_current_state_audited | `python scripts\validate_p024_partial_fill_remaining_acceptance_current_state.py` | Repair owner close-offset semantics under exact approval, then produce real partial-fill runtime and Web UI projection evidence |
 
 ## Runtime / Command Freeze
 
@@ -188,4 +193,6 @@ Phase 0 does not run broker mutation. Phase 1 may add API contracts but must not
 22. Phase 4n partial-fill runtime execution attempt audit is complete; `P024_PARTIAL_FILL_RUNTIME_EXECUTION_ATTEMPT_AUDIT_OK` proves the owner-owned paper attempt was submitted as exposure-reduction but rejected before any fill, so real partial-fill acceptance remains blocked and no retry is authorized.
 23. Phase 4o close-yesterday owner rule gap audit is complete; `P024_PARTIAL_FILL_CLOSE_OFFSET_OWNER_RULE_GAP_AUDIT_OK` proves the next owner action is semantic repair/source closure for CLOSEYESTERDAY offset handling, not another blind paper retry.
 24. Phase 4p owner close-offset repair approval packet is ready; `P024_PARTIAL_FILL_OWNER_REPAIR_APPROVAL_PACKET_OK` proves the current runtime-script approval does not authorize owner code repair or another retry before repair evidence exists.
+25. Phase 4q remaining acceptance current state audit is complete; `P024_PARTIAL_FILL_REMAINING_ACCEPTANCE_CURRENT_STATE_OK` proves full acceptance still requires owner repair approval, owner repair evidence, owner validators, real partial-fill runtime artifacts and Web UI projection of those real refs.
+
 
