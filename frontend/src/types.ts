@@ -368,6 +368,73 @@ export interface CommandRuntimeInvocationReadiness {
   explicit_non_claims: string[];
 }
 
+export interface CommandRuntimeExecutionApprovalPacket {
+  schema: "account-console.p024.owner-runtime-execution-approval-packet.v1";
+  proposal_id: "p024-account-console-paper-command-controls";
+  account_id: "acct.ctp.paper.19053";
+  reviewed_at: string;
+  status: "phase4a_owner_runtime_execution_approval_packet_ready";
+  verdict: "approval_packet_ready_runtime_not_invoked";
+  owner_runtime: {
+    owner_ref: string;
+    owner_repo_ref: string;
+    owner_repo_path: string;
+    config_ref: string;
+    config_file_exists_on_owner_node: boolean;
+    config_raw_content_read: false;
+    raw_secret_values_recorded: false;
+    raw_broker_endpoint_recorded: false;
+  };
+  required_operator_approval: {
+    required: true;
+    obtained: false;
+    approval_path: string;
+    reason: string;
+    expected_impact: string[];
+    exact_approval_text: string;
+    approval_prompt_required_before_execution: true;
+  };
+  planned_execution: {
+    execution_root_ref: string;
+    debug_root_ref: string;
+    predecessor_readiness_ref: string;
+    predecessor_closeout_ref: string;
+    runtime_invocation_attempted: false;
+    owner_repo_write_attempted: false;
+  };
+  entrypoints: Array<{
+    action: "submit" | "cancel";
+    entrypoint_ref: string;
+    owner_path: string;
+    checksum: string;
+    armed_flag: string;
+    required_arguments: string[];
+  }>;
+  command_templates: Array<{
+    action: "submit" | "cancel";
+    template: string;
+    uses_placeholders_only_for_runtime_values: true;
+    runtime_invocation_attempted: false;
+  }>;
+  required_post_run_artifacts: string[];
+  post_run_acceptance_gates: string[];
+  blockers: CommandApiBlocker[];
+  negative_assertions: {
+    runtime_invocation_attempted: false;
+    owner_repo_write_attempted: false;
+    browser_triggered_broker_order: false;
+    gateway_send_attempted: false;
+    broker_order_created: false;
+    live_armed: false;
+    account_mirror_write_authority: false;
+    raw_secret_values_recorded: false;
+    raw_broker_endpoint_recorded: false;
+    config_raw_content_read: false;
+    full_runtime_acceptance_claimed: false;
+  };
+  explicit_non_claims: string[];
+}
+
 export type AccountHealthPanelFixtureState =
   | "happy_path"
   | "empty"

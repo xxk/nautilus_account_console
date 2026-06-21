@@ -119,12 +119,16 @@
       "blocker_id": "p024_operator_approval_not_obtained",
       "type": "external_write_approval_required",
       "stage": "owner_runtime",
+      "reason": "Running owner scripts may write outside this worktree and may submit/cancel a paper order.",
+      "source_ref": "docs/acceptance/p024-account-console-paper-command-controls/owner-runtime-execution-approval-packet.json",
       "next_action": "operator must provide the exact approval text before any owner runtime script is invoked"
     },
     {
       "blocker_id": "p024_owner_runtime_artifacts_missing",
       "type": "owner_runtime_artifacts_missing",
       "stage": "readback",
+      "reason": "No approved P024 owner-runtime submit/cancel run artifacts have been produced or ingested.",
+      "source_ref": "owner-repo://nautilus_ctp_adapter/output/account_command/ctp-paper-19053/<p024-runtime-run-id>/",
       "next_action": "after approved owner execution, ingest checksum-backed submit/cancel/readback/reconciliation artifacts"
     }
   ],

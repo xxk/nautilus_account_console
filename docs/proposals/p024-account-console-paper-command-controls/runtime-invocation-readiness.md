@@ -1,8 +1,9 @@
 # P024 Runtime Invocation Readiness / Owner Runtime Approval Gate
 
 - Proposal ID: `p024-account-console-paper-command-controls`
-- Status: phase4a_owner_runtime_execution_approval_packet_ready
+- Status: phase4b_runtime_approval_packet_ui_projection_passed
 - Previous readiness UI status: phase3e_runtime_readiness_ui_projection_passed
+- Previous approval packet status: phase4a_owner_runtime_execution_approval_packet_ready
 
 ## Scope
 
@@ -11,6 +12,8 @@ This gate prepares the real owner-runtime invocation path without running it fro
 This is not broker execution evidence. It is a readiness and approval package.
 
 Phase 4a adds an owner-runtime execution approval packet on top of this readiness package. That packet is also not broker execution evidence; it freezes the exact operator approval text and command templates needed before owner scripts may be invoked.
+
+Phase 4b renders that approval packet in the Web UI as a browser blocker projection. This is still not owner-runtime invocation and still requires `approval_obtained=false`, `runtime_invocation_attempted=false`, `owner_repo_write_attempted=false` and `broker_order_created=false`.
 
 ## Required Artifact
 
@@ -97,4 +100,19 @@ Pass signal:
 
 ```text
 P024_OWNER_RUNTIME_EXECUTION_APPROVAL_PACKET_OK: status=phase4a_owner_runtime_execution_approval_packet_ready approval_required=true approval_obtained=false runtime_invocation_attempted=false
+```
+
+## Runtime Approval Packet UI Gate
+
+Run:
+
+```powershell
+npx playwright test tests/e2e/p024-runtime-execution-approval-packet.spec.ts --project=desktop
+python scripts\validate_p024_runtime_approval_packet_browser_evidence.py
+```
+
+Pass signal:
+
+```text
+P024_RUNTIME_APPROVAL_PACKET_BROWSER_EVIDENCE_OK: runtime_approval_packet_ui=pass approval_obtained=false runtime_invocation_attempted=false
 ```

@@ -1,7 +1,7 @@
 # P024 Acceptance / Account Console Paper Command Controls
 
 - Proposal ID: `p024-account-console-paper-command-controls`
-- Status: phase4a_owner_runtime_execution_approval_packet_ready
+- Status: phase4b_runtime_approval_packet_ui_projection_passed
 - Primary ADR: ADR-0007
 
 ## Scope
@@ -24,6 +24,7 @@ Out of scope: live trading, replace order, Account Mirror write authority, direc
 | P024 runtime readiness UI projection | `npx playwright test tests/e2e/p024-runtime-invocation-readiness.spec.ts --project=desktop` then `python scripts\validate_p024_runtime_readiness_browser_evidence.py` | `P024_RUNTIME_READINESS_BROWSER_EVIDENCE_OK` | Web UI renders readiness blocker, owner refs, entrypoints, approval state and non-claims without owner runtime invocation |
 | P024 full acceptance closeout audit | `python scripts\validate_p024_full_acceptance_closeout.py` | `P024_FULL_ACCEPTANCE_CLOSEOUT_OK` | A1-A14, accepted scope, non-accepted runtime scope and residual owner-runtime blockers are machine-checked |
 | P024 owner-runtime execution approval packet | `python scripts\validate_p024_owner_runtime_execution_approval_packet.py` | `P024_OWNER_RUNTIME_EXECUTION_APPROVAL_PACKET_OK` | Exact owner path, reason, expected impact, approval text, guarded command templates and post-run artifact set are machine-checked while `approval_obtained=false` and `runtime_invocation_attempted=false` |
+| P024 runtime approval packet UI projection | `npx playwright test tests/e2e/p024-runtime-execution-approval-packet.spec.ts --project=desktop` then `python scripts\validate_p024_runtime_approval_packet_browser_evidence.py` | `P024_RUNTIME_APPROVAL_PACKET_BROWSER_EVIDENCE_OK` | Web UI renders the exact approval packet and preserves `approval_obtained=false`, `runtime_invocation_attempted=false`, `owner_repo_write_attempted=false` and `broker_order_created=false` |
 | P023 runtime predecessor | `python scripts\validate_p023_openctp19053_command_run.py --run-dir output\account_command\ctp-paper-19053\p023-armed-20260621t0748z --source-package output\account_capability\ctp-paper-19053\source-package.json` | `P023_OPENCTP19053_COMMAND_RUN_OK` | Predecessor paper command evidence |
 | Proposal docs | `python scripts\check_proposal_docs.py --root . --proposal-id p024-account-console-paper-command-controls` | `PROPOSAL_DOCS_OK` | Proposal structure |
 
@@ -76,6 +77,18 @@ Required artifact:
 6. Negative assertions require `approval_obtained=false`, `runtime_invocation_attempted=false`, `owner_repo_write_attempted=false`, `browser_triggered_broker_order=false`, `gateway_send_attempted=false`, `broker_order_created=false`, `raw_secret_values_recorded=false` and `raw_broker_endpoint_recorded=false`.
 
 Accepted evidence: `python scripts\validate_p024_owner_runtime_execution_approval_packet.py` returns `P024_OWNER_RUNTIME_EXECUTION_APPROVAL_PACKET_OK`.
+
+## Phase 4b Runtime Approval Packet UI Projection
+
+The Web UI must render the Phase 4a approval packet as an explicit pre-execution blocker:
+
+1. Backend exposes `GET /api/commands/accounts/{account_id}/runtime-execution-approval-packet` as a read-only projection.
+2. The response uses schema `account-console.p024.owner-runtime-execution-approval-packet.v1`.
+3. The Web UI displays `account-runtime-approval-packet-panel`, `account-runtime-approval-packet-status`, `account-runtime-approval-packet-owner-path`, approval required/obtained flags, `account-runtime-approval-packet-exact-text`, entrypoints and blockers.
+4. `account-runtime-approval-packet-obtained`, `account-runtime-approval-packet-invoked`, `account-runtime-approval-packet-owner-write` and `account-runtime-approval-packet-broker-order` must all show `false`.
+5. UI text must not include raw broker endpoints, raw front-address wording, live-ready wording or browser-submitted broker-order claims.
+
+Accepted evidence: `python scripts\validate_p024_runtime_approval_packet_browser_evidence.py` returns `P024_RUNTIME_APPROVAL_PACKET_BROWSER_EVIDENCE_OK`.
 
 ## Phase 3e Runtime Readiness UI Projection Acceptance
 
@@ -205,4 +218,4 @@ This remains browser/control contract evidence. It does not claim real Web UI Op
 
 ## Evidence Boundary
 
-Implementation/browser evidence is required before implementation closeout. Phase 1, Phase 2, Phase 3a, Phase 3b, Phase 3c, Phase 3d readiness, Phase 3e readiness UI projection, Phase 4 residual blocker audit and Phase 4a owner-runtime execution approval packet gates are accepted; real Web UI submit/cancel runtime execution remains blocked pending external owner-runtime approval and artifacts.
+Implementation/browser evidence is required before implementation closeout. Phase 1, Phase 2, Phase 3a, Phase 3b, Phase 3c, Phase 3d readiness, Phase 3e readiness UI projection, Phase 4 residual blocker audit, Phase 4a owner-runtime execution approval packet and Phase 4b runtime approval packet UI projection gates are accepted; real Web UI submit/cancel runtime execution remains blocked pending external owner-runtime approval and artifacts.

@@ -1,7 +1,7 @@
 # P024 UI Acceptance / Paper Command Controls
 
 - Proposal ID: `p024-account-console-paper-command-controls`
-- Status: phase3e_runtime_readiness_ui_projection_passed
+- Status: phase4b_runtime_approval_packet_ui_projection_passed
 
 ## Browser Acceptance
 
@@ -19,6 +19,22 @@
 | UI-10 | runtime closeout projection | owner-backed P023 runtime closeout refs/checksums/non-claims render in UI with browser trigger false | phase3a_runtime_closeout_projection_passed |
 | UI-11 | owner-runtime handoff request | submit/cancel controls prepare blocked owner-runtime handoff requests with no browser-triggered broker order | phase3c_runtime_handoff_request_passed |
 | UI-12 | runtime readiness blocker projection | readiness package owner refs, entrypoints, approval state, blockers and non-claims render in UI while runtime invocation remains false | phase3e_runtime_readiness_ui_projection_passed |
+| UI-13 | runtime approval packet projection | exact approval text, owner path, entrypoints, blockers and false execution flags render in UI while approval remains unobtained | phase4b_runtime_approval_packet_ui_projection_passed |
+
+## UI-13 Runtime Approval Packet Projection
+
+The browser test must load `/accounts/acct.ctp.paper.19053`, call the read-only approval packet endpoint, and verify:
+
+1. `account-runtime-approval-packet-panel` is visible.
+2. `account-runtime-approval-packet-status` is `phase4a_owner_runtime_execution_approval_packet_ready`.
+3. `account-runtime-approval-packet-owner-path` is `D:/Nautilus/nautilus_ctp_adapter`.
+4. `account-runtime-approval-packet-required` is `true` and `account-runtime-approval-packet-obtained` is `false`.
+5. `account-runtime-approval-packet-invoked`, `account-runtime-approval-packet-owner-write` and `account-runtime-approval-packet-broker-order` are all `false`.
+6. `account-runtime-approval-packet-exact-text` displays the exact operator approval text beginning with `I approve writes to D:/Nautilus/nautilus_ctp_adapter`.
+7. `account-runtime-approval-packet-entrypoint` shows both guarded submit/cancel entrypoints and arm flags.
+8. `account-runtime-approval-packet-blocker` includes external write approval and owner artifact blockers.
+
+Accepted evidence: `python scripts\validate_p024_runtime_approval_packet_browser_evidence.py` returns `P024_RUNTIME_APPROVAL_PACKET_BROWSER_EVIDENCE_OK`.
 
 ## UI-12 Runtime Readiness Blocker Projection
 
@@ -103,6 +119,7 @@ Accepted evidence: `python scripts\validate_p024_partial_fill_cancel_browser_evi
 | NUI-11 | runtime closeout panel claims browser-triggered broker order or gateway ack final state | test failure |
 | NUI-12 | runtime handoff panel claims owner runtime invocation, gateway send or broker order creation from browser | test failure |
 | NUI-13 | runtime readiness panel hides approval blocker, shows raw endpoint/secret material, or claims owner runtime invocation | test failure |
+| NUI-14 | runtime approval packet panel hides exact approval text, claims approval obtained, owner runtime invoked, owner repo written, broker order created or raw endpoint/secret material | test failure |
 
 ## Blocker
 

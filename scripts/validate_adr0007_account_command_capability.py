@@ -33,6 +33,7 @@ ALLOWED_COMMAND_ROUTES = {
     "/api/commands/accounts/{account_id}/runtime-run-requests/cancel": {"POST"},
     "/api/commands/accounts/{account_id}/runtime-closeouts/{run_id}": {"GET"},
     "/api/commands/accounts/{account_id}/runtime-invocation-readiness": {"GET"},
+    "/api/commands/accounts/{account_id}/runtime-execution-approval-packet": {"GET"},
 }
 
 
@@ -54,7 +55,7 @@ def validate_adr() -> None:
     for phrase in [
         'adr_id: "0007"',
         "decision_status: proposed",
-        "landing_status: p024_phase4a_owner_runtime_execution_approval_packet_gate",
+        "landing_status: p024_phase4b_runtime_approval_packet_ui_projection_gate",
         "Governed Account Command Capability",
         "Account Mirror never sends commands",
         "Gateway acknowledgement 不是最终账户状态",
@@ -70,6 +71,7 @@ def validate_adr() -> None:
         "P024 Phase 3e runtime readiness UI projection is accepted as browser blocker evidence only",
         "P024 Phase 4 residual blocker audit is accepted as closeout evidence only",
         "P024 Phase 4a owner-runtime execution approval packet is accepted as an approval-packet gate only",
+        "P024 Phase 4b runtime approval packet UI projection is accepted as browser blocker evidence only",
         "browser_triggered_broker_order=false",
         "gateway_send_attempted=false",
         "runtime_invocation_attempted=false",
@@ -140,7 +142,7 @@ def main() -> None:
     validate_backend_has_only_p024_command_routes()
     print(
         "ADR0007_ACCOUNT_COMMAND_CAPABILITY_OK: "
-        "status=proposed landing=p024_phase4a_owner_runtime_execution_approval_packet_gate"
+        "status=proposed landing=p024_phase4b_runtime_approval_packet_ui_projection_gate"
     )
 
 

@@ -10,6 +10,7 @@ from fastapi import HTTPException
 from .schemas import (
     CancelIntentRequest,
     CommandApiResult,
+    CommandRuntimeExecutionApprovalPacket,
     CommandRuntimeInvocationReadiness,
     CommandBlocker,
     CommandRuntimeCloseout,
@@ -28,6 +29,13 @@ RUNTIME_INVOCATION_READINESS = (
     / "acceptance"
     / "p024-account-console-paper-command-controls"
     / "owner-runtime-invocation-readiness.json"
+)
+RUNTIME_EXECUTION_APPROVAL_PACKET = (
+    ROOT
+    / "docs"
+    / "acceptance"
+    / "p024-account-console-paper-command-controls"
+    / "owner-runtime-execution-approval-packet.json"
 )
 DEFAULT_RUNTIME_RUN_ID = "p023-armed-20260621t0748z"
 REQUIRED_RUNTIME_FILES = [
@@ -332,6 +340,44 @@ def load_runtime_invocation_readiness(account_id: str) -> CommandRuntimeInvocati
     if approval.get("required") is not True or approval.get("obtained") is not False:
         raise HTTPException(status_code=409, detail="runtime invocation readiness approval boundary drifted")
     return CommandRuntimeInvocationReadiness(**payload)
+
+
+def load_runtime_execution_approval_packet(account_id: str) -> CommandRuntimeExecutionApprovalPacket:
+    if account_id != PAPER_ACCOUNT_ID:
+        raise HTTPException(status_code=403, detail="P024 runtime approval packet is scoped to acct.ctp.paper.19053 only")
+    if not RUNTIME_EXECUTION_APPROVAL_PACKET.exists():
+        raise HTTPException(status_code=404, detail="runtime execution approval packet evidence not found")
+    text = RUNTIME_EXECUTION_APPROVAL_PACKET.read_text(encoding="utf-8")
+    if any(fragment.lower() in text.lower() for fragment in SENSITIVE_RUNTIME_FRAGMENTS):
+        raise HTTPException(status_code=409, detail="runtime execution approval packet contains forbidden sensitive fragments")
+    payload = json.loads(text)
+    if payload.get("account_id") != PAPER_ACCOUNT_ID:
+        raise HTTPException(status_code=409, detail="runtime execution approval packet account_id mismatch")
+    approval = payload.get("required_operator_approval") or {}
+    if approval.get("required") is not True or approval.get("obtained") is not False:
+        raise HTTPException(status_code=409, detail="runtime execution approval packet approval boundary drifted")
+    if approval.get("approval_path") != "D:/Nautilus/nautilus_ctp_adapter":
+        raise HTTPException(status_code=409, detail="runtime execution approval packet owner path drifted")
+    planned = payload.get("planned_execution") or {}
+    if planned.get("runtime_invocation_attempted") is not False or planned.get("owner_repo_write_attempted") is not False:
+        raise HTTPException(status_code=409, detail="runtime execution approval packet planned execution flags drifted")
+    negative = payload.get("negative_assertions") or {}
+    for key in [
+        "runtime_invocation_attempted",
+        "owner_repo_write_attempted",
+        "browser_triggered_broker_order",
+        "gateway_send_attempted",
+        "broker_order_created",
+        "live_armed",
+        "account_mirror_write_authority",
+        "raw_secret_values_recorded",
+        "raw_broker_endpoint_recorded",
+        "config_raw_content_read",
+        "full_runtime_acceptance_claimed",
+    ]:
+        if negative.get(key) is not False:
+            raise HTTPException(status_code=409, detail=f"runtime execution approval packet negative assertion failed: {key}")
+    return CommandRuntimeExecutionApprovalPacket(**payload)
 
 
 def accept_submit_intent(account_id: str, intent: OrderIntentRequest) -> CommandApiResult:

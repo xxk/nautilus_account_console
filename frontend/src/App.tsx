@@ -90,6 +90,7 @@ import type {
   CancelIntentRequest,
   CommandApiResult,
   CommandRuntimeCloseout,
+  CommandRuntimeExecutionApprovalPacket,
   CommandRuntimeInvocationReadiness,
   CommandRuntimeRunRequest,
   AccountOrderDetailFixtureState,
@@ -122,6 +123,7 @@ import type {
 } from "./types";
 import {
   cancelPaperOrderIntent,
+  fetchCommandRuntimeExecutionApprovalPacket,
   fetchCommandRuntimeInvocationReadiness,
   fetchCommandRuntimeCloseout,
   fetchMirrorAccount,
@@ -1487,6 +1489,9 @@ function AccountWorkbenchTerminalPanel({
   const [runtimeRunRequestError, setRuntimeRunRequestError] = useState<string | null>(null);
   const [runtimeReadiness, setRuntimeReadiness] = useState<CommandRuntimeInvocationReadiness | null>(null);
   const [runtimeReadinessError, setRuntimeReadinessError] = useState<string | null>(null);
+  const [runtimeApprovalPacket, setRuntimeApprovalPacket] =
+    useState<CommandRuntimeExecutionApprovalPacket | null>(null);
+  const [runtimeApprovalPacketError, setRuntimeApprovalPacketError] = useState<string | null>(null);
   const [runtimeCloseout, setRuntimeCloseout] = useState<CommandRuntimeCloseout | null>(null);
   const [runtimeCloseoutError, setRuntimeCloseoutError] = useState<string | null>(null);
   const paperArmed = isP024PaperArmed(mirrorReadback);
@@ -1573,13 +1578,16 @@ function AccountWorkbenchTerminalPanel({
       setRuntimeCloseoutError(null);
       setRuntimeReadiness(null);
       setRuntimeReadinessError(null);
+      setRuntimeApprovalPacket(null);
+      setRuntimeApprovalPacketError(null);
       return;
     }
     let active = true;
     async function loadRuntimeEvidence() {
-      const [closeoutResult, readinessResult] = await Promise.allSettled([
+      const [closeoutResult, readinessResult, approvalPacketResult] = await Promise.allSettled([
         fetchCommandRuntimeCloseout(summary.account.account_id),
-        fetchCommandRuntimeInvocationReadiness(summary.account.account_id)
+        fetchCommandRuntimeInvocationReadiness(summary.account.account_id),
+        fetchCommandRuntimeExecutionApprovalPacket(summary.account.account_id)
       ]);
       if (!active) {
         return;
@@ -1601,6 +1609,17 @@ function AccountWorkbenchTerminalPanel({
           readinessResult.reason instanceof Error ? readinessResult.reason.message : "runtime readiness unavailable";
         setRuntimeReadiness(null);
         setRuntimeReadinessError(message);
+      }
+      if (approvalPacketResult.status === "fulfilled") {
+        setRuntimeApprovalPacket(approvalPacketResult.value);
+        setRuntimeApprovalPacketError(null);
+      } else {
+        const message =
+          approvalPacketResult.reason instanceof Error
+            ? approvalPacketResult.reason.message
+            : "runtime approval packet unavailable";
+        setRuntimeApprovalPacket(null);
+        setRuntimeApprovalPacketError(message);
       }
     }
     void loadRuntimeEvidence();
@@ -2436,6 +2455,11 @@ function AccountWorkbenchTerminalPanel({
           <CommandRuntimeRunRequestPanel request={runtimeRunRequest} error={runtimeRunRequestError} />
 
           <CommandRuntimeInvocationReadinessPanel readiness={runtimeReadiness} error={runtimeReadinessError} />
+
+          <CommandRuntimeExecutionApprovalPacketPanel
+            error={runtimeApprovalPacketError}
+            packet={runtimeApprovalPacket}
+          />
 
           <CommandRuntimeCloseoutPanel closeout={runtimeCloseout} error={runtimeCloseoutError} />
 
@@ -4545,6 +4569,105 @@ function CommandRuntimeInvocationReadinessPanel({
         </div>
       ) : (
         <p className="muted">No owner-runtime invocation readiness evidence is mounted for this account.</p>
+      )}
+    </section>
+  );
+}
+
+function CommandRuntimeExecutionApprovalPacketPanel({
+  packet,
+  error
+}: {
+  packet: CommandRuntimeExecutionApprovalPacket | null;
+  error: string | null;
+}) {
+  return (
+    <section className="terminal-panel" data-testid="account-runtime-approval-packet-panel">
+      <div className="terminal-panel-header">
+        <h3>Runtime Approval</h3>
+        <StateBadge value={packet ? "blocked" : error ? "blocked" : "empty"} />
+      </div>
+      {packet ? (
+        <div className="evidence-stack compact-evidence-stack">
+          <div className="evidence-item">
+            <strong>Status</strong>
+            <span data-testid="account-runtime-approval-packet-status">{packet.status}</span>
+          </div>
+          <div className="evidence-item">
+            <strong>Verdict</strong>
+            <span data-testid="account-runtime-approval-packet-verdict">{packet.verdict}</span>
+          </div>
+          <div className="evidence-item">
+            <strong>Owner path</strong>
+            <span data-testid="account-runtime-approval-packet-owner-path">
+              {packet.required_operator_approval.approval_path}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Approval required</strong>
+            <span data-testid="account-runtime-approval-packet-required">
+              {String(packet.required_operator_approval.required)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Approval obtained</strong>
+            <span data-testid="account-runtime-approval-packet-obtained">
+              {String(packet.required_operator_approval.obtained)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Runtime invoked</strong>
+            <span data-testid="account-runtime-approval-packet-invoked">
+              {String(packet.negative_assertions.runtime_invocation_attempted)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Owner write</strong>
+            <span data-testid="account-runtime-approval-packet-owner-write">
+              {String(packet.negative_assertions.owner_repo_write_attempted)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Broker order</strong>
+            <span data-testid="account-runtime-approval-packet-broker-order">
+              {String(packet.negative_assertions.broker_order_created)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Approval text</strong>
+            <span data-testid="account-runtime-approval-packet-exact-text">
+              {packet.required_operator_approval.exact_approval_text}
+            </span>
+          </div>
+          {packet.entrypoints.map((entrypoint) => (
+            <div
+              className="evidence-item"
+              data-testid="account-runtime-approval-packet-entrypoint"
+              key={entrypoint.action}
+            >
+              <strong>{entrypoint.action}</strong>
+              <span>
+                {entrypoint.entrypoint_ref} / {entrypoint.armed_flag}
+              </span>
+            </div>
+          ))}
+          {packet.blockers.map((blocker) => (
+            <div
+              className="evidence-item"
+              data-testid="account-runtime-approval-packet-blocker"
+              key={blocker.blocker_id}
+            >
+              <strong>{blocker.type}</strong>
+              <span>{blocker.next_action}</span>
+            </div>
+          ))}
+        </div>
+      ) : error ? (
+        <div className="state-callout blocked" data-testid="account-runtime-approval-packet-error">
+          {error}
+        </div>
+      ) : (
+        <p className="muted">No owner-runtime execution approval packet is mounted for this account.</p>
       )}
     </section>
   );

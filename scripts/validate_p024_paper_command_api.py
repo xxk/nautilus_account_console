@@ -22,6 +22,7 @@ ALLOWED_COMMAND_ROUTES = {
     "/api/commands/accounts/{account_id}/runtime-run-requests/cancel": {"POST"},
     "/api/commands/accounts/{account_id}/runtime-closeouts/{run_id}": {"GET"},
     "/api/commands/accounts/{account_id}/runtime-invocation-readiness": {"GET"},
+    "/api/commands/accounts/{account_id}/runtime-execution-approval-packet": {"GET"},
 }
 
 
@@ -185,6 +186,36 @@ def validate_api_behavior() -> None:
     require(readiness_payload["negative_assertions"]["owner_repo_write_attempted"] is False, "runtime readiness owner write flag mismatch")
     require(readiness_payload["negative_assertions"]["browser_triggered_broker_order"] is False, "runtime readiness browser trigger mismatch")
 
+    approval_response = client.get(f"/api/commands/accounts/{ACCOUNT_ID}/runtime-execution-approval-packet")
+    require(approval_response.status_code == 200, f"runtime approval packet status mismatch: {approval_response.status_code}")
+    approval_payload = approval_response.json()
+    require(
+        approval_payload["schema"] == "account-console.p024.owner-runtime-execution-approval-packet.v1",
+        "runtime approval packet schema mismatch",
+    )
+    require(
+        approval_payload["status"] == "phase4a_owner_runtime_execution_approval_packet_ready",
+        "runtime approval packet status mismatch",
+    )
+    require(
+        approval_payload["verdict"] == "approval_packet_ready_runtime_not_invoked",
+        "runtime approval packet verdict mismatch",
+    )
+    require(approval_payload["required_operator_approval"]["required"] is True, "runtime approval required mismatch")
+    require(approval_payload["required_operator_approval"]["obtained"] is False, "runtime approval obtained mismatch")
+    require(
+        approval_payload["planned_execution"]["runtime_invocation_attempted"] is False,
+        "runtime approval planned invocation flag mismatch",
+    )
+    require(
+        approval_payload["planned_execution"]["owner_repo_write_attempted"] is False,
+        "runtime approval planned owner write flag mismatch",
+    )
+    require(
+        approval_payload["negative_assertions"]["broker_order_created"] is False,
+        "runtime approval broker order flag mismatch",
+    )
+
     live_intent = submit_intent()
     live_intent["mode"] = "live_armed"
     live_response = client.post(f"/api/commands/accounts/{ACCOUNT_ID}/submit-intents", json=live_intent)
@@ -199,7 +230,7 @@ def main() -> None:
     validate_api_behavior()
     print(
         "P024_PAPER_COMMAND_API_OK: "
-        "phase=1 routes=6 status=accepted_for_risk runtime_handoff=blocked runtime_closeout=reconciled runtime_readiness=blocked mirror_read_only=true"
+        "phase=1 routes=7 status=accepted_for_risk runtime_handoff=blocked runtime_closeout=reconciled runtime_readiness=blocked runtime_approval_packet=ready mirror_read_only=true"
     )
 
 

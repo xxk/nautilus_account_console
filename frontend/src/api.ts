@@ -3,6 +3,7 @@ import type {
   CancelIntentRequest,
   CommandApiResult,
   CommandRuntimeCloseout,
+  CommandRuntimeExecutionApprovalPacket,
   CommandRuntimeInvocationReadiness,
   CommandRuntimeRunRequest,
   MirrorAccountProjection,
@@ -164,6 +165,18 @@ export async function fetchCommandRuntimeInvocationReadiness(
   );
   if (!response.ok) {
     throw new Error(`runtime invocation readiness failed: ${response.status}`);
+  }
+  return response.json();
+}
+
+export async function fetchCommandRuntimeExecutionApprovalPacket(
+  accountId: string
+): Promise<CommandRuntimeExecutionApprovalPacket> {
+  const response = await fetch(
+    `${API_BASE}/api/commands/accounts/${encodeURIComponent(accountId)}/runtime-execution-approval-packet`
+  );
+  if (!response.ok) {
+    throw new Error(`runtime execution approval packet failed: ${response.status}`);
   }
   return response.json();
 }

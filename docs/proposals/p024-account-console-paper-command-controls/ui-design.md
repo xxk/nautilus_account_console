@@ -76,6 +76,17 @@ No controls are reserved or visible in disabled mode.
 | `account-runtime-readiness-entrypoint` | guarded submit/cancel owner runtime entrypoints and arm flags |
 | `account-runtime-readiness-blocker` | typed external approval and owner artifact blockers |
 | `account-runtime-readiness-non-claim` | explicit non-claims shown in UI |
+| `account-runtime-approval-packet-panel` | owner-runtime execution approval packet projection panel |
+| `account-runtime-approval-packet-status` | approval packet status; must remain packet-ready rather than executed |
+| `account-runtime-approval-packet-owner-path` | owner repo path requiring explicit approval |
+| `account-runtime-approval-packet-required` | operator approval required flag |
+| `account-runtime-approval-packet-obtained` | operator approval obtained flag; must remain false until exact approval is supplied |
+| `account-runtime-approval-packet-invoked` | owner runtime invocation flag; must remain false before approval |
+| `account-runtime-approval-packet-owner-write` | owner repo write attempted flag; must remain false before approval |
+| `account-runtime-approval-packet-broker-order` | broker order created flag; must remain false before approved runtime execution |
+| `account-runtime-approval-packet-exact-text` | exact operator approval text required before owner-runtime execution |
+| `account-runtime-approval-packet-entrypoint` | guarded submit/cancel owner runtime entrypoints and arm flags from the approval packet |
+| `account-runtime-approval-packet-blocker` | typed approval and owner artifact blockers from the approval packet |
 
 ## Layout Rules
 

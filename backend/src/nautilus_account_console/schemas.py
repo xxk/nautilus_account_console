@@ -326,6 +326,27 @@ class CommandRuntimeInvocationReadiness(BaseModel):
     explicit_non_claims: list[str]
 
 
+class CommandRuntimeExecutionApprovalPacket(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    schema_: Literal["account-console.p024.owner-runtime-execution-approval-packet.v1"] = Field(alias="schema")
+    proposal_id: Literal["p024-account-console-paper-command-controls"]
+    account_id: Literal["acct.ctp.paper.19053"]
+    reviewed_at: str
+    status: Literal["phase4a_owner_runtime_execution_approval_packet_ready"]
+    verdict: Literal["approval_packet_ready_runtime_not_invoked"]
+    owner_runtime: dict
+    required_operator_approval: dict
+    planned_execution: dict
+    entrypoints: list[dict]
+    command_templates: list[dict]
+    required_post_run_artifacts: list[str]
+    post_run_acceptance_gates: list[str]
+    blockers: list[CommandBlocker]
+    negative_assertions: dict
+    explicit_non_claims: list[str]
+
+
 class Health(BaseModel):
     ok: bool
     service: str

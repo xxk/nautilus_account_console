@@ -1,7 +1,7 @@
 # P024 Phase Plan / Account Console Paper Command Controls
 
 - Proposal ID: `p024-account-console-paper-command-controls`
-- Status: phase4a_owner_runtime_execution_approval_packet_ready
+- Status: phase4b_runtime_approval_packet_ui_projection_passed
 - Primary ADR: ADR-0007
 
 ## Artifact Trust Boundary
@@ -40,7 +40,7 @@ Primary ADR: ADR-0007
 <!-- AI-PHASE-STATUS-BEGIN
 reviewed_at: 2026-06-21
 reviewer: codex
-overall_status: phase4a_owner_runtime_execution_approval_packet_ready
+overall_status: phase4b_runtime_approval_packet_ui_projection_passed
 phases:
   - id: phase_0_design_gate
     status: completed
@@ -86,6 +86,10 @@ phases:
     status: completed_approval_packet_gate_runtime_not_invoked
     ai_progress: 100
     evidence: "python scripts\\validate_p024_owner_runtime_execution_approval_packet.py"
+  - id: phase_4b_runtime_approval_packet_ui_projection
+    status: completed_browser_approval_packet_projection_gate
+    ai_progress: 100
+    evidence: "npx playwright test tests/e2e/p024-runtime-execution-approval-packet.spec.ts --project=desktop; python scripts\\validate_p024_runtime_approval_packet_browser_evidence.py"
 AI-PHASE-STATUS-END -->
 
 ## Phase Status Board
@@ -103,6 +107,7 @@ AI-PHASE-STATUS-END -->
 | Phase 3e Runtime readiness UI projection | Render owner-runtime readiness blocker in Web UI with owner refs, entrypoints, approval state and non-claims | completed_browser_readiness_projection_gate | `npx playwright test tests/e2e/p024-runtime-invocation-readiness.spec.ts --project=desktop`; `python scripts\validate_p024_runtime_readiness_browser_evidence.py` | Keep owner-runtime execution blocked until explicit external approval and owner artifacts exist |
 | Phase 4 Closeout | Full P024 gate set and residual blocker mapping | completed_residual_blocker_audit | `python scripts\validate_p024_full_acceptance_closeout.py` | Real owner-runtime execution still requires explicit external approval and checksum-backed owner artifacts |
 | Phase 4a Owner-runtime execution approval packet | Freeze exact approval text, owner path, expected impact, guarded command templates and post-run artifact set | completed_approval_packet_gate_runtime_not_invoked | `python scripts\validate_p024_owner_runtime_execution_approval_packet.py` | Wait for operator to provide the exact approval text before any owner repo write or broker paper order attempt |
+| Phase 4b Runtime approval packet UI projection | Render exact approval packet in Web UI with no owner runtime invocation or broker order claim | completed_browser_approval_packet_projection_gate | `npx playwright test tests/e2e/p024-runtime-execution-approval-packet.spec.ts --project=desktop`; `python scripts\validate_p024_runtime_approval_packet_browser_evidence.py` | Wait for operator to provide the exact approval text before invoking owner runtime |
 
 ## Runtime / Command Freeze
 
@@ -120,3 +125,4 @@ Phase 0 does not run broker mutation. Phase 1 may add API contracts but must not
 8. Phase 3e readiness UI projection is complete; it displays the blocker and owner refs in Web UI but does not invoke owner runtime, write the owner repo or create broker orders.
 9. Phase 4 residual blocker audit is complete; A1-A14 and all required gates are mapped, while new browser-triggered owner-runtime execution remains explicitly not accepted.
 10. Phase 4a owner-runtime execution approval packet is complete; `owner-runtime-execution-approval-packet.json` and `P024_OWNER_RUNTIME_EXECUTION_APPROVAL_PACKET_OK` freeze the exact approval text, while approval is still not obtained and `runtime_invocation_attempted=false`.
+11. Phase 4b runtime approval packet UI projection is complete; `P024_RUNTIME_APPROVAL_PACKET_BROWSER_EVIDENCE_OK` proves the exact approval packet is visible in Web UI while `approval_obtained=false`, `owner_repo_write_attempted=false` and `broker_order_created=false`.
