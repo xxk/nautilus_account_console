@@ -12,6 +12,7 @@ from .schemas import (
     CommandApiResult,
     CommandPartialFillRuntimeExecutionApprovalPacket,
     CommandPartialFillRuntimeExecutionHandoffBundle,
+    CommandPartialFillOwnerRepairImplementationPlan,
     CommandRuntimeExecutionApprovalPacket,
     CommandRuntimeExecutionGapAudit,
     CommandRuntimeExecutionHandoffBundle,
@@ -68,6 +69,13 @@ PARTIAL_FILL_RUNTIME_EXECUTION_HANDOFF_BUNDLE = (
     / "acceptance"
     / "p024-account-console-paper-command-controls"
     / "partial-fill-runtime-execution-handoff-bundle.json"
+)
+PARTIAL_FILL_OWNER_REPAIR_IMPLEMENTATION_PLAN = (
+    ROOT
+    / "docs"
+    / "acceptance"
+    / "p024-account-console-paper-command-controls"
+    / "partial-fill-owner-repair-implementation-plan.json"
 )
 DEFAULT_RUNTIME_RUN_ID = "p023-armed-20260621t0748z"
 REQUIRED_RUNTIME_FILES = [
@@ -562,6 +570,46 @@ def load_runtime_execution_gap_audit(account_id: str) -> CommandRuntimeExecution
         if negative.get(key) is not False:
             raise HTTPException(status_code=409, detail=f"runtime execution gap audit negative assertion failed: {key}")
     return CommandRuntimeExecutionGapAudit(**payload)
+
+
+def load_partial_fill_owner_repair_implementation_plan(
+    account_id: str,
+) -> CommandPartialFillOwnerRepairImplementationPlan:
+    if account_id != PAPER_ACCOUNT_ID:
+        raise HTTPException(status_code=403, detail="P024 owner repair plan is scoped to acct.ctp.paper.19053 only")
+    if not PARTIAL_FILL_OWNER_REPAIR_IMPLEMENTATION_PLAN.exists():
+        raise HTTPException(status_code=404, detail="partial-fill owner repair implementation plan evidence not found")
+    text = PARTIAL_FILL_OWNER_REPAIR_IMPLEMENTATION_PLAN.read_text(encoding="utf-8")
+    if any(fragment.lower() in text.lower() for fragment in SENSITIVE_RUNTIME_FRAGMENTS):
+        raise HTTPException(status_code=409, detail="partial-fill owner repair implementation plan contains forbidden sensitive fragments")
+    payload = json.loads(text)
+    if payload.get("account_id") != PAPER_ACCOUNT_ID:
+        raise HTTPException(status_code=409, detail="partial-fill owner repair implementation plan account_id mismatch")
+    context = payload.get("owner_read_context") or {}
+    if context.get("owner_repo_path") != "D:/Nautilus/nautilus_ctp_adapter":
+        raise HTTPException(status_code=409, detail="partial-fill owner repair implementation plan owner path drifted")
+    if context.get("owner_repo_write_attempted") is not False:
+        raise HTTPException(status_code=409, detail="partial-fill owner repair implementation plan attempted owner write")
+    runtime = payload.get("post_repair_runtime_attempt_gate") or {}
+    if runtime.get("runtime_attempt_allowed_by_this_plan") is not False:
+        raise HTTPException(status_code=409, detail="partial-fill owner repair implementation plan allowed runtime retry")
+    if runtime.get("fresh_approval_required") is not True:
+        raise HTTPException(status_code=409, detail="partial-fill owner repair implementation plan lost fresh approval gate")
+    negative = payload.get("negative_assertions") or {}
+    for key in [
+        "owner_repo_write_attempted_by_this_plan",
+        "owner_runtime_invocation_attempted",
+        "owner_repair_claimed_complete",
+        "runtime_retry_authorized",
+        "partial_fill_claimed",
+        "full_acceptance_claimed",
+        "raw_secret_values_recorded",
+        "raw_broker_endpoint_recorded",
+        "config_raw_content_recorded",
+    ]:
+        if negative.get(key) is not False:
+            raise HTTPException(status_code=409, detail=f"partial-fill owner repair implementation plan negative assertion failed: {key}")
+    return CommandPartialFillOwnerRepairImplementationPlan(**payload)
 
 
 def accept_submit_intent(account_id: str, intent: OrderIntentRequest) -> CommandApiResult:

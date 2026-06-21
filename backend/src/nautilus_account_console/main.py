@@ -11,6 +11,7 @@ from . import __version__
 from .command_api import (
     accept_cancel_intent,
     accept_submit_intent,
+    load_partial_fill_owner_repair_implementation_plan,
     load_partial_fill_runtime_execution_approval_packet,
     load_partial_fill_runtime_execution_handoff_bundle,
     load_runtime_execution_approval_packet,
@@ -33,6 +34,7 @@ from .schemas import (
     AccountSnapshot,
     CancelIntentRequest,
     CommandApiResult,
+    CommandPartialFillOwnerRepairImplementationPlan,
     CommandPartialFillRuntimeExecutionApprovalPacket,
     CommandPartialFillRuntimeExecutionHandoffBundle,
     CommandRuntimeCloseout,
@@ -317,6 +319,17 @@ def command_partial_fill_runtime_execution_handoff_bundle(
 )
 def command_runtime_execution_gap_audit(account_id: str) -> CommandRuntimeExecutionGapAudit:
     return load_runtime_execution_gap_audit(account_id)
+
+
+@app.get(
+    "/api/commands/accounts/{account_id}/partial-fill-owner-repair-implementation-plan",
+    response_model=CommandPartialFillOwnerRepairImplementationPlan,
+    response_model_exclude_none=True,
+)
+def command_partial_fill_owner_repair_implementation_plan(
+    account_id: str,
+) -> CommandPartialFillOwnerRepairImplementationPlan:
+    return load_partial_fill_owner_repair_implementation_plan(account_id)
 
 
 @app.get("/api/accounts/{account_id}", response_model=AccountDetail)

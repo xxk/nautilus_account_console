@@ -429,6 +429,24 @@ class CommandRuntimeExecutionGapAudit(BaseModel):
     explicit_non_claims: list[str]
 
 
+class CommandPartialFillOwnerRepairImplementationPlan(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    schema_: Literal["account-console.p024.partial-fill-owner-repair-implementation-plan.v1"] = Field(alias="schema")
+    proposal_id: Literal["p024-account-console-paper-command-controls"]
+    account_id: Literal["acct.ctp.paper.19053"]
+    reviewed_at: str
+    status: Literal["phase4r_owner_close_offset_repair_implementation_plan_ready"]
+    verdict: Literal["owner_repair_plan_ready_no_owner_write_attempted"]
+    depends_on: dict
+    owner_read_context: dict
+    planned_owner_changes_after_exact_approval: list[dict]
+    post_repair_validator_sequence: list[dict]
+    post_repair_runtime_attempt_gate: dict
+    forbidden_repair_shapes: list[str]
+    negative_assertions: dict
+
+
 class Health(BaseModel):
     ok: bool
     service: str

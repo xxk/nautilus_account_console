@@ -382,6 +382,36 @@ def test_runtime_execution_gap_audit_projects_final_acceptance_blocker() -> None
     }
 
 
+def test_partial_fill_owner_repair_plan_projects_no_retry_gate() -> None:
+    client = TestClient(app)
+    response = client.get(
+        "/api/commands/accounts/acct.ctp.paper.19053/partial-fill-owner-repair-implementation-plan"
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["schema"] == "account-console.p024.partial-fill-owner-repair-implementation-plan.v1"
+    assert payload["status"] == "phase4r_owner_close_offset_repair_implementation_plan_ready"
+    assert payload["verdict"] == "owner_repair_plan_ready_no_owner_write_attempted"
+    assert payload["owner_read_context"]["owner_repo_write_attempted"] is False
+    assert len(payload["planned_owner_changes_after_exact_approval"]) == 3
+    assert [item["change_id"] for item in payload["planned_owner_changes_after_exact_approval"]] == [
+        "owner_rule_generalize_close_offset_submit_observed",
+        "owner_rule_wording_include_close_yesterday",
+        "focused_close_yesterday_test",
+    ]
+    assert {item["stage"] for item in payload["post_repair_validator_sequence"]} == {
+        "owner_unit_focus",
+        "owner_integration_regression",
+        "account_console_repair_plan_gate",
+        "account_console_design_gate",
+    }
+    assert payload["post_repair_runtime_attempt_gate"]["runtime_attempt_allowed_by_this_plan"] is False
+    assert payload["negative_assertions"]["owner_repo_write_attempted_by_this_plan"] is False
+    assert payload["negative_assertions"]["runtime_retry_authorized"] is False
+    assert payload["negative_assertions"]["partial_fill_claimed"] is False
+
+
 def test_command_api_rejects_live_mode_and_account_mismatch() -> None:
     client = TestClient(app)
     live = deepcopy(submit_intent())

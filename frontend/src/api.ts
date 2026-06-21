@@ -1,6 +1,7 @@
 import type {
   AccountSnapshot,
   CancelIntentRequest,
+  CommandPartialFillOwnerRepairImplementationPlan,
   CommandPartialFillRuntimeExecutionApprovalPacket,
   CommandPartialFillRuntimeExecutionHandoffBundle,
   CommandApiResult,
@@ -227,6 +228,18 @@ export async function fetchCommandRuntimeExecutionGapAudit(accountId: string): P
   );
   if (!response.ok) {
     throw new Error(`runtime execution gap audit failed: ${response.status}`);
+  }
+  return response.json();
+}
+
+export async function fetchCommandPartialFillOwnerRepairImplementationPlan(
+  accountId: string
+): Promise<CommandPartialFillOwnerRepairImplementationPlan> {
+  const response = await fetch(
+    `${API_BASE}/api/commands/accounts/${encodeURIComponent(accountId)}/partial-fill-owner-repair-implementation-plan`
+  );
+  if (!response.ok) {
+    throw new Error(`partial-fill owner repair implementation plan failed: ${response.status}`);
   }
   return response.json();
 }

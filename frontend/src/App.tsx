@@ -89,6 +89,7 @@ import type {
   AccountKind,
   CancelIntentRequest,
   CommandApiResult,
+  CommandPartialFillOwnerRepairImplementationPlan,
   CommandPartialFillRuntimeExecutionApprovalPacket,
   CommandPartialFillRuntimeExecutionHandoffBundle,
   CommandRuntimeCloseout,
@@ -127,6 +128,7 @@ import type {
 } from "./types";
 import {
   cancelPaperOrderIntent,
+  fetchCommandPartialFillOwnerRepairImplementationPlan,
   fetchCommandPartialFillRuntimeExecutionApprovalPacket,
   fetchCommandPartialFillRuntimeExecutionHandoffBundle,
   fetchCommandRuntimeExecutionApprovalPacket,
@@ -1512,6 +1514,9 @@ function AccountWorkbenchTerminalPanel({
   const [runtimeExecutionGapAudit, setRuntimeExecutionGapAudit] =
     useState<CommandRuntimeExecutionGapAudit | null>(null);
   const [runtimeExecutionGapAuditError, setRuntimeExecutionGapAuditError] = useState<string | null>(null);
+  const [partialFillOwnerRepairPlan, setPartialFillOwnerRepairPlan] =
+    useState<CommandPartialFillOwnerRepairImplementationPlan | null>(null);
+  const [partialFillOwnerRepairPlanError, setPartialFillOwnerRepairPlanError] = useState<string | null>(null);
   const [runtimeCloseout, setRuntimeCloseout] = useState<CommandRuntimeCloseout | null>(null);
   const [runtimeCloseoutError, setRuntimeCloseoutError] = useState<string | null>(null);
   const paperArmed = isP024PaperArmed(mirrorReadback);
@@ -1608,6 +1613,8 @@ function AccountWorkbenchTerminalPanel({
       setPartialFillHandoffBundleError(null);
       setRuntimeExecutionGapAudit(null);
       setRuntimeExecutionGapAuditError(null);
+      setPartialFillOwnerRepairPlan(null);
+      setPartialFillOwnerRepairPlanError(null);
       return;
     }
     let active = true;
@@ -1619,7 +1626,8 @@ function AccountWorkbenchTerminalPanel({
         handoffBundleResult,
         partialFillApprovalResult,
         partialFillHandoffResult,
-        gapAuditResult
+        gapAuditResult,
+        ownerRepairPlanResult
       ] =
         await Promise.allSettled([
           fetchCommandRuntimeCloseout(summary.account.account_id),
@@ -1628,7 +1636,8 @@ function AccountWorkbenchTerminalPanel({
           fetchCommandRuntimeExecutionHandoffBundle(summary.account.account_id),
           fetchCommandPartialFillRuntimeExecutionApprovalPacket(summary.account.account_id),
           fetchCommandPartialFillRuntimeExecutionHandoffBundle(summary.account.account_id),
-          fetchCommandRuntimeExecutionGapAudit(summary.account.account_id)
+          fetchCommandRuntimeExecutionGapAudit(summary.account.account_id),
+          fetchCommandPartialFillOwnerRepairImplementationPlan(summary.account.account_id)
         ]);
       if (!active) {
         return;
@@ -1705,6 +1714,17 @@ function AccountWorkbenchTerminalPanel({
             : "runtime execution gap audit unavailable";
         setRuntimeExecutionGapAudit(null);
         setRuntimeExecutionGapAuditError(message);
+      }
+      if (ownerRepairPlanResult.status === "fulfilled") {
+        setPartialFillOwnerRepairPlan(ownerRepairPlanResult.value);
+        setPartialFillOwnerRepairPlanError(null);
+      } else {
+        const message =
+          ownerRepairPlanResult.reason instanceof Error
+            ? ownerRepairPlanResult.reason.message
+            : "partial-fill owner repair plan unavailable";
+        setPartialFillOwnerRepairPlan(null);
+        setPartialFillOwnerRepairPlanError(message);
       }
     }
     void loadRuntimeEvidence();
@@ -2564,6 +2584,11 @@ function AccountWorkbenchTerminalPanel({
           <CommandRuntimeExecutionGapAuditPanel
             audit={runtimeExecutionGapAudit}
             error={runtimeExecutionGapAuditError}
+          />
+
+          <CommandPartialFillOwnerRepairImplementationPlanPanel
+            error={partialFillOwnerRepairPlanError}
+            plan={partialFillOwnerRepairPlan}
           />
 
           <CommandRuntimeCloseoutPanel closeout={runtimeCloseout} error={runtimeCloseoutError} />
@@ -5238,6 +5263,123 @@ function CommandRuntimeExecutionGapAuditPanel({
         </div>
       ) : (
         <p className="muted">No runtime execution gap audit is mounted for this account.</p>
+      )}
+    </section>
+  );
+}
+
+function CommandPartialFillOwnerRepairImplementationPlanPanel({
+  plan,
+  error
+}: {
+  plan: CommandPartialFillOwnerRepairImplementationPlan | null;
+  error: string | null;
+}) {
+  return (
+    <section className="terminal-panel" data-testid="account-partial-fill-owner-repair-plan-panel">
+      <div className="terminal-panel-header">
+        <h3>Owner Repair Plan</h3>
+        <StateBadge value={plan ? "blocked" : error ? "blocked" : "empty"} />
+      </div>
+      {plan ? (
+        <div className="evidence-stack compact-evidence-stack">
+          <div className="evidence-item">
+            <strong>Status</strong>
+            <span data-testid="account-partial-fill-owner-repair-plan-status">{plan.status}</span>
+          </div>
+          <div className="evidence-item">
+            <strong>Verdict</strong>
+            <span data-testid="account-partial-fill-owner-repair-plan-verdict">{plan.verdict}</span>
+          </div>
+          <div className="evidence-item">
+            <strong>Owner path</strong>
+            <span data-testid="account-partial-fill-owner-repair-plan-owner-path">
+              {plan.owner_read_context.owner_repo_path}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Owner write</strong>
+            <span data-testid="account-partial-fill-owner-repair-plan-owner-write">
+              {String(plan.owner_read_context.owner_repo_write_attempted)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Runtime retry</strong>
+            <span data-testid="account-partial-fill-owner-repair-plan-runtime-retry">
+              {String(plan.post_repair_runtime_attempt_gate.runtime_attempt_allowed_by_this_plan)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Fresh approval</strong>
+            <span data-testid="account-partial-fill-owner-repair-plan-fresh-approval">
+              {String(plan.post_repair_runtime_attempt_gate.fresh_approval_required)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Success formula</strong>
+            <span data-testid="account-partial-fill-owner-repair-plan-success-formula">
+              {plan.post_repair_runtime_attempt_gate.success_formula}
+            </span>
+          </div>
+          {plan.owner_read_context.source_refs.map((source) => (
+            <div
+              className="evidence-item"
+              data-testid="account-partial-fill-owner-repair-plan-source"
+              key={source.source_id}
+            >
+              <strong>{source.symbol}</strong>
+              <span>{source.observed_current_behavior}</span>
+            </div>
+          ))}
+          {plan.planned_owner_changes_after_exact_approval.map((change) => (
+            <div
+              className="evidence-item"
+              data-testid="account-partial-fill-owner-repair-plan-change"
+              key={change.change_id}
+            >
+              <strong>{change.change_id}</strong>
+              <span>{change.implementation_shape}</span>
+            </div>
+          ))}
+          {plan.post_repair_validator_sequence.map((validator) => (
+            <div
+              className="evidence-item"
+              data-testid="account-partial-fill-owner-repair-plan-validator"
+              key={validator.stage}
+            >
+              <strong>{validator.stage}</strong>
+              <span>{validator.command}</span>
+            </div>
+          ))}
+          {plan.forbidden_repair_shapes.map((shape) => (
+            <div
+              className="evidence-item"
+              data-testid="account-partial-fill-owner-repair-plan-forbidden"
+              key={shape}
+            >
+              <strong>Forbidden</strong>
+              <span>{shape}</span>
+            </div>
+          ))}
+          <div className="evidence-item">
+            <strong>Partial fill claimed</strong>
+            <span data-testid="account-partial-fill-owner-repair-plan-partial-claimed">
+              {String(plan.negative_assertions.partial_fill_claimed)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Full acceptance claimed</strong>
+            <span data-testid="account-partial-fill-owner-repair-plan-full-claimed">
+              {String(plan.negative_assertions.full_acceptance_claimed)}
+            </span>
+          </div>
+        </div>
+      ) : error ? (
+        <div className="state-callout blocked" data-testid="account-partial-fill-owner-repair-plan-error">
+          {error}
+        </div>
+      ) : (
+        <p className="muted">No partial-fill owner repair plan is mounted for this account.</p>
       )}
     </section>
   );

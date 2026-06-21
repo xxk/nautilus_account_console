@@ -653,6 +653,60 @@ export interface CommandRuntimeExecutionGapAudit {
   explicit_non_claims: string[];
 }
 
+export interface CommandPartialFillOwnerRepairImplementationPlan {
+  schema: "account-console.p024.partial-fill-owner-repair-implementation-plan.v1";
+  proposal_id: "p024-account-console-paper-command-controls";
+  account_id: "acct.ctp.paper.19053";
+  reviewed_at: string;
+  status: "phase4r_owner_close_offset_repair_implementation_plan_ready";
+  verdict: "owner_repair_plan_ready_no_owner_write_attempted";
+  depends_on: Record<string, unknown>;
+  owner_read_context: {
+    owner_repo_ref: string;
+    owner_repo_path: string;
+    owner_repo_write_attempted: false;
+    source_refs: Array<{
+      source_id: string;
+      ref: string;
+      symbol: string;
+      observed_current_behavior: string;
+    }>;
+  };
+  planned_owner_changes_after_exact_approval: Array<{
+    change_id: string;
+    target_ref: string;
+    target_symbol: string;
+    implementation_shape: string;
+    must_preserve?: string[];
+    must_assert?: string[];
+  }>;
+  post_repair_validator_sequence: Array<{
+    stage: string;
+    command: string;
+    required_before_retry: boolean;
+  }>;
+  post_repair_runtime_attempt_gate: {
+    runtime_attempt_allowed_by_this_plan: false;
+    fresh_approval_required: true;
+    maximum_additional_attempts_after_repair: number;
+    risk_shape: string;
+    success_formula: string;
+    terminal_cancel_formula: string;
+  };
+  forbidden_repair_shapes: string[];
+  negative_assertions: {
+    owner_repo_write_attempted_by_this_plan: false;
+    owner_runtime_invocation_attempted: false;
+    owner_repair_claimed_complete: false;
+    runtime_retry_authorized: false;
+    partial_fill_claimed: false;
+    full_acceptance_claimed: false;
+    raw_secret_values_recorded: false;
+    raw_broker_endpoint_recorded: false;
+    config_raw_content_recorded: false;
+  };
+}
+
 export type AccountHealthPanelFixtureState =
   | "happy_path"
   | "empty"

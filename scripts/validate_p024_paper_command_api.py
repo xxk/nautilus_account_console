@@ -27,6 +27,7 @@ ALLOWED_COMMAND_ROUTES = {
     "/api/commands/accounts/{account_id}/partial-fill-runtime-execution-approval-packet": {"GET"},
     "/api/commands/accounts/{account_id}/partial-fill-runtime-execution-handoff-bundle": {"GET"},
     "/api/commands/accounts/{account_id}/runtime-execution-gap-audit": {"GET"},
+    "/api/commands/accounts/{account_id}/partial-fill-owner-repair-implementation-plan": {"GET"},
 }
 
 
@@ -320,6 +321,35 @@ def validate_api_behavior() -> None:
         "runtime execution gap invocation flag mismatch",
     )
 
+    repair_plan_response = client.get(
+        f"/api/commands/accounts/{ACCOUNT_ID}/partial-fill-owner-repair-implementation-plan"
+    )
+    require(
+        repair_plan_response.status_code == 200,
+        f"partial-fill owner repair plan status mismatch: {repair_plan_response.status_code}",
+    )
+    repair_plan_payload = repair_plan_response.json()
+    require(
+        repair_plan_payload["schema"] == "account-console.p024.partial-fill-owner-repair-implementation-plan.v1",
+        "partial-fill owner repair plan schema mismatch",
+    )
+    require(
+        repair_plan_payload["status"] == "phase4r_owner_close_offset_repair_implementation_plan_ready",
+        "partial-fill owner repair plan status mismatch",
+    )
+    require(
+        repair_plan_payload["owner_read_context"]["owner_repo_write_attempted"] is False,
+        "partial-fill owner repair plan write flag mismatch",
+    )
+    require(
+        repair_plan_payload["post_repair_runtime_attempt_gate"]["runtime_attempt_allowed_by_this_plan"] is False,
+        "partial-fill owner repair plan retry flag mismatch",
+    )
+    require(
+        repair_plan_payload["negative_assertions"]["partial_fill_claimed"] is False,
+        "partial-fill owner repair plan claim mismatch",
+    )
+
     live_intent = submit_intent()
     live_intent["mode"] = "live_armed"
     live_response = client.post(f"/api/commands/accounts/{ACCOUNT_ID}/submit-intents", json=live_intent)
@@ -334,7 +364,7 @@ def main() -> None:
     validate_api_behavior()
     print(
         "P024_PAPER_COMMAND_API_OK: "
-        "phase=1 routes=11 status=accepted_for_risk runtime_handoff=blocked runtime_closeout=reconciled runtime_readiness=blocked runtime_approval_packet=ready runtime_handoff_bundle=ready partial_fill_runtime_approval_packet=ready partial_fill_runtime_handoff_bundle=ready runtime_execution_gap=blocked mirror_read_only=true"
+        "phase=1 routes=12 status=accepted_for_risk runtime_handoff=blocked runtime_closeout=reconciled runtime_readiness=blocked runtime_approval_packet=ready runtime_handoff_bundle=ready partial_fill_runtime_approval_packet=ready partial_fill_runtime_handoff_bundle=ready runtime_execution_gap=blocked owner_repair_plan=ready mirror_read_only=true"
     )
 
 

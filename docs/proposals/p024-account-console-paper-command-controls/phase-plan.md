@@ -1,7 +1,7 @@
 # P024 Phase Plan / Account Console Paper Command Controls
 
 - Proposal ID: `p024-account-console-paper-command-controls`
-- Status: phase4r_owner_close_offset_repair_implementation_plan_ready
+- Status: phase4s_owner_repair_plan_ui_projection_passed
 - Primary ADR: ADR-0007
 
 ## Artifact Trust Boundary
@@ -40,7 +40,7 @@ Primary ADR: ADR-0007
 <!-- AI-PHASE-STATUS-BEGIN
 reviewed_at: 2026-06-21
 reviewer: codex
-overall_status: phase4r_owner_close_offset_repair_implementation_plan_ready
+overall_status: phase4s_owner_repair_plan_ui_projection_passed
 phases:
   - id: phase_0_design_gate
     status: completed
@@ -134,6 +134,10 @@ phases:
     status: owner_repair_plan_ready_no_owner_write
     ai_progress: 100
     evidence: "python scripts\\validate_p024_partial_fill_owner_repair_implementation_plan.py"
+  - id: phase_4s_owner_repair_plan_ui_projection
+    status: completed_browser_owner_repair_plan_projection_gate
+    ai_progress: 100
+    evidence: "npx playwright test tests/e2e/p024-partial-fill-owner-repair-plan.spec.ts --project=desktop; python scripts\\validate_p024_partial_fill_owner_repair_plan_browser_evidence.py"
 AI-PHASE-STATUS-END -->
 
 ## Phase Status Board
@@ -167,6 +171,7 @@ AI-PHASE-STATUS-END -->
 | Phase 4p Owner close-offset repair approval packet | Classify the current runtime-script approval as insufficient for the new repair-first next action and freeze exact repair approval text | repair_approval_packet_ready_runtime_retry_not_authorized | `python scripts\validate_p024_partial_fill_owner_repair_approval_packet.py` | Obtain exact owner repair approval before editing owner repo or running another paper partial-fill attempt |
 | Phase 4q Remaining acceptance current state audit | Enumerate the concrete missing evidence before full acceptance can be claimed | remaining_acceptance_current_state_audited | `python scripts\validate_p024_partial_fill_remaining_acceptance_current_state.py` | Repair owner close-offset semantics under exact approval, then produce real partial-fill runtime and Web UI projection evidence |
 | Phase 4r Owner close-offset repair implementation plan | Plan the exact owner guarded-loop predicate, wording and focused test changes for CLOSEYESTERDAY offset 4 while no owner write is attempted | owner_repair_plan_ready_no_owner_write | `python scripts\validate_p024_partial_fill_owner_repair_implementation_plan.py` | After exact owner repair approval, implement the planned owner patch and run owner validators before any runtime retry |
+| Phase 4s Owner repair plan UI projection | Render the phase4r plan in Web UI with owner path, CLOSEYESTERDAY source gap, planned changes, validators and no-write/no-retry flags | completed_browser_owner_repair_plan_projection_gate | `npx playwright test tests/e2e/p024-partial-fill-owner-repair-plan.spec.ts --project=desktop`; `python scripts\validate_p024_partial_fill_owner_repair_plan_browser_evidence.py` | Obtain exact owner repair approval before implementing the planned owner patch |
 
 ## Runtime / Command Freeze
 
@@ -200,6 +205,8 @@ Phase 0 does not run broker mutation. Phase 1 may add API contracts but must not
 24. Phase 4p owner close-offset repair approval packet is ready; `P024_PARTIAL_FILL_OWNER_REPAIR_APPROVAL_PACKET_OK` proves the current runtime-script approval does not authorize owner code repair or another retry before repair evidence exists.
 25. Phase 4q remaining acceptance current state audit is complete; `P024_PARTIAL_FILL_REMAINING_ACCEPTANCE_CURRENT_STATE_OK` proves full acceptance still requires owner repair approval, owner repair evidence, owner validators, real partial-fill runtime artifacts and Web UI projection of those real refs.
 26. Phase 4r owner close-offset repair implementation plan is ready; `P024_PARTIAL_FILL_OWNER_REPAIR_IMPLEMENTATION_PLAN_OK` proves the owner patch target is `build_close_offset_owner_rule_semantics`, the missing focused case is CLOSEYESTERDAY offset 4 versus rejected OnRspOrderInsert offset 1, and no owner write or runtime retry is authorized by the plan.
+27. Phase 4s owner repair plan UI projection is complete; `P024_PARTIAL_FILL_OWNER_REPAIR_PLAN_BROWSER_EVIDENCE_OK` proves the plan renders in Web UI while owner write, runtime retry, partial-fill claim and full acceptance claim remain false.
+
 
 
 
