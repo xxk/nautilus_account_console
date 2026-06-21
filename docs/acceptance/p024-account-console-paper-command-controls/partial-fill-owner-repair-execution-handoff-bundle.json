@@ -1,0 +1,100 @@
+{
+  "schema": "account-console.p024.partial-fill-owner-repair-execution-handoff-bundle.v1",
+  "proposal_id": "p024-account-console-paper-command-controls",
+  "account_id": "acct.ctp.paper.19053",
+  "reviewed_at": "2026-06-21T22:25:00+08:00",
+  "status": "phase4z_owner_repair_execution_handoff_bundle_ready",
+  "verdict": "handoff_bundle_ready_owner_write_not_invoked",
+  "depends_on": {
+    "patch_preview_ref": "docs/acceptance/p024-account-console-paper-command-controls/partial-fill-owner-repair-patch-preview.json",
+    "patch_preview_status": "phase4x_owner_repair_patch_preview_ready",
+    "patch_preview_ui_ref": "docs/acceptance/browser-evidence/p024-account-console-paper-command-controls/partial-fill-owner-repair-patch-preview-ui.json",
+    "patch_preview_ui_verdict": "pass",
+    "ingest_gate_ref": "docs/acceptance/p024-account-console-paper-command-controls/partial-fill-owner-repair-evidence-ingest-gate.json",
+    "ingest_gate_status": "phase4t_owner_repair_evidence_ingest_gate_ready"
+  },
+  "execution_guard": {
+    "execution_allowed": false,
+    "owner_repo_write_allowed_by_this_bundle": false,
+    "owner_runtime_invocation_allowed_by_this_bundle": false,
+    "runtime_retry_authorized_by_this_bundle": false,
+    "requires_exact_owner_repair_approval": true,
+    "required_exact_approval_text": "I approve writes to D:/Nautilus/nautilus_ctp_adapter to repair owner close-offset semantics for P024 and, only after validators pass and account-console approval packets are updated, run at most one additional guarded OpenCTP paper partial-fill attempt in the 19053 simulation account; expected impact: create owner-owned code/runtime/debug/readback/reconciliation artifacts outside this worktree and may submit/cancel up to one small exposure-reduction paper order."
+  },
+  "owner_repo_context": {
+    "owner_repo_ref": "owner-repo://nautilus_ctp_adapter",
+    "owner_repo_path": "D:/Nautilus/nautilus_ctp_adapter",
+    "baseline_head_ref": "6a50b023814b440dbb6d660e4a2e97dba6f44a24",
+    "patch_preview_ref": "docs/acceptance/p024-account-console-paper-command-controls/partial-fill-owner-repair-patch-preview.json"
+  },
+  "operator_sequence_after_exact_approval": [
+    {
+      "step": "confirm_owner_repo_clean_or_preserve_untracked_runtime_artifacts",
+      "required_output_shape": "git status summary separating owner source changes from existing output/account_command artifacts",
+      "execution_allowed_before_approval": false
+    },
+    {
+      "step": "apply_patch_preview",
+      "required_output_shape": "owner source diff matching patch ids generalize_close_offset_submit_observed, expand_owner_rule_wording and add_close_yesterday_focused_test",
+      "execution_allowed_before_approval": false
+    },
+    {
+      "step": "run_owner_focus_validator",
+      "command": "python -m pytest tests/test_guarded_paper_order_loop.py -q",
+      "required_output_shape": "exit_code=0 plus stdout artifact/checksum",
+      "execution_allowed_before_approval": false
+    },
+    {
+      "step": "run_owner_integration_validator",
+      "command": "python -m pytest tests/test_nautilus_integration.py -q",
+      "required_output_shape": "exit_code=0 plus stdout artifact/checksum",
+      "execution_allowed_before_approval": false
+    },
+    {
+      "step": "record_owner_repair_commit_and_checksums",
+      "required_output_shape": "owner commit/ref, guarded order loop checksum, focused test checksum and raw_secret_values_recorded=false",
+      "execution_allowed_before_approval": false
+    },
+    {
+      "step": "ingest_owner_repair_evidence_to_account_console",
+      "required_output_shape": "account-console artifact updates matching required_owner_repair_evidence in partial-fill-owner-repair-evidence-ingest-gate.json",
+      "execution_allowed_before_approval": false
+    },
+    {
+      "step": "prepare_post_repair_runtime_retry_packet",
+      "required_output_shape": "fresh runtime approval packet with at most one exposure-reduction paper attempt and runtime_retry_authorized=false until packet passes",
+      "execution_allowed_before_approval": false
+    }
+  ],
+  "required_post_handoff_artifacts": [
+    "owner_repair_commit_ref",
+    "guarded_order_loop_source_checksum",
+    "focused_owner_tests_checksum",
+    "owner_focus_validator_result",
+    "owner_integration_validator_result",
+    "account_console_ingest_audit",
+    "post_repair_runtime_retry_approval_packet"
+  ],
+  "success_criteria_before_runtime_retry": [
+    "owner patch applied only after exact approval",
+    "CLOSEYESTERDAY expected submit offset 4 remains distinct from rejected OnRspOrderInsert callback offset 1",
+    "owner focus validator exits 0",
+    "owner integration validator exits 0",
+    "account-console repair evidence ingest audit records commit/checksum/validator refs without raw secrets",
+    "fresh runtime retry approval packet passes before any OpenCTP paper attempt"
+  ],
+  "negative_assertions": {
+    "execution_allowed": false,
+    "owner_repo_write_attempted": false,
+    "owner_patch_applied": false,
+    "owner_validator_run_claimed": false,
+    "owner_runtime_invocation_attempted": false,
+    "runtime_retry_authorized": false,
+    "real_partial_fill_claimed": false,
+    "web_ui_real_partial_fill_claimed": false,
+    "full_acceptance_claimed": false,
+    "raw_secret_values_recorded": false,
+    "raw_broker_endpoint_recorded": false,
+    "config_raw_content_recorded": false
+  }
+}
