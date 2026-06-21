@@ -15,6 +15,7 @@ from .command_api import (
     load_partial_fill_owner_repair_evidence_ingest_gate,
     load_partial_fill_owner_repair_preflight_source_audit,
     load_partial_fill_owner_repair_patch_preview,
+    load_partial_fill_owner_repair_execution_handoff_bundle,
     load_partial_fill_runtime_execution_approval_packet,
     load_partial_fill_runtime_execution_handoff_bundle,
     load_runtime_execution_approval_packet,
@@ -41,6 +42,7 @@ from .schemas import (
     CommandPartialFillOwnerRepairImplementationPlan,
     CommandPartialFillOwnerRepairPreflightSourceAudit,
     CommandPartialFillOwnerRepairPatchPreview,
+    CommandPartialFillOwnerRepairExecutionHandoffBundle,
     CommandPartialFillRuntimeExecutionApprovalPacket,
     CommandPartialFillRuntimeExecutionHandoffBundle,
     CommandRuntimeCloseout,
@@ -369,6 +371,17 @@ def command_partial_fill_owner_repair_patch_preview(
     account_id: str,
 ) -> CommandPartialFillOwnerRepairPatchPreview:
     return load_partial_fill_owner_repair_patch_preview(account_id)
+
+
+@app.get(
+    "/api/commands/accounts/{account_id}/partial-fill-owner-repair-execution-handoff-bundle",
+    response_model=CommandPartialFillOwnerRepairExecutionHandoffBundle,
+    response_model_exclude_none=True,
+)
+def command_partial_fill_owner_repair_execution_handoff_bundle(
+    account_id: str,
+) -> CommandPartialFillOwnerRepairExecutionHandoffBundle:
+    return load_partial_fill_owner_repair_execution_handoff_bundle(account_id)
 
 
 @app.get("/api/accounts/{account_id}", response_model=AccountDetail)

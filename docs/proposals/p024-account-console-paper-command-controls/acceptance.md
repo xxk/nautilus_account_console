@@ -1,7 +1,7 @@
 # P024 Acceptance / Account Console Paper Command Controls
 
 - Proposal ID: `p024-account-console-paper-command-controls`
-- Status: phase4z_owner_repair_execution_handoff_bundle_ready
+- Status: phase4za_owner_repair_execution_handoff_ui_projection_passed
 - Primary ADR: ADR-0007
 
 ## Scope
@@ -48,6 +48,7 @@ Out of scope: live trading, replace order, Account Mirror write authority, direc
 | P024 partial-fill owner repair patch preview | `python scripts\validate_p024_partial_fill_owner_repair_patch_preview.py` | `P024_PARTIAL_FILL_OWNER_REPAIR_PATCH_PREVIEW_OK` | `partial-fill-owner-repair-patch-preview.json` freezes the owner source/test patch shape while owner write, runtime retry and full acceptance remain false |
 | P024 partial-fill owner repair patch preview UI projection | `npx playwright test tests/e2e/p024-partial-fill-owner-repair-patch-preview.spec.ts --project=desktop` then `python scripts\validate_p024_partial_fill_owner_repair_patch_preview_browser_evidence.py` | `P024_PARTIAL_FILL_OWNER_REPAIR_PATCH_PREVIEW_BROWSER_EVIDENCE_OK` | `partial-fill-owner-repair-patch-preview-ui.json` proves Web UI renders the patch preview and keeps owner write, patch applied, runtime retry and full acceptance false |
 | P024 partial-fill owner repair execution handoff bundle | `python scripts\validate_p024_partial_fill_owner_repair_execution_handoff_bundle.py` | `P024_PARTIAL_FILL_OWNER_REPAIR_EXECUTION_HANDOFF_BUNDLE_OK` | `partial-fill-owner-repair-execution-handoff-bundle.json` freezes the post-approval operator sequence, validators, ingest artifacts and retry packet requirement while execution remains false |
+| P024 partial-fill owner repair execution handoff UI projection | `npx playwright test tests/e2e/p024-partial-fill-owner-repair-execution-handoff.spec.ts --project=desktop` then `python scripts\validate_p024_partial_fill_owner_repair_execution_handoff_browser_evidence.py` | `P024_PARTIAL_FILL_OWNER_REPAIR_EXECUTION_HANDOFF_BROWSER_EVIDENCE_OK` | `partial-fill-owner-repair-execution-handoff-ui.json` proves Web UI renders the handoff sequence and keeps execution, owner write, runtime retry and full acceptance false |
 | P023 runtime predecessor | `python scripts\validate_p023_openctp19053_command_run.py --run-dir output\account_command\ctp-paper-19053\p023-armed-20260621t0748z --source-package output\account_capability\ctp-paper-19053\source-package.json` | `P023_OPENCTP19053_COMMAND_RUN_OK` | Predecessor paper command evidence |
 | Proposal docs | `python scripts\check_proposal_docs.py --root . --proposal-id p024-account-console-paper-command-controls` | `PROPOSAL_DOCS_OK` | Proposal structure |
 
@@ -96,6 +97,7 @@ The close-offset semantic gap audit is
 | A28 | blocker | Owner repair patch preview freezes exact CLOSEYESTERDAY repair shape before owner write | patch preview validator + current owner baseline checksum | patch preview applies owner code, omits CLOSEYESTERDAY offset 4 focused assertions, authorizes retry, or claims validators/full acceptance | phase4x_owner_repair_patch_preview_ready |
 | A29 | blocker | Owner repair patch preview is visible from Web UI without write/retry claims | Playwright + API route audit + browser evidence JSON | UI hides baseline files, patch steps or validators, or claims owner write/patch applied/runtime retry/full acceptance | phase4y_owner_repair_patch_preview_ui_projection_passed |
 | A30 | blocker | Owner repair execution handoff bundle freezes post-approval sequence without execution claims | handoff bundle validator | sequence omits patch application, owner validators, evidence ingest or fresh retry approval packet, or claims execution/owner write/runtime retry/full acceptance | phase4z_owner_repair_execution_handoff_bundle_ready |
+| A31 | blocker | Owner repair execution handoff is visible from Web UI without execution claims | Playwright + API route audit + browser evidence JSON | UI hides operator sequence or artifacts, or claims execution/owner write/runtime retry/full acceptance | phase4za_owner_repair_execution_handoff_ui_projection_passed |
 
 ## Phase 4e Runtime Execution Gap Audit
 

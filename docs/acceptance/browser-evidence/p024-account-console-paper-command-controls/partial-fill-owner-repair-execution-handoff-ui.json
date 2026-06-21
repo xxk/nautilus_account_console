@@ -1,0 +1,37 @@
+{
+  "schema": "account-console.p024.partial-fill-owner-repair-execution-handoff-ui.v1",
+  "proposal_id": "p024-account-console-paper-command-controls",
+  "account_id": "acct.ctp.paper.19053",
+  "route": "/accounts/acct.ctp.paper.19053",
+  "verdict": "pass",
+  "api_owner_repair_execution_handoff": {
+    "schema": "account-console.p024.partial-fill-owner-repair-execution-handoff-bundle.v1",
+    "status": "phase4z_owner_repair_execution_handoff_bundle_ready",
+    "verdict": "handoff_bundle_ready_owner_write_not_invoked",
+    "step_count": 7,
+    "artifact_count": 7,
+    "execution_allowed": false,
+    "owner_repo_write_allowed": false,
+    "runtime_retry_authorized": false,
+    "exact_approval_required": true,
+    "owner_patch_applied": false,
+    "full_acceptance_claimed": false
+  },
+  "browser_checks": {
+    "handoff_panel_visible": true,
+    "steps_displayed": true,
+    "artifacts_displayed": true,
+    "execution_displayed_false": true,
+    "owner_write_displayed_false": true,
+    "runtime_retry_displayed_false": true,
+    "exact_approval_displayed_true": true,
+    "patch_applied_displayed_false": true,
+    "full_acceptance_claimed_displayed_false": true,
+    "sensitive_endpoint_wording_absent": true
+  },
+  "browser_evidence": [
+    {
+      "screenshot": "docs/acceptance/browser-evidence/p024-account-console-paper-command-controls/p024-partial-fill-owner-repair-execution-handoff-ui.png"
+    }
+  ]
+}

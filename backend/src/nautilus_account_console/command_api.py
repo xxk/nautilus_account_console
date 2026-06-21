@@ -16,6 +16,7 @@ from .schemas import (
     CommandPartialFillOwnerRepairEvidenceIngestGate,
     CommandPartialFillOwnerRepairPreflightSourceAudit,
     CommandPartialFillOwnerRepairPatchPreview,
+    CommandPartialFillOwnerRepairExecutionHandoffBundle,
     CommandRuntimeExecutionApprovalPacket,
     CommandRuntimeExecutionGapAudit,
     CommandRuntimeExecutionHandoffBundle,
@@ -100,6 +101,13 @@ PARTIAL_FILL_OWNER_REPAIR_PATCH_PREVIEW = (
     / "acceptance"
     / "p024-account-console-paper-command-controls"
     / "partial-fill-owner-repair-patch-preview.json"
+)
+PARTIAL_FILL_OWNER_REPAIR_EXECUTION_HANDOFF_BUNDLE = (
+    ROOT
+    / "docs"
+    / "acceptance"
+    / "p024-account-console-paper-command-controls"
+    / "partial-fill-owner-repair-execution-handoff-bundle.json"
 )
 DEFAULT_RUNTIME_RUN_ID = "p023-armed-20260621t0748z"
 REQUIRED_RUNTIME_FILES = [
@@ -761,6 +769,53 @@ def load_partial_fill_owner_repair_patch_preview(
         if negative.get(key) is not False:
             raise HTTPException(status_code=409, detail=f"partial-fill owner repair patch preview negative assertion failed: {key}")
     return CommandPartialFillOwnerRepairPatchPreview(**payload)
+
+
+def load_partial_fill_owner_repair_execution_handoff_bundle(
+    account_id: str,
+) -> CommandPartialFillOwnerRepairExecutionHandoffBundle:
+    if account_id != PAPER_ACCOUNT_ID:
+        raise HTTPException(status_code=403, detail="P024 owner repair execution handoff is scoped to acct.ctp.paper.19053 only")
+    if not PARTIAL_FILL_OWNER_REPAIR_EXECUTION_HANDOFF_BUNDLE.exists():
+        raise HTTPException(status_code=404, detail="partial-fill owner repair execution handoff bundle not found")
+    text = PARTIAL_FILL_OWNER_REPAIR_EXECUTION_HANDOFF_BUNDLE.read_text(encoding="utf-8")
+    if any(fragment.lower() in text.lower() for fragment in SENSITIVE_RUNTIME_FRAGMENTS):
+        raise HTTPException(status_code=409, detail="partial-fill owner repair execution handoff contains forbidden sensitive fragments")
+    payload = json.loads(text)
+    if payload.get("account_id") != PAPER_ACCOUNT_ID:
+        raise HTTPException(status_code=409, detail="partial-fill owner repair execution handoff account_id mismatch")
+    guard = payload.get("execution_guard") or {}
+    for key in [
+        "execution_allowed",
+        "owner_repo_write_allowed_by_this_bundle",
+        "owner_runtime_invocation_allowed_by_this_bundle",
+        "runtime_retry_authorized_by_this_bundle",
+    ]:
+        if guard.get(key) is not False:
+            raise HTTPException(status_code=409, detail=f"partial-fill owner repair execution handoff guard failed: {key}")
+    if guard.get("requires_exact_owner_repair_approval") is not True:
+        raise HTTPException(status_code=409, detail="partial-fill owner repair execution handoff missing approval requirement")
+    steps = payload.get("operator_sequence_after_exact_approval") or []
+    if len(steps) != 7 or any(item.get("execution_allowed_before_approval") is not False for item in steps):
+        raise HTTPException(status_code=409, detail="partial-fill owner repair execution handoff sequence drifted")
+    negative = payload.get("negative_assertions") or {}
+    for key in [
+        "execution_allowed",
+        "owner_repo_write_attempted",
+        "owner_patch_applied",
+        "owner_validator_run_claimed",
+        "owner_runtime_invocation_attempted",
+        "runtime_retry_authorized",
+        "real_partial_fill_claimed",
+        "web_ui_real_partial_fill_claimed",
+        "full_acceptance_claimed",
+        "raw_secret_values_recorded",
+        "raw_broker_endpoint_recorded",
+        "config_raw_content_recorded",
+    ]:
+        if negative.get(key) is not False:
+            raise HTTPException(status_code=409, detail=f"partial-fill owner repair execution handoff negative assertion failed: {key}")
+    return CommandPartialFillOwnerRepairExecutionHandoffBundle(**payload)
 
 
 def accept_submit_intent(account_id: str, intent: OrderIntentRequest) -> CommandApiResult:

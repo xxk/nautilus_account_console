@@ -498,6 +498,24 @@ class CommandPartialFillOwnerRepairPatchPreview(BaseModel):
     negative_assertions: dict
 
 
+class CommandPartialFillOwnerRepairExecutionHandoffBundle(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    schema_: Literal["account-console.p024.partial-fill-owner-repair-execution-handoff-bundle.v1"] = Field(alias="schema")
+    proposal_id: Literal["p024-account-console-paper-command-controls"]
+    account_id: Literal["acct.ctp.paper.19053"]
+    reviewed_at: str
+    status: Literal["phase4z_owner_repair_execution_handoff_bundle_ready"]
+    verdict: Literal["handoff_bundle_ready_owner_write_not_invoked"]
+    depends_on: dict
+    execution_guard: dict
+    owner_repo_context: dict
+    operator_sequence_after_exact_approval: list[dict]
+    required_post_handoff_artifacts: list[str]
+    success_criteria_before_runtime_retry: list[str]
+    negative_assertions: dict
+
+
 class Health(BaseModel):
     ok: bool
     service: str

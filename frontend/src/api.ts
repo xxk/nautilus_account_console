@@ -2,6 +2,7 @@ import type {
   AccountSnapshot,
   CancelIntentRequest,
   CommandPartialFillOwnerRepairEvidenceIngestGate,
+  CommandPartialFillOwnerRepairExecutionHandoffBundle,
   CommandPartialFillOwnerRepairImplementationPlan,
   CommandPartialFillOwnerRepairPatchPreview,
   CommandPartialFillOwnerRepairPreflightSourceAudit,
@@ -279,6 +280,18 @@ export async function fetchCommandPartialFillOwnerRepairPatchPreview(
   );
   if (!response.ok) {
     throw new Error(`partial-fill owner repair patch preview failed: ${response.status}`);
+  }
+  return response.json();
+}
+
+export async function fetchCommandPartialFillOwnerRepairExecutionHandoffBundle(
+  accountId: string
+): Promise<CommandPartialFillOwnerRepairExecutionHandoffBundle> {
+  const response = await fetch(
+    `${API_BASE}/api/commands/accounts/${encodeURIComponent(accountId)}/partial-fill-owner-repair-execution-handoff-bundle`
+  );
+  if (!response.ok) {
+    throw new Error(`partial-fill owner repair execution handoff bundle failed: ${response.status}`);
   }
   return response.json();
 }

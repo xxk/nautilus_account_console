@@ -31,6 +31,7 @@ ALLOWED_COMMAND_ROUTES = {
     "/api/commands/accounts/{account_id}/partial-fill-owner-repair-evidence-ingest-gate": {"GET"},
     "/api/commands/accounts/{account_id}/partial-fill-owner-repair-preflight-source-audit": {"GET"},
     "/api/commands/accounts/{account_id}/partial-fill-owner-repair-patch-preview": {"GET"},
+    "/api/commands/accounts/{account_id}/partial-fill-owner-repair-execution-handoff-bundle": {"GET"},
 }
 
 
@@ -448,6 +449,35 @@ def validate_api_behavior() -> None:
         "partial-fill owner repair patch preview applied flag mismatch",
     )
 
+    repair_handoff_response = client.get(
+        f"/api/commands/accounts/{ACCOUNT_ID}/partial-fill-owner-repair-execution-handoff-bundle"
+    )
+    require(
+        repair_handoff_response.status_code == 200,
+        f"partial-fill owner repair execution handoff status mismatch: {repair_handoff_response.status_code}",
+    )
+    repair_handoff_payload = repair_handoff_response.json()
+    require(
+        repair_handoff_payload["schema"] == "account-console.p024.partial-fill-owner-repair-execution-handoff-bundle.v1",
+        "partial-fill owner repair execution handoff schema mismatch",
+    )
+    require(
+        repair_handoff_payload["status"] == "phase4z_owner_repair_execution_handoff_bundle_ready",
+        "partial-fill owner repair execution handoff status mismatch",
+    )
+    require(
+        repair_handoff_payload["execution_guard"]["execution_allowed"] is False,
+        "partial-fill owner repair execution handoff execution flag mismatch",
+    )
+    require(
+        repair_handoff_payload["execution_guard"]["owner_repo_write_allowed_by_this_bundle"] is False,
+        "partial-fill owner repair execution handoff owner write flag mismatch",
+    )
+    require(
+        repair_handoff_payload["execution_guard"]["runtime_retry_authorized_by_this_bundle"] is False,
+        "partial-fill owner repair execution handoff retry flag mismatch",
+    )
+
     live_intent = submit_intent()
     live_intent["mode"] = "live_armed"
     live_response = client.post(f"/api/commands/accounts/{ACCOUNT_ID}/submit-intents", json=live_intent)
@@ -462,7 +492,7 @@ def main() -> None:
     validate_api_behavior()
     print(
         "P024_PAPER_COMMAND_API_OK: "
-        "phase=1 routes=15 status=accepted_for_risk runtime_handoff=blocked runtime_closeout=reconciled runtime_readiness=blocked runtime_approval_packet=ready runtime_handoff_bundle=ready partial_fill_runtime_approval_packet=ready partial_fill_runtime_handoff_bundle=ready runtime_execution_gap=blocked owner_repair_plan=ready owner_repair_ingest_gate=ready owner_repair_preflight=blind_retry_rejected owner_repair_patch_preview=ready mirror_read_only=true"
+        "phase=1 routes=16 status=accepted_for_risk runtime_handoff=blocked runtime_closeout=reconciled runtime_readiness=blocked runtime_approval_packet=ready runtime_handoff_bundle=ready partial_fill_runtime_approval_packet=ready partial_fill_runtime_handoff_bundle=ready runtime_execution_gap=blocked owner_repair_plan=ready owner_repair_ingest_gate=ready owner_repair_preflight=blind_retry_rejected owner_repair_patch_preview=ready owner_repair_execution_handoff=ready mirror_read_only=true"
     )
 
 

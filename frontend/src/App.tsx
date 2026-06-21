@@ -90,6 +90,7 @@ import type {
   CancelIntentRequest,
   CommandApiResult,
   CommandPartialFillOwnerRepairEvidenceIngestGate,
+  CommandPartialFillOwnerRepairExecutionHandoffBundle,
   CommandPartialFillOwnerRepairImplementationPlan,
   CommandPartialFillOwnerRepairPatchPreview,
   CommandPartialFillOwnerRepairPreflightSourceAudit,
@@ -132,6 +133,7 @@ import type {
 import {
   cancelPaperOrderIntent,
   fetchCommandPartialFillOwnerRepairEvidenceIngestGate,
+  fetchCommandPartialFillOwnerRepairExecutionHandoffBundle,
   fetchCommandPartialFillOwnerRepairImplementationPlan,
   fetchCommandPartialFillOwnerRepairPatchPreview,
   fetchCommandPartialFillOwnerRepairPreflightSourceAudit,
@@ -1535,6 +1537,10 @@ function AccountWorkbenchTerminalPanel({
     useState<CommandPartialFillOwnerRepairPatchPreview | null>(null);
   const [partialFillOwnerRepairPatchPreviewError, setPartialFillOwnerRepairPatchPreviewError] =
     useState<string | null>(null);
+  const [partialFillOwnerRepairExecutionHandoff, setPartialFillOwnerRepairExecutionHandoff] =
+    useState<CommandPartialFillOwnerRepairExecutionHandoffBundle | null>(null);
+  const [partialFillOwnerRepairExecutionHandoffError, setPartialFillOwnerRepairExecutionHandoffError] =
+    useState<string | null>(null);
   const [runtimeCloseout, setRuntimeCloseout] = useState<CommandRuntimeCloseout | null>(null);
   const [runtimeCloseoutError, setRuntimeCloseoutError] = useState<string | null>(null);
   const paperArmed = isP024PaperArmed(mirrorReadback);
@@ -1639,6 +1645,8 @@ function AccountWorkbenchTerminalPanel({
       setPartialFillOwnerRepairPreflightError(null);
       setPartialFillOwnerRepairPatchPreview(null);
       setPartialFillOwnerRepairPatchPreviewError(null);
+      setPartialFillOwnerRepairExecutionHandoff(null);
+      setPartialFillOwnerRepairExecutionHandoffError(null);
       return;
     }
     let active = true;
@@ -1654,7 +1662,8 @@ function AccountWorkbenchTerminalPanel({
         ownerRepairPlanResult,
         ownerRepairIngestGateResult,
         ownerRepairPreflightResult,
-        ownerRepairPatchPreviewResult
+        ownerRepairPatchPreviewResult,
+        ownerRepairExecutionHandoffResult
       ] =
         await Promise.allSettled([
           fetchCommandRuntimeCloseout(summary.account.account_id),
@@ -1667,7 +1676,8 @@ function AccountWorkbenchTerminalPanel({
           fetchCommandPartialFillOwnerRepairImplementationPlan(summary.account.account_id),
           fetchCommandPartialFillOwnerRepairEvidenceIngestGate(summary.account.account_id),
           fetchCommandPartialFillOwnerRepairPreflightSourceAudit(summary.account.account_id),
-          fetchCommandPartialFillOwnerRepairPatchPreview(summary.account.account_id)
+          fetchCommandPartialFillOwnerRepairPatchPreview(summary.account.account_id),
+          fetchCommandPartialFillOwnerRepairExecutionHandoffBundle(summary.account.account_id)
         ]);
       if (!active) {
         return;
@@ -1788,6 +1798,17 @@ function AccountWorkbenchTerminalPanel({
             : "partial-fill owner repair patch preview unavailable";
         setPartialFillOwnerRepairPatchPreview(null);
         setPartialFillOwnerRepairPatchPreviewError(message);
+      }
+      if (ownerRepairExecutionHandoffResult.status === "fulfilled") {
+        setPartialFillOwnerRepairExecutionHandoff(ownerRepairExecutionHandoffResult.value);
+        setPartialFillOwnerRepairExecutionHandoffError(null);
+      } else {
+        const message =
+          ownerRepairExecutionHandoffResult.reason instanceof Error
+            ? ownerRepairExecutionHandoffResult.reason.message
+            : "partial-fill owner repair execution handoff unavailable";
+        setPartialFillOwnerRepairExecutionHandoff(null);
+        setPartialFillOwnerRepairExecutionHandoffError(message);
       }
     }
     void loadRuntimeEvidence();
@@ -2667,6 +2688,11 @@ function AccountWorkbenchTerminalPanel({
           <CommandPartialFillOwnerRepairPatchPreviewPanel
             error={partialFillOwnerRepairPatchPreviewError}
             preview={partialFillOwnerRepairPatchPreview}
+          />
+
+          <CommandPartialFillOwnerRepairExecutionHandoffPanel
+            bundle={partialFillOwnerRepairExecutionHandoff}
+            error={partialFillOwnerRepairExecutionHandoffError}
           />
 
           <CommandRuntimeCloseoutPanel closeout={runtimeCloseout} error={runtimeCloseoutError} />
@@ -5751,6 +5777,103 @@ function CommandPartialFillOwnerRepairPatchPreviewPanel({
         </div>
       ) : (
         <p className="muted">No partial-fill owner repair patch preview is mounted for this account.</p>
+      )}
+    </section>
+  );
+}
+
+function CommandPartialFillOwnerRepairExecutionHandoffPanel({
+  bundle,
+  error
+}: {
+  bundle: CommandPartialFillOwnerRepairExecutionHandoffBundle | null;
+  error: string | null;
+}) {
+  return (
+    <section className="terminal-panel" data-testid="account-partial-fill-owner-repair-execution-handoff-panel">
+      <div className="terminal-panel-header">
+        <h3>Repair Execution Handoff</h3>
+        <StateBadge value={bundle ? "blocked" : error ? "blocked" : "empty"} />
+      </div>
+      {bundle ? (
+        <div className="evidence-stack compact-evidence-stack">
+          <div className="evidence-item">
+            <strong>Status</strong>
+            <span data-testid="account-partial-fill-owner-repair-execution-handoff-status">{bundle.status}</span>
+          </div>
+          <div className="evidence-item">
+            <strong>Verdict</strong>
+            <span data-testid="account-partial-fill-owner-repair-execution-handoff-verdict">{bundle.verdict}</span>
+          </div>
+          <div className="evidence-item">
+            <strong>Owner path</strong>
+            <span data-testid="account-partial-fill-owner-repair-execution-handoff-owner-path">
+              {bundle.owner_repo_context.owner_repo_path}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Execution</strong>
+            <span data-testid="account-partial-fill-owner-repair-execution-handoff-execution">
+              {String(bundle.execution_guard.execution_allowed)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Owner write</strong>
+            <span data-testid="account-partial-fill-owner-repair-execution-handoff-owner-write">
+              {String(bundle.execution_guard.owner_repo_write_allowed_by_this_bundle)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Runtime retry</strong>
+            <span data-testid="account-partial-fill-owner-repair-execution-handoff-runtime-retry">
+              {String(bundle.execution_guard.runtime_retry_authorized_by_this_bundle)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Exact approval</strong>
+            <span data-testid="account-partial-fill-owner-repair-execution-handoff-approval">
+              {String(bundle.execution_guard.requires_exact_owner_repair_approval)}
+            </span>
+          </div>
+          {bundle.operator_sequence_after_exact_approval.map((item) => (
+            <div
+              className="evidence-item"
+              data-testid="account-partial-fill-owner-repair-execution-handoff-step"
+              key={item.step}
+            >
+              <strong>{item.step}</strong>
+              <span>{item.command ?? item.required_output_shape}</span>
+            </div>
+          ))}
+          {bundle.required_post_handoff_artifacts.map((item) => (
+            <div
+              className="evidence-item"
+              data-testid="account-partial-fill-owner-repair-execution-handoff-artifact"
+              key={item}
+            >
+              <strong>Artifact</strong>
+              <span>{item}</span>
+            </div>
+          ))}
+          <div className="evidence-item">
+            <strong>Patch applied</strong>
+            <span data-testid="account-partial-fill-owner-repair-execution-handoff-patch-applied">
+              {String(bundle.negative_assertions.owner_patch_applied)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Full acceptance</strong>
+            <span data-testid="account-partial-fill-owner-repair-execution-handoff-full-claimed">
+              {String(bundle.negative_assertions.full_acceptance_claimed)}
+            </span>
+          </div>
+        </div>
+      ) : error ? (
+        <div className="state-callout blocked" data-testid="account-partial-fill-owner-repair-execution-handoff-error">
+          {error}
+        </div>
+      ) : (
+        <p className="muted">No partial-fill owner repair execution handoff is mounted for this account.</p>
       )}
     </section>
   );

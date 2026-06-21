@@ -847,6 +847,52 @@ export interface CommandPartialFillOwnerRepairPatchPreview {
   };
 }
 
+export interface CommandPartialFillOwnerRepairExecutionHandoffBundle {
+  schema: "account-console.p024.partial-fill-owner-repair-execution-handoff-bundle.v1";
+  proposal_id: "p024-account-console-paper-command-controls";
+  account_id: "acct.ctp.paper.19053";
+  reviewed_at: string;
+  status: "phase4z_owner_repair_execution_handoff_bundle_ready";
+  verdict: "handoff_bundle_ready_owner_write_not_invoked";
+  depends_on: Record<string, unknown>;
+  execution_guard: {
+    execution_allowed: false;
+    owner_repo_write_allowed_by_this_bundle: false;
+    owner_runtime_invocation_allowed_by_this_bundle: false;
+    runtime_retry_authorized_by_this_bundle: false;
+    requires_exact_owner_repair_approval: true;
+    required_exact_approval_text: string;
+  };
+  owner_repo_context: {
+    owner_repo_ref: string;
+    owner_repo_path: string;
+    baseline_head_ref: string;
+    patch_preview_ref: string;
+  };
+  operator_sequence_after_exact_approval: Array<{
+    step: string;
+    command?: string;
+    required_output_shape: string;
+    execution_allowed_before_approval: false;
+  }>;
+  required_post_handoff_artifacts: string[];
+  success_criteria_before_runtime_retry: string[];
+  negative_assertions: {
+    execution_allowed: false;
+    owner_repo_write_attempted: false;
+    owner_patch_applied: false;
+    owner_validator_run_claimed: false;
+    owner_runtime_invocation_attempted: false;
+    runtime_retry_authorized: false;
+    real_partial_fill_claimed: false;
+    web_ui_real_partial_fill_claimed: false;
+    full_acceptance_claimed: false;
+    raw_secret_values_recorded: false;
+    raw_broker_endpoint_recorded: false;
+    config_raw_content_recorded: false;
+  };
+}
+
 export type AccountHealthPanelFixtureState =
   | "happy_path"
   | "empty"

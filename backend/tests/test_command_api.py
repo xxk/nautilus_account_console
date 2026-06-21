@@ -476,6 +476,27 @@ def test_partial_fill_owner_repair_patch_preview_projects_no_write_no_retry() ->
     assert payload["negative_assertions"]["full_acceptance_claimed"] is False
 
 
+def test_partial_fill_owner_repair_execution_handoff_projects_no_execution() -> None:
+    client = TestClient(app)
+    response = client.get(
+        "/api/commands/accounts/acct.ctp.paper.19053/partial-fill-owner-repair-execution-handoff-bundle"
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["schema"] == "account-console.p024.partial-fill-owner-repair-execution-handoff-bundle.v1"
+    assert payload["status"] == "phase4z_owner_repair_execution_handoff_bundle_ready"
+    assert payload["verdict"] == "handoff_bundle_ready_owner_write_not_invoked"
+    assert payload["execution_guard"]["execution_allowed"] is False
+    assert payload["execution_guard"]["owner_repo_write_allowed_by_this_bundle"] is False
+    assert payload["execution_guard"]["runtime_retry_authorized_by_this_bundle"] is False
+    assert payload["execution_guard"]["requires_exact_owner_repair_approval"] is True
+    assert len(payload["operator_sequence_after_exact_approval"]) == 7
+    assert len(payload["required_post_handoff_artifacts"]) == 7
+    assert payload["negative_assertions"]["owner_patch_applied"] is False
+    assert payload["negative_assertions"]["full_acceptance_claimed"] is False
+
+
 def test_command_api_rejects_live_mode_and_account_mismatch() -> None:
     client = TestClient(app)
     live = deepcopy(submit_intent())

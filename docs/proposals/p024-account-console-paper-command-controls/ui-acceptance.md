@@ -1,7 +1,7 @@
 # P024 UI Acceptance / Paper Command Controls
 
 - Proposal ID: `p024-account-console-paper-command-controls`
-- Status: phase4z_owner_repair_execution_handoff_bundle_ready
+- Status: phase4za_owner_repair_execution_handoff_ui_projection_passed
 
 ## Browser Acceptance
 
