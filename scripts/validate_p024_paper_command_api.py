@@ -24,6 +24,8 @@ ALLOWED_COMMAND_ROUTES = {
     "/api/commands/accounts/{account_id}/runtime-invocation-readiness": {"GET"},
     "/api/commands/accounts/{account_id}/runtime-execution-approval-packet": {"GET"},
     "/api/commands/accounts/{account_id}/runtime-execution-handoff-bundle": {"GET"},
+    "/api/commands/accounts/{account_id}/partial-fill-runtime-execution-approval-packet": {"GET"},
+    "/api/commands/accounts/{account_id}/partial-fill-runtime-execution-handoff-bundle": {"GET"},
     "/api/commands/accounts/{account_id}/runtime-execution-gap-audit": {"GET"},
 }
 
@@ -240,6 +242,65 @@ def validate_api_behavior() -> None:
         "runtime handoff broker order flag mismatch",
     )
 
+    partial_approval_response = client.get(
+        f"/api/commands/accounts/{ACCOUNT_ID}/partial-fill-runtime-execution-approval-packet"
+    )
+    require(
+        partial_approval_response.status_code == 200,
+        f"partial-fill runtime approval packet status mismatch: {partial_approval_response.status_code}",
+    )
+    partial_approval_payload = partial_approval_response.json()
+    require(
+        partial_approval_payload["schema"]
+        == "account-console.p024.partial-fill-runtime-execution-approval-packet.v1",
+        "partial-fill runtime approval packet schema mismatch",
+    )
+    require(
+        partial_approval_payload["status"] == "phase4j_partial_fill_runtime_execution_approval_packet_ready",
+        "partial-fill runtime approval packet status mismatch",
+    )
+    require(
+        partial_approval_payload["required_operator_approval"]["obtained"] is False,
+        "partial-fill runtime approval obtained mismatch",
+    )
+    require(
+        partial_approval_payload["negative_assertions"]["new_order_submitted"] is False,
+        "partial-fill runtime approval new order flag mismatch",
+    )
+    require(
+        partial_approval_payload["negative_assertions"]["cancel_sent"] is False,
+        "partial-fill runtime approval cancel flag mismatch",
+    )
+
+    partial_bundle_response = client.get(
+        f"/api/commands/accounts/{ACCOUNT_ID}/partial-fill-runtime-execution-handoff-bundle"
+    )
+    require(
+        partial_bundle_response.status_code == 200,
+        f"partial-fill runtime handoff bundle status mismatch: {partial_bundle_response.status_code}",
+    )
+    partial_bundle_payload = partial_bundle_response.json()
+    require(
+        partial_bundle_payload["schema"] == "account-console.p024.partial-fill-runtime-execution-handoff-bundle.v1",
+        "partial-fill runtime handoff bundle schema mismatch",
+    )
+    require(
+        partial_bundle_payload["status"] == "phase4k_partial_fill_runtime_execution_handoff_bundle_ready",
+        "partial-fill runtime handoff bundle status mismatch",
+    )
+    require(
+        partial_bundle_payload["execution_guard"]["execution_allowed"] is False,
+        "partial-fill runtime handoff execution allowed mismatch",
+    )
+    require(
+        partial_bundle_payload["negative_assertions"]["new_order_submitted"] is False,
+        "partial-fill runtime handoff new order flag mismatch",
+    )
+    require(
+        partial_bundle_payload["negative_assertions"]["cancel_sent"] is False,
+        "partial-fill runtime handoff cancel flag mismatch",
+    )
+
     gap_response = client.get(f"/api/commands/accounts/{ACCOUNT_ID}/runtime-execution-gap-audit")
     require(gap_response.status_code == 200, f"runtime execution gap audit status mismatch: {gap_response.status_code}")
     gap_payload = gap_response.json()
@@ -273,7 +334,7 @@ def main() -> None:
     validate_api_behavior()
     print(
         "P024_PAPER_COMMAND_API_OK: "
-        "phase=1 routes=9 status=accepted_for_risk runtime_handoff=blocked runtime_closeout=reconciled runtime_readiness=blocked runtime_approval_packet=ready runtime_handoff_bundle=ready runtime_execution_gap=blocked mirror_read_only=true"
+        "phase=1 routes=11 status=accepted_for_risk runtime_handoff=blocked runtime_closeout=reconciled runtime_readiness=blocked runtime_approval_packet=ready runtime_handoff_bundle=ready partial_fill_runtime_approval_packet=ready partial_fill_runtime_handoff_bundle=ready runtime_execution_gap=blocked mirror_read_only=true"
     )
 
 

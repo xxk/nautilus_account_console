@@ -1,6 +1,8 @@
 import type {
   AccountSnapshot,
   CancelIntentRequest,
+  CommandPartialFillRuntimeExecutionApprovalPacket,
+  CommandPartialFillRuntimeExecutionHandoffBundle,
   CommandApiResult,
   CommandRuntimeCloseout,
   CommandRuntimeExecutionApprovalPacket,
@@ -191,6 +193,30 @@ export async function fetchCommandRuntimeExecutionHandoffBundle(
   );
   if (!response.ok) {
     throw new Error(`runtime execution handoff bundle failed: ${response.status}`);
+  }
+  return response.json();
+}
+
+export async function fetchCommandPartialFillRuntimeExecutionApprovalPacket(
+  accountId: string
+): Promise<CommandPartialFillRuntimeExecutionApprovalPacket> {
+  const response = await fetch(
+    `${API_BASE}/api/commands/accounts/${encodeURIComponent(accountId)}/partial-fill-runtime-execution-approval-packet`
+  );
+  if (!response.ok) {
+    throw new Error(`partial-fill runtime execution approval packet failed: ${response.status}`);
+  }
+  return response.json();
+}
+
+export async function fetchCommandPartialFillRuntimeExecutionHandoffBundle(
+  accountId: string
+): Promise<CommandPartialFillRuntimeExecutionHandoffBundle> {
+  const response = await fetch(
+    `${API_BASE}/api/commands/accounts/${encodeURIComponent(accountId)}/partial-fill-runtime-execution-handoff-bundle`
+  );
+  if (!response.ok) {
+    throw new Error(`partial-fill runtime execution handoff bundle failed: ${response.status}`);
   }
   return response.json();
 }

@@ -486,6 +486,123 @@ export interface CommandRuntimeExecutionHandoffBundle {
   explicit_non_claims: string[];
 }
 
+export interface CommandPartialFillRuntimeExecutionApprovalPacket {
+  schema: "account-console.p024.partial-fill-runtime-execution-approval-packet.v1";
+  proposal_id: "p024-account-console-paper-command-controls";
+  account_id: "acct.ctp.paper.19053";
+  reviewed_at: string;
+  status: "phase4j_partial_fill_runtime_execution_approval_packet_ready";
+  verdict: "approval_packet_ready_runtime_not_invoked";
+  owner_runtime: Record<string, unknown>;
+  required_operator_approval: {
+    required: true;
+    obtained: false;
+    approval_path: string;
+    reason: string;
+    expected_impact: string[];
+    exact_approval_text: string;
+    approval_prompt_required_before_execution: true;
+  };
+  planned_execution: {
+    runtime_invocation_attempted: false;
+    owner_repo_write_attempted: false;
+    new_order_submitted: false;
+    cancel_sent: false;
+    [key: string]: unknown;
+  };
+  entrypoints: Array<{
+    action: "submit" | "cancel";
+    entrypoint_ref: string;
+    owner_path: string;
+    checksum: string;
+    armed_flag: string;
+  }>;
+  attempt_constraints: {
+    risk_shape: string;
+    preferred_instrument: string;
+    maximum_submit_attempts: number;
+    maximum_order_quantity: number;
+    partial_fill_success_formula: string;
+    terminal_cancel_success_formula: string;
+    post_cancel_remaining_quantity_formula: string;
+    fallback_if_no_partial_fill: string;
+    [key: string]: unknown;
+  };
+  command_templates: Array<Record<string, unknown>>;
+  required_post_run_artifacts: string[];
+  post_run_acceptance_gates: string[];
+  blockers: CommandApiBlocker[];
+  negative_assertions: {
+    approval_obtained: false;
+    runtime_invocation_attempted: false;
+    owner_repo_write_attempted: false;
+    new_order_submitted: false;
+    cancel_sent: false;
+    browser_triggered_broker_order: false;
+    gateway_send_attempted: false;
+    broker_order_created: false;
+    live_armed: false;
+    account_mirror_write_authority: false;
+    raw_secret_values_recorded: false;
+    raw_broker_endpoint_recorded: false;
+    config_raw_content_read: false;
+    full_acceptance_claimed: false;
+    browser_fixture_promoted_to_runtime_truth: false;
+  };
+  explicit_non_claims: string[];
+}
+
+export interface CommandPartialFillRuntimeExecutionHandoffBundle {
+  schema: "account-console.p024.partial-fill-runtime-execution-handoff-bundle.v1";
+  proposal_id: "p024-account-console-paper-command-controls";
+  account_id: "acct.ctp.paper.19053";
+  reviewed_at: string;
+  status: "phase4k_partial_fill_runtime_execution_handoff_bundle_ready";
+  verdict: "handoff_bundle_ready_runtime_not_invoked";
+  depends_on: Record<string, unknown>;
+  execution_guard: {
+    execution_allowed: false;
+    approval_required: true;
+    approval_obtained: false;
+    exact_approval_text_required: string;
+    owner_repo_path: string;
+    raw_secret_values_recorded: false;
+    raw_broker_endpoint_recorded: false;
+    config_raw_content_read: false;
+  };
+  runtime_input_requirements: Array<{
+    field: string;
+    required: boolean;
+    allowed_values?: number[];
+    reason: string;
+  }>;
+  operator_sequence: Array<{
+    step: string;
+    action: string;
+    entrypoint_ref?: string;
+    armed_flag?: string;
+    must_pass_before_next: boolean;
+  }>;
+  success_criteria: {
+    non_ui_runtime: string[];
+    web_ui_runtime: string[];
+  };
+  fallback_classifications: string[];
+  negative_assertions: {
+    execution_allowed: false;
+    approval_obtained: false;
+    runtime_invocation_attempted: false;
+    owner_repo_write_attempted: false;
+    new_order_submitted: false;
+    cancel_sent: false;
+    full_acceptance_claimed: false;
+    browser_fixture_promoted_to_runtime_truth: false;
+    raw_secret_values_recorded: false;
+    raw_broker_endpoint_recorded: false;
+    config_raw_content_read: false;
+  };
+}
+
 export interface CommandRuntimeExecutionGapAudit {
   schema: "account-console.p024.runtime-execution-gap-audit.v1";
   proposal_id: "p024-account-console-paper-command-controls";

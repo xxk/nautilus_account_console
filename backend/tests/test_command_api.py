@@ -297,6 +297,67 @@ def test_runtime_execution_handoff_bundle_projects_blocked_operator_sequence() -
     }
 
 
+def test_partial_fill_runtime_execution_approval_packet_projects_exact_operator_gate() -> None:
+    client = TestClient(app)
+    response = client.get(
+        "/api/commands/accounts/acct.ctp.paper.19053/partial-fill-runtime-execution-approval-packet"
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["schema"] == "account-console.p024.partial-fill-runtime-execution-approval-packet.v1"
+    assert payload["status"] == "phase4j_partial_fill_runtime_execution_approval_packet_ready"
+    assert payload["required_operator_approval"]["required"] is True
+    assert payload["required_operator_approval"]["obtained"] is False
+    assert "P024 partial-fill acceptance" in payload["required_operator_approval"]["exact_approval_text"]
+    assert payload["attempt_constraints"]["risk_shape"] == "exposure_reduction_only"
+    assert payload["attempt_constraints"]["maximum_submit_attempts"] == 1
+    assert payload["attempt_constraints"]["maximum_order_quantity"] == 3
+    assert payload["attempt_constraints"]["partial_fill_success_formula"] == "0 < filled_quantity < submitted_quantity"
+    assert payload["planned_execution"]["runtime_invocation_attempted"] is False
+    assert payload["planned_execution"]["owner_repo_write_attempted"] is False
+    assert payload["planned_execution"]["new_order_submitted"] is False
+    assert payload["planned_execution"]["cancel_sent"] is False
+    assert payload["negative_assertions"]["approval_obtained"] is False
+    assert payload["negative_assertions"]["new_order_submitted"] is False
+    assert payload["negative_assertions"]["browser_fixture_promoted_to_runtime_truth"] is False
+
+
+def test_partial_fill_runtime_execution_handoff_bundle_projects_blocked_sequence() -> None:
+    client = TestClient(app)
+    response = client.get(
+        "/api/commands/accounts/acct.ctp.paper.19053/partial-fill-runtime-execution-handoff-bundle"
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["schema"] == "account-console.p024.partial-fill-runtime-execution-handoff-bundle.v1"
+    assert payload["status"] == "phase4k_partial_fill_runtime_execution_handoff_bundle_ready"
+    assert payload["execution_guard"]["execution_allowed"] is False
+    assert payload["execution_guard"]["approval_required"] is True
+    assert payload["execution_guard"]["approval_obtained"] is False
+    assert "P024 partial-fill acceptance" in payload["execution_guard"]["exact_approval_text_required"]
+    inputs = {item["field"]: item for item in payload["runtime_input_requirements"]}
+    assert inputs["quantity"]["allowed_values"] == [2, 3]
+    assert [item["step"] for item in payload["operator_sequence"]][:3] == [
+        "pre_approval_gate",
+        "owner_pre_snapshot",
+        "submit_partial_fill_attempt",
+    ]
+    assert "0 < filled_quantity < submitted_quantity" in payload["success_criteria"]["non_ui_runtime"]
+    assert "cancel pending is not rendered as final" in payload["success_criteria"]["web_ui_runtime"]
+    assert set(payload["fallback_classifications"]) == {
+        "fully_filled_not_partial_fill_then_cancel",
+        "cancelled_without_fill_not_partial_fill",
+        "rejected_or_timeout_not_partial_fill",
+        "owner_runtime_artifact_incomplete",
+    }
+    assert payload["negative_assertions"]["execution_allowed"] is False
+    assert payload["negative_assertions"]["new_order_submitted"] is False
+    assert payload["negative_assertions"]["cancel_sent"] is False
+    assert payload["negative_assertions"]["full_acceptance_claimed"] is False
+
+
 def test_runtime_execution_gap_audit_projects_final_acceptance_blocker() -> None:
     client = TestClient(app)
     response = client.get("/api/commands/accounts/acct.ctp.paper.19053/runtime-execution-gap-audit")

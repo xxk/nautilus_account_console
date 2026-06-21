@@ -1,7 +1,7 @@
 # P024 Acceptance / Account Console Paper Command Controls
 
 - Proposal ID: `p024-account-console-paper-command-controls`
-- Status: phase4k_partial_fill_runtime_execution_handoff_bundle_ready
+- Status: phase4m_partial_fill_runtime_handoff_bundle_ui_projection_ready
 - Primary ADR: ADR-0007
 
 ## Scope
@@ -32,9 +32,16 @@ Out of scope: live trading, replace order, Account Mirror write authority, direc
 | P024 real partial-fill runtime feasibility | `python scripts\validate_p024_partial_fill_runtime_feasibility_audit.py` | `P024_PARTIAL_FILL_RUNTIME_FEASIBILITY_AUDIT_OK` | Documents the remaining real partial-fill blocker without submitting a new order or promoting UI fixture evidence to runtime truth |
 | P024 owner artifact partial-fill scan | `python scripts\validate_p024_partial_fill_owner_artifact_scan.py` | `P024_PARTIAL_FILL_OWNER_ARTIFACT_SCAN_OK` | Scans current account-console and owner runtime JSON artifacts and rejects near candidates that are cancelled-without-fill or fully filled |
 | P024 partial-fill runtime execution approval packet | `python scripts\validate_p024_partial_fill_runtime_execution_approval_packet.py` | `P024_PARTIAL_FILL_RUNTIME_EXECUTION_APPROVAL_PACKET_OK` | Freezes exact approval text and one-attempt exposure-reduction constraints while `approval_obtained=false` |
+| P024 partial-fill runtime approval packet UI projection | `npx playwright test tests/e2e/p024-partial-fill-runtime-execution-approval-packet.spec.ts --project=desktop` then `python scripts\validate_p024_partial_fill_runtime_approval_packet_browser_evidence.py` | `P024_PARTIAL_FILL_RUNTIME_APPROVAL_PACKET_BROWSER_EVIDENCE_OK` | Web UI renders exact partial-fill approval text, formulas, entrypoints and blockers while `new_order_submitted=false` and `cancel_sent=false` |
 | P024 partial-fill runtime execution handoff bundle | `python scripts\validate_p024_partial_fill_runtime_execution_handoff_bundle.py` | `P024_PARTIAL_FILL_RUNTIME_EXECUTION_HANDOFF_BUNDLE_OK` | Freezes post-approval runtime inputs, success formulas and fallback classifications while `execution_allowed=false` |
+| P024 partial-fill runtime handoff bundle UI projection | `npx playwright test tests/e2e/p024-partial-fill-runtime-execution-handoff-bundle.spec.ts --project=desktop` then `python scripts\validate_p024_partial_fill_runtime_handoff_bundle_browser_evidence.py` | `P024_PARTIAL_FILL_RUNTIME_HANDOFF_BUNDLE_BROWSER_EVIDENCE_OK` | Web UI renders partial-fill runtime inputs, owner sequence, success formulas and fallback classifications while `execution_allowed=false` |
 | P023 runtime predecessor | `python scripts\validate_p023_openctp19053_command_run.py --run-dir output\account_command\ctp-paper-19053\p023-armed-20260621t0748z --source-package output\account_capability\ctp-paper-19053\source-package.json` | `P023_OPENCTP19053_COMMAND_RUN_OK` | Predecessor paper command evidence |
 | Proposal docs | `python scripts\check_proposal_docs.py --root . --proposal-id p024-account-console-paper-command-controls` | `PROPOSAL_DOCS_OK` | Proposal structure |
+
+Browser evidence files for the new partial-fill runtime UI projections are
+`docs/acceptance/browser-evidence/p024-account-console-paper-command-controls/partial-fill-runtime-approval-packet-ui.json`
+and
+`docs/acceptance/browser-evidence/p024-account-console-paper-command-controls/partial-fill-runtime-handoff-bundle-ui.json`.
 
 ## Scenario Matrix
 
@@ -56,6 +63,8 @@ Out of scope: live trading, replace order, Account Mirror write authority, direc
 | A14 | positive | Runtime readiness blocker appears in Web UI without broker execution claims | Playwright + API route audit + browser evidence JSON | UI hides blocker, copies raw endpoint/secret data, or claims owner runtime was invoked | phase3e_runtime_readiness_ui_projection_passed |
 | A15 | positive | Runtime handoff bundle appears in Web UI without execution permission | Playwright + API route audit + browser evidence JSON | UI claims execution allowed, owner write or broker order creation | phase4d_runtime_handoff_bundle_ui_projection_passed |
 | A16 | blocker | Runtime execution gap is visible until owner-runtime artifacts exist | artifact validator + Playwright + API route audit + browser evidence JSON | UI or artifact claims full acceptance complete before A4 owner-runtime artifacts exist | phase4e_runtime_execution_gap_audit_passed |
+| A17 | positive | Partial-fill runtime approval packet appears in Web UI before any owner submit/cancel | Playwright + API route audit + browser evidence JSON | UI hides exact approval text/formulas or claims new order/cancel was sent | phase4l_partial_fill_runtime_approval_packet_ui_projection_passed |
+| A18 | positive | Partial-fill runtime handoff bundle appears in Web UI with success formulas and fallback classifications | Playwright + API route audit + browser evidence JSON | UI claims execution allowed, hides formulas, or promotes fixture evidence to runtime truth | phase4m_partial_fill_runtime_handoff_bundle_ui_projection_passed |
 
 ## Phase 4e Runtime Execution Gap Audit
 

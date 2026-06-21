@@ -1,0 +1,47 @@
+{
+  "schema": "account-console.p024.partial-fill-runtime-handoff-bundle-ui.v1",
+  "proposal_id": "p024-account-console-paper-command-controls",
+  "account_id": "acct.ctp.paper.19053",
+  "route": "/accounts/acct.ctp.paper.19053",
+  "verdict": "pass",
+  "api_handoff_bundle": {
+    "schema": "account-console.p024.partial-fill-runtime-execution-handoff-bundle.v1",
+    "status": "phase4k_partial_fill_runtime_execution_handoff_bundle_ready",
+    "verdict": "handoff_bundle_ready_runtime_not_invoked",
+    "execution_allowed": false,
+    "approval_required": true,
+    "approval_obtained": false,
+    "runtime_input_count": 4,
+    "operator_step_count": 7,
+    "non_ui_success_count": 5,
+    "web_ui_success_count": 4,
+    "fallback_count": 4,
+    "runtime_invocation_attempted": false,
+    "owner_repo_write_attempted": false,
+    "new_order_submitted": false,
+    "cancel_sent": false,
+    "full_acceptance_claimed": false,
+    "browser_fixture_promoted_to_runtime_truth": false,
+    "raw_secret_values_recorded": false,
+    "raw_broker_endpoint_recorded": false
+  },
+  "browser_checks": {
+    "handoff_bundle_panel_visible": true,
+    "execution_allowed_displayed_false": true,
+    "approval_obtained_displayed_false": true,
+    "runtime_invocation_displayed_false": true,
+    "owner_write_displayed_false": true,
+    "new_order_displayed_false": true,
+    "cancel_sent_displayed_false": true,
+    "runtime_inputs_displayed": true,
+    "operator_sequence_displayed": true,
+    "success_criteria_displayed": true,
+    "fallback_classifications_displayed": true,
+    "sensitive_endpoint_wording_absent": true
+  },
+  "browser_evidence": [
+    {
+      "screenshot": "docs/acceptance/browser-evidence/p024-account-console-paper-command-controls/p024-partial-fill-runtime-handoff-bundle-ui.png"
+    }
+  ]
+}

@@ -35,6 +35,8 @@ ALLOWED_COMMAND_ROUTES = {
     "/api/commands/accounts/{account_id}/runtime-invocation-readiness": {"GET"},
     "/api/commands/accounts/{account_id}/runtime-execution-approval-packet": {"GET"},
     "/api/commands/accounts/{account_id}/runtime-execution-handoff-bundle": {"GET"},
+    "/api/commands/accounts/{account_id}/partial-fill-runtime-execution-approval-packet": {"GET"},
+    "/api/commands/accounts/{account_id}/partial-fill-runtime-execution-handoff-bundle": {"GET"},
     "/api/commands/accounts/{account_id}/runtime-execution-gap-audit": {"GET"},
 }
 

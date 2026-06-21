@@ -367,6 +367,46 @@ class CommandRuntimeExecutionHandoffBundle(BaseModel):
     explicit_non_claims: list[str]
 
 
+class CommandPartialFillRuntimeExecutionApprovalPacket(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    schema_: Literal["account-console.p024.partial-fill-runtime-execution-approval-packet.v1"] = Field(alias="schema")
+    proposal_id: Literal["p024-account-console-paper-command-controls"]
+    account_id: Literal["acct.ctp.paper.19053"]
+    reviewed_at: str
+    status: Literal["phase4j_partial_fill_runtime_execution_approval_packet_ready"]
+    verdict: Literal["approval_packet_ready_runtime_not_invoked"]
+    owner_runtime: dict
+    required_operator_approval: dict
+    planned_execution: dict
+    entrypoints: list[dict]
+    attempt_constraints: dict
+    command_templates: list[dict]
+    required_post_run_artifacts: list[str]
+    post_run_acceptance_gates: list[str]
+    blockers: list[dict]
+    negative_assertions: dict
+    explicit_non_claims: list[str]
+
+
+class CommandPartialFillRuntimeExecutionHandoffBundle(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    schema_: Literal["account-console.p024.partial-fill-runtime-execution-handoff-bundle.v1"] = Field(alias="schema")
+    proposal_id: Literal["p024-account-console-paper-command-controls"]
+    account_id: Literal["acct.ctp.paper.19053"]
+    reviewed_at: str
+    status: Literal["phase4k_partial_fill_runtime_execution_handoff_bundle_ready"]
+    verdict: Literal["handoff_bundle_ready_runtime_not_invoked"]
+    depends_on: dict
+    execution_guard: dict
+    runtime_input_requirements: list[dict]
+    operator_sequence: list[dict]
+    success_criteria: dict
+    fallback_classifications: list[str]
+    negative_assertions: dict
+
+
 class CommandRuntimeExecutionGapAudit(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
 

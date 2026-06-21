@@ -1,7 +1,7 @@
 # P024 Phase Plan / Account Console Paper Command Controls
 
 - Proposal ID: `p024-account-console-paper-command-controls`
-- Status: phase4k_partial_fill_runtime_execution_handoff_bundle_ready
+- Status: phase4m_partial_fill_runtime_handoff_bundle_ui_projection_ready
 - Primary ADR: ADR-0007
 
 ## Artifact Trust Boundary
@@ -40,7 +40,7 @@ Primary ADR: ADR-0007
 <!-- AI-PHASE-STATUS-BEGIN
 reviewed_at: 2026-06-21
 reviewer: codex
-overall_status: phase4k_partial_fill_runtime_execution_handoff_bundle_ready
+overall_status: phase4m_partial_fill_runtime_handoff_bundle_ui_projection_ready
 phases:
   - id: phase_0_design_gate
     status: completed
@@ -148,6 +148,8 @@ AI-PHASE-STATUS-END -->
 | Phase 4i Owner artifact partial-fill scan | Scan current account-console and owner runtime artifacts for qualifying partial-fill then cancel evidence and record rejected near candidates | completed_no_qualifying_partial_fill_then_cancel_candidate | `python scripts\validate_p024_partial_fill_owner_artifact_scan.py` | Use fresh approval or external owner evidence to produce a qualifying partial-fill artifact set |
 | Phase 4j Partial-fill runtime execution approval packet | Freeze exact approval text, owner path, one-attempt risk constraints and required post-run artifacts for the next partial-fill attempt | approval_packet_ready_runtime_not_invoked | `python scripts\validate_p024_partial_fill_runtime_execution_approval_packet.py` | Wait for exact operator approval before owner runtime writes or order mutation |
 | Phase 4k Partial-fill runtime execution handoff bundle | Freeze post-approval runtime inputs, operator sequence, success formulas and fallback blocker classifications | handoff_bundle_ready_runtime_not_invoked | `python scripts\validate_p024_partial_fill_runtime_execution_handoff_bundle.py` | After approval, execute owner-owned guarded scripts or preserve typed blocker if partial fill is not produced |
+| Phase 4l Partial-fill runtime approval packet UI projection | Render exact partial-fill approval text, formulas, entrypoints, blockers and false new-order/cancel flags in Web UI | completed_browser_partial_fill_approval_projection_gate | `npx playwright test tests/e2e/p024-partial-fill-runtime-execution-approval-packet.spec.ts --project=desktop`; `python scripts\validate_p024_partial_fill_runtime_approval_packet_browser_evidence.py` | Keep owner runtime uninvoked until exact approval and runtime inputs are applied |
+| Phase 4m Partial-fill runtime handoff bundle UI projection | Render partial-fill runtime inputs, owner sequence, success formulas and fallback classifications in Web UI | completed_browser_partial_fill_handoff_projection_gate | `npx playwright test tests/e2e/p024-partial-fill-runtime-execution-handoff-bundle.spec.ts --project=desktop`; `python scripts\validate_p024_partial_fill_runtime_handoff_bundle_browser_evidence.py` | Execute owner-owned guarded scripts only after approval; preserve typed blocker if partial fill is not produced |
 
 ## Runtime / Command Freeze
 
@@ -174,3 +176,5 @@ Phase 0 does not run broker mutation. Phase 1 may add API contracts but must not
 17. Phase 4i owner artifact partial-fill scan is complete; `P024_PARTIAL_FILL_OWNER_ARTIFACT_SCAN_OK` proves current scanned artifacts contain zero qualifying partial-fill then cancel candidates and records why P023/P077 near candidates are insufficient.
 18. Phase 4j partial-fill runtime execution approval packet is ready; `P024_PARTIAL_FILL_RUNTIME_EXECUTION_APPROVAL_PACKET_OK` freezes exact approval text while no owner runtime invocation or new order has occurred.
 19. Phase 4k partial-fill runtime execution handoff bundle is ready; `P024_PARTIAL_FILL_RUNTIME_EXECUTION_HANDOFF_BUNDLE_OK` freezes runtime inputs and success formulas while execution remains disallowed.
+20. Phase 4l partial-fill runtime approval packet UI projection is complete; `P024_PARTIAL_FILL_RUNTIME_APPROVAL_PACKET_BROWSER_EVIDENCE_OK` proves exact approval text and formulas render while new order and cancel flags remain false.
+21. Phase 4m partial-fill runtime handoff bundle UI projection is complete; `P024_PARTIAL_FILL_RUNTIME_HANDOFF_BUNDLE_BROWSER_EVIDENCE_OK` proves runtime inputs, success formulas and fallback classifications render while execution remains disallowed.

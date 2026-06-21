@@ -10,6 +10,8 @@ from fastapi import HTTPException
 from .schemas import (
     CancelIntentRequest,
     CommandApiResult,
+    CommandPartialFillRuntimeExecutionApprovalPacket,
+    CommandPartialFillRuntimeExecutionHandoffBundle,
     CommandRuntimeExecutionApprovalPacket,
     CommandRuntimeExecutionGapAudit,
     CommandRuntimeExecutionHandoffBundle,
@@ -52,6 +54,20 @@ RUNTIME_EXECUTION_GAP_AUDIT = (
     / "acceptance"
     / "p024-account-console-paper-command-controls"
     / "runtime-execution-gap-audit.json"
+)
+PARTIAL_FILL_RUNTIME_EXECUTION_APPROVAL_PACKET = (
+    ROOT
+    / "docs"
+    / "acceptance"
+    / "p024-account-console-paper-command-controls"
+    / "partial-fill-runtime-execution-approval-packet.json"
+)
+PARTIAL_FILL_RUNTIME_EXECUTION_HANDOFF_BUNDLE = (
+    ROOT
+    / "docs"
+    / "acceptance"
+    / "p024-account-console-paper-command-controls"
+    / "partial-fill-runtime-execution-handoff-bundle.json"
 )
 DEFAULT_RUNTIME_RUN_ID = "p023-armed-20260621t0748z"
 REQUIRED_RUNTIME_FILES = [
@@ -430,6 +446,86 @@ def load_runtime_execution_handoff_bundle(account_id: str) -> CommandRuntimeExec
         if negative.get(key) is not False:
             raise HTTPException(status_code=409, detail=f"runtime execution handoff bundle negative assertion failed: {key}")
     return CommandRuntimeExecutionHandoffBundle(**payload)
+
+
+def load_partial_fill_runtime_execution_approval_packet(
+    account_id: str,
+) -> CommandPartialFillRuntimeExecutionApprovalPacket:
+    if account_id != PAPER_ACCOUNT_ID:
+        raise HTTPException(status_code=403, detail="P024 partial-fill approval packet is scoped to acct.ctp.paper.19053 only")
+    if not PARTIAL_FILL_RUNTIME_EXECUTION_APPROVAL_PACKET.exists():
+        raise HTTPException(status_code=404, detail="partial-fill runtime execution approval packet evidence not found")
+    text = PARTIAL_FILL_RUNTIME_EXECUTION_APPROVAL_PACKET.read_text(encoding="utf-8")
+    if any(fragment.lower() in text.lower() for fragment in SENSITIVE_RUNTIME_FRAGMENTS):
+        raise HTTPException(status_code=409, detail="partial-fill runtime execution approval packet contains forbidden sensitive fragments")
+    payload = json.loads(text)
+    if payload.get("account_id") != PAPER_ACCOUNT_ID:
+        raise HTTPException(status_code=409, detail="partial-fill runtime execution approval packet account_id mismatch")
+    approval = payload.get("required_operator_approval") or {}
+    if approval.get("required") is not True or approval.get("obtained") is not False:
+        raise HTTPException(status_code=409, detail="partial-fill runtime execution approval boundary drifted")
+    planned = payload.get("planned_execution") or {}
+    for key in ["runtime_invocation_attempted", "owner_repo_write_attempted", "new_order_submitted", "cancel_sent"]:
+        if planned.get(key) is not False:
+            raise HTTPException(status_code=409, detail=f"partial-fill planned execution flag drifted: {key}")
+    negative = payload.get("negative_assertions") or {}
+    for key in [
+        "approval_obtained",
+        "runtime_invocation_attempted",
+        "owner_repo_write_attempted",
+        "new_order_submitted",
+        "cancel_sent",
+        "browser_triggered_broker_order",
+        "gateway_send_attempted",
+        "broker_order_created",
+        "live_armed",
+        "account_mirror_write_authority",
+        "raw_secret_values_recorded",
+        "raw_broker_endpoint_recorded",
+        "config_raw_content_read",
+        "full_acceptance_claimed",
+        "browser_fixture_promoted_to_runtime_truth",
+    ]:
+        if negative.get(key) is not False:
+            raise HTTPException(status_code=409, detail=f"partial-fill approval packet negative assertion failed: {key}")
+    return CommandPartialFillRuntimeExecutionApprovalPacket(**payload)
+
+
+def load_partial_fill_runtime_execution_handoff_bundle(
+    account_id: str,
+) -> CommandPartialFillRuntimeExecutionHandoffBundle:
+    if account_id != PAPER_ACCOUNT_ID:
+        raise HTTPException(status_code=403, detail="P024 partial-fill handoff bundle is scoped to acct.ctp.paper.19053 only")
+    if not PARTIAL_FILL_RUNTIME_EXECUTION_HANDOFF_BUNDLE.exists():
+        raise HTTPException(status_code=404, detail="partial-fill runtime execution handoff bundle evidence not found")
+    text = PARTIAL_FILL_RUNTIME_EXECUTION_HANDOFF_BUNDLE.read_text(encoding="utf-8")
+    if any(fragment.lower() in text.lower() for fragment in SENSITIVE_RUNTIME_FRAGMENTS):
+        raise HTTPException(status_code=409, detail="partial-fill runtime execution handoff bundle contains forbidden sensitive fragments")
+    payload = json.loads(text)
+    if payload.get("account_id") != PAPER_ACCOUNT_ID:
+        raise HTTPException(status_code=409, detail="partial-fill runtime execution handoff bundle account_id mismatch")
+    guard = payload.get("execution_guard") or {}
+    if guard.get("execution_allowed") is not False:
+        raise HTTPException(status_code=409, detail="partial-fill runtime execution handoff allowed execution before approval")
+    if guard.get("approval_required") is not True or guard.get("approval_obtained") is not False:
+        raise HTTPException(status_code=409, detail="partial-fill runtime execution handoff approval boundary drifted")
+    negative = payload.get("negative_assertions") or {}
+    for key in [
+        "execution_allowed",
+        "approval_obtained",
+        "runtime_invocation_attempted",
+        "owner_repo_write_attempted",
+        "new_order_submitted",
+        "cancel_sent",
+        "full_acceptance_claimed",
+        "browser_fixture_promoted_to_runtime_truth",
+        "raw_secret_values_recorded",
+        "raw_broker_endpoint_recorded",
+        "config_raw_content_read",
+    ]:
+        if negative.get(key) is not False:
+            raise HTTPException(status_code=409, detail=f"partial-fill handoff bundle negative assertion failed: {key}")
+    return CommandPartialFillRuntimeExecutionHandoffBundle(**payload)
 
 
 def load_runtime_execution_gap_audit(account_id: str) -> CommandRuntimeExecutionGapAudit:

@@ -1,7 +1,7 @@
 # P024 UI Design / Paper Command Controls
 
 - Proposal ID: `p024-account-console-paper-command-controls`
-- Status: phase3e_runtime_readiness_ui_projection_passed
+- Status: phase4m_partial_fill_runtime_handoff_bundle_ui_projection_ready
 
 ## Design Intent
 
@@ -99,6 +99,31 @@ No controls are reserved or visible in disabled mode.
 | `account-runtime-handoff-bundle-artifact-count` | required owner artifact count |
 | `account-runtime-handoff-bundle-gate-count` | post-handoff gate count |
 | `account-runtime-handoff-bundle-blocker` | typed approval/input/artifact blockers from the handoff bundle |
+| `account-partial-fill-runtime-approval-packet-panel` | partial-fill runtime execution approval packet projection panel |
+| `account-partial-fill-runtime-approval-packet-status` | partial-fill approval packet status; must remain packet-ready rather than executed |
+| `account-partial-fill-runtime-approval-packet-owner-path` | owner repo path requiring explicit approval |
+| `account-partial-fill-runtime-approval-packet-required` | partial-fill operator approval required flag |
+| `account-partial-fill-runtime-approval-packet-obtained` | partial-fill operator approval obtained flag; must remain false before owner execution |
+| `account-partial-fill-runtime-approval-packet-invoked` | owner runtime invocation flag; must remain false before approved execution |
+| `account-partial-fill-runtime-approval-packet-owner-write` | owner repo write attempted flag; must remain false before approved execution |
+| `account-partial-fill-runtime-approval-packet-new-order` | new order submitted flag; must remain false before approved execution |
+| `account-partial-fill-runtime-approval-packet-cancel-sent` | cancel sent flag; must remain false before approved execution |
+| `account-partial-fill-runtime-approval-packet-exact-text` | exact partial-fill operator approval text required before owner-runtime execution |
+| `account-partial-fill-runtime-approval-packet-formula` | partial-fill and terminal cancel success formulas |
+| `account-partial-fill-runtime-approval-packet-entrypoint` | guarded submit/cancel owner runtime entrypoints and arm flags from the approval packet |
+| `account-partial-fill-runtime-approval-packet-blocker` | typed approval and partial-fill runtime blockers from the approval packet |
+| `account-partial-fill-runtime-handoff-bundle-panel` | partial-fill runtime execution handoff bundle projection panel |
+| `account-partial-fill-runtime-handoff-bundle-status` | partial-fill handoff bundle status; must remain bundle-ready rather than executed |
+| `account-partial-fill-runtime-handoff-bundle-execution-allowed` | execution allowed flag; must remain false before approved owner execution |
+| `account-partial-fill-runtime-handoff-bundle-approval-obtained` | approval obtained flag; must remain false before approved owner execution |
+| `account-partial-fill-runtime-handoff-bundle-invoked` | owner runtime invocation flag; must remain false before approved owner execution |
+| `account-partial-fill-runtime-handoff-bundle-owner-write` | owner repo write attempted flag; must remain false before approved owner execution |
+| `account-partial-fill-runtime-handoff-bundle-new-order` | new order submitted flag; must remain false before approved owner execution |
+| `account-partial-fill-runtime-handoff-bundle-cancel-sent` | cancel sent flag; must remain false before approved owner execution |
+| `account-partial-fill-runtime-handoff-bundle-input` | runtime input requirements for partial-fill then cancel acceptance |
+| `account-partial-fill-runtime-handoff-bundle-step` | gated owner-runtime sequence for submit, classify, cancel, readback and ingest |
+| `account-partial-fill-runtime-handoff-bundle-success` | non-UI and Web UI success criteria including quantity formulas |
+| `account-partial-fill-runtime-handoff-bundle-fallback` | typed fallback classifications when real partial-fill does not occur |
 | `account-runtime-execution-gap-panel` | final runtime execution gap audit projection panel |
 | `account-runtime-execution-gap-status` | gap audit status; must remain Phase 4e blocker evidence until owner-runtime artifacts exist |
 | `account-runtime-execution-gap-verdict` | gap audit verdict; must be blocked pending owner-runtime execution |
@@ -124,6 +149,7 @@ No controls are reserved or visible in disabled mode.
 8. Runtime closeout projection is read-only and must show `browser_triggered_broker_order=false` beside predecessor runtime refs.
 9. Runtime handoff requests are displayed as blocked owner-runtime preparation, not as browser-triggered broker execution.
 10. Runtime readiness is displayed as a blocker projection: owner refs and config refs are visible, but raw config, endpoints, secrets, owner writes and runtime invocation remain false.
+11. Partial-fill runtime approval and handoff panels are read-only: they show exact approval text, success formulas, fallback classifications and blockers, but never render a browser-side broker execution trigger.
 
 ## Disabled Mode
 

@@ -11,6 +11,8 @@ from . import __version__
 from .command_api import (
     accept_cancel_intent,
     accept_submit_intent,
+    load_partial_fill_runtime_execution_approval_packet,
+    load_partial_fill_runtime_execution_handoff_bundle,
     load_runtime_execution_approval_packet,
     load_runtime_execution_gap_audit,
     load_runtime_execution_handoff_bundle,
@@ -31,6 +33,8 @@ from .schemas import (
     AccountSnapshot,
     CancelIntentRequest,
     CommandApiResult,
+    CommandPartialFillRuntimeExecutionApprovalPacket,
+    CommandPartialFillRuntimeExecutionHandoffBundle,
     CommandRuntimeCloseout,
     CommandRuntimeExecutionApprovalPacket,
     CommandRuntimeExecutionGapAudit,
@@ -282,6 +286,28 @@ def command_runtime_execution_approval_packet(account_id: str) -> CommandRuntime
 )
 def command_runtime_execution_handoff_bundle(account_id: str) -> CommandRuntimeExecutionHandoffBundle:
     return load_runtime_execution_handoff_bundle(account_id)
+
+
+@app.get(
+    "/api/commands/accounts/{account_id}/partial-fill-runtime-execution-approval-packet",
+    response_model=CommandPartialFillRuntimeExecutionApprovalPacket,
+    response_model_exclude_none=True,
+)
+def command_partial_fill_runtime_execution_approval_packet(
+    account_id: str,
+) -> CommandPartialFillRuntimeExecutionApprovalPacket:
+    return load_partial_fill_runtime_execution_approval_packet(account_id)
+
+
+@app.get(
+    "/api/commands/accounts/{account_id}/partial-fill-runtime-execution-handoff-bundle",
+    response_model=CommandPartialFillRuntimeExecutionHandoffBundle,
+    response_model_exclude_none=True,
+)
+def command_partial_fill_runtime_execution_handoff_bundle(
+    account_id: str,
+) -> CommandPartialFillRuntimeExecutionHandoffBundle:
+    return load_partial_fill_runtime_execution_handoff_bundle(account_id)
 
 
 @app.get(

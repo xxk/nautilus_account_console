@@ -1,7 +1,7 @@
 # P024 UI Acceptance / Paper Command Controls
 
 - Proposal ID: `p024-account-console-paper-command-controls`
-- Status: phase4e_runtime_execution_gap_audit_passed
+- Status: phase4m_partial_fill_runtime_handoff_bundle_ui_projection_ready
 
 ## Browser Acceptance
 
@@ -22,6 +22,38 @@
 | UI-13 | runtime approval packet projection | exact approval text, owner path, entrypoints, blockers and false execution flags render in UI while approval remains unobtained | phase4b_runtime_approval_packet_ui_projection_passed |
 | UI-14 | runtime handoff bundle projection | execution guard, runtime inputs, operator sequence, artifact counts and blockers render in UI while execution remains disallowed | phase4d_runtime_handoff_bundle_ui_projection_passed |
 | UI-15 | runtime execution gap audit projection | A4 not-accepted status, approval blocker, owner artifact count and false final-acceptance/execution flags render in UI | phase4e_runtime_execution_gap_audit_passed |
+| UI-16 | partial-fill runtime approval packet projection | exact partial-fill approval text, owner path, formulas, entrypoints, blockers and false new-order/cancel flags render in UI | phase4l_partial_fill_runtime_approval_packet_ui_projection_passed |
+| UI-17 | partial-fill runtime handoff bundle projection | runtime inputs, owner sequence, success formulas, fallback classifications and false execution flags render in UI | phase4m_partial_fill_runtime_handoff_bundle_ui_projection_passed |
+
+## UI-17 Partial-Fill Runtime Handoff Bundle Projection
+
+The browser test must load `/accounts/acct.ctp.paper.19053`, call the read-only partial-fill runtime handoff bundle endpoint, and verify:
+
+1. `account-partial-fill-runtime-handoff-bundle-panel` is visible.
+2. `account-partial-fill-runtime-handoff-bundle-status` is `phase4k_partial_fill_runtime_execution_handoff_bundle_ready`.
+3. `account-partial-fill-runtime-handoff-bundle-execution-allowed` and `account-partial-fill-runtime-handoff-bundle-approval-obtained` are `false`.
+4. `account-partial-fill-runtime-handoff-bundle-invoked`, `account-partial-fill-runtime-handoff-bundle-owner-write`, `account-partial-fill-runtime-handoff-bundle-new-order` and `account-partial-fill-runtime-handoff-bundle-cancel-sent` are all `false`.
+5. `account-partial-fill-runtime-handoff-bundle-input` shows fresh owner pre-snapshot, quantity, owner-reviewed limit price and owner readback identity requirements.
+6. `account-partial-fill-runtime-handoff-bundle-step` shows the gated submit, classify, cancel, readback and ingest sequence.
+7. `account-partial-fill-runtime-handoff-bundle-success` includes `0 < filled_quantity < submitted_quantity`, terminal cancel and remaining quantity formulas.
+8. `account-partial-fill-runtime-handoff-bundle-fallback` includes fully filled, cancelled-without-fill, rejected/timeout and incomplete-artifact classifications.
+
+Accepted evidence: `python scripts\validate_p024_partial_fill_runtime_handoff_bundle_browser_evidence.py` returns `P024_PARTIAL_FILL_RUNTIME_HANDOFF_BUNDLE_BROWSER_EVIDENCE_OK`.
+
+## UI-16 Partial-Fill Runtime Approval Packet Projection
+
+The browser test must load `/accounts/acct.ctp.paper.19053`, call the read-only partial-fill runtime approval packet endpoint, and verify:
+
+1. `account-partial-fill-runtime-approval-packet-panel` is visible.
+2. `account-partial-fill-runtime-approval-packet-status` is `phase4j_partial_fill_runtime_execution_approval_packet_ready`.
+3. `account-partial-fill-runtime-approval-packet-owner-path` is `D:/Nautilus/nautilus_ctp_adapter`.
+4. `account-partial-fill-runtime-approval-packet-required` is `true` and `account-partial-fill-runtime-approval-packet-obtained` is `false`.
+5. `account-partial-fill-runtime-approval-packet-invoked`, `account-partial-fill-runtime-approval-packet-owner-write`, `account-partial-fill-runtime-approval-packet-new-order` and `account-partial-fill-runtime-approval-packet-cancel-sent` are all `false`.
+6. `account-partial-fill-runtime-approval-packet-exact-text` displays the exact P024 partial-fill approval text.
+7. `account-partial-fill-runtime-approval-packet-formula` displays the partial-fill, terminal cancel and remaining quantity formulas.
+8. `account-partial-fill-runtime-approval-packet-blocker` includes external approval and missing real partial-fill runtime artifact blockers.
+
+Accepted evidence: `python scripts\validate_p024_partial_fill_runtime_approval_packet_browser_evidence.py` returns `P024_PARTIAL_FILL_RUNTIME_APPROVAL_PACKET_BROWSER_EVIDENCE_OK`.
 
 ## UI-15 Runtime Execution Gap Audit Projection
 
@@ -152,6 +184,8 @@ Accepted evidence: `python scripts\validate_p024_partial_fill_cancel_browser_evi
 | NUI-13 | runtime readiness panel hides approval blocker, shows raw endpoint/secret material, or claims owner runtime invocation | test failure |
 | NUI-14 | runtime approval packet panel hides exact approval text, claims approval obtained, owner runtime invoked, owner repo written, broker order created or raw endpoint/secret material | test failure |
 | NUI-15 | runtime handoff bundle panel claims execution allowed, approval obtained, owner runtime invoked, owner repo written, broker order created or raw endpoint/secret material | test failure |
+| NUI-16 | partial-fill approval packet panel claims approval obtained, owner runtime invoked, owner repo written, new order submitted, cancel sent or hides formulas | test failure |
+| NUI-17 | partial-fill handoff bundle panel claims execution allowed, new order submitted, cancel sent, full acceptance claimed or promotes fixture evidence to runtime truth | test failure |
 
 ## Blocker
 

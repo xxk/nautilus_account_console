@@ -89,6 +89,8 @@ import type {
   AccountKind,
   CancelIntentRequest,
   CommandApiResult,
+  CommandPartialFillRuntimeExecutionApprovalPacket,
+  CommandPartialFillRuntimeExecutionHandoffBundle,
   CommandRuntimeCloseout,
   CommandRuntimeExecutionApprovalPacket,
   CommandRuntimeExecutionGapAudit,
@@ -125,6 +127,8 @@ import type {
 } from "./types";
 import {
   cancelPaperOrderIntent,
+  fetchCommandPartialFillRuntimeExecutionApprovalPacket,
+  fetchCommandPartialFillRuntimeExecutionHandoffBundle,
   fetchCommandRuntimeExecutionApprovalPacket,
   fetchCommandRuntimeExecutionGapAudit,
   fetchCommandRuntimeExecutionHandoffBundle,
@@ -1499,6 +1503,12 @@ function AccountWorkbenchTerminalPanel({
   const [runtimeHandoffBundle, setRuntimeHandoffBundle] =
     useState<CommandRuntimeExecutionHandoffBundle | null>(null);
   const [runtimeHandoffBundleError, setRuntimeHandoffBundleError] = useState<string | null>(null);
+  const [partialFillApprovalPacket, setPartialFillApprovalPacket] =
+    useState<CommandPartialFillRuntimeExecutionApprovalPacket | null>(null);
+  const [partialFillApprovalPacketError, setPartialFillApprovalPacketError] = useState<string | null>(null);
+  const [partialFillHandoffBundle, setPartialFillHandoffBundle] =
+    useState<CommandPartialFillRuntimeExecutionHandoffBundle | null>(null);
+  const [partialFillHandoffBundleError, setPartialFillHandoffBundleError] = useState<string | null>(null);
   const [runtimeExecutionGapAudit, setRuntimeExecutionGapAudit] =
     useState<CommandRuntimeExecutionGapAudit | null>(null);
   const [runtimeExecutionGapAuditError, setRuntimeExecutionGapAuditError] = useState<string | null>(null);
@@ -1592,18 +1602,32 @@ function AccountWorkbenchTerminalPanel({
       setRuntimeApprovalPacketError(null);
       setRuntimeHandoffBundle(null);
       setRuntimeHandoffBundleError(null);
+      setPartialFillApprovalPacket(null);
+      setPartialFillApprovalPacketError(null);
+      setPartialFillHandoffBundle(null);
+      setPartialFillHandoffBundleError(null);
       setRuntimeExecutionGapAudit(null);
       setRuntimeExecutionGapAuditError(null);
       return;
     }
     let active = true;
     async function loadRuntimeEvidence() {
-      const [closeoutResult, readinessResult, approvalPacketResult, handoffBundleResult, gapAuditResult] =
+      const [
+        closeoutResult,
+        readinessResult,
+        approvalPacketResult,
+        handoffBundleResult,
+        partialFillApprovalResult,
+        partialFillHandoffResult,
+        gapAuditResult
+      ] =
         await Promise.allSettled([
           fetchCommandRuntimeCloseout(summary.account.account_id),
           fetchCommandRuntimeInvocationReadiness(summary.account.account_id),
           fetchCommandRuntimeExecutionApprovalPacket(summary.account.account_id),
           fetchCommandRuntimeExecutionHandoffBundle(summary.account.account_id),
+          fetchCommandPartialFillRuntimeExecutionApprovalPacket(summary.account.account_id),
+          fetchCommandPartialFillRuntimeExecutionHandoffBundle(summary.account.account_id),
           fetchCommandRuntimeExecutionGapAudit(summary.account.account_id)
         ]);
       if (!active) {
@@ -1648,6 +1672,28 @@ function AccountWorkbenchTerminalPanel({
             : "runtime handoff bundle unavailable";
         setRuntimeHandoffBundle(null);
         setRuntimeHandoffBundleError(message);
+      }
+      if (partialFillApprovalResult.status === "fulfilled") {
+        setPartialFillApprovalPacket(partialFillApprovalResult.value);
+        setPartialFillApprovalPacketError(null);
+      } else {
+        const message =
+          partialFillApprovalResult.reason instanceof Error
+            ? partialFillApprovalResult.reason.message
+            : "partial-fill approval packet unavailable";
+        setPartialFillApprovalPacket(null);
+        setPartialFillApprovalPacketError(message);
+      }
+      if (partialFillHandoffResult.status === "fulfilled") {
+        setPartialFillHandoffBundle(partialFillHandoffResult.value);
+        setPartialFillHandoffBundleError(null);
+      } else {
+        const message =
+          partialFillHandoffResult.reason instanceof Error
+            ? partialFillHandoffResult.reason.message
+            : "partial-fill handoff bundle unavailable";
+        setPartialFillHandoffBundle(null);
+        setPartialFillHandoffBundleError(message);
       }
       if (gapAuditResult.status === "fulfilled") {
         setRuntimeExecutionGapAudit(gapAuditResult.value);
@@ -2503,6 +2549,16 @@ function AccountWorkbenchTerminalPanel({
           <CommandRuntimeExecutionHandoffBundlePanel
             bundle={runtimeHandoffBundle}
             error={runtimeHandoffBundleError}
+          />
+
+          <CommandPartialFillRuntimeExecutionApprovalPacketPanel
+            error={partialFillApprovalPacketError}
+            packet={partialFillApprovalPacket}
+          />
+
+          <CommandPartialFillRuntimeExecutionHandoffBundlePanel
+            bundle={partialFillHandoffBundle}
+            error={partialFillHandoffBundleError}
           />
 
           <CommandRuntimeExecutionGapAuditPanel
@@ -4827,6 +4883,253 @@ function CommandRuntimeExecutionHandoffBundlePanel({
         </div>
       ) : (
         <p className="muted">No owner-runtime execution handoff bundle is mounted for this account.</p>
+      )}
+    </section>
+  );
+}
+
+function CommandPartialFillRuntimeExecutionApprovalPacketPanel({
+  packet,
+  error
+}: {
+  packet: CommandPartialFillRuntimeExecutionApprovalPacket | null;
+  error: string | null;
+}) {
+  return (
+    <section className="terminal-panel" data-testid="account-partial-fill-runtime-approval-packet-panel">
+      <div className="terminal-panel-header">
+        <h3>Partial Fill Approval</h3>
+        <StateBadge value={packet ? "blocked" : error ? "blocked" : "empty"} />
+      </div>
+      {packet ? (
+        <div className="evidence-stack compact-evidence-stack">
+          <div className="evidence-item">
+            <strong>Status</strong>
+            <span data-testid="account-partial-fill-runtime-approval-packet-status">{packet.status}</span>
+          </div>
+          <div className="evidence-item">
+            <strong>Verdict</strong>
+            <span data-testid="account-partial-fill-runtime-approval-packet-verdict">{packet.verdict}</span>
+          </div>
+          <div className="evidence-item">
+            <strong>Owner path</strong>
+            <span data-testid="account-partial-fill-runtime-approval-packet-owner-path">
+              {packet.required_operator_approval.approval_path}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Approval required</strong>
+            <span data-testid="account-partial-fill-runtime-approval-packet-required">
+              {String(packet.required_operator_approval.required)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Approval obtained</strong>
+            <span data-testid="account-partial-fill-runtime-approval-packet-obtained">
+              {String(packet.required_operator_approval.obtained)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Runtime invoked</strong>
+            <span data-testid="account-partial-fill-runtime-approval-packet-invoked">
+              {String(packet.negative_assertions.runtime_invocation_attempted)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Owner write</strong>
+            <span data-testid="account-partial-fill-runtime-approval-packet-owner-write">
+              {String(packet.negative_assertions.owner_repo_write_attempted)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>New order</strong>
+            <span data-testid="account-partial-fill-runtime-approval-packet-new-order">
+              {String(packet.negative_assertions.new_order_submitted)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Cancel sent</strong>
+            <span data-testid="account-partial-fill-runtime-approval-packet-cancel-sent">
+              {String(packet.negative_assertions.cancel_sent)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Approval text</strong>
+            <span data-testid="account-partial-fill-runtime-approval-packet-exact-text">
+              {packet.required_operator_approval.exact_approval_text}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Partial formula</strong>
+            <span data-testid="account-partial-fill-runtime-approval-packet-formula">
+              {packet.attempt_constraints.partial_fill_success_formula}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Cancel formula</strong>
+            <span data-testid="account-partial-fill-runtime-approval-packet-formula">
+              {packet.attempt_constraints.terminal_cancel_success_formula}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Remaining formula</strong>
+            <span data-testid="account-partial-fill-runtime-approval-packet-formula">
+              {packet.attempt_constraints.post_cancel_remaining_quantity_formula}
+            </span>
+          </div>
+          {packet.entrypoints.map((entrypoint) => (
+            <div
+              className="evidence-item"
+              data-testid="account-partial-fill-runtime-approval-packet-entrypoint"
+              key={entrypoint.action}
+            >
+              <strong>{entrypoint.action}</strong>
+              <span>
+                {entrypoint.entrypoint_ref} / {entrypoint.armed_flag}
+              </span>
+            </div>
+          ))}
+          {packet.blockers.map((blocker) => (
+            <div
+              className="evidence-item"
+              data-testid="account-partial-fill-runtime-approval-packet-blocker"
+              key={blocker.blocker_id}
+            >
+              <strong>{blocker.type}</strong>
+              <span>{blocker.next_action}</span>
+            </div>
+          ))}
+        </div>
+      ) : error ? (
+        <div className="state-callout blocked" data-testid="account-partial-fill-runtime-approval-packet-error">
+          {error}
+        </div>
+      ) : (
+        <p className="muted">No partial-fill runtime execution approval packet is mounted for this account.</p>
+      )}
+    </section>
+  );
+}
+
+function CommandPartialFillRuntimeExecutionHandoffBundlePanel({
+  bundle,
+  error
+}: {
+  bundle: CommandPartialFillRuntimeExecutionHandoffBundle | null;
+  error: string | null;
+}) {
+  return (
+    <section className="terminal-panel" data-testid="account-partial-fill-runtime-handoff-bundle-panel">
+      <div className="terminal-panel-header">
+        <h3>Partial Fill Bundle</h3>
+        <StateBadge value={bundle ? "blocked" : error ? "blocked" : "empty"} />
+      </div>
+      {bundle ? (
+        <div className="evidence-stack compact-evidence-stack">
+          <div className="evidence-item">
+            <strong>Status</strong>
+            <span data-testid="account-partial-fill-runtime-handoff-bundle-status">{bundle.status}</span>
+          </div>
+          <div className="evidence-item">
+            <strong>Verdict</strong>
+            <span data-testid="account-partial-fill-runtime-handoff-bundle-verdict">{bundle.verdict}</span>
+          </div>
+          <div className="evidence-item">
+            <strong>Execution allowed</strong>
+            <span data-testid="account-partial-fill-runtime-handoff-bundle-execution-allowed">
+              {String(bundle.execution_guard.execution_allowed)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Approval obtained</strong>
+            <span data-testid="account-partial-fill-runtime-handoff-bundle-approval-obtained">
+              {String(bundle.execution_guard.approval_obtained)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Runtime invoked</strong>
+            <span data-testid="account-partial-fill-runtime-handoff-bundle-invoked">
+              {String(bundle.negative_assertions.runtime_invocation_attempted)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Owner write</strong>
+            <span data-testid="account-partial-fill-runtime-handoff-bundle-owner-write">
+              {String(bundle.negative_assertions.owner_repo_write_attempted)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>New order</strong>
+            <span data-testid="account-partial-fill-runtime-handoff-bundle-new-order">
+              {String(bundle.negative_assertions.new_order_submitted)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Cancel sent</strong>
+            <span data-testid="account-partial-fill-runtime-handoff-bundle-cancel-sent">
+              {String(bundle.negative_assertions.cancel_sent)}
+            </span>
+          </div>
+          {bundle.runtime_input_requirements.map((item) => (
+            <div
+              className="evidence-item"
+              data-testid="account-partial-fill-runtime-handoff-bundle-input"
+              key={item.field}
+            >
+              <strong>{item.field}</strong>
+              <span>{item.reason}</span>
+            </div>
+          ))}
+          {bundle.operator_sequence.map((item) => (
+            <div
+              className="evidence-item"
+              data-testid="account-partial-fill-runtime-handoff-bundle-step"
+              key={item.step}
+            >
+              <strong>{item.step}</strong>
+              <span>
+                {item.action}
+                {item.armed_flag ? ` / ${item.armed_flag}` : ""}
+              </span>
+            </div>
+          ))}
+          {bundle.success_criteria.non_ui_runtime.map((criterion) => (
+            <div
+              className="evidence-item"
+              data-testid="account-partial-fill-runtime-handoff-bundle-success"
+              key={`non-ui-${criterion}`}
+            >
+              <strong>Non-UI</strong>
+              <span>{criterion}</span>
+            </div>
+          ))}
+          {bundle.success_criteria.web_ui_runtime.map((criterion) => (
+            <div
+              className="evidence-item"
+              data-testid="account-partial-fill-runtime-handoff-bundle-success"
+              key={`web-ui-${criterion}`}
+            >
+              <strong>Web UI</strong>
+              <span>{criterion}</span>
+            </div>
+          ))}
+          {bundle.fallback_classifications.map((classification) => (
+            <div
+              className="evidence-item"
+              data-testid="account-partial-fill-runtime-handoff-bundle-fallback"
+              key={classification}
+            >
+              <strong>Fallback</strong>
+              <span>{classification}</span>
+            </div>
+          ))}
+        </div>
+      ) : error ? (
+        <div className="state-callout blocked" data-testid="account-partial-fill-runtime-handoff-bundle-error">
+          {error}
+        </div>
+      ) : (
+        <p className="muted">No partial-fill runtime execution handoff bundle is mounted for this account.</p>
       )}
     </section>
   );
