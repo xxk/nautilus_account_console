@@ -203,7 +203,8 @@
     "post_cancel_readback_identity_observed": true,
     "order_truth_query_returned_target_order": false,
     "reconciliation_result_matches_owner_readbacks": true,
-    "can_claim_web_ui_order_display_correctness": true,
+    "can_claim_simple_submit_cancel_web_ui_order_display_correctness": true,
+    "can_claim_real_partial_fill_web_ui_order_display_correctness": false,
     "can_claim_all_acceptance_complete": false
   },
   "residual_blockers": [
@@ -227,7 +228,7 @@
   "explicit_non_claims": [
     "does_not_claim_all_acceptance_complete",
     "does_not_claim_post_cancel_order_readback_identity_observed",
-    "does_not_claim_web_ui_order_display_correctness_against_real_runtime",
+    "does_not_claim_real_partial_fill_web_ui_order_display_correctness_against_real_runtime",
     "does_not_copy_raw_ctp_secret_or_endpoint",
     "does_not_use_screenshot_as_order_or_runtime_truth"
   ]

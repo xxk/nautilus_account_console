@@ -1,7 +1,7 @@
 # P024 Account Console Paper Command Controls
 
 - Proposal ID: `p024-account-console-paper-command-controls`
-- Status: phase4e_runtime_execution_gap_audit_passed
+- Status: phase4h_real_partial_fill_runtime_feasibility_blocked
 - ADR carrier: yes
 - Primary ADR: ADR-0007
 - Predecessor: [P023 OpenCTP 19053 Paper Command Capability](../p023-openctp-19053-paper-command-capability/README.md)
@@ -62,6 +62,7 @@ P024 does not enable `live_armed`, production admission, capital approval, or Ac
 | Phase 4d runtime handoff bundle UI projection | Web UI renders the execution handoff bundle and preserves `execution_allowed=false`, `approval_obtained=false`, `runtime_invocation_attempted=false`, `owner_repo_write_attempted=false` and `broker_order_created=false` | `python scripts\validate_p024_runtime_handoff_bundle_browser_evidence.py` |
 | Phase 4e runtime execution gap audit | Artifact/API/Web UI identify A4 as not accepted and preserve `final_acceptance_claimed=false`, `runtime_invocation_attempted=false`, `owner_repo_write_attempted=false` and `broker_order_created=false` | `python scripts\validate_p024_runtime_execution_gap_audit.py`; `python scripts\validate_p024_runtime_execution_gap_browser_evidence.py` |
 | Phase 4g owner-runtime submit/cancel callback closeout | Operator approval was obtained and owner-owned guarded OpenCTP paper submit/cancel scripts were executed after owner patch `6a50b02`; submit produced accepted/reported `OnRtnOrder` callbacks with native identity and leaves quantity, cancel produced terminal status `5` for the same native identity, and post snapshot preserved rb2610 position quantity | `python scripts\validate_p024_owner_runtime_execution_attempt_audit.py` |
+| Phase 4h real partial-fill runtime feasibility | The owner runtime can classify fills if emitted, but current approved 19053 attempt produced no trade fill and no deterministic owner partial-fill artifact exists; non-UI and Web UI partial-fill runtime acceptance remain blocked | `python scripts\validate_p024_partial_fill_runtime_feasibility_audit.py` |
 
 ## Document Map
 
@@ -74,6 +75,7 @@ P024 does not enable `live_armed`, production admission, capital approval, or Ac
 | `partial-fill-cancel-ui-acceptance.md` | Web UI partial-fill then cancel order-display correctness scenario |
 | `runtime-invocation-readiness.md` | owner-runtime invocation readiness and external approval boundary |
 | `docs/acceptance/p024-account-console-paper-command-controls/owner-runtime-execution-approval-packet.json` | owner-runtime execution approval packet and exact approval text |
+| `docs/acceptance/p024-account-console-paper-command-controls/partial-fill-runtime-feasibility-audit.json` | real partial-fill runtime feasibility audit and residual blocker |
 
 ## Graduation / Closeout Matrix
 
@@ -95,6 +97,7 @@ P024 does not enable `live_armed`, production admission, capital approval, or Ac
 | Runtime handoff bundle UI projection | archive_only | Browser evidence proves the execution handoff bundle is visible in Web UI with no execution allowed, owner write, broker order creation or raw secret claim | phase4d_runtime_handoff_bundle_ui_projection_passed |
 | Runtime execution gap audit | archive_only | Browser evidence proves A4 remains not accepted until owner-runtime artifacts exist, with final acceptance claim false | phase4e_runtime_execution_gap_audit_passed |
 | Owner-runtime execution attempt audit | archive_only | `owner-runtime-execution-attempt-audit.json` records the approved owner-runtime paper submit/cancel attempt, owner patch `6a50b02`, terminal cancel callback and remaining real partial-fill runtime blocker | phase4g_owner_runtime_submit_cancel_callback_closed |
+| Real partial-fill runtime feasibility audit | archive_only | `partial-fill-runtime-feasibility-audit.json` records that the current one-order approval is consumed, no trade fill was observed, no deterministic partial-fill generator/artifact exists, and both non-UI and Web UI real partial-fill acceptance remain blocked | phase4h_real_partial_fill_runtime_feasibility_blocked |
 | Proposal-local evidence | archive_only | `acceptance.md`, browser command-controls evidence, runtime closeout projection evidence, P024 partial-fill display evidence, runtime handoff request evidence, owner-runtime invocation readiness evidence, runtime readiness UI projection evidence, full acceptance closeout audit, owner-runtime execution approval packet, runtime approval packet UI evidence, owner-runtime execution handoff bundle, runtime handoff bundle UI evidence and runtime execution gap audit evidence; runtime Web UI broker command execution remains blocked pending external approval | phase4e_runtime_execution_gap_audit_passed |
 
 No stable rule graduation: proposal-local evidence only until implementation and runtime gates pass.

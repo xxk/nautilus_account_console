@@ -148,7 +148,14 @@ def validate_payload(payload: dict[str, Any]) -> None:
     require(result["post_submit_readback_identity_observed"] is True, "A4 submit readback mismatch")
     require(result["post_cancel_readback_identity_observed"] is True, "A4 cancel readback mismatch")
     require(result["reconciliation_result_matches_owner_readbacks"] is True, "A4 reconciliation mismatch")
-    require(result["can_claim_web_ui_order_display_correctness"] is True, "UI correctness claim mismatch")
+    require(
+        result["can_claim_simple_submit_cancel_web_ui_order_display_correctness"] is True,
+        "simple submit/cancel UI correctness claim mismatch",
+    )
+    require(
+        result["can_claim_real_partial_fill_web_ui_order_display_correctness"] is False,
+        "real partial-fill UI correctness claim mismatch",
+    )
     require(result["can_claim_all_acceptance_complete"] is False, "all acceptance claim mismatch")
 
     blockers = {blocker["blocker_id"] for blocker in payload["residual_blockers"]}

@@ -1,7 +1,7 @@
 # P024 Acceptance / Account Console Paper Command Controls
 
 - Proposal ID: `p024-account-console-paper-command-controls`
-- Status: phase4e_runtime_execution_gap_audit_passed
+- Status: phase4h_real_partial_fill_runtime_feasibility_blocked
 - Primary ADR: ADR-0007
 
 ## Scope
@@ -28,6 +28,8 @@ Out of scope: live trading, replace order, Account Mirror write authority, direc
 | P024 owner-runtime execution handoff bundle | `python scripts\validate_p024_owner_runtime_execution_handoff_bundle.py` | `P024_OWNER_RUNTIME_EXECUTION_HANDOFF_BUNDLE_OK` | Post-approval operator sequence, runtime input requirements, required owner artifacts and post-handoff gates are machine-checked while `execution_allowed=false` |
 | P024 runtime handoff bundle UI projection | `npx playwright test tests/e2e/p024-runtime-execution-handoff-bundle.spec.ts --project=desktop` then `python scripts\validate_p024_runtime_handoff_bundle_browser_evidence.py` | `P024_RUNTIME_HANDOFF_BUNDLE_BROWSER_EVIDENCE_OK` | Web UI renders the handoff bundle execution guard, runtime inputs, operator sequence, artifact counts and blockers while `execution_allowed=false` |
 | P024 runtime execution gap audit | `python scripts\validate_p024_runtime_execution_gap_audit.py`; `npx playwright test tests/e2e/p024-runtime-execution-gap-audit.spec.ts --project=desktop` then `python scripts\validate_p024_runtime_execution_gap_browser_evidence.py` | `P024_RUNTIME_EXECUTION_GAP_AUDIT_OK`; `P024_RUNTIME_EXECUTION_GAP_BROWSER_EVIDENCE_OK` | Artifact/API/Web UI identify A4 as not accepted until owner-runtime artifacts exist and keep final acceptance claim false |
+| P024 owner-runtime submit/cancel callback closeout | `python scripts\validate_p024_owner_runtime_execution_attempt_audit.py` | `P024_OWNER_RUNTIME_EXECUTION_ATTEMPT_AUDIT_OK` | Approved owner-runtime submit/cancel attempt observed accepted/reported submit callbacks and terminal cancel status `5` for the same native identity |
+| P024 real partial-fill runtime feasibility | `python scripts\validate_p024_partial_fill_runtime_feasibility_audit.py` | `P024_PARTIAL_FILL_RUNTIME_FEASIBILITY_AUDIT_OK` | Documents the remaining real partial-fill blocker without submitting a new order or promoting UI fixture evidence to runtime truth |
 | P023 runtime predecessor | `python scripts\validate_p023_openctp19053_command_run.py --run-dir output\account_command\ctp-paper-19053\p023-armed-20260621t0748z --source-package output\account_capability\ctp-paper-19053\source-package.json` | `P023_OPENCTP19053_COMMAND_RUN_OK` | Predecessor paper command evidence |
 | Proposal docs | `python scripts\check_proposal_docs.py --root . --proposal-id p024-account-console-paper-command-controls` | `PROPOSAL_DOCS_OK` | Proposal structure |
 
@@ -165,6 +167,20 @@ This gate records the real owner-runtime attempt after explicit approval:
 Accepted evidence: `python scripts\validate_p024_owner_runtime_execution_attempt_audit.py` returns `P024_OWNER_RUNTIME_EXECUTION_ATTEMPT_AUDIT_OK`. This is real owner-runtime submit/cancel callback evidence, not real partial-fill runtime evidence.
 
 The previous `external owner-runtime approval` blocker is now satisfied for this single guarded 19053 paper attempt only; it does not grant live readiness, unrestricted order mutation or future owner-repo writes without matching approval.
+
+## Phase 4h Real Partial-Fill Runtime Feasibility Audit
+
+This gate records why the remaining partial-fill acceptance cannot be declared from the current artifacts:
+
+1. `docs/acceptance/p024-account-console-paper-command-controls/partial-fill-runtime-feasibility-audit.json` uses schema `account-console.p024.partial-fill-runtime-feasibility-audit.v1`.
+2. The prior approval covered one submit/cancel attempt and is recorded as consumed by `account-console-p024-runtime-20260621T090820Z`; this audit submits no new order.
+3. Owner runtime code can classify `trade_volume`, `leaves_qty` and `filled_before_cancel` if callbacks are emitted.
+4. The latest real attempt observed submit leaves quantity and terminal cancel status `5`, but observed no trade fill and no partial fill.
+5. Required non-UI acceptance remains owner artifacts plus checksums with `0 < filled_quantity < submitted_quantity` and terminal cancellation of the remainder.
+6. Required Web UI acceptance remains Playwright evidence cross-checking owner refs/checksums, stable order identity, stable fill rows and final readback/reconciliation refs.
+7. Full acceptance remains blocked by `p024_real_partial_fill_runtime_missing`.
+
+Accepted evidence: `python scripts\validate_p024_partial_fill_runtime_feasibility_audit.py` returns `P024_PARTIAL_FILL_RUNTIME_FEASIBILITY_AUDIT_OK` with `blocked_until_owner_runtime_partial_fill_state_available`. This is a typed blocker audit, not a real partial-fill pass.
 
 ## Phase 3d Owner Runtime Invocation Readiness Acceptance
 

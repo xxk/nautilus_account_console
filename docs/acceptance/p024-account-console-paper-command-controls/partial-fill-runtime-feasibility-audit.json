@@ -1,0 +1,95 @@
+{
+  "schema": "account-console.p024.partial-fill-runtime-feasibility-audit.v1",
+  "proposal_id": "p024-account-console-paper-command-controls",
+  "account_id": "acct.ctp.paper.19053",
+  "reviewed_at": "2026-06-21T17:35:00+08:00",
+  "status": "phase4h_real_partial_fill_runtime_feasibility_blocked",
+  "verdict": "blocked_until_owner_runtime_partial_fill_state_available",
+  "operator_approval_scope": {
+    "approval_path": "D:/Nautilus/nautilus_ctp_adapter",
+    "approved_for_one_submit_cancel_attempt": true,
+    "approval_consumed_by_attempt_id": "account-console-p024-runtime-20260621T090820Z",
+    "additional_partial_fill_order_authorized": false
+  },
+  "owner_runtime_refs": {
+    "owner_ref": "owner://nautilus_ctp_adapter",
+    "owner_repo_path": "D:/Nautilus/nautilus_ctp_adapter",
+    "config_ref": "cfgs/local/ctp.openctp.tts.7x24.local.json",
+    "config_raw_content_recorded": false,
+    "submit_entrypoint_ref": "scripts/ctp_guarded_paper_order_loop.py",
+    "cancel_entrypoint_ref": "scripts/ctp_guarded_paper_cancel_loop.py"
+  },
+  "current_real_runtime_evidence": {
+    "owner_patch_commit": "6a50b02",
+    "submit_artifact_ref": "output/account-console-ctp19053-readback/account-console-p024-runtime-20260621T090820Z/guarded_order_armed_send.json",
+    "submit_artifact_sha256": "98a363c10ac8459d9b1c73064926b15ea4f7fa91d072a1bf606c5043097374fb",
+    "cancel_artifact_ref": "output/account-console-ctp19053-readback/account-console-p024-runtime-20260621T090831Z/guarded_cancel_armed_send.json",
+    "cancel_artifact_sha256": "5f54d2fb7a23632a4382a58c6dfbe4ea5fd7c98b3cec6487f78e3f539da2f584",
+    "observed_submit_leaves_qty": 1,
+    "observed_cancel_status": 5,
+    "observed_trade_fill": false,
+    "observed_partial_fill": false
+  },
+  "owner_capability_scan": {
+    "classifies_order_lifecycle_fill_volume": true,
+    "classifies_order_lifecycle_leaves_qty": true,
+    "classifies_cancel_filled_before_cancel": true,
+    "can_record_trade_callbacks_if_emitted": true,
+    "deterministic_partial_fill_generator_present": false,
+    "stable_owner_partial_fill_artifact_present": false
+  },
+  "risk_and_market_constraints": {
+    "allowed_risk_shape": "exposure_reduction_only",
+    "known_position_shape": "rb2610 long position quantity preserved at 3 after latest cancel",
+    "max_safe_order_quantity_from_current_evidence": 3,
+    "partial_fill_requires_trade_volume_between_zero_and_submitted_quantity": true,
+    "partial_fill_requires_remaining_quantity_cancelled_after_fill": true,
+    "cannot_force_partial_fill_from_account_console": true,
+    "cannot_use_browser_fixture_as_runtime_truth": true
+  },
+  "required_owner_partial_fill_artifacts": [
+    "pre_snapshot_with_reducible_position.json",
+    "submit_artifact_with_trade_volume_between_0_and_quantity.json",
+    "trade_callback_or_trade_readback_with_stable_trade_id.json",
+    "cancel_artifact_for_same_native_order_identity.json",
+    "post_cancel_readback_showing_filled_preserved_and_remaining_cancelled.json",
+    "reconciliation_result_for_partial_fill_then_cancel.json",
+    "redaction_report.json"
+  ],
+  "non_ui_acceptance_shape": {
+    "scenario": "real partial fill then cancel from owner runtime",
+    "verification": "owner artifacts plus validator checksums",
+    "required_formulas": [
+      "0 < filled_quantity < submitted_quantity",
+      "filled_quantity + cancelled_quantity == submitted_quantity",
+      "remaining_quantity == 0 after cancel readback"
+    ],
+    "status": "blocked"
+  },
+  "web_ui_acceptance_shape": {
+    "scenario": "Web UI displays the owner-provided partial fill then cancel truth",
+    "verification": "Playwright plus browser evidence JSON cross-checking owner refs and checksums",
+    "required_display_checks": [
+      "same order identity across submitted, partial, cancel pending and cancelled states",
+      "fill rows remain stable after cancel",
+      "cancel pending is never rendered as final",
+      "final cancelled state cites readback and reconciliation refs"
+    ],
+    "status": "blocked"
+  },
+  "residual_blocker": {
+    "blocker_id": "p024_real_partial_fill_runtime_missing",
+    "type": "owner_runtime_partial_fill_state_missing",
+    "owner_ref": "owner://nautilus_ctp_adapter",
+    "next_action": "obtain a fresh approval and owner-generated partial-fill then cancel artifact set, or provide an owner-approved stable partial-fill state with checksums"
+  },
+  "negative_assertions": {
+    "new_partial_fill_order_submitted_by_this_audit": false,
+    "final_acceptance_claimed": false,
+    "real_partial_fill_runtime_claimed": false,
+    "browser_fixture_promoted_to_runtime_truth": false,
+    "raw_secret_values_recorded": false,
+    "raw_broker_endpoint_recorded": false,
+    "config_raw_content_recorded": false
+  }
+}
