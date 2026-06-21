@@ -103,6 +103,8 @@ Required UI-13 browser assertions:
 4. Before cancel, the browser-visible quantities satisfy `filled_quantity + remaining_quantity == submitted_quantity` when compared with the API projection.
 5. After cancel, the filled quantity remains visible and only the remaining quantity is cancelled/withdrawn.
 6. The command status panel links the partial-fill reconciliation ref; screenshots alone are not sufficient.
+7. The fill rows remain stable from S2 through S4: the same trade identities, fill quantities, prices and `ReqQryTrade` source refs must remain visible after the remaining quantity is cancelled.
+8. The S2 browser cancel target must equal the readback remaining quantity, not the original submitted quantity.
 
 ### UI-13 Order Display Correctness
 
@@ -114,6 +116,8 @@ The browser acceptance must write `partial-fill-order-display.json` by reading D
 | S2 partially filled | `ReqQryTrade` and partial `ReqQryOrder` are both visible | same order identity, submitted qty unchanged, filled qty `> 0`, remaining qty `> 0`, status partial/working, `filled_quantity + remaining_quantity == submitted_quantity` | one or more trade rows with `account-fill-quantity`, `account-fill-price`, `account-fill-source-ref`; duplicate trade rows are not double-counted in displayed total | enabled and bound to `account-remaining-cancel-quantity`, not submitted qty |
 | S3 cancel pending | cancel command accepted by command audit | same order identity, submitted qty unchanged, filled qty unchanged, remaining qty unchanged until readback changes, status cancel pending/uncertain | fill rows remain visible and unchanged | disabled or single-flight; shows `account-cancel-pending-ref` |
 | S4 remaining cancelled | post-cancel `ReqQryOrder` terminal state is visible | same order identity, submitted qty unchanged, filled qty preserved, open remaining qty `0`, cancelled qty equals S2 remaining qty, status cancelled/withdrawn for remainder | filled trades remain visible and still sum to final filled qty | hidden or disabled because no remaining cancellable qty exists |
+
+The `partial-fill-order-display.json` contract must include `partial_cancel_display_verdict=pass` and the following boolean checks all set to `true`: `same_order_identity_across_stages`, `s2_browser_fill_sum_equals_order_filled_quantity`, `s2_trade_refs_match_api_projection`, `s2_cancel_target_equals_s2_remaining_quantity`, `s3_quantities_unchanged_until_cancel_readback`, `s3_no_remaining_cancel_quantity_visible`, `s4_filled_quantity_preserved_after_cancel`, `s4_cancelled_quantity_equals_s2_remaining_quantity`, `s4_remaining_quantity_zero`, `s4_no_remaining_cancel_quantity_visible`, and `fill_trade_identities_stable_after_cancel`.
 
 UI-13 order display correctness passes when `partial-fill-order-display.json` proves every stage against Account Mirror API projection and command artifacts. The action-control part of UI-13 remains blocked while `command.mode=disabled`. If S2 cannot be produced by OpenCTP 19053 during the run, runtime partial-fill closeout must remain a typed blocker and must not be marked pass.
 

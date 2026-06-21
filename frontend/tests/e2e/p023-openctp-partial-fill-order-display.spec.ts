@@ -24,6 +24,47 @@ interface StageExpectation {
   screenshot: string;
 }
 
+interface ObservedStage {
+  stage: StageId;
+  label: string;
+  browser: {
+    identity: string | null;
+    status: string | null;
+    submitted_quantity: string | null;
+    filled_quantity: string | null;
+    remaining_quantity: string | null;
+    cancelled_quantity: string | null;
+    remaining_cancel_quantity: string | null;
+    cancel_pending_ref: string | null;
+  };
+  browser_fill_rows: Array<{
+    trade_id: string | null;
+    filled_quantity: number | null;
+    price: number | null;
+    source_ref: string | null;
+  }>;
+  browser_fill_total: number;
+  api: {
+    identity: string;
+    status: string;
+    submitted_quantity: number;
+    filled_quantity: number;
+    remaining_quantity: number;
+    cancelled_quantity: number | null;
+  };
+  api_fill_rows: Array<{
+    trade_id: string;
+    filled_quantity: number;
+    price: number;
+    source_ref: string;
+  }>;
+  api_fill_total: number;
+  artifact_ref: unknown;
+  fill_artifact_refs: string[];
+  formula: string;
+  verdict: "pass";
+}
+
 const stages: StageExpectation[] = [
   {
     id: "S1",
@@ -141,6 +182,17 @@ function fillsForStage(stage: StageExpectation) {
       source_checksum: "sha256:0202020202020202020202020202020202020202020202020202020202020202"
     }
   ];
+}
+
+function parseBrowserInt(value: string | null): number | null {
+  if (value === null) {
+    return null;
+  }
+  const text = value.trim();
+  if (text === "" || text === "missing") {
+    return null;
+  }
+  return Number.parseInt(text, 10);
 }
 
 function projectionForStage(stage: StageExpectation) {
@@ -310,7 +362,7 @@ test("P023 Web UI displays partial-fill order lifecycle without using UI as trut
   });
 
   mkdirSync(evidenceDir, { recursive: true });
-  const observedStages = [];
+  const observedStages: ObservedStage[] = [];
 
   for (const stage of stages) {
     currentProjection = projectionForStage(stage);
@@ -353,6 +405,9 @@ test("P023 Web UI displays partial-fill order lifecycle without using UI as trut
       await expect(fillRows.nth(0).getByTestId("account-fill-quantity")).toHaveText("2");
       await expect(fillRows.nth(0).getByTestId("account-fill-price")).toHaveText("3299");
       await expect(fillRows.nth(0).getByTestId("account-fill-source-ref")).toContainText("ReqQryTrade");
+      await expect(fillRows.nth(1).getByTestId("account-fill-quantity")).toHaveText("2");
+      await expect(fillRows.nth(1).getByTestId("account-fill-price")).toHaveText("3298");
+      await expect(fillRows.nth(1).getByTestId("account-fill-source-ref")).toContainText("ReqQryTrade");
     }
 
     const stageScreenshot =
@@ -364,19 +419,56 @@ test("P023 Web UI displays partial-fill order lifecycle without using UI as trut
       await page.screenshot({ fullPage: true, path: path.join(evidenceDir, "disabled-state.png") });
     }
 
+    const remainingCancelQuantity =
+      (await row.getByTestId("account-remaining-cancel-quantity").count()) > 0
+        ? await row.getByTestId("account-remaining-cancel-quantity").textContent()
+        : null;
+    const cancelPendingRef =
+      (await row.getByTestId("account-cancel-pending-ref").count()) > 0
+        ? await row.getByTestId("account-cancel-pending-ref").textContent()
+        : null;
+
     const orderBrowser = {
       identity: await row.getByTestId("account-order-identity").textContent(),
       status: await row.getByTestId("account-order-status").textContent(),
       submitted_quantity: await row.getByTestId("account-order-submitted-quantity").textContent(),
       filled_quantity: await row.getByTestId("account-order-filled-quantity").textContent(),
       remaining_quantity: await row.getByTestId("account-order-remaining-quantity").textContent(),
-      cancelled_quantity: await row.getByTestId("account-order-cancelled-quantity").textContent()
+      cancelled_quantity: await row.getByTestId("account-order-cancelled-quantity").textContent(),
+      remaining_cancel_quantity: remainingCancelQuantity,
+      cancel_pending_ref: cancelPendingRef
     };
+    const browserFillRows = [];
+    const fillRows = page.getByTestId("tws-fill-row");
+    for (let index = 0; index < stage.fillRows; index += 1) {
+      const fillRow = fillRows.nth(index);
+      const filledQuantity = parseBrowserInt(await fillRow.getByTestId("account-fill-quantity").textContent());
+      browserFillRows.push({
+        trade_id: await fillRow.getByTestId("tws-fill-status-or-trade").textContent(),
+        filled_quantity: filledQuantity,
+        price: parseBrowserInt(await fillRow.getByTestId("account-fill-price").textContent()),
+        source_ref: await fillRow.getByTestId("account-fill-source-ref").textContent()
+      });
+    }
+    const browserFillTotal = browserFillRows.reduce((total, fill) => total + (fill.filled_quantity ?? 0), 0);
+    const apiFillRows = fillsForStage(stage).map((fill) => ({
+      trade_id: fill.trade_id,
+      filled_quantity: fill.filled_quantity,
+      price: fill.last_px,
+      source_ref: fill.source_ref
+    }));
+    const apiFillTotal = apiFillRows.reduce((total, fill) => total + fill.filled_quantity, 0);
+    if (stage.fillRows > 0) {
+      expect(browserFillTotal).toBe(stage.filled);
+      expect(apiFillTotal).toBe(stage.filled);
+    }
 
     observedStages.push({
       stage: stage.id,
       label: stage.label,
       browser: orderBrowser,
+      browser_fill_rows: browserFillRows,
+      browser_fill_total: browserFillTotal,
       api: {
         identity: "ctp19053-partial-order-001",
         status: stage.status,
@@ -385,6 +477,8 @@ test("P023 Web UI displays partial-fill order lifecycle without using UI as trut
         remaining_quantity: stage.remaining,
         cancelled_quantity: stage.cancelled
       },
+      api_fill_rows: apiFillRows,
+      api_fill_total: apiFillTotal,
       artifact_ref: (currentProjection.orders as Record<string, unknown>[])[0].source_ref,
       fill_artifact_refs: fillsForStage(stage).map((fill) => fill.source_ref),
       formula:
@@ -394,6 +488,39 @@ test("P023 Web UI displays partial-fill order lifecycle without using UI as trut
       verdict: "pass"
     });
   }
+
+  const observedByStage = new Map(observedStages.map((stage) => [stage.stage, stage]));
+  const s2 = observedByStage.get("S2");
+  const s3 = observedByStage.get("S3");
+  const s4 = observedByStage.get("S4");
+  expect(s2).toBeDefined();
+  expect(s3).toBeDefined();
+  expect(s4).toBeDefined();
+  const partialCancelDisplayChecks = {
+    same_order_identity_across_stages: new Set(observedStages.map((stage) => stage.browser.identity)).size === 1,
+    s2_browser_fill_sum_equals_order_filled_quantity: s2?.browser_fill_total === s2?.api.filled_quantity,
+    s2_trade_refs_match_api_projection:
+      JSON.stringify(s2?.browser_fill_rows.map((fill) => fill.source_ref)) ===
+      JSON.stringify(s2?.api_fill_rows.map((fill) => fill.source_ref)),
+    s2_cancel_target_equals_s2_remaining_quantity:
+      parseBrowserInt(s2?.browser.remaining_cancel_quantity ?? null) === s2?.api.remaining_quantity,
+    s3_quantities_unchanged_until_cancel_readback:
+      s3?.api.filled_quantity === s2?.api.filled_quantity &&
+      s3?.api.remaining_quantity === s2?.api.remaining_quantity &&
+      s3?.browser_fill_total === s2?.browser_fill_total,
+    s3_no_remaining_cancel_quantity_visible: s3?.browser.remaining_cancel_quantity === null,
+    s4_filled_quantity_preserved_after_cancel:
+      parseBrowserInt(s4?.browser.filled_quantity ?? null) === s2?.api.filled_quantity &&
+      s4?.browser_fill_total === s2?.browser_fill_total,
+    s4_cancelled_quantity_equals_s2_remaining_quantity:
+      parseBrowserInt(s4?.browser.cancelled_quantity ?? null) === s2?.api.remaining_quantity,
+    s4_remaining_quantity_zero: parseBrowserInt(s4?.browser.remaining_quantity ?? null) === 0,
+    s4_no_remaining_cancel_quantity_visible: s4?.browser.remaining_cancel_quantity === null,
+    fill_trade_identities_stable_after_cancel:
+      JSON.stringify(s4?.browser_fill_rows.map((fill) => fill.trade_id)) ===
+      JSON.stringify(s2?.browser_fill_rows.map((fill) => fill.trade_id))
+  };
+  expect(Object.values(partialCancelDisplayChecks).every(Boolean)).toBe(true);
 
   if (testInfo.project.name === "desktop") {
     writeFileSync(
@@ -408,9 +535,11 @@ test("P023 Web UI displays partial-fill order lifecycle without using UI as trut
           source_checksum: sourceChecksum,
           projection_checksum: projectionChecksum,
           ui13_order_display_verdict: "pass",
+          partial_cancel_display_verdict: "pass",
           ui13_action_control_verdict: "typed_blocker_command_controls_disabled",
           runtime_partial_fill_verdict: "typed_blocker_until_real_or_owner_approved_partial_fill_state",
           stages: observedStages,
+          partial_cancel_display_checks: partialCancelDisplayChecks,
           explicit_non_claims: [
             "does_not_submit_orders",
             "does_not_cancel_orders",

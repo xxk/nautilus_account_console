@@ -56,6 +56,7 @@ def validate_order_display(payload: dict[str, Any]) -> None:
     require(payload["proposal_id"] == "p023-openctp-19053-paper-command-capability", "proposal mismatch")
     require(payload["account_id"] == "acct.ctp.paper.19053", "account mismatch")
     require(payload["ui13_order_display_verdict"] == "pass", "order display verdict mismatch")
+    require(payload["partial_cancel_display_verdict"] == "pass", "partial-cancel display verdict mismatch")
     require(
         payload["ui13_action_control_verdict"] == "typed_blocker_command_controls_disabled",
         "action control blocker mismatch",
@@ -83,6 +84,22 @@ def validate_order_display(payload: dict[str, Any]) -> None:
         "S3": {"status": "cancel_pending", "submitted": 10, "filled": 4, "remaining": 6, "cancelled": None},
         "S4": {"status": "canceled", "submitted": 10, "filled": 4, "remaining": 0, "cancelled": 6},
     }
+    checks = payload.get("partial_cancel_display_checks") or {}
+    for check in [
+        "same_order_identity_across_stages",
+        "s2_browser_fill_sum_equals_order_filled_quantity",
+        "s2_trade_refs_match_api_projection",
+        "s2_cancel_target_equals_s2_remaining_quantity",
+        "s3_quantities_unchanged_until_cancel_readback",
+        "s3_no_remaining_cancel_quantity_visible",
+        "s4_filled_quantity_preserved_after_cancel",
+        "s4_cancelled_quantity_equals_s2_remaining_quantity",
+        "s4_remaining_quantity_zero",
+        "s4_no_remaining_cancel_quantity_visible",
+        "fill_trade_identities_stable_after_cancel",
+    ]:
+        require(checks.get(check) is True, f"partial-cancel display check failed or missing: {check}")
+
     seen: set[str] = set()
     for stage in stages:
         stage_id = str(stage["stage"])
@@ -109,10 +126,47 @@ def validate_order_display(payload: dict[str, Any]) -> None:
             require(filled + (cancelled or 0) == submitted, "S4: filled+cancelled formula mismatch")
             require(remaining == 0, "S4: open remaining must be zero")
         require(str(stage["artifact_ref"]).startswith("readback://"), f"{stage_id}: order artifact ref mismatch")
+
+        browser_fill_rows = stage.get("browser_fill_rows") or []
+        api_fill_rows = stage.get("api_fill_rows") or []
+        browser_fill_total = parse_int(stage.get("browser_fill_total")) or 0
+        api_fill_total = parse_int(stage.get("api_fill_total")) or 0
+        require(len(browser_fill_rows) == len(api_fill_rows), f"{stage_id}: browser/API fill row count mismatch")
+        require(api_fill_total == exp["filled"], f"{stage_id}: API fill total mismatch")
+        require(browser_fill_total == exp["filled"], f"{stage_id}: browser fill total mismatch")
         if stage_id in {"S2", "S3", "S4"}:
             refs = stage.get("fill_artifact_refs") or []
             require(len(refs) == 2, f"{stage_id}: fill refs missing")
             require(all(str(ref).startswith("ReqQryTrade://") for ref in refs), f"{stage_id}: fill refs not trade readback")
+            require(len(browser_fill_rows) == 2, f"{stage_id}: browser fill rows missing")
+            require(len({str(row.get("trade_id")) for row in browser_fill_rows}) == 2, f"{stage_id}: duplicate trade ids")
+            for index, (browser_fill, api_fill) in enumerate(zip(browser_fill_rows, api_fill_rows, strict=True)):
+                require(
+                    str(browser_fill.get("trade_id")) == str(api_fill.get("trade_id")),
+                    f"{stage_id}: fill {index} trade id mismatch",
+                )
+                require(
+                    parse_int(browser_fill.get("filled_quantity")) == parse_int(api_fill.get("filled_quantity")),
+                    f"{stage_id}: fill {index} quantity mismatch",
+                )
+                require(
+                    parse_int(browser_fill.get("price")) == parse_int(api_fill.get("price")),
+                    f"{stage_id}: fill {index} price mismatch",
+                )
+                require(
+                    str(browser_fill.get("source_ref")) == str(api_fill.get("source_ref")),
+                    f"{stage_id}: fill {index} source ref mismatch",
+                )
+        else:
+            require(browser_fill_rows == [], f"{stage_id}: unexpected browser fill rows")
+
+        remaining_cancel = parse_int(browser.get("remaining_cancel_quantity"))
+        if stage_id == "S2":
+            require(remaining_cancel == exp["remaining"], "S2: cancel target must equal remaining quantity")
+        if stage_id in {"S3", "S4"}:
+            require(remaining_cancel is None, f"{stage_id}: remaining cancel target must not stay visible")
+        if stage_id == "S3":
+            require(str(browser.get("cancel_pending_ref")).startswith("command-audit://"), "S3: cancel ref missing")
 
     require(seen == set(expected), f"stage set mismatch: {seen}")
 
@@ -139,7 +193,10 @@ def main() -> None:
     require(not leaks, f"forbidden sensitive/action fragments found: {leaks}")
     validate_order_display(load(ORDER_DISPLAY))
     validate_closeout(load(CLOSEOUT))
-    print("P023_PARTIAL_FILL_BROWSER_EVIDENCE_OK: ui_order_display=pass runtime_partial_fill=typed_blocker")
+    print(
+        "P023_PARTIAL_FILL_BROWSER_EVIDENCE_OK: "
+        "ui_order_display=pass partial_cancel_display=pass runtime_partial_fill=typed_blocker"
+    )
 
 
 if __name__ == "__main__":

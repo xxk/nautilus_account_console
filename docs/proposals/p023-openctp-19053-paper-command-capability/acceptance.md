@@ -12,7 +12,7 @@
 | P023 command contracts | `python scripts\validate_p023_account_command_contracts.py` | `P023_ACCOUNT_COMMAND_CONTRACTS_OK` | Order/cancel/audit contracts, fixtures and negative sensitive-boundary gates |
 | P023 design validator | `python scripts\validate_p023_openctp_19053_command_acceptance_design.py` | `P023_OPENCTP_19053_COMMAND_ACCEPTANCE_DESIGN_OK` | P023 acceptance design completeness |
 | P023 paper command run | `python scripts\validate_p023_openctp19053_command_run.py --run-dir output\account_command\ctp-paper-19053\p023-armed-20260621t0748z --source-package output\account_capability\ctp-paper-19053\source-package.json` | `P023_OPENCTP19053_COMMAND_RUN_OK` | Real OpenCTP 19053 paper submit/cancel/readback/reconciliation and read-model projection guard |
-| P023 partial-fill browser evidence | `python scripts\validate_p023_partial_fill_browser_evidence.py` | `P023_PARTIAL_FILL_BROWSER_EVIDENCE_OK` | Web UI order display correctness for partial fill then cancel; runtime partial-fill remains typed blocker |
+| P023 partial-fill browser evidence | `python scripts\validate_p023_partial_fill_browser_evidence.py` | `P023_PARTIAL_FILL_BROWSER_EVIDENCE_OK` | Web UI order display correctness and `partial_cancel_display=pass` for partial fill then cancel; runtime partial-fill remains typed blocker |
 | Proposal docs | `python scripts\check_proposal_docs.py --root . --proposal-id p023-openctp-19053-paper-command-capability` | `PROPOSAL_DOCS_OK` | Proposal structure |
 
 ## Scenario Matrix
@@ -37,7 +37,7 @@ The 10 scenario groups have two acceptance surfaces:
 | A9 | positive | UI status evidence | Playwright + API projection | UI shows command complete without readback/reconcile | planned |
 | A10 | positive | Partial fill then cancel | `ReqQryTrade` + `ReqQryOrder` + reconciliation validator plus browser order-display gate | partial fill inferred from UI/gateway ack/screenshot | browser_order_display_contract_ready_runtime_blocked |
 
-A10 supersedes the earlier `designed_runtime_blocker_until_partial_state` design-only state for the Web UI order-display surface: the browser order display contract is ready, while real OpenCTP partial-fill runtime and command action controls remain typed blockers.
+A10 supersedes the earlier `designed_runtime_blocker_until_partial_state` design-only state for the Web UI order-display surface: the browser order display contract is ready, while real OpenCTP partial-fill runtime and command action controls remain typed blockers. The Web UI contract must also prove `partial_cancel_display_verdict=pass`: S2 fill rows sum to the displayed filled quantity, the S2 cancel target equals the readback remaining quantity, S3 preserves quantities while cancel is pending, and S4 preserves filled trades while showing remaining quantity `0` and cancelled quantity equal to S2 remaining.
 
 ## Negative Acceptance
 
