@@ -1,0 +1,2855 @@
+from __future__ import annotations
+
+import json
+import sys
+from pathlib import Path
+from typing import Any
+
+
+ROOT = Path(__file__).resolve().parents[1]
+BACKEND_SRC = ROOT / "backend" / "src"
+ADR = ROOT / "docs" / "adr" / "0007-adopt-governed-account-command-capability.md"
+PROPOSAL_INDEX = ROOT / "docs" / "proposals" / "README.md"
+PROPOSAL = ROOT / "docs" / "proposals" / "p024-account-console-paper-command-controls"
+DESIGN_GATE = ROOT / "contracts" / "account_capability" / "command_capability_design_gate.json"
+FIXTURE_DIR = ROOT / "contracts" / "ui" / "fixtures" / "account_capability"
+P023_PARTIAL_EVIDENCE = (
+    ROOT
+    / "docs"
+    / "acceptance"
+    / "browser-evidence"
+    / "p023-openctp-19053-command"
+    / "partial-fill-order-display.json"
+)
+P024_PARTIAL_EVIDENCE = (
+    ROOT
+    / "docs"
+    / "acceptance"
+    / "browser-evidence"
+    / "p024-account-console-paper-command-controls"
+    / "partial-fill-cancel-order-display.json"
+)
+P024_RUNTIME_CLOSEOUT_EVIDENCE = (
+    ROOT
+    / "docs"
+    / "acceptance"
+    / "browser-evidence"
+    / "p024-account-console-paper-command-controls"
+    / "runtime-closeout-ui.json"
+)
+P024_PARTIAL_FILL_RUNTIME_FEASIBILITY_AUDIT = (
+    ROOT
+    / "docs"
+    / "acceptance"
+    / "p024-account-console-paper-command-controls"
+    / "partial-fill-runtime-feasibility-audit.json"
+)
+P024_PARTIAL_FILL_OWNER_ARTIFACT_SCAN = (
+    ROOT
+    / "docs"
+    / "acceptance"
+    / "p024-account-console-paper-command-controls"
+    / "partial-fill-owner-artifact-scan.json"
+)
+P024_PARTIAL_FILL_RUNTIME_EXECUTION_APPROVAL_PACKET = (
+    ROOT
+    / "docs"
+    / "acceptance"
+    / "p024-account-console-paper-command-controls"
+    / "partial-fill-runtime-execution-approval-packet.json"
+)
+P024_PARTIAL_FILL_RUNTIME_EXECUTION_HANDOFF_BUNDLE = (
+    ROOT
+    / "docs"
+    / "acceptance"
+    / "p024-account-console-paper-command-controls"
+    / "partial-fill-runtime-execution-handoff-bundle.json"
+)
+P024_PARTIAL_FILL_RUNTIME_EXECUTION_ATTEMPT_AUDIT = (
+    ROOT
+    / "docs"
+    / "acceptance"
+    / "p024-account-console-paper-command-controls"
+    / "partial-fill-runtime-execution-attempt-audit.json"
+)
+P024_PARTIAL_FILL_CLOSE_OFFSET_OWNER_RULE_GAP_AUDIT = (
+    ROOT
+    / "docs"
+    / "acceptance"
+    / "p024-account-console-paper-command-controls"
+    / "partial-fill-close-offset-owner-rule-gap-audit.json"
+)
+P024_PARTIAL_FILL_OWNER_REPAIR_APPROVAL_PACKET = (
+    ROOT
+    / "docs"
+    / "acceptance"
+    / "p024-account-console-paper-command-controls"
+    / "partial-fill-owner-repair-approval-packet.json"
+)
+P024_PARTIAL_FILL_REMAINING_ACCEPTANCE_CURRENT_STATE = (
+    ROOT
+    / "docs"
+    / "acceptance"
+    / "p024-account-console-paper-command-controls"
+    / "partial-fill-remaining-acceptance-current-state.json"
+)
+P024_PARTIAL_FILL_OWNER_REPAIR_IMPLEMENTATION_PLAN = (
+    ROOT
+    / "docs"
+    / "acceptance"
+    / "p024-account-console-paper-command-controls"
+    / "partial-fill-owner-repair-implementation-plan.json"
+)
+P024_PARTIAL_FILL_OWNER_REPAIR_EVIDENCE_INGEST_GATE = (
+    ROOT
+    / "docs"
+    / "acceptance"
+    / "p024-account-console-paper-command-controls"
+    / "partial-fill-owner-repair-evidence-ingest-gate.json"
+)
+P024_PARTIAL_FILL_OWNER_REPAIR_PREFLIGHT_SOURCE_AUDIT = (
+    ROOT
+    / "docs"
+    / "acceptance"
+    / "p024-account-console-paper-command-controls"
+    / "partial-fill-owner-repair-preflight-source-audit.json"
+)
+P024_PARTIAL_FILL_OWNER_REPAIR_PATCH_PREVIEW = (
+    ROOT
+    / "docs"
+    / "acceptance"
+    / "p024-account-console-paper-command-controls"
+    / "partial-fill-owner-repair-patch-preview.json"
+)
+P024_PARTIAL_FILL_OWNER_REPAIR_EXECUTION_HANDOFF_BUNDLE = (
+    ROOT
+    / "docs"
+    / "acceptance"
+    / "p024-account-console-paper-command-controls"
+    / "partial-fill-owner-repair-execution-handoff-bundle.json"
+)
+P024_RUNTIME_HANDOFF_EVIDENCE = (
+    ROOT
+    / "docs"
+    / "acceptance"
+    / "browser-evidence"
+    / "p024-account-console-paper-command-controls"
+    / "runtime-handoff-ui.json"
+)
+P024_RUNTIME_READINESS_UI_EVIDENCE = (
+    ROOT
+    / "docs"
+    / "acceptance"
+    / "browser-evidence"
+    / "p024-account-console-paper-command-controls"
+    / "runtime-readiness-ui.json"
+)
+P024_RUNTIME_APPROVAL_PACKET_UI_EVIDENCE = (
+    ROOT
+    / "docs"
+    / "acceptance"
+    / "browser-evidence"
+    / "p024-account-console-paper-command-controls"
+    / "runtime-approval-packet-ui.json"
+)
+P024_RUNTIME_HANDOFF_BUNDLE_UI_EVIDENCE = (
+    ROOT
+    / "docs"
+    / "acceptance"
+    / "browser-evidence"
+    / "p024-account-console-paper-command-controls"
+    / "runtime-handoff-bundle-ui.json"
+)
+P024_PARTIAL_FILL_RUNTIME_APPROVAL_PACKET_UI_EVIDENCE = (
+    ROOT
+    / "docs"
+    / "acceptance"
+    / "browser-evidence"
+    / "p024-account-console-paper-command-controls"
+    / "partial-fill-runtime-approval-packet-ui.json"
+)
+P024_PARTIAL_FILL_RUNTIME_HANDOFF_BUNDLE_UI_EVIDENCE = (
+    ROOT
+    / "docs"
+    / "acceptance"
+    / "browser-evidence"
+    / "p024-account-console-paper-command-controls"
+    / "partial-fill-runtime-handoff-bundle-ui.json"
+)
+P024_PARTIAL_FILL_OWNER_REPAIR_APPROVAL_PACKET_UI_EVIDENCE = (
+    ROOT
+    / "docs"
+    / "acceptance"
+    / "browser-evidence"
+    / "p024-account-console-paper-command-controls"
+    / "partial-fill-owner-repair-approval-packet-ui.json"
+)
+P024_PARTIAL_FILL_REMAINING_ACCEPTANCE_STATE_UI_EVIDENCE = (
+    ROOT
+    / "docs"
+    / "acceptance"
+    / "browser-evidence"
+    / "p024-account-console-paper-command-controls"
+    / "partial-fill-remaining-acceptance-state-ui.json"
+)
+P024_PARTIAL_FILL_OWNER_REPAIR_PLAN_UI_EVIDENCE = (
+    ROOT
+    / "docs"
+    / "acceptance"
+    / "browser-evidence"
+    / "p024-account-console-paper-command-controls"
+    / "partial-fill-owner-repair-plan-ui.json"
+)
+P024_PARTIAL_FILL_OWNER_REPAIR_INGEST_GATE_UI_EVIDENCE = (
+    ROOT
+    / "docs"
+    / "acceptance"
+    / "browser-evidence"
+    / "p024-account-console-paper-command-controls"
+    / "partial-fill-owner-repair-ingest-gate-ui.json"
+)
+P024_PARTIAL_FILL_OWNER_REPAIR_PREFLIGHT_UI_EVIDENCE = (
+    ROOT
+    / "docs"
+    / "acceptance"
+    / "browser-evidence"
+    / "p024-account-console-paper-command-controls"
+    / "partial-fill-owner-repair-preflight-ui.json"
+)
+P024_PARTIAL_FILL_OWNER_REPAIR_PATCH_PREVIEW_UI_EVIDENCE = (
+    ROOT
+    / "docs"
+    / "acceptance"
+    / "browser-evidence"
+    / "p024-account-console-paper-command-controls"
+    / "partial-fill-owner-repair-patch-preview-ui.json"
+)
+P024_PARTIAL_FILL_OWNER_REPAIR_EXECUTION_HANDOFF_UI_EVIDENCE = (
+    ROOT
+    / "docs"
+    / "acceptance"
+    / "browser-evidence"
+    / "p024-account-console-paper-command-controls"
+    / "partial-fill-owner-repair-execution-handoff-ui.json"
+)
+P024_RUNTIME_EXECUTION_GAP_UI_EVIDENCE = (
+    ROOT
+    / "docs"
+    / "acceptance"
+    / "browser-evidence"
+    / "p024-account-console-paper-command-controls"
+    / "runtime-execution-gap-audit-ui.json"
+)
+P024_OWNER_RUNTIME_READINESS = (
+    ROOT
+    / "docs"
+    / "acceptance"
+    / "p024-account-console-paper-command-controls"
+    / "owner-runtime-invocation-readiness.json"
+)
+P024_FULL_ACCEPTANCE_CLOSEOUT = (
+    ROOT
+    / "docs"
+    / "acceptance"
+    / "p024-account-console-paper-command-controls"
+    / "full-acceptance-closeout.json"
+)
+P024_OWNER_RUNTIME_APPROVAL_PACKET = (
+    ROOT
+    / "docs"
+    / "acceptance"
+    / "p024-account-console-paper-command-controls"
+    / "owner-runtime-execution-approval-packet.json"
+)
+P024_OWNER_RUNTIME_HANDOFF_BUNDLE = (
+    ROOT
+    / "docs"
+    / "acceptance"
+    / "p024-account-console-paper-command-controls"
+    / "owner-runtime-execution-handoff-bundle.json"
+)
+P024_RUNTIME_EXECUTION_GAP_AUDIT = (
+    ROOT
+    / "docs"
+    / "acceptance"
+    / "p024-account-console-paper-command-controls"
+    / "runtime-execution-gap-audit.json"
+)
+OWNER_MAP = ROOT / "docs" / "ownership" / "account-console-owner-map.md"
+
+REQUIRED_DOCS = [
+    "README.md",
+    "phase-plan.md",
+    "acceptance.md",
+    "ui-design.md",
+    "ui-acceptance.md",
+    "partial-fill-cancel-ui-acceptance.md",
+    "runtime-invocation-readiness.md",
+]
+
+ALLOWED_COMMAND_ROUTES = {
+    "/api/commands/accounts/{account_id}/submit-intents": {"POST"},
+    "/api/commands/accounts/{account_id}/cancel-intents": {"POST"},
+    "/api/commands/accounts/{account_id}/runtime-run-requests/submit": {"POST"},
+    "/api/commands/accounts/{account_id}/runtime-run-requests/cancel": {"POST"},
+    "/api/commands/accounts/{account_id}/runtime-closeouts/{run_id}": {"GET"},
+    "/api/commands/accounts/{account_id}/runtime-invocation-readiness": {"GET"},
+    "/api/commands/accounts/{account_id}/runtime-execution-approval-packet": {"GET"},
+    "/api/commands/accounts/{account_id}/runtime-execution-handoff-bundle": {"GET"},
+    "/api/commands/accounts/{account_id}/partial-fill-runtime-execution-approval-packet": {"GET"},
+    "/api/commands/accounts/{account_id}/partial-fill-runtime-execution-handoff-bundle": {"GET"},
+    "/api/commands/accounts/{account_id}/runtime-execution-gap-audit": {"GET"},
+    "/api/commands/accounts/{account_id}/partial-fill-owner-repair-approval-packet": {"GET"},
+    "/api/commands/accounts/{account_id}/partial-fill-remaining-acceptance-current-state": {"GET"},
+    "/api/commands/accounts/{account_id}/partial-fill-owner-repair-implementation-plan": {"GET"},
+    "/api/commands/accounts/{account_id}/partial-fill-owner-repair-evidence-ingest-gate": {"GET"},
+    "/api/commands/accounts/{account_id}/partial-fill-owner-repair-evidence-ingest-audit": {"GET"},
+    "/api/commands/accounts/{account_id}/partial-fill-post-repair-runtime-retry-approval-packet": {"GET"},
+    "/api/commands/accounts/{account_id}/partial-fill-post-repair-runtime-attempt-audit": {"GET"},
+    "/api/commands/accounts/{account_id}/partial-fill-owner-repair-preflight-source-audit": {"GET"},
+    "/api/commands/accounts/{account_id}/partial-fill-owner-repair-patch-preview": {"GET"},
+    "/api/commands/accounts/{account_id}/partial-fill-owner-repair-execution-handoff-bundle": {"GET"},
+}
+
+
+class P024ValidationError(AssertionError):
+    pass
+
+
+def require(condition: bool, message: str) -> None:
+    if not condition:
+        raise P024ValidationError(message)
+
+
+def read(path: Path) -> str:
+    require(path.exists(), f"missing file: {path}")
+    return path.read_text(encoding="utf-8")
+
+
+def load_json(path: Path) -> dict[str, Any]:
+    require(path.exists(), f"missing json file: {path}")
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def validate_docs_exist() -> None:
+    for filename in REQUIRED_DOCS:
+        require((PROPOSAL / filename).exists(), f"P024 missing {filename}")
+
+
+def validate_proposal_index_and_adr() -> None:
+    index = read(PROPOSAL_INDEX)
+    require("P024 Account Console Paper Command Controls" in index, "proposal index missing P024")
+    require("partial-fill then cancel Web UI display correctness" in index, "proposal index missing P024 partial-fill scope")
+    require("owner-backed runtime closeout projection" in index, "proposal index missing P024 runtime closeout scope")
+    require("owner-runtime handoff request evidence" in index, "proposal index missing P024 runtime handoff scope")
+    require("owner-runtime invocation readiness" in index, "proposal index missing P024 runtime readiness scope")
+    require("runtime readiness UI projection" in index, "proposal index missing P024 runtime readiness UI scope")
+    require("residual blocker closeout audit" in index, "proposal index missing P024 closeout audit scope")
+    require("owner-runtime execution approval packet" in index, "proposal index missing P024 approval packet scope")
+    require("runtime approval packet UI projection" in index, "proposal index missing P024 approval packet UI scope")
+    require("owner-runtime execution handoff bundle" in index, "proposal index missing P024 handoff bundle scope")
+    require("runtime handoff bundle UI projection" in index, "proposal index missing P024 handoff bundle UI scope")
+    require("runtime execution gap audit" in index, "proposal index missing P024 runtime execution gap scope")
+    require(
+        "real partial-fill runtime feasibility audit" in index,
+        "proposal index missing P024 partial-fill feasibility scope",
+    )
+
+    adr = read(ADR)
+    require("ADR-0007" in adr, "ADR-0007 missing")
+    require("Second successor proposal: [P024 Account Console Paper Command Controls]" in adr, "ADR missing P024 successor")
+    require("P024 Phase 1 backend command API" in adr, "ADR missing P024 next implementation work")
+    require(
+        "P024 Phase 3a runtime closeout projection is accepted as read-only Web UI evidence" in adr,
+        "ADR missing P024 runtime closeout landing",
+    )
+    require(
+        "P024 Phase 3c owner-runtime handoff request is accepted as browser handoff evidence only" in adr,
+        "ADR missing P024 runtime handoff landing",
+    )
+    require(
+        "P024 Phase 3d owner-runtime invocation readiness is accepted as a readiness gate only" in adr,
+        "ADR missing P024 runtime readiness landing",
+    )
+    require(
+        "P024 Phase 3e runtime readiness UI projection is accepted as browser blocker evidence only" in adr,
+        "ADR missing P024 runtime readiness UI landing",
+    )
+    require(
+        "P024 Phase 4 residual blocker audit is accepted as closeout evidence only" in adr,
+        "ADR missing P024 full closeout audit landing",
+    )
+    require(
+        "P024 Phase 4a owner-runtime execution approval packet is accepted as an approval-packet gate only" in adr,
+        "ADR missing P024 approval packet landing",
+    )
+    require(
+        "P024 Phase 4b runtime approval packet UI projection is accepted as browser blocker evidence only" in adr,
+        "ADR missing P024 approval packet UI landing",
+    )
+    require(
+        "P024 Phase 4c owner-runtime execution handoff bundle is accepted as a handoff gate only" in adr,
+        "ADR missing P024 handoff bundle landing",
+    )
+    require(
+        "P024 Phase 4d runtime handoff bundle UI projection is accepted as browser blocker evidence only" in adr,
+        "ADR missing P024 handoff bundle UI landing",
+    )
+    require(
+        "P024 Phase 4e runtime execution gap audit is accepted as final blocker evidence only" in adr,
+        "ADR missing P024 runtime execution gap landing",
+    )
+
+
+def validate_readme() -> None:
+    text = read(PROPOSAL / "README.md")
+    for phrase in [
+        "Proposal ID: `p024-account-console-paper-command-controls`",
+        "Status: phase4zf_post_repair_runtime_attempt_full_fill_blocker_recorded",
+        "ADR carrier: yes",
+        "Primary ADR: ADR-0007",
+        "Predecessor: [P023 OpenCTP 19053 Paper Command Capability]",
+        "paper-only controls proposal",
+        "No `live_armed` mode.",
+        "No Account Mirror broker writer.",
+        "partial-fill then cancel order-display correctness scenario",
+        "validate_p024_paper_command_controls_design.py",
+        "validate_p024_paper_command_api.py",
+        "validate_p024_ui_command_controls_browser_evidence.py",
+        "validate_p024_runtime_closeout_browser_evidence.py",
+        "validate_p024_partial_fill_cancel_browser_evidence.py",
+        "validate_p024_runtime_handoff_browser_evidence.py",
+        "validate_p024_owner_runtime_invocation_readiness.py",
+        "validate_p024_runtime_readiness_browser_evidence.py",
+        "validate_p024_full_acceptance_closeout.py",
+        "validate_p024_owner_runtime_execution_approval_packet.py",
+        "validate_p024_runtime_approval_packet_browser_evidence.py",
+        "validate_p024_owner_runtime_execution_handoff_bundle.py",
+        "validate_p024_runtime_handoff_bundle_browser_evidence.py",
+        "validate_p024_runtime_execution_gap_audit.py",
+        "validate_p024_runtime_execution_gap_browser_evidence.py",
+        "validate_p024_partial_fill_runtime_feasibility_audit.py",
+        "validate_p024_partial_fill_owner_artifact_scan.py",
+        "validate_p024_partial_fill_runtime_execution_approval_packet.py",
+        "validate_p024_partial_fill_runtime_execution_handoff_bundle.py",
+        "validate_p024_partial_fill_runtime_execution_attempt_audit.py",
+        "validate_p024_partial_fill_close_offset_owner_rule_gap_audit.py",
+        "validate_p024_partial_fill_owner_repair_approval_packet.py",
+        "validate_p024_partial_fill_remaining_acceptance_current_state.py",
+        "validate_p024_partial_fill_owner_repair_implementation_plan.py",
+        "validate_p024_partial_fill_owner_repair_plan_browser_evidence.py",
+        "validate_p024_partial_fill_owner_repair_evidence_ingest_gate.py",
+        "validate_p024_partial_fill_owner_repair_ingest_gate_browser_evidence.py",
+        "validate_p024_partial_fill_owner_repair_preflight_source_audit.py",
+        "validate_p024_partial_fill_owner_repair_preflight_browser_evidence.py",
+        "validate_p024_partial_fill_owner_repair_patch_preview.py",
+        "validate_p024_partial_fill_owner_repair_patch_preview_browser_evidence.py",
+        "validate_p024_partial_fill_owner_repair_execution_handoff_bundle.py",
+        "validate_p024_partial_fill_owner_repair_execution_handoff_browser_evidence.py",
+        "validate_p024_partial_fill_owner_repair_approval_packet_browser_evidence.py",
+        "validate_p024_partial_fill_remaining_acceptance_state_browser_evidence.py",
+        "validate_p024_partial_fill_runtime_approval_packet_browser_evidence.py",
+        "validate_p024_partial_fill_runtime_handoff_bundle_browser_evidence.py",
+        "browser_triggered_broker_order=false",
+        "runtime_invocation_attempted=false",
+        "owner-runtime invocation readiness",
+        "runtime readiness UI projection",
+        "full residual blocker closeout audit",
+        "owner-runtime execution approval packet",
+        "runtime approval packet UI projection",
+        "owner-runtime execution handoff bundle",
+        "runtime handoff bundle UI projection",
+        "runtime execution gap audit",
+        "real partial-fill runtime feasibility",
+        "Owner artifact partial-fill scan",
+        "partial-fill runtime execution approval packet",
+        "partial-fill runtime execution handoff bundle",
+        "partial-fill runtime approval packet UI projection",
+        "partial-fill runtime handoff bundle UI projection",
+        "partial-fill runtime execution attempt audit",
+        "partial-fill close-offset owner rule gap audit",
+        "partial-fill owner repair approval packet",
+        "remaining acceptance current state",
+        "owner close-offset repair implementation plan",
+        "owner repair plan UI projection",
+        "owner repair evidence ingest gate",
+        "owner repair ingest gate UI projection",
+        "owner repair preflight source audit",
+        "owner repair preflight UI projection",
+        "owner repair patch preview",
+        "owner repair patch preview UI projection",
+        "owner repair execution handoff bundle",
+        "owner repair execution handoff UI projection",
+        "owner repair approval packet UI projection",
+        "remaining acceptance state UI projection",
+    ]:
+        require(phrase in text, f"P024 README missing phrase: {phrase}")
+
+
+def validate_phase_plan() -> None:
+    text = read(PROPOSAL / "phase-plan.md")
+    for phrase in [
+        "Artifact Trust Boundary",
+        "output/account_command/ctp-paper-19053/",
+        "phase_1_backend_command_api",
+        "phase_2_frontend_guarded_controls",
+        "completed_browser_contract_gate",
+        "phase_3_browser_paper_submit_cancel",
+        "phase_3a_runtime_closeout_projection",
+        "completed_browser_runtime_projection_gate",
+        "phase_3b_partial_fill_cancel_ui_display",
+        "completed_browser_display_gate",
+        "phase_3c_owner_runtime_handoff_request",
+        "completed_browser_handoff_gate",
+        "phase_3d_owner_runtime_invocation_readiness",
+        "completed_readiness_gate_blocked_by_external_approval",
+        "phase_3e_runtime_readiness_ui_projection",
+        "completed_browser_readiness_projection_gate",
+        "phase_4_closeout",
+        "completed_residual_blocker_audit",
+        "phase_4a_owner_runtime_execution_approval_packet",
+        "completed_approval_packet_gate_runtime_not_invoked",
+        "phase_4b_runtime_approval_packet_ui_projection",
+        "completed_browser_approval_packet_projection_gate",
+        "phase_4c_owner_runtime_execution_handoff_bundle",
+        "completed_handoff_bundle_gate_runtime_not_invoked",
+        "phase_4d_runtime_handoff_bundle_ui_projection",
+        "completed_browser_handoff_bundle_projection_gate",
+        "phase_4e_runtime_execution_gap_audit",
+        "completed_final_gap_audit_gate_blocked_by_owner_runtime_execution",
+        "phase_4h_real_partial_fill_runtime_feasibility",
+        "blocked_until_owner_runtime_partial_fill_state_available",
+        "phase_4i_owner_artifact_partial_fill_scan",
+        "completed_no_qualifying_partial_fill_then_cancel_candidate",
+        "phase_4j_partial_fill_runtime_execution_approval_packet",
+        "approval_packet_ready_runtime_not_invoked",
+        "phase_4k_partial_fill_runtime_execution_handoff_bundle",
+        "handoff_bundle_ready_runtime_not_invoked",
+        "Phase 4l Partial-fill runtime approval packet UI projection",
+        "completed_browser_partial_fill_approval_projection_gate",
+        "Phase 4m Partial-fill runtime handoff bundle UI projection",
+        "completed_browser_partial_fill_handoff_projection_gate",
+        "Runtime closeout projection",
+        "Partial-fill cancel display",
+        "Owner-runtime handoff request",
+        "Owner-runtime invocation readiness",
+        "Runtime readiness UI projection",
+        "Phase 4 Closeout",
+        "Phase 4h Real partial-fill runtime feasibility",
+        "Phase 4i Owner artifact partial-fill scan",
+        "Phase 4j Partial-fill runtime execution approval packet",
+        "Phase 4k Partial-fill runtime execution handoff bundle",
+        "Phase 1 Backend command API",
+        "completed_contract_gate",
+        "validate_p024_paper_command_api.py",
+        "validate_p024_runtime_closeout_browser_evidence.py",
+        "validate_p024_partial_fill_cancel_browser_evidence.py",
+        "validate_p024_runtime_handoff_browser_evidence.py",
+        "validate_p024_owner_runtime_invocation_readiness.py",
+        "validate_p024_runtime_readiness_browser_evidence.py",
+        "validate_p024_full_acceptance_closeout.py",
+        "validate_p024_owner_runtime_execution_approval_packet.py",
+        "validate_p024_runtime_approval_packet_browser_evidence.py",
+        "validate_p024_owner_runtime_execution_handoff_bundle.py",
+        "validate_p024_runtime_handoff_bundle_browser_evidence.py",
+        "validate_p024_partial_fill_runtime_feasibility_audit.py",
+        "validate_p024_partial_fill_owner_artifact_scan.py",
+        "validate_p024_partial_fill_runtime_execution_approval_packet.py",
+        "validate_p024_partial_fill_runtime_execution_handoff_bundle.py",
+        "validate_p024_partial_fill_runtime_approval_packet_browser_evidence.py",
+        "validate_p024_partial_fill_runtime_handoff_bundle_browser_evidence.py",
+        "validate_p024_runtime_execution_gap_audit.py",
+        "validate_p024_runtime_execution_gap_browser_evidence.py",
+        "Browser controls are implemented only for `paper_armed` projection",
+        "browser_triggered_broker_order=false",
+        "Real partial-fill runtime remains blocked",
+        "Web UI owner-runtime handoff requests are accepted only as typed requests",
+        "Phase 3e readiness UI projection is complete",
+        "Phase 4 residual blocker audit is complete",
+        "Phase 4a owner-runtime execution approval packet is complete",
+        "Phase 4b runtime approval packet UI projection is complete",
+        "Phase 4c owner-runtime execution handoff bundle is complete",
+        "Phase 4d runtime handoff bundle UI projection is complete",
+        "Phase 4e runtime execution gap audit is complete",
+        "Phase 4l partial-fill runtime approval packet UI projection is complete",
+        "Phase 4m partial-fill runtime handoff bundle UI projection is complete",
+        "Phase 4n partial-fill runtime execution attempt audit is complete",
+        "Phase 4o close-yesterday owner rule gap audit is complete",
+        "Phase 4p owner close-offset repair approval packet is ready",
+        "Phase 4q remaining acceptance current state audit is complete",
+        "Phase 4r owner close-offset repair implementation plan is ready",
+        "Phase 4s owner repair plan UI projection is complete",
+        "Phase 4t owner repair evidence ingest gate is ready",
+        "Phase 4u owner repair ingest gate UI projection is complete",
+        "Phase 4v owner repair preflight source audit is complete",
+        "Phase 4w owner repair preflight UI projection is complete",
+        "Phase 4x owner repair patch preview is ready",
+        "Phase 4y owner repair patch preview UI projection is complete",
+        "Phase 4z owner repair execution handoff bundle is ready",
+        "Phase 4za owner repair execution handoff UI projection is complete",
+        "Phase 4zb owner repair approval packet UI projection is complete",
+        "Phase 4zc remaining acceptance state UI projection is complete",
+        "external write approval",
+    ]:
+        require(phrase in text, f"P024 phase plan missing phrase: {phrase}")
+
+
+def validate_acceptance() -> None:
+    text = read(PROPOSAL / "acceptance.md")
+    for phrase in [
+        "P024_PAPER_COMMAND_CONTROLS_DESIGN_OK",
+        "P024_PAPER_COMMAND_API_OK",
+        "P024_UI_COMMAND_CONTROLS_BROWSER_EVIDENCE_OK",
+        "P024_RUNTIME_CLOSEOUT_BROWSER_EVIDENCE_OK",
+        "P024_PARTIAL_FILL_CANCEL_BROWSER_EVIDENCE_OK",
+        "P024_RUNTIME_HANDOFF_BROWSER_EVIDENCE_OK",
+        "P024_OWNER_RUNTIME_INVOCATION_READINESS_OK",
+        "P024_RUNTIME_READINESS_BROWSER_EVIDENCE_OK",
+        "P024_FULL_ACCEPTANCE_CLOSEOUT_OK",
+        "P024_OWNER_RUNTIME_EXECUTION_APPROVAL_PACKET_OK",
+        "P024_RUNTIME_APPROVAL_PACKET_BROWSER_EVIDENCE_OK",
+        "P024_OWNER_RUNTIME_EXECUTION_HANDOFF_BUNDLE_OK",
+        "P024_RUNTIME_HANDOFF_BUNDLE_BROWSER_EVIDENCE_OK",
+        "P024_RUNTIME_EXECUTION_GAP_AUDIT_OK",
+        "P024_RUNTIME_EXECUTION_GAP_BROWSER_EVIDENCE_OK",
+        "P024_PARTIAL_FILL_RUNTIME_FEASIBILITY_AUDIT_OK",
+        "P024_PARTIAL_FILL_OWNER_ARTIFACT_SCAN_OK",
+        "P024_PARTIAL_FILL_RUNTIME_EXECUTION_APPROVAL_PACKET_OK",
+        "P024_PARTIAL_FILL_RUNTIME_APPROVAL_PACKET_BROWSER_EVIDENCE_OK",
+        "P024_PARTIAL_FILL_RUNTIME_EXECUTION_HANDOFF_BUNDLE_OK",
+        "P024_PARTIAL_FILL_RUNTIME_EXECUTION_ATTEMPT_AUDIT_OK",
+        "P024_PARTIAL_FILL_CLOSE_OFFSET_OWNER_RULE_GAP_AUDIT_OK",
+        "P024_PARTIAL_FILL_OWNER_REPAIR_EVIDENCE_INGEST_GATE_OK",
+        "P024_PARTIAL_FILL_OWNER_REPAIR_INGEST_GATE_BROWSER_EVIDENCE_OK",
+        "P024_PARTIAL_FILL_OWNER_REPAIR_PREFLIGHT_SOURCE_AUDIT_OK",
+        "P024_PARTIAL_FILL_OWNER_REPAIR_PREFLIGHT_BROWSER_EVIDENCE_OK",
+        "P024_PARTIAL_FILL_OWNER_REPAIR_PATCH_PREVIEW_OK",
+        "P024_PARTIAL_FILL_OWNER_REPAIR_PATCH_PREVIEW_BROWSER_EVIDENCE_OK",
+        "P024_PARTIAL_FILL_OWNER_REPAIR_EXECUTION_HANDOFF_BUNDLE_OK",
+        "P024_PARTIAL_FILL_OWNER_REPAIR_EXECUTION_HANDOFF_BROWSER_EVIDENCE_OK",
+        "P024_PARTIAL_FILL_OWNER_REPAIR_APPROVAL_PACKET_BROWSER_EVIDENCE_OK",
+        "P024_PARTIAL_FILL_REMAINING_ACCEPTANCE_STATE_BROWSER_EVIDENCE_OK",
+        "P024_PARTIAL_FILL_RUNTIME_HANDOFF_BUNDLE_BROWSER_EVIDENCE_OK",
+        "Implementation/browser evidence is required before implementation closeout",
+        "UI Anti-Drift Acceptance",
+        "forbidden_actions",
+        "forbidden_claims",
+        "Account Mirror remains read-only",
+        "gateway ack alone is final",
+        "live mode exposed",
+        "A10",
+        "Partial fill then cancel Web UI order display correctness",
+        "Runtime closeout evidence appears in Web UI without browser-trigger claim",
+        "Web UI prepares owner-runtime submit/cancel handoff without invoking broker runtime",
+        "Owner-runtime invocation readiness and external approval scope are frozen",
+        "Runtime readiness blocker appears in Web UI without broker execution claims",
+        "S1 submitted/working",
+        "S2 partially filled",
+        "S3 cancel pending",
+        "S4 remaining cancelled",
+        "filled_quantity + remaining_quantity == submitted_quantity",
+        "filled_quantity + cancelled_quantity == submitted_quantity",
+        "account-order-identity",
+        "account-cancel-pending-ref",
+        "validate_p024_partial_fill_cancel_browser_evidence.py",
+        "validate_p024_runtime_closeout_browser_evidence.py",
+        "does not claim real partial-fill runtime",
+        "browser_triggered_broker_order=false",
+        "runtime_invocation_attempted=false",
+        "blocked_until_owner_runtime_invocation",
+        "owner_repo_write_attempted=false",
+        "external owner-runtime approval",
+        "Phase 3e Runtime Readiness UI Projection Acceptance",
+        "Phase 4 Full Acceptance Closeout Audit",
+        "phase4_residual_blocker_audit_passed",
+        "accepted_with_residual_owner_runtime_blockers",
+        "Phase 4a Owner Runtime Execution Approval Packet",
+        "approval_packet_ready_runtime_not_invoked",
+        "owner-runtime-execution-approval-packet.json",
+        "Phase 4b Runtime Approval Packet UI Projection",
+        "account-runtime-approval-packet-panel",
+        "account-runtime-approval-packet-exact-text",
+        "Phase 4c Owner Runtime Execution Handoff Bundle",
+        "handoff_bundle_ready_runtime_not_invoked",
+        "owner-runtime-execution-handoff-bundle.json",
+        "Phase 4d Runtime Handoff Bundle UI Projection",
+        "account-runtime-handoff-bundle-panel",
+        "account-runtime-handoff-bundle-execution-allowed",
+        "Phase 4e Runtime Execution Gap Audit",
+        "Phase 4h Real Partial-Fill Runtime Feasibility Audit",
+        "partial-fill-owner-artifact-scan.json",
+        "partial-fill-runtime-execution-approval-packet.json",
+        "partial-fill-runtime-execution-handoff-bundle.json",
+        "partial-fill-runtime-approval-packet-ui.json",
+        "partial-fill-runtime-handoff-bundle-ui.json",
+        "partial-fill-runtime-execution-attempt-audit.json",
+        "partial-fill-close-offset-owner-rule-gap-audit.json",
+        "partial-fill-owner-repair-evidence-ingest-gate.json",
+        "partial-fill-owner-repair-ingest-gate-ui.json",
+        "partial-fill-owner-repair-preflight-source-audit.json",
+        "partial-fill-owner-repair-preflight-ui.json",
+        "partial-fill-owner-repair-patch-preview.json",
+        "partial-fill-owner-repair-patch-preview-ui.json",
+        "partial-fill-owner-repair-execution-handoff-bundle.json",
+        "partial-fill-owner-repair-execution-handoff-ui.json",
+        "partial-fill-owner-repair-approval-packet-ui.json",
+        "partial-fill-remaining-acceptance-state-ui.json",
+        "runtime-execution-gap-audit.json",
+        "account-runtime-execution-gap-panel",
+        "account-runtime-execution-gap-final-claimed",
+        "account-runtime-readiness-panel",
+        "account-runtime-readiness-invoked",
+        "owner_repo_write_attempted=false",
+        "Phase 1 Backend Command API Acceptance",
+        "gateway_send_attempted=false",
+        "accepted_for_risk",
+        "Phase 2 Frontend Guarded Controls Acceptance",
+        "paper_armed_controls_visible",
+        "blocked_until_owner_runtime_partial_fill_state_available",
+        "P077 orders `183` and `232` were fully filled",
+        "up to one small exposure-reduction paper order",
+        "Partial-fill runtime approval packet appears in Web UI",
+        "Partial-fill runtime handoff bundle appears in Web UI",
+        "P024 partial-fill owner repair ingest gate UI projection",
+        "A25",
+        "A26",
+        "A27",
+        "A28",
+        "A29",
+        "A30",
+        "A31",
+        "A32",
+        "A33",
+        "A34",
+        "A35",
+        "A36",
+        "phase4u_owner_repair_ingest_gate_ui_projection_passed",
+        "phase4v_owner_repair_preflight_source_audited",
+        "phase4w_owner_repair_preflight_ui_projection_passed",
+        "phase4x_owner_repair_patch_preview_ready",
+        "phase4y_owner_repair_patch_preview_ui_projection_passed",
+        "phase4z_owner_repair_execution_handoff_bundle_ready",
+        "phase4za_owner_repair_execution_handoff_ui_projection_passed",
+        "phase4zb_owner_repair_approval_packet_ui_projection_passed",
+        "phase4zc_remaining_acceptance_state_ui_projection_passed",
+        "phase4zd_owner_repair_evidence_ingested",
+        "phase4ze_post_repair_runtime_retry_approval_packet_ready",
+        "phase4zf_post_repair_runtime_attempt_full_fill_blocker_recorded",
+    ]:
+        require(phrase in text, f"P024 acceptance missing phrase: {phrase}")
+
+
+def validate_ui_docs() -> None:
+    design = read(PROPOSAL / "ui-design.md")
+    for phrase in [
+        "Data Test ID",
+        "account-submit-order-button",
+        "account-cancel-order-button",
+        "account-order-identity",
+        "account-order-filled-quantity",
+        "account-order-remaining-quantity",
+        "account-order-cancelled-quantity",
+        "account-order-partial-fill-row",
+        "account-remaining-cancel-quantity",
+        "account-cancel-pending-ref",
+        "account-fill-source-ref",
+        "account-command-reconciliation-ref",
+        "account-runtime-closeout-panel",
+        "account-runtime-closeout-web-trigger",
+        "account-runtime-closeout-non-claim",
+        "account-runtime-handoff-panel",
+        "account-runtime-handoff-entrypoint",
+        "account-runtime-handoff-invoked",
+        "account-runtime-handoff-web-trigger",
+        "account-runtime-readiness-panel",
+        "account-runtime-readiness-status",
+        "account-runtime-readiness-owner-path",
+        "account-runtime-readiness-approval-obtained",
+        "account-runtime-readiness-invoked",
+        "account-runtime-readiness-owner-write",
+        "account-runtime-readiness-browser-trigger",
+        "account-runtime-readiness-blocker",
+        "account-runtime-approval-packet-panel",
+        "account-runtime-approval-packet-status",
+        "account-runtime-approval-packet-owner-path",
+        "account-runtime-approval-packet-obtained",
+        "account-runtime-approval-packet-invoked",
+        "account-runtime-approval-packet-owner-write",
+        "account-runtime-approval-packet-broker-order",
+        "account-runtime-approval-packet-exact-text",
+        "account-runtime-approval-packet-entrypoint",
+        "account-runtime-approval-packet-blocker",
+        "account-runtime-handoff-bundle-panel",
+        "account-runtime-handoff-bundle-status",
+        "account-runtime-handoff-bundle-execution-allowed",
+        "account-runtime-handoff-bundle-approval-obtained",
+        "account-runtime-handoff-bundle-invoked",
+        "account-runtime-handoff-bundle-owner-write",
+        "account-runtime-handoff-bundle-broker-order",
+        "account-runtime-handoff-bundle-input",
+        "account-runtime-handoff-bundle-step",
+        "account-runtime-handoff-bundle-artifact-count",
+        "account-runtime-handoff-bundle-gate-count",
+        "account-runtime-handoff-bundle-blocker",
+        "account-partial-fill-runtime-approval-packet-panel",
+        "account-partial-fill-runtime-approval-packet-status",
+        "account-partial-fill-runtime-approval-packet-exact-text",
+        "account-partial-fill-runtime-approval-packet-formula",
+        "account-partial-fill-runtime-approval-packet-new-order",
+        "account-partial-fill-runtime-approval-packet-cancel-sent",
+        "account-partial-fill-runtime-handoff-bundle-panel",
+        "account-partial-fill-runtime-handoff-bundle-status",
+        "account-partial-fill-runtime-handoff-bundle-execution-allowed",
+        "account-partial-fill-runtime-handoff-bundle-new-order",
+        "account-partial-fill-runtime-handoff-bundle-cancel-sent",
+        "account-partial-fill-runtime-handoff-bundle-success",
+        "account-partial-fill-runtime-handoff-bundle-fallback",
+        "account-runtime-execution-gap-panel",
+        "account-runtime-execution-gap-status",
+        "account-runtime-execution-gap-verdict",
+        "account-runtime-execution-gap-final-claimed",
+        "account-runtime-execution-gap-not-accepted",
+        "account-runtime-execution-gap-approval-obtained",
+        "account-runtime-execution-gap-invoked",
+        "account-runtime-execution-gap-owner-write",
+        "account-runtime-execution-gap-broker-order",
+        "account-runtime-execution-gap-artifact-count",
+        "account-runtime-execution-gap-required",
+        "account-runtime-execution-gap-blocker",
+        "account-partial-fill-owner-repair-approval-packet-panel",
+        "account-partial-fill-owner-repair-approval-packet-status",
+        "account-partial-fill-owner-repair-approval-packet-exact-text",
+        "account-partial-fill-owner-repair-approval-packet-current-matches",
+        "account-partial-fill-owner-repair-approval-packet-runtime-retry",
+        "account-partial-fill-owner-repair-approval-packet-owner-write",
+        "account-partial-fill-owner-repair-approval-packet-full-claimed",
+        "account-partial-fill-remaining-acceptance-panel",
+        "account-partial-fill-remaining-acceptance-requirement",
+        "account-partial-fill-remaining-acceptance-full-claimed",
+        "account-partial-fill-remaining-acceptance-runtime-retry",
+        "After terminal cancel",
+    ]:
+        require(phrase in design, f"P024 UI design missing phrase: {phrase}")
+
+    ui_acceptance = read(PROPOSAL / "ui-acceptance.md")
+    for phrase in [
+        "Browser Acceptance",
+        "Negative UI Acceptance",
+        "Blocker",
+        "UI-09",
+        "partial fill then cancel display correctness",
+        "Same `account-order-identity`",
+        "S4 cancelled quantity equals S2 remaining quantity",
+        "Screenshots alone are not sufficient",
+        "NUI-09",
+        "UI-10",
+        "runtime closeout projection",
+        "account-runtime-closeout-panel",
+        "account-runtime-closeout-web-trigger",
+        "P024_RUNTIME_CLOSEOUT_BROWSER_EVIDENCE_OK",
+        "phase3e_runtime_readiness_ui_projection_passed",
+        "UI-11",
+        "owner-runtime handoff request",
+        "account-runtime-handoff-panel",
+        "P024_RUNTIME_HANDOFF_BROWSER_EVIDENCE_OK",
+        "UI-12",
+        "runtime readiness blocker projection",
+        "account-runtime-readiness-panel",
+        "P024_RUNTIME_READINESS_BROWSER_EVIDENCE_OK",
+        "UI-13",
+        "runtime approval packet projection",
+        "account-runtime-approval-packet-panel",
+        "P024_RUNTIME_APPROVAL_PACKET_BROWSER_EVIDENCE_OK",
+        "UI-14",
+        "runtime handoff bundle projection",
+        "account-runtime-handoff-bundle-panel",
+        "P024_RUNTIME_HANDOFF_BUNDLE_BROWSER_EVIDENCE_OK",
+        "UI-16",
+        "partial-fill runtime approval packet projection",
+        "account-partial-fill-runtime-approval-packet-panel",
+        "P024_PARTIAL_FILL_RUNTIME_APPROVAL_PACKET_BROWSER_EVIDENCE_OK",
+        "UI-17",
+        "partial-fill runtime handoff bundle projection",
+        "account-partial-fill-runtime-handoff-bundle-panel",
+        "P024_PARTIAL_FILL_RUNTIME_HANDOFF_BUNDLE_BROWSER_EVIDENCE_OK",
+        "UI-18",
+        "owner repair approval packet projection",
+        "account-partial-fill-owner-repair-approval-packet-panel",
+        "P024_PARTIAL_FILL_OWNER_REPAIR_APPROVAL_PACKET_BROWSER_EVIDENCE_OK",
+        "UI-19",
+        "remaining acceptance state projection",
+        "account-partial-fill-remaining-acceptance-panel",
+        "P024_PARTIAL_FILL_REMAINING_ACCEPTANCE_STATE_BROWSER_EVIDENCE_OK",
+        "UI-15",
+        "runtime execution gap audit projection",
+        "account-runtime-execution-gap-panel",
+        "P024_RUNTIME_EXECUTION_GAP_BROWSER_EVIDENCE_OK",
+        "NUI-13",
+        "NUI-14",
+        "NUI-15",
+        "NUI-16",
+        "NUI-17",
+        "NUI-18",
+        "NUI-19",
+    ]:
+        require(phrase in ui_acceptance, f"P024 UI acceptance missing phrase: {phrase}")
+
+
+def validate_partial_fill_cancel_doc() -> None:
+    text = read(PROPOSAL / "partial-fill-cancel-ui-acceptance.md")
+    for phrase in [
+        "Proposal ID: `p024-account-console-paper-command-controls`",
+        "Status: phase3b_partial_fill_cancel_ui_display_passed",
+        "acct.ctp.paper.19053",
+        "not turn screenshots, browser text or TickTrader UI state into order truth",
+        "account-console.p024.partial-fill-cancel-ui-acceptance.v1",
+        "same_order_identity_across_stages",
+        "s2_browser_fill_sum_equals_order_filled_quantity",
+        "s2_cancel_target_equals_s2_remaining_quantity",
+        "s3_quantities_unchanged_until_cancel_readback",
+        "s3_cancel_pending_is_not_terminal",
+        "s4_cancelled_quantity_equals_s2_remaining_quantity",
+        "s4_remaining_quantity_zero",
+        "fill_trade_identities_stable_after_cancel",
+        "account-command-readback-ref",
+        "account-command-reconciliation-ref",
+        "does_not_use_screenshot_as_order_truth",
+        "gateway_ack_is_not_final_state",
+        "raw_secret_values_recorded=false",
+        "P023_PARTIAL_FILL_BROWSER_EVIDENCE_OK",
+        "P024_PARTIAL_FILL_CANCEL_BROWSER_EVIDENCE_OK",
+        "typed_blocker_until_real_or_owner_approved_partial_fill_state",
+    ]:
+        require(phrase in text, f"P024 partial-fill cancel acceptance missing phrase: {phrase}")
+
+
+def validate_p024_partial_fill_evidence() -> None:
+    payload = load_json(P024_PARTIAL_EVIDENCE)
+    require(
+        payload["schema"] == "account-console.p024.partial-fill-cancel-ui-acceptance.v1",
+        "P024 partial-fill schema mismatch",
+    )
+    require(payload["proposal_id"] == "p024-account-console-paper-command-controls", "P024 partial proposal mismatch")
+    require(payload["partial_cancel_display_verdict"] == "pass", "P024 partial display verdict mismatch")
+    require(
+        payload["runtime_partial_fill_verdict"]
+        == "typed_blocker_until_real_or_owner_approved_partial_fill_state",
+        "P024 runtime partial-fill blocker missing",
+    )
+    checks = payload.get("partial_cancel_display_checks") or {}
+    for check in [
+        "same_order_identity_across_stages",
+        "s2_browser_fill_sum_equals_order_filled_quantity",
+        "s2_trade_refs_match_api_projection",
+        "s2_cancel_target_equals_s2_remaining_quantity",
+        "s3_quantities_unchanged_until_cancel_readback",
+        "s3_no_remaining_cancel_quantity_visible",
+        "s3_cancel_pending_is_not_terminal",
+        "s4_filled_quantity_preserved_after_cancel",
+        "s4_cancelled_quantity_equals_s2_remaining_quantity",
+        "s4_remaining_quantity_zero",
+        "s4_no_remaining_cancel_quantity_visible",
+        "fill_trade_identities_stable_after_cancel",
+    ]:
+        require(checks.get(check) is True, f"P024 partial display check missing: {check}")
+    cancel = payload.get("cancel_request") or {}
+    require(cancel.get("mode") == "paper_armed", "P024 partial cancel mode mismatch")
+    require(cancel.get("venue_order_id") == "ctp19053-p024-partial-order-001", "P024 partial cancel identity mismatch")
+    artifacts = payload.get("command_artifacts") or {}
+    require(artifacts.get("gateway_ack_is_final_state") is False, "P024 partial gateway final flag mismatch")
+    non_claims = set(payload.get("explicit_non_claims") or [])
+    for claim in [
+        "does_not_prove_real_openctp_partial_fill_runtime",
+        "does_not_use_screenshot_as_order_truth",
+        "does_not_claim_live_readiness",
+        "gateway_ack_is_not_final_state",
+    ]:
+        require(claim in non_claims, f"P024 partial non-claim missing: {claim}")
+
+
+def validate_p024_runtime_closeout_evidence() -> None:
+    payload = load_json(P024_RUNTIME_CLOSEOUT_EVIDENCE)
+    require(payload["schema"] == "account-console.p024.runtime-closeout-ui.v1", "P024 runtime schema mismatch")
+    require(payload["proposal_id"] == "p024-account-console-paper-command-controls", "P024 runtime proposal mismatch")
+    require(payload["account_id"] == "acct.ctp.paper.19053", "P024 runtime account mismatch")
+    require(payload["run_id"] == "p023-armed-20260621t0748z", "P024 runtime run id mismatch")
+    require(payload["verdict"] == "pass", "P024 runtime verdict mismatch")
+    require(payload["api_schema"] == "account_command.runtime_closeout.v1", "P024 runtime API schema mismatch")
+    require(payload["api_status"] == "reconciled", "P024 runtime API status mismatch")
+    require(payload["api_mode"] == "paper_armed", "P024 runtime API mode mismatch")
+    require(payload["runtime_gateway_send_observed"] is True, "P024 runtime gateway send evidence missing")
+    require(payload["broker_order_created"] is True, "P024 runtime broker order evidence missing")
+    require(payload["browser_triggered_broker_order"] is False, "P024 runtime browser trigger non-claim missing")
+    require(payload["gateway_ack_is_final_state"] is False, "P024 runtime gateway final flag mismatch")
+    require(payload["raw_secret_values_recorded"] is False, "P024 runtime raw secret flag mismatch")
+    require(payload["raw_broker_endpoint_recorded"] is False, "P024 runtime raw endpoint flag mismatch")
+    require(payload["artifact_checksum_count"] >= 13, "P024 runtime artifact checksum count too low")
+    checks = payload.get("browser_checks") or {}
+    for check in [
+        "runtime_panel_visible",
+        "command_status_refs_visible",
+        "browser_trigger_displayed_false",
+        "gateway_final_displayed_false",
+        "live_ready_wording_absent",
+    ]:
+        require(checks.get(check) is True, f"P024 runtime browser check missing: {check}")
+    non_claims = set(payload.get("explicit_non_claims") or [])
+    for claim in [
+        "does_not_send_broker_order_from_browser_read",
+        "does_not_store_raw_ctp_secret_or_endpoint",
+        "does_not_claim_live_readiness",
+        "does_not_make_gateway_ack_final_state",
+        "web_ui_trigger_of_new_runtime_order_still_pending",
+    ]:
+        require(claim in non_claims, f"P024 runtime non-claim missing: {claim}")
+
+
+def validate_p024_runtime_handoff_evidence() -> None:
+    payload = load_json(P024_RUNTIME_HANDOFF_EVIDENCE)
+    require(payload["schema"] == "account-console.p024.runtime-handoff-ui.v1", "P024 handoff schema mismatch")
+    require(payload["proposal_id"] == "p024-account-console-paper-command-controls", "P024 handoff proposal mismatch")
+    require(payload["account_id"] == "acct.ctp.paper.19053", "P024 handoff account mismatch")
+    require(payload["verdict"] == "pass", "P024 handoff verdict mismatch")
+    checks = payload.get("browser_checks") or {}
+    for check in [
+        "handoff_panel_visible",
+        "submit_handoff_displayed",
+        "cancel_handoff_displayed",
+        "runtime_invocation_displayed_false",
+        "browser_trigger_displayed_false",
+        "live_ready_wording_absent",
+    ]:
+        require(checks.get(check) is True, f"P024 handoff browser check missing: {check}")
+    for key, action, entrypoint in [
+        ("submit_handoff", "submit", "ctp_guarded_paper_order_loop.py"),
+        ("cancel_handoff", "cancel", "ctp_guarded_paper_cancel_loop.py"),
+    ]:
+        handoff = payload.get(key) or {}
+        require(handoff.get("schema_version") == "account_command.owner_runtime_run_request.v1", f"{key}: schema mismatch")
+        require(handoff.get("action") == action, f"{key}: action mismatch")
+        require(handoff.get("status") == "blocked_until_owner_runtime_invocation", f"{key}: status mismatch")
+        require(str(handoff.get("owner_runtime_entrypoint_ref")).endswith(entrypoint), f"{key}: entrypoint mismatch")
+        require(handoff.get("runtime_invocation_attempted") is False, f"{key}: runtime invocation flag mismatch")
+        require(handoff.get("browser_triggered_broker_order") is False, f"{key}: browser trigger flag mismatch")
+        require(handoff.get("gateway_send_attempted") is False, f"{key}: gateway send flag mismatch")
+        require(handoff.get("broker_order_created") is False, f"{key}: broker order flag mismatch")
+        require(handoff.get("raw_secret_values_recorded") is False, f"{key}: raw secret flag mismatch")
+        require(handoff.get("raw_broker_endpoint_recorded") is False, f"{key}: raw endpoint flag mismatch")
+        require(len(handoff.get("blockers") or []) == 3, f"{key}: blocker count mismatch")
+        non_claims = set(handoff.get("explicit_non_claims") or [])
+        for claim in [
+            "does_not_invoke_owner_runtime",
+            "does_not_send_broker_order_from_browser",
+            "does_not_store_raw_ctp_secret_or_endpoint",
+            "does_not_claim_live_readiness",
+            "does_not_make_gateway_ack_final_state",
+        ]:
+            require(claim in non_claims, f"{key}: missing non-claim {claim}")
+
+
+def validate_p024_owner_runtime_readiness() -> None:
+    payload = load_json(P024_OWNER_RUNTIME_READINESS)
+    require(
+        payload["schema"] == "account-console.p024.owner-runtime-invocation-readiness.v1",
+        "P024 runtime readiness schema mismatch",
+    )
+    require(payload["proposal_id"] == "p024-account-console-paper-command-controls", "P024 readiness proposal mismatch")
+    require(payload["account_id"] == "acct.ctp.paper.19053", "P024 readiness account mismatch")
+    require(
+        payload["status"] == "blocked_waiting_for_external_owner_runtime_write_approval",
+        "P024 readiness status mismatch",
+    )
+    require(payload["verdict"] == "readiness_package_passed_runtime_not_invoked", "P024 readiness verdict mismatch")
+    owner = payload["owner_runtime"]
+    require(owner["owner_ref"] == "owner://nautilus_ctp_adapter", "P024 readiness owner mismatch")
+    require(owner["config_raw_content_read"] is False, "P024 readiness config read flag mismatch")
+    require(owner["raw_secret_values_recorded"] is False, "P024 readiness raw secret flag mismatch")
+    require(owner["raw_broker_endpoint_recorded"] is False, "P024 readiness raw endpoint flag mismatch")
+    entrypoints = {entry["action"]: entry for entry in payload["entrypoints"]}
+    require(set(entrypoints) == {"submit", "cancel"}, "P024 readiness entrypoint action mismatch")
+    require(entrypoints["submit"]["armed_flag"] == "--arm-paper-send", "P024 readiness submit arm flag mismatch")
+    require(entrypoints["cancel"]["armed_flag"] == "--arm-cancel-send", "P024 readiness cancel arm flag mismatch")
+    approval = payload["external_write_approval_request"]
+    require(approval["required"] is True, "P024 readiness approval required mismatch")
+    require(approval["obtained"] is False, "P024 readiness approval obtained mismatch")
+    require(approval["approval_path"] == "D:/Nautilus/nautilus_ctp_adapter", "P024 readiness approval path mismatch")
+    negative = payload["negative_assertions"]
+    for key in [
+        "runtime_invocation_attempted",
+        "owner_repo_write_attempted",
+        "browser_triggered_broker_order",
+        "gateway_send_attempted",
+        "broker_order_created",
+        "live_armed",
+        "raw_secret_values_recorded",
+        "raw_broker_endpoint_recorded",
+        "config_raw_content_read",
+    ]:
+        require(negative[key] is False, f"P024 readiness negative assertion mismatch: {key}")
+    non_claims = set(payload["explicit_non_claims"])
+    for claim in [
+        "does_not_invoke_owner_runtime",
+        "does_not_send_broker_order_from_browser",
+        "does_not_write_owner_repo",
+        "does_not_read_raw_ctp_secret_or_endpoint",
+        "does_not_claim_live_readiness",
+        "does_not_close_phase_3_runtime_execution",
+    ]:
+        require(claim in non_claims, f"P024 readiness missing non-claim: {claim}")
+
+
+def validate_p024_runtime_readiness_ui_evidence() -> None:
+    payload = load_json(P024_RUNTIME_READINESS_UI_EVIDENCE)
+    require(payload["schema"] == "account-console.p024.runtime-readiness-ui.v1", "P024 readiness UI schema mismatch")
+    require(payload["proposal_id"] == "p024-account-console-paper-command-controls", "P024 readiness UI proposal mismatch")
+    require(payload["account_id"] == "acct.ctp.paper.19053", "P024 readiness UI account mismatch")
+    require(payload["verdict"] == "pass", "P024 readiness UI verdict mismatch")
+    readiness = payload["api_readiness"]
+    require(
+        readiness["schema"] == "account-console.p024.owner-runtime-invocation-readiness.v1",
+        "P024 readiness UI API schema mismatch",
+    )
+    require(
+        readiness["status"] == "blocked_waiting_for_external_owner_runtime_write_approval",
+        "P024 readiness UI status mismatch",
+    )
+    require(readiness["owner_ref"] == "owner://nautilus_ctp_adapter", "P024 readiness UI owner mismatch")
+    require(readiness["owner_repo_path"] == "D:/Nautilus/nautilus_ctp_adapter", "P024 readiness UI path mismatch")
+    require(readiness["config_ref"] == "cfgs/local/ctp.openctp.tts.7x24.local.json", "P024 readiness UI config mismatch")
+    require(readiness["config_raw_content_read"] is False, "P024 readiness UI raw config read flag mismatch")
+    require(readiness["approval_required"] is True, "P024 readiness UI approval required mismatch")
+    require(readiness["approval_obtained"] is False, "P024 readiness UI approval obtained mismatch")
+    require(readiness["entrypoint_count"] == 2, "P024 readiness UI entrypoint count mismatch")
+    require(readiness["blocker_count"] == 2, "P024 readiness UI blocker count mismatch")
+    for key in [
+        "runtime_invocation_attempted",
+        "owner_repo_write_attempted",
+        "browser_triggered_broker_order",
+        "gateway_send_attempted",
+        "broker_order_created",
+        "raw_secret_values_recorded",
+        "raw_broker_endpoint_recorded",
+    ]:
+        require(readiness[key] is False, f"P024 readiness UI negative assertion mismatch: {key}")
+    checks = payload.get("browser_checks") or {}
+    for check in [
+        "readiness_panel_visible",
+        "owner_ref_displayed",
+        "owner_path_displayed",
+        "config_ref_displayed_without_raw_endpoint",
+        "approval_required_displayed_true",
+        "approval_obtained_displayed_false",
+        "runtime_invocation_displayed_false",
+        "owner_write_displayed_false",
+        "browser_trigger_displayed_false",
+        "raw_secret_displayed_false",
+        "entrypoints_displayed",
+        "blockers_displayed",
+        "sensitive_endpoint_wording_absent",
+    ]:
+        require(checks.get(check) is True, f"P024 readiness UI browser check missing: {check}")
+    non_claims = set(payload["explicit_non_claims"])
+    for claim in [
+        "does_not_invoke_owner_runtime",
+        "does_not_send_broker_order_from_browser",
+        "does_not_write_owner_repo",
+        "does_not_read_raw_ctp_secret_or_endpoint",
+        "does_not_claim_live_readiness",
+        "does_not_close_phase_3_runtime_execution",
+    ]:
+        require(claim in non_claims, f"P024 readiness UI missing non-claim: {claim}")
+
+
+def validate_p024_runtime_approval_packet_ui_evidence() -> None:
+    payload = load_json(P024_RUNTIME_APPROVAL_PACKET_UI_EVIDENCE)
+    require(
+        payload["schema"] == "account-console.p024.runtime-approval-packet-ui.v1",
+        "P024 approval packet UI schema mismatch",
+    )
+    require(payload["proposal_id"] == "p024-account-console-paper-command-controls", "P024 approval UI proposal mismatch")
+    require(payload["account_id"] == "acct.ctp.paper.19053", "P024 approval UI account mismatch")
+    require(payload["verdict"] == "pass", "P024 approval UI verdict mismatch")
+    packet = payload["api_approval_packet"]
+    require(
+        packet["schema"] == "account-console.p024.owner-runtime-execution-approval-packet.v1",
+        "P024 approval UI API schema mismatch",
+    )
+    require(
+        packet["status"] == "phase4a_owner_runtime_execution_approval_packet_ready",
+        "P024 approval UI status mismatch",
+    )
+    require(packet["verdict"] == "approval_packet_ready_runtime_not_invoked", "P024 approval UI verdict mismatch")
+    require(packet["approval_required"] is True, "P024 approval UI required mismatch")
+    require(packet["approval_obtained"] is False, "P024 approval UI obtained mismatch")
+    require(packet["approval_path"] == "D:/Nautilus/nautilus_ctp_adapter", "P024 approval UI path mismatch")
+    require(packet["exact_approval_text_present"] is True, "P024 approval UI exact text missing")
+    require(packet["entrypoint_count"] == 2, "P024 approval UI entrypoint count mismatch")
+    require(packet["blocker_count"] == 2, "P024 approval UI blocker count mismatch")
+    for key in [
+        "runtime_invocation_attempted",
+        "owner_repo_write_attempted",
+        "browser_triggered_broker_order",
+        "gateway_send_attempted",
+        "broker_order_created",
+        "raw_secret_values_recorded",
+        "raw_broker_endpoint_recorded",
+    ]:
+        require(packet[key] is False, f"P024 approval UI negative assertion mismatch: {key}")
+    checks = payload.get("browser_checks") or {}
+    for check in [
+        "approval_packet_panel_visible",
+        "owner_path_displayed",
+        "exact_approval_text_displayed",
+        "approval_required_displayed_true",
+        "approval_obtained_displayed_false",
+        "runtime_invocation_displayed_false",
+        "owner_write_displayed_false",
+        "broker_order_displayed_false",
+        "entrypoints_displayed",
+        "blockers_displayed",
+        "sensitive_endpoint_wording_absent",
+    ]:
+        require(checks.get(check) is True, f"P024 approval UI browser check missing: {check}")
+
+
+def validate_p024_runtime_handoff_bundle_ui_evidence() -> None:
+    payload = load_json(P024_RUNTIME_HANDOFF_BUNDLE_UI_EVIDENCE)
+    require(
+        payload["schema"] == "account-console.p024.runtime-handoff-bundle-ui.v1",
+        "P024 handoff bundle UI schema mismatch",
+    )
+    require(payload["proposal_id"] == "p024-account-console-paper-command-controls", "P024 handoff UI proposal mismatch")
+    require(payload["account_id"] == "acct.ctp.paper.19053", "P024 handoff UI account mismatch")
+    require(payload["verdict"] == "pass", "P024 handoff UI verdict mismatch")
+    bundle = payload["api_handoff_bundle"]
+    require(
+        bundle["schema"] == "account-console.p024.owner-runtime-execution-handoff-bundle.v1",
+        "P024 handoff UI API schema mismatch",
+    )
+    require(
+        bundle["status"] == "phase4c_owner_runtime_execution_handoff_bundle_ready",
+        "P024 handoff UI API status mismatch",
+    )
+    require(bundle["verdict"] == "handoff_bundle_ready_runtime_not_invoked", "P024 handoff UI API verdict mismatch")
+    require(bundle["execution_allowed"] is False, "P024 handoff UI execution allowed mismatch")
+    require(bundle["approval_required"] is True, "P024 handoff UI approval required mismatch")
+    require(bundle["approval_obtained"] is False, "P024 handoff UI approval obtained mismatch")
+    require(bundle["runtime_input_count"] == 7, "P024 handoff UI input count mismatch")
+    require(bundle["operator_step_count"] == 7, "P024 handoff UI step count mismatch")
+    require(bundle["required_owner_artifact_count"] == 14, "P024 handoff UI artifact count mismatch")
+    require(bundle["post_handoff_gate_count"] == 6, "P024 handoff UI gate count mismatch")
+    require(bundle["blocker_count"] == 3, "P024 handoff UI blocker count mismatch")
+    for key in [
+        "runtime_invocation_attempted",
+        "owner_repo_write_attempted",
+        "browser_triggered_broker_order",
+        "gateway_send_attempted",
+        "broker_order_created",
+        "raw_secret_values_recorded",
+        "raw_broker_endpoint_recorded",
+    ]:
+        require(bundle[key] is False, f"P024 handoff UI negative assertion mismatch: {key}")
+    checks = payload.get("browser_checks") or {}
+    for check in [
+        "handoff_bundle_panel_visible",
+        "execution_allowed_displayed_false",
+        "approval_obtained_displayed_false",
+        "runtime_invocation_displayed_false",
+        "owner_write_displayed_false",
+        "broker_order_displayed_false",
+        "runtime_inputs_displayed",
+        "operator_sequence_displayed",
+        "required_artifact_count_displayed",
+        "post_handoff_gate_count_displayed",
+        "blockers_displayed",
+        "sensitive_endpoint_wording_absent",
+    ]:
+        require(checks.get(check) is True, f"P024 handoff UI browser check missing: {check}")
+    non_claims = set(payload.get("explicit_non_claims") or [])
+    for claim in [
+        "does_not_invoke_owner_runtime",
+        "does_not_write_owner_repo",
+        "does_not_send_broker_order_from_browser",
+        "does_not_create_broker_order",
+        "does_not_guess_runtime_inputs",
+        "does_not_read_raw_ctp_secret_or_endpoint",
+        "does_not_claim_live_readiness",
+        "does_not_close_real_runtime_execution",
+    ]:
+        require(claim in non_claims, f"P024 handoff UI missing non-claim: {claim}")
+
+
+def validate_p024_partial_fill_runtime_approval_packet_ui_evidence() -> None:
+    payload = load_json(P024_PARTIAL_FILL_RUNTIME_APPROVAL_PACKET_UI_EVIDENCE)
+    require(
+        payload["schema"] == "account-console.p024.partial-fill-runtime-approval-packet-ui.v1",
+        "P024 partial-fill approval UI schema mismatch",
+    )
+    require(payload["proposal_id"] == "p024-account-console-paper-command-controls", "P024 partial approval proposal mismatch")
+    require(payload["account_id"] == "acct.ctp.paper.19053", "P024 partial approval account mismatch")
+    require(payload["verdict"] == "pass", "P024 partial approval UI verdict mismatch")
+    packet = payload["api_approval_packet"]
+    require(
+        packet["schema"] == "account-console.p024.partial-fill-runtime-execution-approval-packet.v1",
+        "P024 partial approval UI API schema mismatch",
+    )
+    require(
+        packet["status"] == "phase4j_partial_fill_runtime_execution_approval_packet_ready",
+        "P024 partial approval UI status mismatch",
+    )
+    require(packet["verdict"] == "approval_packet_ready_runtime_not_invoked", "P024 partial approval UI verdict mismatch")
+    require(packet["approval_required"] is True, "P024 partial approval UI required mismatch")
+    require(packet["approval_obtained"] is False, "P024 partial approval UI obtained mismatch")
+    require(packet["exact_approval_text_present"] is True, "P024 partial approval UI exact text missing")
+    require(packet["entrypoint_count"] == 2, "P024 partial approval UI entrypoint count mismatch")
+    require(packet["blocker_count"] == 2, "P024 partial approval UI blocker count mismatch")
+    for key in [
+        "runtime_invocation_attempted",
+        "owner_repo_write_attempted",
+        "new_order_submitted",
+        "cancel_sent",
+        "browser_triggered_broker_order",
+        "gateway_send_attempted",
+        "broker_order_created",
+        "raw_secret_values_recorded",
+        "raw_broker_endpoint_recorded",
+    ]:
+        require(packet[key] is False, f"P024 partial approval UI negative assertion mismatch: {key}")
+    checks = payload.get("browser_checks") or {}
+    for check in [
+        "approval_packet_panel_visible",
+        "exact_approval_text_displayed",
+        "approval_obtained_displayed_false",
+        "runtime_invocation_displayed_false",
+        "owner_write_displayed_false",
+        "new_order_displayed_false",
+        "cancel_sent_displayed_false",
+        "formulas_displayed",
+        "entrypoints_displayed",
+        "blockers_displayed",
+        "sensitive_endpoint_wording_absent",
+    ]:
+        require(checks.get(check) is True, f"P024 partial approval UI browser check missing: {check}")
+
+
+def validate_p024_partial_fill_runtime_handoff_bundle_ui_evidence() -> None:
+    payload = load_json(P024_PARTIAL_FILL_RUNTIME_HANDOFF_BUNDLE_UI_EVIDENCE)
+    require(
+        payload["schema"] == "account-console.p024.partial-fill-runtime-handoff-bundle-ui.v1",
+        "P024 partial-fill handoff UI schema mismatch",
+    )
+    require(payload["proposal_id"] == "p024-account-console-paper-command-controls", "P024 partial handoff proposal mismatch")
+    require(payload["account_id"] == "acct.ctp.paper.19053", "P024 partial handoff account mismatch")
+    require(payload["verdict"] == "pass", "P024 partial handoff UI verdict mismatch")
+    bundle = payload["api_handoff_bundle"]
+    require(
+        bundle["schema"] == "account-console.p024.partial-fill-runtime-execution-handoff-bundle.v1",
+        "P024 partial handoff UI API schema mismatch",
+    )
+    require(
+        bundle["status"] == "phase4k_partial_fill_runtime_execution_handoff_bundle_ready",
+        "P024 partial handoff UI status mismatch",
+    )
+    require(bundle["verdict"] == "handoff_bundle_ready_runtime_not_invoked", "P024 partial handoff UI verdict mismatch")
+    require(bundle["execution_allowed"] is False, "P024 partial handoff UI execution allowed mismatch")
+    require(bundle["approval_required"] is True, "P024 partial handoff UI required mismatch")
+    require(bundle["approval_obtained"] is False, "P024 partial handoff UI obtained mismatch")
+    require(bundle["runtime_input_count"] == 4, "P024 partial handoff UI input count mismatch")
+    require(bundle["operator_step_count"] == 7, "P024 partial handoff UI step count mismatch")
+    require(bundle["non_ui_success_count"] == 5, "P024 partial handoff UI non-ui success count mismatch")
+    require(bundle["web_ui_success_count"] == 4, "P024 partial handoff UI web-ui success count mismatch")
+    require(bundle["fallback_count"] == 4, "P024 partial handoff UI fallback count mismatch")
+    for key in [
+        "runtime_invocation_attempted",
+        "owner_repo_write_attempted",
+        "new_order_submitted",
+        "cancel_sent",
+        "full_acceptance_claimed",
+        "browser_fixture_promoted_to_runtime_truth",
+        "raw_secret_values_recorded",
+        "raw_broker_endpoint_recorded",
+    ]:
+        require(bundle[key] is False, f"P024 partial handoff UI negative assertion mismatch: {key}")
+    checks = payload.get("browser_checks") or {}
+    for check in [
+        "handoff_bundle_panel_visible",
+        "execution_allowed_displayed_false",
+        "approval_obtained_displayed_false",
+        "runtime_invocation_displayed_false",
+        "owner_write_displayed_false",
+        "new_order_displayed_false",
+        "cancel_sent_displayed_false",
+        "runtime_inputs_displayed",
+        "operator_sequence_displayed",
+        "success_criteria_displayed",
+        "fallback_classifications_displayed",
+        "sensitive_endpoint_wording_absent",
+    ]:
+        require(checks.get(check) is True, f"P024 partial handoff UI browser check missing: {check}")
+
+
+def validate_p024_partial_fill_runtime_execution_attempt_audit() -> None:
+    payload = load_json(P024_PARTIAL_FILL_RUNTIME_EXECUTION_ATTEMPT_AUDIT)
+    require(
+        payload["schema"] == "account-console.p024.partial-fill-runtime-execution-attempt-audit.v1",
+        "P024 partial-fill attempt audit schema mismatch",
+    )
+    require(
+        payload["status"] == "phase4n_partial_fill_runtime_attempt_rejected_blocker_recorded",
+        "P024 partial-fill attempt audit status mismatch",
+    )
+    require(
+        payload["verdict"] == "real_owner_runtime_attempt_did_not_produce_partial_fill",
+        "P024 partial-fill attempt audit verdict mismatch",
+    )
+    attempt = payload["attempt"]
+    require(attempt["instrument"] == "rb2610", "P024 partial-fill attempt instrument mismatch")
+    require(attempt["quantity"] == 3, "P024 partial-fill attempt quantity mismatch")
+    require(attempt["paper_send_armed"] is True, "P024 partial-fill attempt armed mismatch")
+    require(attempt["verified_exposure_reduction"] is True, "P024 partial-fill attempt exposure mismatch")
+    observed = payload["observed_owner_runtime_result"]
+    require(observed["callback_source"] == "OnRspOrderInsert", "P024 partial-fill attempt callback mismatch")
+    require(observed["response_error_id"] == 1009, "P024 partial-fill attempt response error mismatch")
+    require(observed["filled_quantity"] == 0, "P024 partial-fill attempt fill mismatch")
+    require(observed["partial_fill_observed"] is False, "P024 partial-fill attempt partial flag mismatch")
+    require(observed["cancel_identity_available"] is False, "P024 partial-fill attempt cancel identity mismatch")
+    require(observed["cancel_sent"] is False, "P024 partial-fill attempt cancel flag mismatch")
+    classification = payload["classification"]
+    require(
+        classification["classification_id"] == "rejected_before_partial_fill_not_partial_fill",
+        "P024 partial-fill attempt classification mismatch",
+    )
+    require(classification["full_acceptance_claimed"] is False, "P024 partial-fill attempt final claim mismatch")
+    negative = payload["negative_assertions"]
+    for key in [
+        "partial_fill_claimed",
+        "cancel_sent",
+        "browser_fixture_promoted_to_runtime_truth",
+        "full_acceptance_claimed",
+        "raw_secret_values_recorded",
+        "raw_broker_endpoint_recorded",
+        "config_raw_content_recorded",
+    ]:
+        require(negative[key] is False, f"P024 partial-fill attempt negative assertion mismatch: {key}")
+
+
+def validate_p024_partial_fill_close_offset_owner_rule_gap_audit() -> None:
+    payload = load_json(P024_PARTIAL_FILL_CLOSE_OFFSET_OWNER_RULE_GAP_AUDIT)
+    require(
+        payload["schema"] == "account-console.p024.partial-fill-close-offset-owner-rule-gap-audit.v1",
+        "P024 close-offset gap schema mismatch",
+    )
+    require(
+        payload["status"] == "phase4o_close_yesterday_owner_rule_gap_audited",
+        "P024 close-offset gap status mismatch",
+    )
+    require(
+        payload["verdict"] == "blocked_pending_owner_close_offset_semantics_repair_or_primary_rule_source",
+        "P024 close-offset gap verdict mismatch",
+    )
+    observed = payload["observed_runtime_semantics"]
+    require(observed["position_effect"] == "CLOSEYESTERDAY", "P024 close-offset position effect mismatch")
+    require(observed["submit_native_comb_offset"] == "4", "P024 close-offset submit offset mismatch")
+    require(observed["callback_offset_flags"] == ["1"], "P024 close-offset callback mismatch")
+    require(observed["order_insert_response_offset_mismatch"] is True, "P024 close-offset mismatch flag mismatch")
+    require(observed["partial_fill_observed"] is False, "P024 close-offset partial fill claim mismatch")
+    source_refs = {item["source_id"]: item for item in payload["owner_source_refs"]}
+    require(
+        set(source_refs) == {"guarded_order_loop", "execution_client", "guarded_order_loop_tests"},
+        "P024 close-offset source ref mismatch",
+    )
+    retry = payload["retry_policy"]
+    require(retry["additional_partial_fill_order_authorized"] is False, "P024 close-offset retry flag mismatch")
+    require("repair owner close-offset semantics" in retry["required_exact_approval_before_retry"], "P024 close-offset approval text mismatch")
+    blockers = {blocker["blocker_id"] for blocker in payload["residual_blockers"]}
+    require(
+        blockers == {"p024_close_yesterday_owner_rule_gap", "p024_real_partial_fill_runtime_missing"},
+        "P024 close-offset blocker set mismatch",
+    )
+    negative = payload["negative_assertions"]
+    for key in [
+        "owner_repo_write_attempted_by_this_audit",
+        "additional_order_authorized",
+        "partial_fill_claimed",
+        "full_acceptance_claimed",
+        "raw_secret_values_recorded",
+        "raw_broker_endpoint_recorded",
+    ]:
+        require(negative[key] is False, f"P024 close-offset negative assertion mismatch: {key}")
+
+
+def validate_p024_partial_fill_owner_repair_approval_packet() -> None:
+    payload = load_json(P024_PARTIAL_FILL_OWNER_REPAIR_APPROVAL_PACKET)
+    gap_audit = load_json(P024_PARTIAL_FILL_CLOSE_OFFSET_OWNER_RULE_GAP_AUDIT)
+    require(
+        payload["schema"] == "account-console.p024.partial-fill-owner-repair-approval-packet.v1",
+        "P024 owner repair approval schema mismatch",
+    )
+    require(
+        payload["status"] == "phase4p_owner_close_offset_repair_approval_packet_ready",
+        "P024 owner repair approval status mismatch",
+    )
+    require(
+        payload["verdict"] == "owner_repair_approval_required_before_retry",
+        "P024 owner repair approval verdict mismatch",
+    )
+    depends = payload["depends_on"]
+    require(depends["gap_audit_status"] == gap_audit["status"], "P024 owner repair gap dependency mismatch")
+    require(len(depends["latest_owner_attempt_result_sha256"]) == 64, "P024 owner repair attempt checksum mismatch")
+    assessment = payload["current_thread_approval_assessment"]
+    require(assessment["approval_text_observed"] is True, "P024 owner repair observed approval mismatch")
+    require(assessment["approval_scope"] == "owner_runtime_script_execution_only", "P024 owner repair scope mismatch")
+    require(assessment["matches_current_next_action"] is False, "P024 owner repair current action mismatch")
+    require(assessment["runtime_retry_authorized_by_this_packet"] is False, "P024 owner repair retry flag mismatch")
+    require(assessment["owner_code_repair_authorized_by_this_packet"] is False, "P024 owner repair authorization flag mismatch")
+    approval = payload["required_owner_repair_approval"]
+    require(approval["required"] is True, "P024 owner repair required flag mismatch")
+    require(approval["obtained"] is False, "P024 owner repair obtained flag mismatch")
+    require("repair owner close-offset semantics for P024" in approval["exact_approval_text_required"], "P024 owner repair approval text mismatch")
+    scope = payload["required_owner_repair_scope"]
+    require(scope["owner_repo_ref"] == "owner-repo://nautilus_ctp_adapter", "P024 owner repair repo ref mismatch")
+    require(scope["owner_repo_path"] == "D:/Nautilus/nautilus_ctp_adapter", "P024 owner repair repo path mismatch")
+    require(len(scope["expected_owner_changes"]) == 3, "P024 owner repair changes mismatch")
+    retry = payload["retry_gate"]
+    require(retry["additional_partial_fill_order_authorized"] is False, "P024 owner repair additional order mismatch")
+    require(retry["runtime_invocation_allowed"] is False, "P024 owner repair runtime invocation mismatch")
+    require(retry["owner_repair_required_first"] is True, "P024 owner repair required first mismatch")
+    blockers = {blocker["blocker_id"] for blocker in payload["residual_blockers"]}
+    require(
+        blockers
+        == {
+            "p024_owner_repair_approval_not_obtained",
+            "p024_close_yesterday_owner_rule_gap",
+            "p024_real_partial_fill_runtime_missing",
+        },
+        "P024 owner repair blocker set mismatch",
+    )
+    negative = payload["negative_assertions"]
+    for key in [
+        "owner_repo_write_attempted_by_this_packet",
+        "owner_runtime_invocation_attempted",
+        "owner_code_repair_authorized_by_current_thread_text",
+        "additional_order_authorized",
+        "partial_fill_claimed",
+        "full_acceptance_claimed",
+        "raw_secret_values_recorded",
+        "raw_broker_endpoint_recorded",
+        "config_raw_content_recorded",
+    ]:
+        require(negative[key] is False, f"P024 owner repair negative assertion mismatch: {key}")
+
+
+def validate_p024_partial_fill_remaining_acceptance_current_state() -> None:
+    payload = load_json(P024_PARTIAL_FILL_REMAINING_ACCEPTANCE_CURRENT_STATE)
+    require(
+        payload["schema"] == "account-console.p024.partial-fill-remaining-acceptance-current-state.v1",
+        "P024 remaining acceptance schema mismatch",
+    )
+    require(
+        payload["status"] == "phase4q_remaining_acceptance_current_state_audited",
+        "P024 remaining acceptance status mismatch",
+    )
+    require(
+        payload["verdict"] == "not_fully_accepted_pending_owner_repair_and_real_partial_fill",
+        "P024 remaining acceptance verdict mismatch",
+    )
+    current = payload["current_authoritative_state"]
+    require(current["account_console_worktree_clean_at_review"] is True, "P024 remaining acceptance worktree mismatch")
+    require(
+        current["owner_repo_code_change_recorded_for_close_offset_repair"] is False,
+        "P024 remaining acceptance owner repair claim mismatch",
+    )
+    require(
+        current["latest_real_partial_fill_attempt_classification"] == "rejected_before_partial_fill_not_partial_fill",
+        "P024 remaining acceptance latest attempt mismatch",
+    )
+    require(current["full_acceptance_claimed"] is False, "P024 remaining acceptance full claim mismatch")
+    groups = {group["group_id"]: group for group in payload["accepted_evidence_groups"]}
+    require(
+        set(groups)
+        == {
+            "api_and_ui_contracts",
+            "browser_display_contracts",
+            "real_owner_submit_cancel_non_partial_runtime",
+            "real_partial_fill_failed_attempt_classification",
+        },
+        "P024 remaining acceptance evidence group mismatch",
+    )
+    requirements = {item["requirement_id"]: item for item in payload["remaining_acceptance_requirements"]}
+    require(
+        set(requirements)
+        == {
+            "R1_owner_repair_approval",
+            "R2_owner_close_offset_repair",
+            "R3_owner_validators",
+            "R4_post_repair_partial_fill_runtime",
+            "R5_web_ui_real_partial_fill_projection",
+        },
+        "P024 remaining acceptance requirement set mismatch",
+    )
+    for item in requirements.values():
+        require(item["current_status"] == "missing", f"P024 remaining acceptance requirement status mismatch: {item['requirement_id']}")
+    action = payload["next_authorized_action"]
+    require(action["owner_code_repair_allowed"] is False, "P024 remaining acceptance owner repair allowed mismatch")
+    require(action["owner_runtime_retry_allowed"] is False, "P024 remaining acceptance owner retry allowed mismatch")
+    require(action["account_console_only_work_allowed"] is True, "P024 remaining acceptance console-only flag mismatch")
+    negative = payload["negative_assertions"]
+    for key in [
+        "full_acceptance_claimed",
+        "owner_repair_claimed",
+        "post_repair_runtime_retry_claimed",
+        "real_partial_fill_claimed",
+        "web_ui_real_partial_fill_claimed",
+        "raw_secret_values_recorded",
+        "raw_broker_endpoint_recorded",
+        "config_raw_content_recorded",
+    ]:
+        require(negative[key] is False, f"P024 remaining acceptance negative assertion mismatch: {key}")
+
+
+def validate_p024_partial_fill_owner_repair_implementation_plan() -> None:
+    payload = load_json(P024_PARTIAL_FILL_OWNER_REPAIR_IMPLEMENTATION_PLAN)
+    require(
+        payload["schema"] == "account-console.p024.partial-fill-owner-repair-implementation-plan.v1",
+        "P024 owner repair plan schema mismatch",
+    )
+    require(
+        payload["status"] == "phase4r_owner_close_offset_repair_implementation_plan_ready",
+        "P024 owner repair plan status mismatch",
+    )
+    require(
+        payload["verdict"] == "owner_repair_plan_ready_no_owner_write_attempted",
+        "P024 owner repair plan verdict mismatch",
+    )
+    context = payload["owner_read_context"]
+    require(context["owner_repo_path"] == "D:/Nautilus/nautilus_ctp_adapter", "P024 owner repair plan path mismatch")
+    require(context["owner_repo_write_attempted"] is False, "P024 owner repair plan write flag mismatch")
+    source_refs = {item["source_id"]: item for item in context["source_refs"]}
+    require(
+        "CLOSEYESTERDAY -> 4" in source_refs["execution_client_mapping"]["observed_current_behavior"],
+        "P024 owner repair plan mapping mismatch",
+    )
+    changes = {item["change_id"]: item for item in payload["planned_owner_changes_after_exact_approval"]}
+    require(
+        set(changes)
+        == {
+            "owner_rule_generalize_close_offset_submit_observed",
+            "owner_rule_wording_include_close_yesterday",
+            "focused_close_yesterday_test",
+        },
+        "P024 owner repair plan change set mismatch",
+    )
+    require(
+        "CLOSEYESTERDAY expected/submit offset 4"
+        in changes["owner_rule_generalize_close_offset_submit_observed"]["implementation_shape"],
+        "P024 owner repair plan generalization mismatch",
+    )
+    focused_asserts = set(changes["focused_close_yesterday_test"]["must_assert"])
+    for expected in [
+        "expected_submit_offset_from_position_effect == 4 for CLOSEYESTERDAY",
+        "observed_submit_boundary_offset == 4 for CLOSEYESTERDAY",
+        "callback_offset_flags == [1]",
+        "callback_sources == [OnRspOrderInsert]",
+    ]:
+        require(expected in focused_asserts, f"P024 owner repair plan focused assert missing: {expected}")
+    validators = {item["stage"]: item for item in payload["post_repair_validator_sequence"]}
+    require(
+        validators["owner_unit_focus"]["command"] == "python -m pytest tests/test_guarded_paper_order_loop.py -q",
+        "P024 owner repair plan focus validator mismatch",
+    )
+    require(
+        validators["owner_integration_regression"]["command"] == "python -m pytest tests/test_nautilus_integration.py -q",
+        "P024 owner repair plan integration validator mismatch",
+    )
+    runtime = payload["post_repair_runtime_attempt_gate"]
+    require(runtime["runtime_attempt_allowed_by_this_plan"] is False, "P024 owner repair plan retry flag mismatch")
+    require(runtime["fresh_approval_required"] is True, "P024 owner repair plan fresh approval mismatch")
+    require(runtime["maximum_additional_attempts_after_repair"] == 1, "P024 owner repair plan attempt count mismatch")
+    negative = payload["negative_assertions"]
+    for key in [
+        "owner_repo_write_attempted_by_this_plan",
+        "owner_runtime_invocation_attempted",
+        "owner_repair_claimed_complete",
+        "runtime_retry_authorized",
+        "partial_fill_claimed",
+        "full_acceptance_claimed",
+        "raw_secret_values_recorded",
+        "raw_broker_endpoint_recorded",
+        "config_raw_content_recorded",
+    ]:
+        require(negative[key] is False, f"P024 owner repair plan negative assertion mismatch: {key}")
+
+
+def validate_p024_partial_fill_owner_repair_plan_ui_evidence() -> None:
+    payload = load_json(P024_PARTIAL_FILL_OWNER_REPAIR_PLAN_UI_EVIDENCE)
+    require(
+        payload["schema"] == "account-console.p024.partial-fill-owner-repair-plan-ui.v1",
+        "P024 owner repair plan UI schema mismatch",
+    )
+    require(payload["verdict"] == "pass", "P024 owner repair plan UI verdict mismatch")
+    plan = payload["api_owner_repair_plan"]
+    require(
+        plan["schema"] == "account-console.p024.partial-fill-owner-repair-implementation-plan.v1",
+        "P024 owner repair plan UI API schema mismatch",
+    )
+    require(
+        plan["status"] == "phase4r_owner_close_offset_repair_implementation_plan_ready",
+        "P024 owner repair plan UI API status mismatch",
+    )
+    require(plan["source_ref_count"] == 3, "P024 owner repair plan UI source count mismatch")
+    require(plan["planned_change_count"] == 3, "P024 owner repair plan UI change count mismatch")
+    require(plan["validator_count"] == 4, "P024 owner repair plan UI validator count mismatch")
+    require(plan["forbidden_shape_count"] == 5, "P024 owner repair plan UI forbidden count mismatch")
+    require(plan["owner_repo_write_attempted"] is False, "P024 owner repair plan UI owner write mismatch")
+    require(plan["runtime_attempt_allowed"] is False, "P024 owner repair plan UI retry mismatch")
+    require(plan["fresh_approval_required"] is True, "P024 owner repair plan UI fresh approval mismatch")
+    require(plan["partial_fill_claimed"] is False, "P024 owner repair plan UI partial claim mismatch")
+    require(plan["full_acceptance_claimed"] is False, "P024 owner repair plan UI full claim mismatch")
+    checks = payload["browser_checks"]
+    for key in [
+        "repair_plan_panel_visible",
+        "status_displayed",
+        "owner_path_displayed",
+        "owner_write_displayed_false",
+        "runtime_retry_displayed_false",
+        "fresh_approval_displayed_true",
+        "close_yesterday_source_displayed",
+        "planned_changes_displayed",
+        "validators_displayed",
+        "forbidden_shapes_displayed",
+        "partial_fill_claimed_displayed_false",
+        "full_acceptance_claimed_displayed_false",
+        "sensitive_endpoint_wording_absent",
+    ]:
+        require(checks[key] is True, f"P024 owner repair plan UI check mismatch: {key}")
+
+
+def validate_p024_partial_fill_owner_repair_evidence_ingest_gate() -> None:
+    payload = load_json(P024_PARTIAL_FILL_OWNER_REPAIR_EVIDENCE_INGEST_GATE)
+    require(
+        payload["schema"] == "account-console.p024.partial-fill-owner-repair-evidence-ingest-gate.v1",
+        "P024 owner repair ingest schema mismatch",
+    )
+    require(
+        payload["status"] == "phase4t_owner_repair_evidence_ingest_gate_ready",
+        "P024 owner repair ingest status mismatch",
+    )
+    require(
+        payload["verdict"] == "ingest_gate_ready_owner_repair_evidence_missing",
+        "P024 owner repair ingest verdict mismatch",
+    )
+    scope = payload["ingest_scope"]
+    require(scope["owner_repo_path"] == "D:/Nautilus/nautilus_ctp_adapter", "P024 owner repair ingest path mismatch")
+    require(scope["runtime_retry_allowed_by_ingest_gate"] is False, "P024 owner repair ingest retry flag mismatch")
+    require(scope["accepts_owner_code_repair_evidence"] is True, "P024 owner repair ingest owner evidence mismatch")
+    require(scope["accepts_owner_runtime_partial_fill_evidence"] is False, "P024 owner repair ingest runtime evidence mismatch")
+    evidence = {item["evidence_id"]: item for item in payload["required_owner_repair_evidence"]}
+    require(
+        set(evidence)
+        == {
+            "owner_repair_commit",
+            "guarded_order_loop_source_checksum",
+            "focused_owner_tests_checksum",
+            "owner_focus_validator_result",
+            "owner_integration_validator_result",
+            "account_console_ingest_audit",
+        },
+        "P024 owner repair ingest evidence set mismatch",
+    )
+    for item in evidence.values():
+        require(item["current_status"] == "missing", f"P024 owner repair ingest evidence status mismatch: {item['evidence_id']}")
+    require(
+        "expected_submit_offset_from_position_effect == 4"
+        in evidence["focused_owner_tests_checksum"]["must_include"],
+        "P024 owner repair ingest close-yesterday assertion missing",
+    )
+    negative = payload["negative_assertions"]
+    for key in [
+        "owner_repair_evidence_recorded",
+        "owner_repo_write_attempted_by_this_gate",
+        "owner_runtime_invocation_attempted",
+        "runtime_retry_authorized",
+        "partial_fill_runtime_claimed",
+        "web_ui_real_partial_fill_claimed",
+        "full_acceptance_claimed",
+        "raw_secret_values_recorded",
+        "raw_broker_endpoint_recorded",
+        "config_raw_content_recorded",
+    ]:
+        require(negative[key] is False, f"P024 owner repair ingest negative assertion mismatch: {key}")
+
+
+def validate_p024_partial_fill_owner_repair_ingest_gate_ui_evidence() -> None:
+    payload = load_json(P024_PARTIAL_FILL_OWNER_REPAIR_INGEST_GATE_UI_EVIDENCE)
+    require(
+        payload["schema"] == "account-console.p024.partial-fill-owner-repair-ingest-gate-ui.v1",
+        "P024 owner repair ingest UI schema mismatch",
+    )
+    require(payload["verdict"] == "pass", "P024 owner repair ingest UI verdict mismatch")
+    gate = payload["api_owner_repair_ingest_gate"]
+    require(
+        gate["schema"] == "account-console.p024.partial-fill-owner-repair-evidence-ingest-gate.v1",
+        "P024 owner repair ingest UI API schema mismatch",
+    )
+    require(
+        gate["status"] == "phase4t_owner_repair_evidence_ingest_gate_ready",
+        "P024 owner repair ingest UI API status mismatch",
+    )
+    require(gate["required_evidence_count"] == 6, "P024 owner repair ingest UI evidence count mismatch")
+    require(gate["update_count"] == 5, "P024 owner repair ingest UI update count mismatch")
+    require(gate["reject_rule_count"] == 6, "P024 owner repair ingest UI reject count mismatch")
+    require(gate["runtime_retry_allowed"] is False, "P024 owner repair ingest UI retry mismatch")
+    require(gate["runtime_evidence_allowed"] is False, "P024 owner repair ingest UI runtime evidence mismatch")
+    require(gate["owner_repair_evidence_recorded"] is False, "P024 owner repair ingest UI recorded mismatch")
+    require(gate["full_acceptance_claimed"] is False, "P024 owner repair ingest UI full claim mismatch")
+    checks = payload["browser_checks"]
+    for key in [
+        "ingest_gate_panel_visible",
+        "runtime_retry_displayed_false",
+        "runtime_evidence_displayed_false",
+        "required_evidence_displayed",
+        "update_items_displayed",
+        "reject_rules_displayed",
+        "owner_repair_evidence_recorded_displayed_false",
+        "full_acceptance_claimed_displayed_false",
+        "sensitive_endpoint_wording_absent",
+    ]:
+        require(checks[key] is True, f"P024 owner repair ingest UI check mismatch: {key}")
+    screenshot_refs = payload.get("browser_evidence") or []
+    require(screenshot_refs, "P024 owner repair ingest UI screenshot ref missing")
+
+
+def validate_p024_partial_fill_owner_repair_preflight_source_audit() -> None:
+    payload = load_json(P024_PARTIAL_FILL_OWNER_REPAIR_PREFLIGHT_SOURCE_AUDIT)
+    require(
+        payload["schema"] == "account-console.p024.partial-fill-owner-repair-preflight-source-audit.v1",
+        "P024 owner repair preflight schema mismatch",
+    )
+    require(
+        payload["status"] == "phase4v_owner_repair_preflight_source_audited",
+        "P024 owner repair preflight status mismatch",
+    )
+    require(
+        payload["verdict"] == "owner_repair_still_required_before_runtime_retry",
+        "P024 owner repair preflight verdict mismatch",
+    )
+    owner = payload["owner_repo"]
+    require(owner["owner_repo_path"] == "D:/Nautilus/nautilus_ctp_adapter", "P024 owner repair preflight path mismatch")
+    require(owner["write_attempted_by_audit"] is False, "P024 owner repair preflight write flag mismatch")
+    checks = {item["path"]: item for item in payload["source_checks"]}
+    require(
+        set(checks)
+        == {
+            "scripts/ctp_guarded_paper_order_loop.py",
+            "tests/test_guarded_paper_order_loop.py",
+            "tests/test_nautilus_integration.py",
+        },
+        "P024 owner repair preflight source set mismatch",
+    )
+    for item in checks.values():
+        require(item["sha256"], f"P024 owner repair preflight checksum missing: {item['path']}")
+        require(item["required_symbol_present"] is True, f"P024 owner repair preflight symbol mismatch: {item['path']}")
+        require("current_gap" in item, f"P024 owner repair preflight gap missing: {item['path']}")
+    approval = payload["operator_approval_delta"]
+    require(approval["sufficient_for_owner_code_repair"] is False, "P024 owner repair preflight approval repair mismatch")
+    require(approval["sufficient_for_post_repair_runtime_retry"] is False, "P024 owner repair preflight approval retry mismatch")
+    require(
+        "repair owner close-offset semantics" in approval["required_exact_approval_before_owner_write_or_retry"],
+        "P024 owner repair preflight exact approval text missing",
+    )
+    next_action = payload["next_required_action"]
+    require(next_action["owner_code_repair_allowed_by_current_audit"] is False, "P024 owner repair preflight repair allowed")
+    require(next_action["owner_runtime_retry_allowed_by_current_audit"] is False, "P024 owner repair preflight retry allowed")
+    require(next_action["blind_script_retry_rejected"] is True, "P024 owner repair preflight blind retry mismatch")
+    negative = payload["negative_assertions"]
+    for key in [
+        "owner_repo_write_attempted",
+        "owner_code_repair_claimed",
+        "owner_validator_pass_claimed",
+        "owner_runtime_invocation_attempted",
+        "post_repair_runtime_retry_authorized",
+        "real_partial_fill_claimed",
+        "full_acceptance_claimed",
+        "raw_secret_values_recorded",
+        "raw_broker_endpoint_recorded",
+        "config_raw_content_recorded",
+    ]:
+        require(negative[key] is False, f"P024 owner repair preflight negative assertion mismatch: {key}")
+
+
+def validate_p024_partial_fill_owner_repair_preflight_ui_evidence() -> None:
+    payload = load_json(P024_PARTIAL_FILL_OWNER_REPAIR_PREFLIGHT_UI_EVIDENCE)
+    require(
+        payload["schema"] == "account-console.p024.partial-fill-owner-repair-preflight-ui.v1",
+        "P024 owner repair preflight UI schema mismatch",
+    )
+    require(payload["verdict"] == "pass", "P024 owner repair preflight UI verdict mismatch")
+    audit = payload["api_owner_repair_preflight"]
+    require(
+        audit["schema"] == "account-console.p024.partial-fill-owner-repair-preflight-source-audit.v1",
+        "P024 owner repair preflight UI API schema mismatch",
+    )
+    require(
+        audit["status"] == "phase4v_owner_repair_preflight_source_audited",
+        "P024 owner repair preflight UI API status mismatch",
+    )
+    require(audit["source_check_count"] == 3, "P024 owner repair preflight UI source count mismatch")
+    require(audit["owner_repo_write_attempted"] is False, "P024 owner repair preflight UI write mismatch")
+    require(audit["repair_approval_sufficient"] is False, "P024 owner repair preflight UI repair approval mismatch")
+    require(audit["retry_approval_sufficient"] is False, "P024 owner repair preflight UI retry approval mismatch")
+    require(audit["blind_script_retry_rejected"] is True, "P024 owner repair preflight UI blind retry mismatch")
+    require(audit["runtime_invocation_attempted"] is False, "P024 owner repair preflight UI runtime mismatch")
+    require(audit["full_acceptance_claimed"] is False, "P024 owner repair preflight UI full claim mismatch")
+    checks = payload["browser_checks"]
+    for key in [
+        "preflight_panel_visible",
+        "source_checks_displayed",
+        "owner_write_displayed_false",
+        "repair_approval_displayed_false",
+        "retry_approval_displayed_false",
+        "blind_retry_displayed_true",
+        "runtime_invoked_displayed_false",
+        "full_acceptance_claimed_displayed_false",
+        "sensitive_endpoint_wording_absent",
+    ]:
+        require(checks[key] is True, f"P024 owner repair preflight UI check mismatch: {key}")
+    screenshot_refs = payload.get("browser_evidence") or []
+    require(screenshot_refs, "P024 owner repair preflight UI screenshot ref missing")
+
+
+def validate_p024_partial_fill_owner_repair_patch_preview() -> None:
+    payload = load_json(P024_PARTIAL_FILL_OWNER_REPAIR_PATCH_PREVIEW)
+    require(
+        payload["schema"] == "account-console.p024.partial-fill-owner-repair-patch-preview.v1",
+        "P024 owner repair patch preview schema mismatch",
+    )
+    require(
+        payload["status"] == "phase4x_owner_repair_patch_preview_ready",
+        "P024 owner repair patch preview status mismatch",
+    )
+    require(
+        payload["verdict"] == "patch_preview_ready_owner_write_not_authorized",
+        "P024 owner repair patch preview verdict mismatch",
+    )
+    baseline = payload["owner_baseline"]
+    require(baseline["owner_repo_path"] == "D:/Nautilus/nautilus_ctp_adapter", "P024 patch preview owner path mismatch")
+    require(baseline["owner_repo_write_attempted_by_preview"] is False, "P024 patch preview owner write mismatch")
+    files = {item["path"]: item for item in baseline["baseline_files"]}
+    require(
+        set(files) == {"scripts/ctp_guarded_paper_order_loop.py", "tests/test_guarded_paper_order_loop.py"},
+        "P024 patch preview baseline file set mismatch",
+    )
+    for item in files.values():
+        require(item["sha256"], f"P024 patch preview checksum missing: {item['path']}")
+        require(item["required_current_text"], f"P024 patch preview current text missing: {item['path']}")
+    patches = {item["patch_id"]: item for item in payload["previewed_owner_patch"]}
+    require(
+        set(patches)
+        == {
+            "generalize_close_offset_submit_observed",
+            "expand_owner_rule_wording",
+            "add_close_yesterday_focused_test",
+        },
+        "P024 patch preview patch set mismatch",
+    )
+    generalize = patches["generalize_close_offset_submit_observed"]
+    require(
+        generalize["target_symbol"] == "build_close_offset_owner_rule_semantics",
+        "P024 patch preview generalize target mismatch",
+    )
+    require(
+        any("CLOSEYESTERDAY" in item for item in generalize["required_new_text"]),
+        "P024 patch preview missing CLOSEYESTERDAY source edit",
+    )
+    test_patch = patches["add_close_yesterday_focused_test"]
+    require(
+        "test_close_yesterday_owner_rule_blocks_callback_offset_as_submit_truth" == test_patch["target_symbol"],
+        "P024 patch preview focused test target mismatch",
+    )
+    for phrase in [
+        "position_effect=\"CLOSEYESTERDAY\"",
+        "expected_submit_offset_from_position_effect\"] == \"4\"",
+        "callback_offset_flags\"] == [\"1\"]",
+    ]:
+        require(phrase in test_patch["required_new_text"], f"P024 patch preview focused assertion missing: {phrase}")
+    gate = payload["post_patch_runtime_gate"]
+    require(gate["runtime_retry_authorized_by_preview"] is False, "P024 patch preview authorized retry")
+    require(gate["fresh_runtime_retry_approval_required_after_patch"] is True, "P024 patch preview fresh approval mismatch")
+    require(gate["maximum_runtime_attempts_after_repair"] == 1, "P024 patch preview attempt limit mismatch")
+    negative = payload["negative_assertions"]
+    for key in [
+        "owner_repo_write_attempted",
+        "owner_patch_applied",
+        "owner_validator_run_claimed",
+        "owner_runtime_invocation_attempted",
+        "runtime_retry_authorized",
+        "real_partial_fill_claimed",
+        "web_ui_real_partial_fill_claimed",
+        "full_acceptance_claimed",
+        "raw_secret_values_recorded",
+        "raw_broker_endpoint_recorded",
+        "config_raw_content_recorded",
+    ]:
+        require(negative[key] is False, f"P024 patch preview negative assertion mismatch: {key}")
+
+
+def validate_p024_partial_fill_owner_repair_patch_preview_ui_evidence() -> None:
+    payload = load_json(P024_PARTIAL_FILL_OWNER_REPAIR_PATCH_PREVIEW_UI_EVIDENCE)
+    require(
+        payload["schema"] == "account-console.p024.partial-fill-owner-repair-patch-preview-ui.v1",
+        "P024 patch preview UI schema mismatch",
+    )
+    require(payload["verdict"] == "pass", "P024 patch preview UI verdict mismatch")
+    preview = payload["api_owner_repair_patch_preview"]
+    require(
+        preview["schema"] == "account-console.p024.partial-fill-owner-repair-patch-preview.v1",
+        "P024 patch preview UI API schema mismatch",
+    )
+    require(
+        preview["status"] == "phase4x_owner_repair_patch_preview_ready",
+        "P024 patch preview UI API status mismatch",
+    )
+    require(preview["baseline_file_count"] == 2, "P024 patch preview UI baseline count mismatch")
+    require(preview["patch_count"] == 3, "P024 patch preview UI patch count mismatch")
+    require(preview["validator_count"] == 3, "P024 patch preview UI validator count mismatch")
+    require(preview["owner_repo_write_attempted"] is False, "P024 patch preview UI owner write mismatch")
+    require(preview["runtime_retry_authorized"] is False, "P024 patch preview UI retry mismatch")
+    require(preview["fresh_retry_approval_required"] is True, "P024 patch preview UI approval mismatch")
+    require(preview["owner_patch_applied"] is False, "P024 patch preview UI applied mismatch")
+    require(preview["full_acceptance_claimed"] is False, "P024 patch preview UI full claim mismatch")
+    checks = payload["browser_checks"]
+    for key in [
+        "patch_preview_panel_visible",
+        "baseline_files_displayed",
+        "patches_displayed",
+        "validators_displayed",
+        "owner_write_displayed_false",
+        "runtime_retry_displayed_false",
+        "fresh_approval_displayed_true",
+        "patch_applied_displayed_false",
+        "full_acceptance_claimed_displayed_false",
+        "sensitive_endpoint_wording_absent",
+    ]:
+        require(checks[key] is True, f"P024 patch preview UI check mismatch: {key}")
+    screenshot_refs = payload.get("browser_evidence") or []
+    require(screenshot_refs, "P024 patch preview UI screenshot ref missing")
+
+
+def validate_p024_partial_fill_owner_repair_execution_handoff_bundle() -> None:
+    payload = load_json(P024_PARTIAL_FILL_OWNER_REPAIR_EXECUTION_HANDOFF_BUNDLE)
+    require(
+        payload["schema"] == "account-console.p024.partial-fill-owner-repair-execution-handoff-bundle.v1",
+        "P024 owner repair execution handoff schema mismatch",
+    )
+    require(
+        payload["status"] == "phase4z_owner_repair_execution_handoff_bundle_ready",
+        "P024 owner repair execution handoff status mismatch",
+    )
+    require(
+        payload["verdict"] == "handoff_bundle_ready_owner_write_not_invoked",
+        "P024 owner repair execution handoff verdict mismatch",
+    )
+    guard = payload["execution_guard"]
+    require(guard["execution_allowed"] is False, "P024 owner repair execution handoff execution allowed")
+    require(guard["owner_repo_write_allowed_by_this_bundle"] is False, "P024 owner repair execution handoff owner write allowed")
+    require(guard["owner_runtime_invocation_allowed_by_this_bundle"] is False, "P024 owner repair execution handoff runtime allowed")
+    require(guard["runtime_retry_authorized_by_this_bundle"] is False, "P024 owner repair execution handoff retry allowed")
+    require(guard["requires_exact_owner_repair_approval"] is True, "P024 owner repair execution handoff approval requirement missing")
+    steps = {item["step"]: item for item in payload["operator_sequence_after_exact_approval"]}
+    require(
+        set(steps)
+        == {
+            "confirm_owner_repo_clean_or_preserve_untracked_runtime_artifacts",
+            "apply_patch_preview",
+            "run_owner_focus_validator",
+            "run_owner_integration_validator",
+            "record_owner_repair_commit_and_checksums",
+            "ingest_owner_repair_evidence_to_account_console",
+            "prepare_post_repair_runtime_retry_packet",
+        },
+        "P024 owner repair execution handoff sequence mismatch",
+    )
+    for item in steps.values():
+        require(item["execution_allowed_before_approval"] is False, f"P024 owner repair execution step allowed early: {item['step']}")
+    require(
+        steps["run_owner_focus_validator"]["command"] == "python -m pytest tests/test_guarded_paper_order_loop.py -q",
+        "P024 owner repair execution focus validator mismatch",
+    )
+    artifacts = set(payload["required_post_handoff_artifacts"])
+    for artifact in [
+        "owner_repair_commit_ref",
+        "guarded_order_loop_source_checksum",
+        "focused_owner_tests_checksum",
+        "owner_focus_validator_result",
+        "owner_integration_validator_result",
+        "account_console_ingest_audit",
+        "post_repair_runtime_retry_approval_packet",
+    ]:
+        require(artifact in artifacts, f"P024 owner repair execution handoff artifact missing: {artifact}")
+    negative = payload["negative_assertions"]
+    for key in [
+        "execution_allowed",
+        "owner_repo_write_attempted",
+        "owner_patch_applied",
+        "owner_validator_run_claimed",
+        "owner_runtime_invocation_attempted",
+        "runtime_retry_authorized",
+        "real_partial_fill_claimed",
+        "web_ui_real_partial_fill_claimed",
+        "full_acceptance_claimed",
+        "raw_secret_values_recorded",
+        "raw_broker_endpoint_recorded",
+        "config_raw_content_recorded",
+    ]:
+        require(negative[key] is False, f"P024 owner repair execution handoff negative assertion mismatch: {key}")
+
+
+def validate_p024_partial_fill_owner_repair_execution_handoff_ui_evidence() -> None:
+    payload = load_json(P024_PARTIAL_FILL_OWNER_REPAIR_EXECUTION_HANDOFF_UI_EVIDENCE)
+    require(
+        payload["schema"] == "account-console.p024.partial-fill-owner-repair-execution-handoff-ui.v1",
+        "P024 owner repair execution handoff UI schema mismatch",
+    )
+    require(payload["verdict"] == "pass", "P024 owner repair execution handoff UI verdict mismatch")
+    handoff = payload["api_owner_repair_execution_handoff"]
+    require(
+        handoff["schema"] == "account-console.p024.partial-fill-owner-repair-execution-handoff-bundle.v1",
+        "P024 owner repair execution handoff UI API schema mismatch",
+    )
+    require(
+        handoff["status"] == "phase4z_owner_repair_execution_handoff_bundle_ready",
+        "P024 owner repair execution handoff UI API status mismatch",
+    )
+    require(handoff["step_count"] == 7, "P024 owner repair execution handoff UI step count mismatch")
+    require(handoff["artifact_count"] == 7, "P024 owner repair execution handoff UI artifact count mismatch")
+    require(handoff["execution_allowed"] is False, "P024 owner repair execution handoff UI execution mismatch")
+    require(handoff["owner_repo_write_allowed"] is False, "P024 owner repair execution handoff UI owner write mismatch")
+    require(handoff["runtime_retry_authorized"] is False, "P024 owner repair execution handoff UI retry mismatch")
+    require(handoff["exact_approval_required"] is True, "P024 owner repair execution handoff UI approval mismatch")
+    require(handoff["owner_patch_applied"] is False, "P024 owner repair execution handoff UI patch mismatch")
+    require(handoff["full_acceptance_claimed"] is False, "P024 owner repair execution handoff UI full claim mismatch")
+    checks = payload["browser_checks"]
+    for key in [
+        "handoff_panel_visible",
+        "steps_displayed",
+        "artifacts_displayed",
+        "execution_displayed_false",
+        "owner_write_displayed_false",
+        "runtime_retry_displayed_false",
+        "exact_approval_displayed_true",
+        "patch_applied_displayed_false",
+        "full_acceptance_claimed_displayed_false",
+        "sensitive_endpoint_wording_absent",
+    ]:
+        require(checks[key] is True, f"P024 owner repair execution handoff UI check mismatch: {key}")
+    screenshot_refs = payload.get("browser_evidence") or []
+    require(screenshot_refs, "P024 owner repair execution handoff UI screenshot ref missing")
+
+
+def validate_p024_partial_fill_owner_repair_approval_packet_ui_evidence() -> None:
+    payload = load_json(P024_PARTIAL_FILL_OWNER_REPAIR_APPROVAL_PACKET_UI_EVIDENCE)
+    require(
+        payload["schema"] == "account-console.p024.partial-fill-owner-repair-approval-packet-ui.v1",
+        "P024 owner repair approval packet UI schema mismatch",
+    )
+    require(payload["verdict"] == "pass", "P024 owner repair approval packet UI verdict mismatch")
+    packet = payload["api_owner_repair_approval_packet"]
+    require(
+        packet["schema"] == "account-console.p024.partial-fill-owner-repair-approval-packet.v1",
+        "P024 owner repair approval packet UI API schema mismatch",
+    )
+    require(
+        packet["status"] == "phase4p_owner_close_offset_repair_approval_packet_ready",
+        "P024 owner repair approval packet UI API status mismatch",
+    )
+    require(packet["approval_obtained"] is False, "P024 owner repair approval packet UI approval mismatch")
+    require(packet["current_approval_matches_next_action"] is False, "P024 owner repair approval packet UI match mismatch")
+    require(packet["exact_approval_text_present"] is True, "P024 owner repair approval packet UI exact text missing")
+    require(packet["owner_change_count"] == 3, "P024 owner repair approval packet UI change count mismatch")
+    require(packet["owner_validator_count"] == 2, "P024 owner repair approval packet UI validator count mismatch")
+    require(packet["blocker_count"] == 3, "P024 owner repair approval packet UI blocker count mismatch")
+    require(packet["runtime_retry_allowed"] is False, "P024 owner repair approval packet UI retry mismatch")
+    require(packet["additional_order_authorized"] is False, "P024 owner repair approval packet UI additional order mismatch")
+    require(packet["owner_repo_write_attempted"] is False, "P024 owner repair approval packet UI owner write mismatch")
+    require(packet["partial_fill_claimed"] is False, "P024 owner repair approval packet UI partial fill mismatch")
+    require(packet["full_acceptance_claimed"] is False, "P024 owner repair approval packet UI full claim mismatch")
+    checks = payload["browser_checks"]
+    for key in [
+        "approval_packet_panel_visible",
+        "exact_approval_text_displayed",
+        "owner_changes_displayed",
+        "validators_displayed",
+        "blockers_displayed",
+        "approval_obtained_displayed_false",
+        "current_approval_matches_displayed_false",
+        "runtime_retry_displayed_false",
+        "owner_write_displayed_false",
+        "additional_order_displayed_false",
+        "partial_fill_claimed_displayed_false",
+        "full_acceptance_claimed_displayed_false",
+        "sensitive_endpoint_wording_absent",
+    ]:
+        require(checks[key] is True, f"P024 owner repair approval packet UI check mismatch: {key}")
+    screenshot_refs = payload.get("browser_evidence") or []
+    require(screenshot_refs, "P024 owner repair approval packet UI screenshot ref missing")
+
+
+def validate_p024_partial_fill_remaining_acceptance_state_ui_evidence() -> None:
+    payload = load_json(P024_PARTIAL_FILL_REMAINING_ACCEPTANCE_STATE_UI_EVIDENCE)
+    require(
+        payload["schema"] == "account-console.p024.partial-fill-remaining-acceptance-state-ui.v1",
+        "P024 remaining acceptance state UI schema mismatch",
+    )
+    require(payload["verdict"] == "pass", "P024 remaining acceptance state UI verdict mismatch")
+    state = payload["api_remaining_acceptance_state"]
+    require(
+        state["schema"] == "account-console.p024.partial-fill-remaining-acceptance-current-state.v1",
+        "P024 remaining acceptance state UI API schema mismatch",
+    )
+    require(
+        state["status"] == "phase4q_remaining_acceptance_current_state_audited",
+        "P024 remaining acceptance state UI API status mismatch",
+    )
+    require(state["requirement_count"] == 5, "P024 remaining acceptance state UI requirement count mismatch")
+    require(
+        set(state["missing_requirement_ids"])
+        == {
+            "R1_owner_repair_approval",
+            "R2_owner_close_offset_repair",
+            "R3_owner_validators",
+            "R4_post_repair_partial_fill_runtime",
+            "R5_web_ui_real_partial_fill_projection",
+        },
+        "P024 remaining acceptance state UI requirement ids mismatch",
+    )
+    require(state["accepted_evidence_group_count"] == 4, "P024 remaining acceptance state UI evidence group count mismatch")
+    require(state["owner_code_repair_allowed"] is False, "P024 remaining acceptance state UI owner repair mismatch")
+    require(state["owner_runtime_retry_allowed"] is False, "P024 remaining acceptance state UI retry mismatch")
+    require(state["full_acceptance_claimed"] is False, "P024 remaining acceptance state UI full claim mismatch")
+    require(state["real_partial_fill_claimed"] is False, "P024 remaining acceptance state UI real partial mismatch")
+    require(state["web_ui_real_partial_fill_claimed"] is False, "P024 remaining acceptance state UI Web UI claim mismatch")
+    checks = payload["browser_checks"]
+    for key in [
+        "remaining_panel_visible",
+        "r1_to_r5_displayed",
+        "all_requirements_displayed_missing",
+        "evidence_groups_displayed",
+        "owner_repair_allowed_displayed_false",
+        "runtime_retry_displayed_false",
+        "full_acceptance_displayed_false",
+        "real_partial_fill_claimed_displayed_false",
+        "web_ui_real_partial_fill_claimed_displayed_false",
+        "sensitive_endpoint_wording_absent",
+    ]:
+        require(checks[key] is True, f"P024 remaining acceptance state UI check mismatch: {key}")
+    screenshot_refs = payload.get("browser_evidence") or []
+    require(screenshot_refs, "P024 remaining acceptance state UI screenshot ref missing")
+
+
+def validate_p024_runtime_execution_gap_audit() -> None:
+    payload = load_json(P024_RUNTIME_EXECUTION_GAP_AUDIT)
+    require(
+        payload["schema"] == "account-console.p024.runtime-execution-gap-audit.v1",
+        "P024 execution gap schema mismatch",
+    )
+    require(payload["proposal_id"] == "p024-account-console-paper-command-controls", "P024 execution gap proposal mismatch")
+    require(payload["account_id"] == "acct.ctp.paper.19053", "P024 execution gap account mismatch")
+    require(payload["status"] == "phase4e_final_runtime_execution_gap_audited", "P024 execution gap status mismatch")
+    require(payload["verdict"] == "blocked_pending_owner_runtime_execution", "P024 execution gap verdict mismatch")
+    require(set(payload["accepted_scenarios"]) == {f"A{index}" for index in range(1, 17)} - {"A4", "A16"}, "P024 execution gap accepted scenario mismatch")
+    not_accepted = {item["id"]: item for item in payload["not_accepted_scenarios"]}
+    require(set(not_accepted) == {"A4"}, "P024 execution gap not accepted scenario mismatch")
+    require(not_accepted["A4"]["current_status"] == "blocked_pending_owner_runtime_execution", "P024 execution gap A4 status mismatch")
+    approval = payload["external_write_approval"]
+    require(approval["required"] is True, "P024 execution gap approval required mismatch")
+    require(approval["obtained"] is False, "P024 execution gap approval obtained mismatch")
+    require(approval["approval_path"] == "D:/Nautilus/nautilus_ctp_adapter", "P024 execution gap approval path mismatch")
+    require(len(payload["required_before_goal_complete"]) == 8, "P024 execution gap required-before count mismatch")
+    require(len(payload["required_owner_artifacts"]) == 14, "P024 execution gap artifact count mismatch")
+    blockers = {blocker["blocker_id"] for blocker in payload["residual_blockers"]}
+    require(
+        blockers
+        == {
+            "p024_external_owner_runtime_write_approval_required",
+            "p024_owner_runtime_artifacts_missing",
+            "p024_real_partial_fill_runtime_missing",
+        },
+        "P024 execution gap blocker mismatch",
+    )
+    negative = payload["negative_assertions"]
+    for key in [
+        "final_acceptance_claimed",
+        "runtime_invocation_attempted",
+        "owner_repo_write_attempted",
+        "browser_triggered_broker_order",
+        "gateway_send_attempted",
+        "broker_order_created",
+        "live_armed",
+        "account_mirror_write_authority",
+        "raw_secret_values_recorded",
+        "raw_broker_endpoint_recorded",
+        "config_raw_content_read",
+    ]:
+        require(negative[key] is False, f"P024 execution gap negative assertion mismatch: {key}")
+
+
+def validate_p024_runtime_execution_gap_ui_evidence() -> None:
+    payload = load_json(P024_RUNTIME_EXECUTION_GAP_UI_EVIDENCE)
+    require(
+        payload["schema"] == "account-console.p024.runtime-execution-gap-audit-ui.v1",
+        "P024 execution gap UI schema mismatch",
+    )
+    require(payload["proposal_id"] == "p024-account-console-paper-command-controls", "P024 execution gap UI proposal mismatch")
+    require(payload["account_id"] == "acct.ctp.paper.19053", "P024 execution gap UI account mismatch")
+    require(payload["verdict"] == "pass", "P024 execution gap UI verdict mismatch")
+    audit = payload["api_gap_audit"]
+    require(audit["schema"] == "account-console.p024.runtime-execution-gap-audit.v1", "P024 execution gap UI API schema mismatch")
+    require(audit["status"] == "phase4e_final_runtime_execution_gap_audited", "P024 execution gap UI API status mismatch")
+    require(audit["verdict"] == "blocked_pending_owner_runtime_execution", "P024 execution gap UI API verdict mismatch")
+    require(audit["accepted_scenario_count"] == 14, "P024 execution gap UI accepted count mismatch")
+    require(audit["not_accepted_scenario_count"] == 1, "P024 execution gap UI not accepted count mismatch")
+    require(audit["required_before_goal_complete_count"] == 8, "P024 execution gap UI required-before count mismatch")
+    require(audit["required_owner_artifact_count"] == 14, "P024 execution gap UI artifact count mismatch")
+    require(audit["blocker_count"] == 3, "P024 execution gap UI blocker count mismatch")
+    for key in [
+        "final_acceptance_claimed",
+        "runtime_invocation_attempted",
+        "owner_repo_write_attempted",
+        "browser_triggered_broker_order",
+        "broker_order_created",
+        "raw_secret_values_recorded",
+        "raw_broker_endpoint_recorded",
+    ]:
+        require(audit[key] is False, f"P024 execution gap UI negative assertion mismatch: {key}")
+    checks = payload.get("browser_checks") or {}
+    for check in [
+        "gap_panel_visible",
+        "verdict_displayed_blocked",
+        "final_acceptance_claimed_displayed_false",
+        "a4_not_accepted_displayed",
+        "approval_obtained_displayed_false",
+        "runtime_invocation_displayed_false",
+        "owner_write_displayed_false",
+        "broker_order_displayed_false",
+        "required_items_displayed",
+        "blocker_items_displayed",
+        "sensitive_endpoint_wording_absent",
+    ]:
+        require(checks.get(check) is True, f"P024 execution gap UI browser check missing: {check}")
+
+
+def validate_p024_full_acceptance_closeout() -> None:
+    payload = load_json(P024_FULL_ACCEPTANCE_CLOSEOUT)
+    require(payload["schema"] == "account-console.p024.full-acceptance-closeout.v1", "P024 closeout schema mismatch")
+    require(payload["proposal_id"] == "p024-account-console-paper-command-controls", "P024 closeout proposal mismatch")
+    require(payload["account_id"] == "acct.ctp.paper.19053", "P024 closeout account mismatch")
+    require(payload["status"] == "phase4_residual_blocker_audit_passed", "P024 closeout status mismatch")
+    require(
+        payload["verdict"] == "accepted_with_residual_owner_runtime_blockers",
+        "P024 closeout verdict mismatch",
+    )
+    scenarios = {item["id"]: item for item in payload["scenario_matrix"]}
+    require(set(scenarios) == {f"A{index}" for index in range(1, 17)}, "P024 closeout scenario set mismatch")
+    require(
+        scenarios["A4"]["status"] == "blocked_pending_owner_runtime_execution",
+        "P024 closeout A4 must remain blocked",
+    )
+    require(
+        scenarios["A13"]["status"] == "passed_blocked_by_external_approval",
+        "P024 closeout A13 status mismatch",
+    )
+    require(scenarios["A15"]["status"] == "passed", "P024 closeout A15 status mismatch")
+    require(
+        scenarios["A16"]["status"] == "passed_blocked_by_owner_runtime_execution",
+        "P024 closeout A16 status mismatch",
+    )
+    blockers = {blocker["blocker_id"]: blocker for blocker in payload["residual_blockers"]}
+    require(
+        set(blockers)
+        == {
+            "p024_external_owner_runtime_write_approval_required",
+            "p024_owner_runtime_artifacts_missing",
+            "p024_real_partial_fill_runtime_missing",
+        },
+        "P024 closeout residual blockers mismatch",
+    )
+    negative = payload["negative_assertions"]
+    for key in [
+        "runtime_invocation_attempted",
+        "owner_repo_write_attempted",
+        "browser_triggered_broker_order",
+        "gateway_send_attempted_from_browser",
+        "broker_order_created_from_browser",
+        "live_armed",
+        "account_mirror_write_authority",
+        "raw_secret_values_recorded",
+        "raw_broker_endpoint_recorded",
+        "full_runtime_acceptance_claimed",
+    ]:
+        require(negative[key] is False, f"P024 closeout negative assertion mismatch: {key}")
+
+
+def validate_p024_partial_fill_runtime_feasibility_audit() -> None:
+    payload = load_json(P024_PARTIAL_FILL_RUNTIME_FEASIBILITY_AUDIT)
+    require(
+        payload["schema"] == "account-console.p024.partial-fill-runtime-feasibility-audit.v1",
+        "P024 partial-fill feasibility schema mismatch",
+    )
+    require(
+        payload["proposal_id"] == "p024-account-console-paper-command-controls",
+        "P024 partial-fill feasibility proposal mismatch",
+    )
+    require(payload["account_id"] == "acct.ctp.paper.19053", "P024 partial-fill feasibility account mismatch")
+    require(
+        payload["status"] == "phase4h_real_partial_fill_runtime_feasibility_blocked",
+        "P024 partial-fill feasibility status mismatch",
+    )
+    require(
+        payload["verdict"] == "blocked_until_owner_runtime_partial_fill_state_available",
+        "P024 partial-fill feasibility verdict mismatch",
+    )
+    approval = payload["operator_approval_scope"]
+    require(approval["approved_for_one_submit_cancel_attempt"] is True, "P024 partial-fill approval scope mismatch")
+    require(approval["additional_partial_fill_order_authorized"] is False, "P024 partial-fill extra order mismatch")
+    evidence = payload["current_real_runtime_evidence"]
+    require(evidence["observed_trade_fill"] is False, "P024 partial-fill trade fill claim mismatch")
+    require(evidence["observed_partial_fill"] is False, "P024 partial-fill runtime claim mismatch")
+    scan = payload["owner_capability_scan"]
+    require(scan["can_record_trade_callbacks_if_emitted"] is True, "P024 partial-fill callback capability missing")
+    require(
+        scan["deterministic_partial_fill_generator_present"] is False,
+        "P024 partial-fill generator claim mismatch",
+    )
+    require(
+        payload["non_ui_acceptance_shape"]["status"] == "blocked",
+        "P024 partial-fill non-UI acceptance status mismatch",
+    )
+    require(
+        payload["web_ui_acceptance_shape"]["status"] == "blocked",
+        "P024 partial-fill Web UI acceptance status mismatch",
+    )
+    require(
+        payload["residual_blocker"]["blocker_id"] == "p024_real_partial_fill_runtime_missing",
+        "P024 partial-fill blocker mismatch",
+    )
+    negative = payload["negative_assertions"]
+    for key in [
+        "new_partial_fill_order_submitted_by_this_audit",
+        "final_acceptance_claimed",
+        "real_partial_fill_runtime_claimed",
+        "browser_fixture_promoted_to_runtime_truth",
+        "raw_secret_values_recorded",
+        "raw_broker_endpoint_recorded",
+        "config_raw_content_recorded",
+    ]:
+        require(negative[key] is False, f"P024 partial-fill negative assertion mismatch: {key}")
+
+
+def validate_p024_partial_fill_owner_artifact_scan() -> None:
+    payload = load_json(P024_PARTIAL_FILL_OWNER_ARTIFACT_SCAN)
+    require(
+        payload["schema"] == "account-console.p024.partial-fill-owner-artifact-scan.v1",
+        "P024 partial-fill artifact scan schema mismatch",
+    )
+    require(
+        payload["status"] == "phase4i_owner_artifact_partial_fill_scan_complete_no_candidate",
+        "P024 partial-fill artifact scan status mismatch",
+    )
+    require(
+        payload["verdict"] == "no_qualifying_partial_fill_then_cancel_owner_artifact_found",
+        "P024 partial-fill artifact scan verdict mismatch",
+    )
+    result = payload["scan_result"]
+    require(result["order_like_record_count"] >= 50, "P024 partial-fill artifact scan coverage mismatch")
+    require(result["partial_fill_candidate_count"] == 0, "P024 partial-fill candidate count mismatch")
+    require(
+        result["qualifying_partial_fill_then_cancel_count"] == 0,
+        "P024 qualifying partial-fill candidate count mismatch",
+    )
+    rejected = {candidate["candidate_id"]: candidate for candidate in payload["rejected_near_candidates"]}
+    require(
+        set(rejected)
+        == {
+            "p023-rb2610-order-166",
+            "p077-rb2610-order-183",
+            "p077-rb2610-order-232",
+            "p024-rb2610-partial-attempt-20260621T174616",
+        },
+        "P024 near candidate set mismatch",
+    )
+    require(
+        rejected["p023-rb2610-order-166"]["rejection_reason"] == "cancelled_without_fill_not_partial_fill",
+        "P024 P023 near candidate reason mismatch",
+    )
+    for candidate_id in ["p077-rb2610-order-183", "p077-rb2610-order-232"]:
+        require(
+            rejected[candidate_id]["rejection_reason"] == "fully_filled_not_partial_fill_then_cancel",
+            f"P024 {candidate_id} near candidate reason mismatch",
+        )
+    require(
+        rejected["p024-rb2610-partial-attempt-20260621T174616"]["rejection_reason"]
+        == "rejected_before_partial_fill_not_partial_fill",
+        "P024 latest partial-fill attempt reason mismatch",
+    )
+    impact = payload["acceptance_impact"]
+    require(impact["non_ui_partial_fill_runtime_acceptance"] == "blocked", "P024 scan non-UI impact mismatch")
+    require(impact["web_ui_real_partial_fill_runtime_acceptance"] == "blocked", "P024 scan Web UI impact mismatch")
+    require(impact["full_acceptance_claimed"] is False, "P024 scan full acceptance claim mismatch")
+    negative = payload["negative_assertions"]
+    for key in [
+        "new_order_submitted_by_scan",
+        "cancel_sent_by_scan",
+        "browser_fixture_promoted_to_runtime_truth",
+        "final_acceptance_claimed",
+        "raw_secret_values_recorded",
+        "raw_broker_endpoint_recorded",
+    ]:
+        require(negative[key] is False, f"P024 partial-fill artifact scan negative assertion mismatch: {key}")
+
+
+def validate_p024_partial_fill_runtime_execution_approval_packet() -> None:
+    payload = load_json(P024_PARTIAL_FILL_RUNTIME_EXECUTION_APPROVAL_PACKET)
+    require(
+        payload["schema"] == "account-console.p024.partial-fill-runtime-execution-approval-packet.v1",
+        "P024 partial-fill approval schema mismatch",
+    )
+    require(
+        payload["status"] == "phase4j_partial_fill_runtime_execution_approval_packet_ready",
+        "P024 partial-fill approval status mismatch",
+    )
+    require(payload["verdict"] == "approval_packet_ready_runtime_not_invoked", "P024 partial-fill approval verdict mismatch")
+    approval = payload["required_operator_approval"]
+    require(approval["required"] is True, "P024 partial-fill approval required mismatch")
+    require(approval["obtained"] is False, "P024 partial-fill approval obtained mismatch")
+    require("P024 partial-fill acceptance" in approval["exact_approval_text"], "P024 partial-fill approval text mismatch")
+    constraints = payload["attempt_constraints"]
+    require(constraints["risk_shape"] == "exposure_reduction_only", "P024 partial-fill risk shape mismatch")
+    require(constraints["maximum_submit_attempts"] == 1, "P024 partial-fill submit attempt mismatch")
+    require(constraints["maximum_order_quantity"] == 3, "P024 partial-fill max quantity mismatch")
+    require(
+        constraints["partial_fill_success_formula"] == "0 < filled_quantity < submitted_quantity",
+        "P024 partial-fill success formula mismatch",
+    )
+    negative = payload["negative_assertions"]
+    for key in [
+        "approval_obtained",
+        "runtime_invocation_attempted",
+        "owner_repo_write_attempted",
+        "new_order_submitted",
+        "cancel_sent",
+        "full_acceptance_claimed",
+        "browser_fixture_promoted_to_runtime_truth",
+    ]:
+        require(negative[key] is False, f"P024 partial-fill approval negative assertion mismatch: {key}")
+
+
+def validate_p024_partial_fill_runtime_execution_handoff_bundle() -> None:
+    payload = load_json(P024_PARTIAL_FILL_RUNTIME_EXECUTION_HANDOFF_BUNDLE)
+    approval = load_json(P024_PARTIAL_FILL_RUNTIME_EXECUTION_APPROVAL_PACKET)
+    scan = load_json(P024_PARTIAL_FILL_OWNER_ARTIFACT_SCAN)
+    require(
+        payload["schema"] == "account-console.p024.partial-fill-runtime-execution-handoff-bundle.v1",
+        "P024 partial-fill handoff schema mismatch",
+    )
+    require(
+        payload["status"] == "phase4k_partial_fill_runtime_execution_handoff_bundle_ready",
+        "P024 partial-fill handoff status mismatch",
+    )
+    require(payload["verdict"] == "handoff_bundle_ready_runtime_not_invoked", "P024 partial-fill handoff verdict mismatch")
+    depends = payload["depends_on"]
+    require(depends["approval_packet_schema"] == approval["schema"], "P024 partial-fill handoff approval schema mismatch")
+    require(depends["owner_artifact_scan_verdict"] == scan["verdict"], "P024 partial-fill handoff scan verdict mismatch")
+    guard = payload["execution_guard"]
+    require(guard["execution_allowed"] is False, "P024 partial-fill handoff execution allowed mismatch")
+    require(guard["approval_obtained"] is False, "P024 partial-fill handoff approval obtained mismatch")
+    inputs = {item["field"]: item for item in payload["runtime_input_requirements"]}
+    require(inputs["quantity"]["allowed_values"] == [2, 3], "P024 partial-fill handoff quantity mismatch")
+    criteria = payload["success_criteria"]
+    for phrase in [
+        "0 < filled_quantity < submitted_quantity",
+        "filled_quantity + cancelled_quantity == submitted_quantity",
+        "remaining_quantity == 0 after terminal cancel readback",
+    ]:
+        require(phrase in criteria["non_ui_runtime"], f"P024 partial-fill handoff criterion missing: {phrase}")
+    negative = payload["negative_assertions"]
+    for key in [
+        "execution_allowed",
+        "approval_obtained",
+        "runtime_invocation_attempted",
+        "owner_repo_write_attempted",
+        "new_order_submitted",
+        "cancel_sent",
+        "full_acceptance_claimed",
+        "browser_fixture_promoted_to_runtime_truth",
+    ]:
+        require(negative[key] is False, f"P024 partial-fill handoff negative assertion mismatch: {key}")
+
+
+def validate_p024_owner_runtime_approval_packet() -> None:
+    payload = load_json(P024_OWNER_RUNTIME_APPROVAL_PACKET)
+    require(
+        payload["schema"] == "account-console.p024.owner-runtime-execution-approval-packet.v1",
+        "P024 approval packet schema mismatch",
+    )
+    require(payload["proposal_id"] == "p024-account-console-paper-command-controls", "P024 approval proposal mismatch")
+    require(payload["account_id"] == "acct.ctp.paper.19053", "P024 approval account mismatch")
+    require(
+        payload["status"] == "phase4a_owner_runtime_execution_approval_packet_ready",
+        "P024 approval packet status mismatch",
+    )
+    require(
+        payload["verdict"] == "approval_packet_ready_runtime_not_invoked",
+        "P024 approval packet verdict mismatch",
+    )
+    approval = payload["required_operator_approval"]
+    require(approval["required"] is True, "P024 approval required flag mismatch")
+    require(approval["obtained"] is False, "P024 approval obtained flag mismatch")
+    require(approval["approval_path"] == "D:/Nautilus/nautilus_ctp_adapter", "P024 approval path mismatch")
+    require(
+        "I approve writes to D:/Nautilus/nautilus_ctp_adapter" in approval["exact_approval_text"],
+        "P024 exact approval text missing path",
+    )
+    entrypoints = {entry["action"]: entry for entry in payload["entrypoints"]}
+    require(set(entrypoints) == {"submit", "cancel"}, "P024 approval entrypoint action mismatch")
+    require(entrypoints["submit"]["armed_flag"] == "--arm-paper-send", "P024 approval submit arm flag mismatch")
+    require(entrypoints["cancel"]["armed_flag"] == "--arm-cancel-send", "P024 approval cancel arm flag mismatch")
+    commands = {command["action"]: command for command in payload["command_templates"]}
+    require("--arm-paper-send" in commands["submit"]["template"], "P024 approval submit command missing arm flag")
+    require("--arm-cancel-send" in commands["cancel"]["template"], "P024 approval cancel command missing arm flag")
+    artifacts = set(payload["required_post_run_artifacts"])
+    for artifact in [
+        "submit_intent.json",
+        "submit_gateway_event.json",
+        "post_submit_readback.json",
+        "cancel_intent.json",
+        "cancel_gateway_event.json",
+        "post_cancel_readback.json",
+        "reconciliation_result.json",
+        "redaction_report.json",
+        "command_audit.json",
+        "closeout_manifest.json",
+    ]:
+        require(artifact in artifacts, f"P024 approval packet missing artifact: {artifact}")
+    negative = payload["negative_assertions"]
+    for key in [
+        "runtime_invocation_attempted",
+        "owner_repo_write_attempted",
+        "browser_triggered_broker_order",
+        "gateway_send_attempted",
+        "broker_order_created",
+        "live_armed",
+        "account_mirror_write_authority",
+        "raw_secret_values_recorded",
+        "raw_broker_endpoint_recorded",
+        "config_raw_content_read",
+        "full_runtime_acceptance_claimed",
+    ]:
+        require(negative[key] is False, f"P024 approval packet negative assertion mismatch: {key}")
+
+
+def validate_p024_owner_runtime_handoff_bundle() -> None:
+    payload = load_json(P024_OWNER_RUNTIME_HANDOFF_BUNDLE)
+    require(
+        payload["schema"] == "account-console.p024.owner-runtime-execution-handoff-bundle.v1",
+        "P024 handoff bundle schema mismatch",
+    )
+    require(payload["proposal_id"] == "p024-account-console-paper-command-controls", "P024 handoff bundle proposal mismatch")
+    require(payload["account_id"] == "acct.ctp.paper.19053", "P024 handoff bundle account mismatch")
+    require(
+        payload["status"] == "phase4c_owner_runtime_execution_handoff_bundle_ready",
+        "P024 handoff bundle status mismatch",
+    )
+    require(
+        payload["verdict"] == "handoff_bundle_ready_runtime_not_invoked",
+        "P024 handoff bundle verdict mismatch",
+    )
+    guard = payload["execution_guard"]
+    require(guard["execution_allowed"] is False, "P024 handoff bundle execution allowed mismatch")
+    require(guard["approval_required"] is True, "P024 handoff bundle approval required mismatch")
+    require(guard["approval_obtained"] is False, "P024 handoff bundle approval obtained mismatch")
+    required_inputs = {item["field"] for item in payload["runtime_input_requirements"]}
+    for field in [
+        "owner_pre_snapshot_ref",
+        "owner_post_snapshot_ref",
+        "instrument",
+        "side",
+        "qty",
+        "price",
+        "readback_order_identity",
+    ]:
+        require(field in required_inputs, f"P024 handoff bundle missing runtime input: {field}")
+    steps = [item["step"] for item in payload["operator_sequence"]]
+    for step in [
+        "pre_approval_gate",
+        "owner_repo_context",
+        "submit_runtime",
+        "submit_readback",
+        "cancel_runtime",
+        "post_run_ingest",
+        "browser_closeout",
+    ]:
+        require(step in steps, f"P024 handoff bundle missing operator step: {step}")
+    blockers = {blocker["type"] for blocker in payload["blockers"]}
+    require(
+        blockers == {"external_write_approval_required", "runtime_inputs_required", "owner_runtime_artifacts_missing"},
+        "P024 handoff bundle blockers mismatch",
+    )
+    negative = payload["negative_assertions"]
+    for key in [
+        "execution_allowed",
+        "runtime_invocation_attempted",
+        "owner_repo_write_attempted",
+        "browser_triggered_broker_order",
+        "gateway_send_attempted",
+        "broker_order_created",
+        "live_armed",
+        "account_mirror_write_authority",
+        "raw_secret_values_recorded",
+        "raw_broker_endpoint_recorded",
+        "config_raw_content_read",
+        "full_runtime_acceptance_claimed",
+    ]:
+        require(negative[key] is False, f"P024 handoff bundle negative assertion mismatch: {key}")
+
+
+def validate_owner_map_backfill() -> None:
+    owner_map = read(OWNER_MAP)
+    for phrase in [
+        "P024 paper command controls",
+        "owner://nautilus_ctp_adapter",
+        "external approval blocker",
+        "claim browser-triggered broker order",
+        "Account Mirror a command writer",
+    ]:
+        require(phrase in owner_map, f"P024 owner map missing phrase: {phrase}")
+
+
+def validate_p023_predecessor_evidence() -> None:
+    payload = load_json(P023_PARTIAL_EVIDENCE)
+    require(payload["schema"] == "account-console.p023.partial-fill-order-display.v1", "P023 evidence schema mismatch")
+    require(payload["partial_cancel_display_verdict"] == "pass", "P023 partial cancel display verdict mismatch")
+    require(
+        payload["runtime_partial_fill_verdict"]
+        == "typed_blocker_until_real_or_owner_approved_partial_fill_state",
+        "P023 runtime partial-fill blocker missing",
+    )
+    checks = payload.get("partial_cancel_display_checks") or {}
+    for check in [
+        "same_order_identity_across_stages",
+        "s2_browser_fill_sum_equals_order_filled_quantity",
+        "s2_trade_refs_match_api_projection",
+        "s2_cancel_target_equals_s2_remaining_quantity",
+        "s3_quantities_unchanged_until_cancel_readback",
+        "s3_no_remaining_cancel_quantity_visible",
+        "s4_filled_quantity_preserved_after_cancel",
+        "s4_cancelled_quantity_equals_s2_remaining_quantity",
+        "s4_remaining_quantity_zero",
+        "s4_no_remaining_cancel_quantity_visible",
+        "fill_trade_identities_stable_after_cancel",
+    ]:
+        require(checks.get(check) is True, f"P023 predecessor check missing: {check}")
+    non_claims = set(payload.get("explicit_non_claims") or [])
+    for claim in [
+        "does_not_submit_orders",
+        "does_not_cancel_orders",
+        "does_not_prove_real_openctp_partial_fill_runtime",
+        "does_not_use_screenshot_as_order_truth",
+        "does_not_enable_command_capability",
+    ]:
+        require(claim in non_claims, f"P023 predecessor non-claim missing: {claim}")
+
+
+def validate_existing_command_boundary_still_closed() -> None:
+    design_gate = load_json(DESIGN_GATE)
+    require(design_gate["status"] == "design_gate_only", "existing command design gate must remain design_gate_only")
+    current = design_gate["current_phase"]
+    for key in [
+        "command_implementation_accepted",
+        "ui_command_controls_accepted",
+        "account_mirror_write_authority",
+        "broker_gateway_implementation_accepted",
+    ]:
+        require(current[key] is False, f"{key} must remain false in P024 design gate")
+
+    for path in sorted(FIXTURE_DIR.glob("acct_*_capability.json")):
+        payload = load_json(path)
+        command = payload["capabilities"]["command"]
+        require(command["enabled"] is False, f"{path}: command must stay disabled")
+        require(command["mode"] == "disabled", f"{path}: command mode must stay disabled")
+        require(command["allowed_actions"] == [], f"{path}: command allowed_actions must stay empty")
+        require(payload["boundaries"]["order_action"] is False, f"{path}: order_action boundary must stay false")
+
+
+def validate_backend_command_routes_are_p024_only() -> None:
+    sys.path.insert(0, str(BACKEND_SRC))
+    from nautilus_account_console.main import app
+
+    route_paths = {getattr(route, "path", "") for route in app.routes}
+    require(set(ALLOWED_COMMAND_ROUTES).issubset(route_paths), "P024 command API routes missing")
+    for route in app.routes:
+        path = getattr(route, "path", "")
+        methods = getattr(route, "methods", set()) or set()
+        if path in ALLOWED_COMMAND_ROUTES:
+            require(methods == ALLOWED_COMMAND_ROUTES[path], f"{path}: P024 command route methods mismatch")
+        elif path.startswith("/api/commands"):
+            require(False, f"unexpected command route outside P024 allowlist: {path}")
+        require("/replace" not in path, f"replace route remains forbidden in P024: {path}")
+        if path.startswith("/api/mirror/"):
+            forbidden_methods = sorted(method for method in methods if method not in {"GET", "HEAD"})
+            require(not forbidden_methods, f"mirror route {path} exposes write methods: {forbidden_methods}")
+
+
+def main() -> None:
+    validate_docs_exist()
+    validate_proposal_index_and_adr()
+    validate_readme()
+    validate_phase_plan()
+    validate_acceptance()
+    validate_ui_docs()
+    validate_partial_fill_cancel_doc()
+    validate_p024_partial_fill_evidence()
+    validate_p024_runtime_closeout_evidence()
+    validate_p024_runtime_handoff_evidence()
+    validate_p024_owner_runtime_readiness()
+    validate_p024_runtime_readiness_ui_evidence()
+    validate_p024_runtime_approval_packet_ui_evidence()
+    validate_p024_runtime_handoff_bundle_ui_evidence()
+    validate_p024_partial_fill_runtime_approval_packet_ui_evidence()
+    validate_p024_partial_fill_runtime_handoff_bundle_ui_evidence()
+    validate_p024_partial_fill_runtime_execution_attempt_audit()
+    validate_p024_partial_fill_close_offset_owner_rule_gap_audit()
+    validate_p024_partial_fill_owner_repair_approval_packet()
+    validate_p024_partial_fill_remaining_acceptance_current_state()
+    validate_p024_partial_fill_owner_repair_implementation_plan()
+    validate_p024_partial_fill_owner_repair_plan_ui_evidence()
+    validate_p024_partial_fill_owner_repair_evidence_ingest_gate()
+    validate_p024_partial_fill_owner_repair_ingest_gate_ui_evidence()
+    validate_p024_partial_fill_owner_repair_preflight_source_audit()
+    validate_p024_partial_fill_owner_repair_preflight_ui_evidence()
+    validate_p024_partial_fill_owner_repair_patch_preview()
+    validate_p024_partial_fill_owner_repair_patch_preview_ui_evidence()
+    validate_p024_partial_fill_owner_repair_execution_handoff_bundle()
+    validate_p024_partial_fill_owner_repair_execution_handoff_ui_evidence()
+    validate_p024_partial_fill_owner_repair_approval_packet_ui_evidence()
+    validate_p024_partial_fill_remaining_acceptance_state_ui_evidence()
+    validate_p024_runtime_execution_gap_audit()
+    validate_p024_runtime_execution_gap_ui_evidence()
+    validate_p024_full_acceptance_closeout()
+    validate_p024_partial_fill_runtime_feasibility_audit()
+    validate_p024_partial_fill_owner_artifact_scan()
+    validate_p024_partial_fill_runtime_execution_approval_packet()
+    validate_p024_partial_fill_runtime_execution_handoff_bundle()
+    validate_p024_owner_runtime_approval_packet()
+    validate_p024_owner_runtime_handoff_bundle()
+    validate_owner_map_backfill()
+    validate_p023_predecessor_evidence()
+    validate_existing_command_boundary_still_closed()
+    validate_backend_command_routes_are_p024_only()
+    print(
+        "P024_PAPER_COMMAND_CONTROLS_DESIGN_OK: "
+        "status=phase4zf_post_repair_runtime_attempt_full_fill_blocker_recorded current_ui_command=guarded runtime_closeout=browser_projection_passed partial_fill_cancel_ui=browser_contract_passed runtime_handoff=browser_handoff_passed runtime_invocation_readiness=blocked_by_external_approval runtime_readiness_ui=browser_projection_passed full_closeout=residual_blocker_audit_passed approval_packet=ready_runtime_not_invoked runtime_approval_packet_ui=browser_projection_passed handoff_bundle=ready_runtime_not_invoked runtime_handoff_bundle_ui=browser_projection_passed runtime_execution_gap=blocked_final_claim_false partial_fill_runtime=blocked_until_owner_runtime_partial_fill_state_available partial_fill_artifact_scan=no_qualifying_candidate partial_fill_approval=ready_runtime_not_invoked partial_fill_approval_ui=browser_projection_passed partial_fill_handoff=ready_runtime_not_invoked partial_fill_handoff_ui=browser_projection_passed partial_fill_attempt=rejected_before_partial_fill_not_partial_fill close_yesterday_owner_rule_gap=blocked_retry_not_authorized owner_repair_approval=required_before_retry owner_repair_approval_ui=browser_projection_passed remaining_acceptance=owner_repair_and_real_partial_fill_missing remaining_acceptance_ui=browser_projection_passed owner_repair_plan=ready_no_owner_write owner_repair_plan_ui=browser_projection_passed owner_repair_ingest_gate=ready_missing_evidence owner_repair_ingest_gate_ui=browser_projection_passed owner_repair_preflight=blind_retry_rejected owner_repair_preflight_ui=browser_projection_passed owner_repair_patch_preview=ready_owner_write_false owner_repair_patch_preview_ui=browser_projection_passed owner_repair_execution_handoff=ready_owner_write_false owner_repair_execution_handoff_ui=browser_projection_passed owner_repair_ingest_audit=evidence_recorded retry_packet=one_attempt_authorized_pre_runtime post_repair_attempt=full_fill_not_partial_retry_consumed"
+    )
+
+
+if __name__ == "__main__":
+    main()

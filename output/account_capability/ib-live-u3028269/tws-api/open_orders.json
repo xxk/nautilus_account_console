@@ -1,0 +1,91 @@
+{
+  "schema": "account-console.ib-tws-api-query.v1",
+  "account_id": "acct.ib.live.u3028269",
+  "display_alias": "U3028269",
+  "query_kind": "open_orders",
+  "source_kind": "ib_tws_api",
+  "success": true,
+  "tws_api_login_confirmed": true,
+  "query_started_at": "2026-06-20T15:09:56Z",
+  "query_completed_at": "2026-06-20T15:09:58Z",
+  "raw_secret_values_recorded": false,
+  "raw_broker_endpoint_recorded": false,
+  "screenshot_used_for_values": false,
+  "order_action_sent": false,
+  "account_ref": "ib-account-ref://U3028269",
+  "open_orders": [
+    {
+      "order_id": "-23",
+      "perm_id": "1158429861",
+      "client_id": "",
+      "account_ref": "ib-account-ref://U3028269",
+      "instrument": "UCZ26",
+      "symbol": "UC",
+      "exchange": "SGX",
+      "destination": "SGX",
+      "side": "BUY",
+      "order_type": "LMT",
+      "limit_price": 6.4838,
+      "aux_price": 0.0,
+      "quantity": 1.0,
+      "time_in_force": "GTC",
+      "status": "PreSubmitted",
+      "filled_quantity": 0.0,
+      "remaining_quantity": 1.0,
+      "avg_fill_price": 0.0,
+      "last_fill_price": 0.0,
+      "sequence": 1
+    },
+    {
+      "order_id": "-22",
+      "perm_id": "1358997123",
+      "client_id": "",
+      "account_ref": "ib-account-ref://U3028269",
+      "instrument": "981",
+      "symbol": "981",
+      "exchange": "SEHK",
+      "destination": "SEHK",
+      "side": "SELL",
+      "order_type": "LMT",
+      "limit_price": 88.35,
+      "aux_price": 0.0,
+      "quantity": 1000.0,
+      "time_in_force": "GTC",
+      "status": "PreSubmitted",
+      "filled_quantity": 0.0,
+      "remaining_quantity": 1000.0,
+      "avg_fill_price": 0.0,
+      "last_fill_price": 0.0,
+      "sequence": 2
+    }
+  ],
+  "open_order_rows": 2,
+  "readonly_query": {
+    "api_call": "reqAllOpenOrders",
+    "api_calls": [
+      "reqAutoOpenOrders",
+      "reqOpenOrders",
+      "reqAllOpenOrders"
+    ],
+    "callback_rows": [
+      "openOrder",
+      "orderStatus",
+      "openOrderEnd"
+    ],
+    "query_scope": "current_tws_session_open_orders_visible_to_api_client",
+    "client_id_policy": "client_id_0_binds_tws_manual_orders_when_available",
+    "order_action_sent": false,
+    "cancel_order_sent": false,
+    "replace_order_sent": false,
+    "complete_history_claimed": false
+  },
+  "empty_state": null,
+  "explicit_non_claims": [
+    "does_not_authorize_order_action",
+    "does_not_prove_complete_order_history",
+    "does_not_reproduce_tws_cancel_controls"
+  ],
+  "cancel_order_sent": false,
+  "replace_order_sent": false,
+  "query_checksum": "sha256:70205a021d344b74b410007328c361291477dc9729101e8ffaae610134092851"
+}

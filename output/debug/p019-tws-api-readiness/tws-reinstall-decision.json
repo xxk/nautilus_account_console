@@ -1,0 +1,57 @@
+{
+  "schema": "account-console.p019-tws-reinstall-decision.v1",
+  "proposal_id": "p019-broker-observation-session-foundation",
+  "account_id": "acct.ib.live.u3028269",
+  "display_alias": "U3028269",
+  "observed_at": "2026-06-20T14:48:16Z",
+  "decision": "do_not_reinstall_yet",
+  "reinstall_recommended": false,
+  "primary_next_action": "run_real_acceptance_closeout",
+  "current_evidence": {
+    "tws_process_present": true,
+    "firewall_allow_rules_present": true,
+    "firewall_enabled_block_rules_present": false,
+    "latest_config_ref": "local-file-ref://C:/Jts/1045/gffiklmeamhoiehlgjoifpcbcjmdkpaijiiacdbc/tws.xml",
+    "latest_config_socket_client": "false",
+    "latest_config_allow_only_localhost": "true",
+    "latest_config_port": "7497",
+    "latest_config_api_socket_enabled": false,
+    "known_api_ports_connectable": true,
+    "config_primary_blocker": null,
+    "ready_for_tws_api_funds_positions_query": true
+  },
+  "reinstall_preconditions": {
+    "api_socket_enabled_in_logged_in_tws": false,
+    "tws_restarted_after_api_setting_change": false,
+    "latest_config_socket_client_false_cleared": false,
+    "known_api_port_still_not_listening_after_enable_and_restart": false,
+    "firewall_allow_rules_present": true,
+    "firewall_enabled_block_rules_absent": true,
+    "operator_approved_exact_path_reason_impact": false
+  },
+  "unmet_reinstall_preconditions": [
+    "api_socket_enabled_in_logged_in_tws",
+    "tws_restarted_after_api_setting_change",
+    "latest_config_socket_client_false_cleared",
+    "operator_approved_exact_path_reason_impact"
+  ],
+  "required_before_real_funds_positions": [
+    "ready_for_tws_api_funds_positions_query=true",
+    "readonly_tws_api_account_summary_success=true",
+    "readonly_tws_api_positions_success=true",
+    "source_package_state=ready",
+    "account_mirror_projection_from_real_source_package",
+    "ui_parity_against_same_slice_tws_api_source"
+  ],
+  "boundaries": {
+    "writes_outside_worktree": false,
+    "raw_secret_values_recorded": false,
+    "raw_broker_endpoint_recorded": false,
+    "raw_config_file_contents_recorded": false,
+    "tws_reinstall_performed": false,
+    "tws_api_account_query_sent": false,
+    "funds_positions_values_recorded": false,
+    "screenshot_used_for_funds_positions": false,
+    "order_action_sent": false
+  }
+}

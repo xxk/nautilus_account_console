@@ -1,0 +1,16 @@
+{
+  "schema": "account-console.p023.browser-closeout.v1",
+  "proposal_id": "p023-openctp-19053-paper-command-capability",
+  "account_id": "acct.ctp.paper.19053",
+  "route": "/accounts/acct.ctp.paper.19053",
+  "verdict": "browser_order_display_contract_pass_runtime_partial_fill_blocked",
+  "order_display_evidence": "docs/acceptance/browser-evidence/p023-openctp-19053-command/partial-fill-order-display.json",
+  "command_enabled": false,
+  "command_mode": "disabled",
+  "runtime_partial_fill": "blocked_until_real_or_owner_approved_partial_fill_state",
+  "explicit_non_claims": [
+    "does_not_submit_orders",
+    "does_not_cancel_orders",
+    "does_not_claim_live_readiness"
+  ]
+}

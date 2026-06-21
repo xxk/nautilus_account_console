@@ -1,0 +1,108 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nautilus.local/contracts/broker_observation/durable_observation_store.schema.json",
+  "title": "Durable Broker Observation Store Snapshot",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "account_id",
+    "store_semantics",
+    "truth_flags",
+    "reload_support",
+    "reload_proof",
+    "persisted_families",
+    "persisted_record_counts",
+    "replay_state",
+    "raw_secret_values_recorded"
+  ],
+  "properties": {
+    "schema_version": { "type": "string", "const": "broker_observation_store_snapshot.v1" },
+    "account_id": { "type": "string", "pattern": "^acct\\.[a-z0-9_.-]+$" },
+    "store_semantics": { "type": "string", "const": "observation_evidence_projection_cache" },
+    "truth_flags": {
+      "type": "object",
+      "required": ["broker_truth", "order_truth", "account_truth", "command_authority", "readiness_truth"],
+      "properties": {
+        "broker_truth": { "type": "boolean", "const": false },
+        "order_truth": { "type": "boolean", "const": false },
+        "account_truth": { "type": "boolean", "const": false },
+        "command_authority": { "type": "boolean", "const": false },
+        "readiness_truth": { "type": "boolean", "const": false }
+      },
+      "additionalProperties": false
+    },
+    "reload_support": { "type": "boolean" },
+    "reload_proof": {
+      "type": "object",
+      "required": [
+        "store_snapshot_ref",
+        "store_snapshot_checksum",
+        "source_report_batch_ref",
+        "source_report_batch_checksum",
+        "reload_checkpoint_id",
+        "records_reloaded_from_store",
+        "records_loaded_from_live_memory",
+        "parity_status"
+      ],
+      "properties": {
+        "store_snapshot_ref": { "type": "string" },
+        "store_snapshot_checksum": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" },
+        "source_report_batch_ref": { "type": "string" },
+        "source_report_batch_checksum": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" },
+        "reload_checkpoint_id": { "type": "string" },
+        "records_reloaded_from_store": { "type": "integer", "minimum": 0 },
+        "records_loaded_from_live_memory": { "type": "integer", "const": 0 },
+        "parity_status": { "type": "string", "enum": ["passed", "blocked", "failed"] }
+      },
+      "additionalProperties": false
+    },
+    "persisted_families": {
+      "type": "array",
+      "items": { "type": "string" },
+      "minItems": 1
+    },
+    "persisted_record_counts": {
+      "type": "object",
+      "required": [
+        "order_status_reports",
+        "fill_reports",
+        "funds_snapshots",
+        "positions_snapshots",
+        "session_health",
+        "freshness_cursors"
+      ],
+      "properties": {
+        "order_status_reports": { "type": "integer", "minimum": 0 },
+        "fill_reports": { "type": "integer", "minimum": 0 },
+        "funds_snapshots": { "type": "integer", "minimum": 0 },
+        "positions_snapshots": { "type": "integer", "minimum": 0 },
+        "session_health": { "type": "integer", "minimum": 0 },
+        "freshness_cursors": { "type": "integer", "minimum": 0 }
+      },
+      "additionalProperties": false
+    },
+    "replay_state": {
+      "type": "object",
+      "required": ["state", "blockers"],
+      "properties": {
+        "state": { "type": "string", "enum": ["complete", "partial", "blocked"] },
+        "blockers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["blocker_id", "reason", "next_action"],
+            "properties": {
+              "blocker_id": { "type": "string" },
+              "reason": { "type": "string" },
+              "next_action": { "type": "string" }
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "raw_secret_values_recorded": { "type": "boolean", "const": false }
+  },
+  "additionalProperties": false
+}

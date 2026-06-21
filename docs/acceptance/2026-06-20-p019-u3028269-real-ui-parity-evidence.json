@@ -1,0 +1,61 @@
+{
+  "schema": "account-console.p019-u3028269-real-ui-parity-evidence.v1",
+  "proposal_id": "p019-broker-observation-session-foundation",
+  "account_id": "acct.ib.live.u3028269",
+  "display_alias": "U3028269",
+  "route": "/accounts/acct.ib.live.u3028269",
+  "source_kind": "ib_tws_observation",
+  "source_ref": "output/account_capability/ib-live-u3028269/source-package.json",
+  "source_checksum": "sha256:001bcc422d6575b3fa803c13be9dfc229cf0366a0b8a741f6adb7ae9a41e870c",
+  "projection_checkpoint_id": "sha256:a404f594a120929d3073b0aba3b383cb87eed611300ae8fa83a004d4bdc7955d",
+  "projection_checksum": "sha256:1c4e9a81f27e98bcbc0cf420fb7f062b5017e911473b33e03bb9082e2d019c4d",
+  "browser_evidence": [
+    {
+      "project": "desktop",
+      "screenshot": "docs/acceptance/browser-evidence/p019-u3028269-real-ui-parity/desktop-acct-ib-live-u3028269-real-ui-parity.png"
+    }
+  ],
+  "boundaries": {
+    "raw_secret_values_recorded": false,
+    "screenshot_used_for_funds_positions": false,
+    "broker_truth": false,
+    "order_action": false
+  },
+  "status": "ready_real_tws_api_source_package_ui_parity_checked",
+  "verdict": "pass",
+  "parity": {
+    "funds_parity": "pass",
+    "positions_parity": "pass",
+    "orders_fills_parity": "pass",
+    "execution_reports_table_parity": "pass",
+    "execution_reports_persistence_parity": "blocked",
+    "open_orders_parity": "pass",
+    "fills_parity": "pass"
+  },
+  "compared_against": {
+    "api_route": "/api/mirror/accounts/acct.ib.live.u3028269",
+    "balance_count": 5,
+    "rendered_balance_count": 4,
+    "rendered_balance_currencies": [
+      "CNH",
+      "HKD",
+      "JPY",
+      "USD"
+    ],
+    "position_count": 15,
+    "order_count": 2,
+    "rendered_open_order_count": 2,
+    "rendered_open_order_client_order_ids": [
+      "-23",
+      "-22"
+    ],
+    "fill_count": 0,
+    "rendered_fill_count": 0,
+    "rendered_fill_report_ids": [],
+    "execution_report_rows": 0,
+    "execution_report_state": "not_available_or_empty",
+    "executions_query_success": true,
+    "executions_complete_history_claimed": false,
+    "executions_order_action_sent": false
+  }
+}

@@ -8,6 +8,29 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 
 from . import __version__
+from .command_api import (
+    accept_cancel_intent,
+    accept_submit_intent,
+    load_partial_fill_owner_repair_approval_packet,
+    load_partial_fill_remaining_acceptance_current_state,
+    load_partial_fill_owner_repair_implementation_plan,
+    load_partial_fill_owner_repair_evidence_ingest_gate,
+    load_partial_fill_owner_repair_evidence_ingest_audit,
+    load_partial_fill_post_repair_runtime_retry_approval_packet,
+    load_partial_fill_post_repair_runtime_attempt_audit,
+    load_partial_fill_owner_repair_preflight_source_audit,
+    load_partial_fill_owner_repair_patch_preview,
+    load_partial_fill_owner_repair_execution_handoff_bundle,
+    load_partial_fill_runtime_execution_approval_packet,
+    load_partial_fill_runtime_execution_handoff_bundle,
+    load_runtime_execution_approval_packet,
+    load_runtime_execution_gap_audit,
+    load_runtime_execution_handoff_bundle,
+    load_runtime_invocation_readiness,
+    load_runtime_closeout,
+    prepare_cancel_runtime_run_request,
+    prepare_submit_runtime_run_request,
+)
 from .ledger import (
     get_account_snapshot,
     list_account_snapshots,
@@ -18,6 +41,26 @@ from .account_mirror import AccountMirrorStore
 from .schemas import (
     AccountDetail,
     AccountSnapshot,
+    CancelIntentRequest,
+    CommandApiResult,
+    CommandPartialFillOwnerRepairApprovalPacket,
+    CommandPartialFillRemainingAcceptanceCurrentState,
+    CommandPartialFillOwnerRepairEvidenceIngestGate,
+    CommandPartialFillOwnerRepairEvidenceIngestAudit,
+    CommandPartialFillPostRepairRuntimeRetryApprovalPacket,
+    CommandPartialFillPostRepairRuntimeAttemptAudit,
+    CommandPartialFillOwnerRepairImplementationPlan,
+    CommandPartialFillOwnerRepairPreflightSourceAudit,
+    CommandPartialFillOwnerRepairPatchPreview,
+    CommandPartialFillOwnerRepairExecutionHandoffBundle,
+    CommandPartialFillRuntimeExecutionApprovalPacket,
+    CommandPartialFillRuntimeExecutionHandoffBundle,
+    CommandRuntimeCloseout,
+    CommandRuntimeExecutionApprovalPacket,
+    CommandRuntimeExecutionGapAudit,
+    CommandRuntimeExecutionHandoffBundle,
+    CommandRuntimeInvocationReadiness,
+    CommandRuntimeRunRequest,
     Health,
     MirrorAccountProjection,
     MirrorEvidenceResponse,
@@ -25,6 +68,7 @@ from .schemas import (
     MirrorListResponse,
     MirrorAccountSummary,
     MirrorSourceHealthResponse,
+    OrderIntentRequest,
     OrderEvent,
     OrderExecutionReports,
 )
@@ -35,9 +79,14 @@ app = FastAPI(title="Nautilus Account Console API", version=__version__)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+    allow_origins=[
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "http://localhost:5174",
+        "http://127.0.0.1:5174",
+    ],
     allow_credentials=False,
-    allow_methods=["GET"],
+    allow_methods=["GET", "POST"],
     allow_headers=["*"],
 )
 
@@ -181,6 +230,223 @@ def mirror_account_evidence(account_id: str) -> MirrorEvidenceResponse:
         blockers=projection.blockers,
         boundaries=projection.boundaries,
     )
+
+
+@app.post(
+    "/api/commands/accounts/{account_id}/submit-intents",
+    response_model=CommandApiResult,
+    response_model_exclude_none=True,
+    status_code=202,
+)
+def command_submit_intent(account_id: str, intent: OrderIntentRequest) -> CommandApiResult:
+    return accept_submit_intent(account_id, intent)
+
+
+@app.post(
+    "/api/commands/accounts/{account_id}/cancel-intents",
+    response_model=CommandApiResult,
+    response_model_exclude_none=True,
+    status_code=202,
+)
+def command_cancel_intent(account_id: str, intent: CancelIntentRequest) -> CommandApiResult:
+    return accept_cancel_intent(account_id, intent)
+
+
+@app.post(
+    "/api/commands/accounts/{account_id}/runtime-run-requests/submit",
+    response_model=CommandRuntimeRunRequest,
+    response_model_exclude_none=True,
+    status_code=202,
+)
+def command_submit_runtime_run_request(account_id: str, intent: OrderIntentRequest) -> CommandRuntimeRunRequest:
+    return prepare_submit_runtime_run_request(account_id, intent)
+
+
+@app.post(
+    "/api/commands/accounts/{account_id}/runtime-run-requests/cancel",
+    response_model=CommandRuntimeRunRequest,
+    response_model_exclude_none=True,
+    status_code=202,
+)
+def command_cancel_runtime_run_request(account_id: str, intent: CancelIntentRequest) -> CommandRuntimeRunRequest:
+    return prepare_cancel_runtime_run_request(account_id, intent)
+
+
+@app.get(
+    "/api/commands/accounts/{account_id}/runtime-closeouts/{run_id}",
+    response_model=CommandRuntimeCloseout,
+    response_model_exclude_none=True,
+)
+def command_runtime_closeout(account_id: str, run_id: str) -> CommandRuntimeCloseout:
+    return load_runtime_closeout(account_id, run_id)
+
+
+@app.get(
+    "/api/commands/accounts/{account_id}/runtime-invocation-readiness",
+    response_model=CommandRuntimeInvocationReadiness,
+    response_model_exclude_none=True,
+)
+def command_runtime_invocation_readiness(account_id: str) -> CommandRuntimeInvocationReadiness:
+    return load_runtime_invocation_readiness(account_id)
+
+
+@app.get(
+    "/api/commands/accounts/{account_id}/runtime-execution-approval-packet",
+    response_model=CommandRuntimeExecutionApprovalPacket,
+    response_model_exclude_none=True,
+)
+def command_runtime_execution_approval_packet(account_id: str) -> CommandRuntimeExecutionApprovalPacket:
+    return load_runtime_execution_approval_packet(account_id)
+
+
+@app.get(
+    "/api/commands/accounts/{account_id}/runtime-execution-handoff-bundle",
+    response_model=CommandRuntimeExecutionHandoffBundle,
+    response_model_exclude_none=True,
+)
+def command_runtime_execution_handoff_bundle(account_id: str) -> CommandRuntimeExecutionHandoffBundle:
+    return load_runtime_execution_handoff_bundle(account_id)
+
+
+@app.get(
+    "/api/commands/accounts/{account_id}/partial-fill-runtime-execution-approval-packet",
+    response_model=CommandPartialFillRuntimeExecutionApprovalPacket,
+    response_model_exclude_none=True,
+)
+def command_partial_fill_runtime_execution_approval_packet(
+    account_id: str,
+) -> CommandPartialFillRuntimeExecutionApprovalPacket:
+    return load_partial_fill_runtime_execution_approval_packet(account_id)
+
+
+@app.get(
+    "/api/commands/accounts/{account_id}/partial-fill-runtime-execution-handoff-bundle",
+    response_model=CommandPartialFillRuntimeExecutionHandoffBundle,
+    response_model_exclude_none=True,
+)
+def command_partial_fill_runtime_execution_handoff_bundle(
+    account_id: str,
+) -> CommandPartialFillRuntimeExecutionHandoffBundle:
+    return load_partial_fill_runtime_execution_handoff_bundle(account_id)
+
+
+@app.get(
+    "/api/commands/accounts/{account_id}/runtime-execution-gap-audit",
+    response_model=CommandRuntimeExecutionGapAudit,
+    response_model_exclude_none=True,
+)
+def command_runtime_execution_gap_audit(account_id: str) -> CommandRuntimeExecutionGapAudit:
+    return load_runtime_execution_gap_audit(account_id)
+
+
+@app.get(
+    "/api/commands/accounts/{account_id}/partial-fill-owner-repair-approval-packet",
+    response_model=CommandPartialFillOwnerRepairApprovalPacket,
+    response_model_exclude_none=True,
+)
+def command_partial_fill_owner_repair_approval_packet(
+    account_id: str,
+) -> CommandPartialFillOwnerRepairApprovalPacket:
+    return load_partial_fill_owner_repair_approval_packet(account_id)
+
+
+@app.get(
+    "/api/commands/accounts/{account_id}/partial-fill-remaining-acceptance-current-state",
+    response_model=CommandPartialFillRemainingAcceptanceCurrentState,
+    response_model_exclude_none=True,
+)
+def command_partial_fill_remaining_acceptance_current_state(
+    account_id: str,
+) -> CommandPartialFillRemainingAcceptanceCurrentState:
+    return load_partial_fill_remaining_acceptance_current_state(account_id)
+
+
+@app.get(
+    "/api/commands/accounts/{account_id}/partial-fill-owner-repair-implementation-plan",
+    response_model=CommandPartialFillOwnerRepairImplementationPlan,
+    response_model_exclude_none=True,
+)
+def command_partial_fill_owner_repair_implementation_plan(
+    account_id: str,
+) -> CommandPartialFillOwnerRepairImplementationPlan:
+    return load_partial_fill_owner_repair_implementation_plan(account_id)
+
+
+@app.get(
+    "/api/commands/accounts/{account_id}/partial-fill-owner-repair-evidence-ingest-gate",
+    response_model=CommandPartialFillOwnerRepairEvidenceIngestGate,
+    response_model_exclude_none=True,
+)
+def command_partial_fill_owner_repair_evidence_ingest_gate(
+    account_id: str,
+) -> CommandPartialFillOwnerRepairEvidenceIngestGate:
+    return load_partial_fill_owner_repair_evidence_ingest_gate(account_id)
+
+
+@app.get(
+    "/api/commands/accounts/{account_id}/partial-fill-owner-repair-evidence-ingest-audit",
+    response_model=CommandPartialFillOwnerRepairEvidenceIngestAudit,
+    response_model_exclude_none=True,
+)
+def command_partial_fill_owner_repair_evidence_ingest_audit(
+    account_id: str,
+) -> CommandPartialFillOwnerRepairEvidenceIngestAudit:
+    return load_partial_fill_owner_repair_evidence_ingest_audit(account_id)
+
+
+@app.get(
+    "/api/commands/accounts/{account_id}/partial-fill-post-repair-runtime-retry-approval-packet",
+    response_model=CommandPartialFillPostRepairRuntimeRetryApprovalPacket,
+    response_model_exclude_none=True,
+)
+def command_partial_fill_post_repair_runtime_retry_approval_packet(
+    account_id: str,
+) -> CommandPartialFillPostRepairRuntimeRetryApprovalPacket:
+    return load_partial_fill_post_repair_runtime_retry_approval_packet(account_id)
+
+
+@app.get(
+    "/api/commands/accounts/{account_id}/partial-fill-post-repair-runtime-attempt-audit",
+    response_model=CommandPartialFillPostRepairRuntimeAttemptAudit,
+    response_model_exclude_none=True,
+)
+def command_partial_fill_post_repair_runtime_attempt_audit(
+    account_id: str,
+) -> CommandPartialFillPostRepairRuntimeAttemptAudit:
+    return load_partial_fill_post_repair_runtime_attempt_audit(account_id)
+
+
+@app.get(
+    "/api/commands/accounts/{account_id}/partial-fill-owner-repair-preflight-source-audit",
+    response_model=CommandPartialFillOwnerRepairPreflightSourceAudit,
+    response_model_exclude_none=True,
+)
+def command_partial_fill_owner_repair_preflight_source_audit(
+    account_id: str,
+) -> CommandPartialFillOwnerRepairPreflightSourceAudit:
+    return load_partial_fill_owner_repair_preflight_source_audit(account_id)
+
+
+@app.get(
+    "/api/commands/accounts/{account_id}/partial-fill-owner-repair-patch-preview",
+    response_model=CommandPartialFillOwnerRepairPatchPreview,
+    response_model_exclude_none=True,
+)
+def command_partial_fill_owner_repair_patch_preview(
+    account_id: str,
+) -> CommandPartialFillOwnerRepairPatchPreview:
+    return load_partial_fill_owner_repair_patch_preview(account_id)
+
+
+@app.get(
+    "/api/commands/accounts/{account_id}/partial-fill-owner-repair-execution-handoff-bundle",
+    response_model=CommandPartialFillOwnerRepairExecutionHandoffBundle,
+    response_model_exclude_none=True,
+)
+def command_partial_fill_owner_repair_execution_handoff_bundle(
+    account_id: str,
+) -> CommandPartialFillOwnerRepairExecutionHandoffBundle:
+    return load_partial_fill_owner_repair_execution_handoff_bundle(account_id)
 
 
 @app.get("/api/accounts/{account_id}", response_model=AccountDetail)

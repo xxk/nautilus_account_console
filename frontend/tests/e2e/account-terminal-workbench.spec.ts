@@ -41,7 +41,7 @@ test.describe("T001 Account Terminal Workbench", () => {
     await captureEvidence(page, testInfo.project.name, "legacy-acct-demo-19053-selector");
   });
 
-  test("renders dense API-backed fail-closed workspace for CTP paper 19053 without real-login package", async ({
+  test("renders dense API-backed ready workspace for CTP paper 19053 real readback", async ({
     page,
   }, testInfo) => {
     await page.goto("/accounts/acct.ctp.paper.19053");
@@ -61,16 +61,13 @@ test.describe("T001 Account Terminal Workbench", () => {
     await expect(page.getByTestId("account-capability-row").nth(2)).toContainText("F3");
     await expect(page.getByTestId("account-capability-row").nth(3)).toContainText("F5");
     await expect(page.getByTestId("account-summary-metric-strip")).toContainText("Cash");
-    await expect(page.getByTestId("account-summary-cash")).toContainText("missing");
-    await expect(page.getByTestId("account-positions-table")).toContainText(
-      "No position rows in this fixture projection."
-    );
-    await expect(page.getByTestId("account-bottom-tape")).toContainText("No order rows in this fixture projection.");
-    await expect(page.getByTestId("account-order-execution-report")).toContainText(
-      "No execution report provenance rows in this projection."
-    );
-    await expect(page.getByTestId("account-source-health-panel")).toContainText("typed_blocker");
-    await expect(page.getByTestId("account-blocker-row")).toContainText("source unavailable");
+    await expect(page.getByTestId("account-summary-cash")).toContainText("CNY");
+    await expect(page.getByTestId("account-positions-table")).toContainText("rb2610");
+    await expect(page.getByTestId("account-bottom-tape")).toContainText("No open order rows in this mirror projection.");
+    await expect(page.getByTestId("tws-fill-count")).toContainText("5");
+    await expect(page.getByTestId("tws-fills-table")).toContainText("zn2610");
+    await expect(page.getByTestId("account-order-execution-report")).toContainText("FillReport");
+    await expect(page.getByTestId("account-source-health-panel")).toContainText("normalized_read_model");
     await expect(page.getByTestId("account-evidence-rail")).toContainText("source package");
     await expect(page.getByTestId("account-evidence-rail")).toContainText("mirror projection");
     await expect(page.getByTestId("account-command-capability-state")).toContainText("observation only");
@@ -87,9 +84,10 @@ test.describe("T001 Account Terminal Workbench", () => {
     await expect(page.getByTestId("account-positions-table")).toContainText(
       "No position rows in this fixture projection."
     );
-    await expect(page.getByTestId("account-bottom-tape")).toContainText("No order rows in this fixture projection.");
+    await expect(page.getByTestId("account-bottom-tape")).toContainText("No open order rows in this mirror projection.");
+    await expect(page.getByTestId("account-order-execution-report")).toContainText("source unavailable");
     await expect(page.getByTestId("account-order-execution-report")).toContainText(
-      "No execution report provenance rows in this projection."
+      "output/account_capability/ctp-live-025292/source-package.json"
     );
     await expect(page.getByTestId("account-source-health-panel")).toContainText("typed_blocker");
     await expect(page.getByTestId("account-blocker-row")).toContainText("source unavailable");

@@ -1,0 +1,11 @@
+{
+  "schema_version": "broker_observation_report_batch.v1",
+  "account_id": "acct.ib.live.u3028269",
+  "source_kind": "ib_tws_observation",
+  "reports": [],
+  "raw_secret_values_recorded": false,
+  "command": {
+    "enabled": true,
+    "allowed_actions": ["submit", "cancel"]
+  }
+}

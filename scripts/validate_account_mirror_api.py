@@ -25,6 +25,7 @@ def main() -> None:
         "acct.nautilus.paper.demo",
         "acct.ctp.paper.19053",
         "acct.ctp.live.025292",
+        "acct.ib.live.u3028269",
         "simulated-001",
     }
     for row in payload["accounts"]:
@@ -88,6 +89,43 @@ def main() -> None:
     assert blocked_payload["route_context"]["route_id"] == "route.ctp.live.025292.account-readonly"
     assert blocked_payload["route_context"]["account_truth"] == "blocked_until_pinned_source_package"
 
+    ib_tws = client.get("/api/mirror/accounts/acct.ib.live.u3028269")
+    assert ib_tws.status_code == 200
+    ib_tws_payload = ib_tws.json()
+    assert ib_tws_payload["display_alias"] == "U3028269"
+    assert ib_tws_payload["source_kind"] == "ib_tws_observation"
+    assert ib_tws_payload["capabilities"]["command"]["enabled"] is False
+    assert ib_tws_payload["capabilities"]["observation"]["mirror_state"] in {"blocked", "ready"}
+    assert ib_tws_payload["source_health"]["raw_secret_values_recorded"] is False
+    assert ib_tws_payload["source_health"]["api_transport"] == "ib_tws_api"
+    assert ib_tws_payload["source_health"]["screenshot_used_for_values"] is False
+    assert ib_tws_payload["route_context"]["route_id"] == "route.ib.live.u3028269.account-readonly"
+    if ib_tws_payload["capabilities"]["observation"]["mirror_state"] == "ready":
+        assert ib_tws_payload["source_health"]["state"] == "ready"
+        assert ib_tws_payload["source_health"].get("blocker_id") is None
+        assert ib_tws_payload["route_context"]["account_truth"] == "ib_tws_api_source_package"
+        assert ib_tws_payload["blockers"] == []
+        assert ib_tws_payload["balances"]
+        assert ib_tws_payload["positions"]
+        assert ib_tws_payload["boundaries"]["broker_truth"] is False
+        assert ib_tws_payload["boundaries"]["account_truth"] is False
+        open_orders = ib_tws_payload["source_health"]["open_orders_readonly_query"]
+        assert open_orders["api_call"] == "reqAllOpenOrders"
+        assert open_orders["order_action_sent"] is False
+        assert open_orders["cancel_order_sent"] is False
+        assert open_orders["replace_order_sent"] is False
+        assert ib_tws_payload["source_health"]["open_order_rows"] == len(ib_tws_payload["orders"])
+    else:
+        assert ib_tws_payload["source_health"]["blocker_id"] == "tws_api_readiness_missing"
+        assert ib_tws_payload["blockers"][0]["type"] == "source_unavailable"
+        assert ib_tws_payload["route_context"]["account_truth"] == "blocked_until_tws_api_source_package"
+        assert ib_tws_payload["balances"] == []
+        assert ib_tws_payload["positions"] == []
+        assert ib_tws_payload["orders"] == []
+        assert ib_tws_payload["boundaries"]["broker_truth"] is False
+    assert ib_tws_payload["fills"] == []
+    assert ib_tws_payload["boundaries"]["order_action"] is False
+
     simulated = client.get("/api/mirror/accounts/simulated-001")
     assert simulated.status_code == 200
     simulated_payload = simulated.json()
@@ -110,7 +148,10 @@ def main() -> None:
     assert health["trading_adapter"] == "disabled"
     assert health["account_console_writes_truth"] is False
 
-    print("ACCOUNT_MIRROR_API_OK: accounts=4")
+    print(
+        "ACCOUNT_MIRROR_API_OK: accounts=5 "
+        f"ib_tws_u3028269={ib_tws_payload['capabilities']['observation']['mirror_state']}"
+    )
 
 
 if __name__ == "__main__":

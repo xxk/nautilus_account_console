@@ -1,0 +1,33 @@
+{
+  "schema": "account-console.ib-tws-api-query.v1",
+  "account_id": "acct.ib.live.u3028269",
+  "display_alias": "U3028269",
+  "query_kind": "positions",
+  "source_kind": "ib_tws_api",
+  "success": true,
+  "tws_api_login_confirmed": true,
+  "query_started_at": "2026-06-20T00:00:00Z",
+  "query_completed_at": "2026-06-20T00:00:01Z",
+  "raw_secret_values_recorded": false,
+  "raw_broker_endpoint_recorded": false,
+  "screenshot_used_for_values": false,
+  "order_action_sent": false,
+  "account_ref": "ib-account-ref://U3028269",
+  "positions": [
+    {
+      "instrument": "AAPL",
+      "exchange": "SMART",
+      "net_qty": 10.0,
+      "avg_cost": 180.25,
+      "unrealized_pnl": 42.0
+    },
+    {
+      "instrument": "MSFT",
+      "exchange": "SMART",
+      "net_qty": -5.0,
+      "avg_cost": 410.0,
+      "unrealized_pnl": -15.0
+    }
+  ],
+  "query_checksum": "sha256:synthetic-ready-positions"
+}

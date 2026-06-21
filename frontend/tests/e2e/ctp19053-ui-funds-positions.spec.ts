@@ -96,6 +96,8 @@ test("acct.ctp.paper.19053 UI uses real-login source package or fails closed", a
   expect(balance.currency).toBe("CNY");
   const positions = projection.positions;
   expect(Array.isArray(positions)).toBeTruthy();
+  expect(projection.source_health.open_order_rows).toBe(projection.orders.length);
+  expect(projection.source_health.fill_rows).toBe(projection.fills.length);
 
   await expect(page.getByTestId("account-source-health-panel")).toContainText("normalized_read_model");
   await expect(page.getByTestId("account-summary-cash")).toContainText(money(balance.equity));
@@ -110,7 +112,31 @@ test("acct.ctp.paper.19053 UI uses real-login source package or fails closed", a
     await expect(table).toContainText(position.instrument);
     await expect(table).toContainText(String(position.net_qty));
     await expect(table).toContainText(String(position.available_qty));
-    await expect(table).toContainText("source-package.json");
+    await expect(table).toContainText(position.source_ref);
+  }
+  await expect(page.getByTestId("tws-open-orders-table")).toBeVisible();
+  await expect(page.getByTestId("tws-open-order-count")).toContainText(String(projection.orders.length));
+  if (projection.orders.length === 0) {
+    await expect(page.getByTestId("tws-open-order-empty-state")).toContainText(
+      "No open order rows in this mirror projection."
+    );
+  } else {
+    await expect(page.getByTestId("tws-open-order-row")).toHaveCount(projection.orders.length);
+    for (const order of projection.orders) {
+      await expect(page.getByTestId("tws-open-orders-table")).toContainText(order.instrument);
+      await expect(page.getByTestId("tws-open-orders-table")).toContainText(order.source_ref);
+    }
+  }
+  await expect(page.getByTestId("tws-fills-table")).toBeVisible();
+  await expect(page.getByTestId("tws-fill-count")).toContainText(String(projection.fills.length));
+  if (projection.fills.length === 0) {
+    await expect(page.getByTestId("tws-fill-empty-state")).toContainText("No fill rows in this mirror projection.");
+  } else {
+    await expect(page.getByTestId("tws-fill-row")).toHaveCount(projection.fills.length);
+    for (const fill of projection.fills) {
+      await expect(page.getByTestId("tws-fills-table")).toContainText(fill.instrument);
+      await expect(page.getByTestId("tws-fills-table")).toContainText(fill.source_ref);
+    }
   }
   await expect(page.getByTestId("account-evidence-rail")).toContainText(projection.source_ref);
   await page.screenshot({ fullPage: true, path: screenshot });
@@ -133,8 +159,26 @@ test("acct.ctp.paper.19053 UI uses real-login source package or fails closed", a
           source_mode: projection.source_mode,
           source_health_state: projection.source_health.state,
           comparison_basis: "real-login read-only CTP account and position queries via source package",
+          funds_parity: "pass",
+          positions_parity: "pass",
+          open_orders_parity: "pass",
+          fills_parity: "pass",
           balances: projection.balances,
           positions: projection.positions,
+          orders: projection.orders,
+          fills: projection.fills,
+          order_count: projection.orders.length,
+          rendered_open_order_count: projection.orders.length,
+          open_orders_state: projection.source_health.open_orders_state,
+          fill_count: projection.fills.length,
+          rendered_fill_count: projection.fills.length,
+          fills_state: projection.source_health.fills_state,
+          td_order_truth_login_success: projection.source_health.td_order_truth_login_success === true,
+          td_order_truth_ready: projection.source_health.td_order_truth_ready === true,
+          td_order_truth_observed_order_event_count:
+            projection.source_health.td_order_truth_observed_order_event_count,
+          td_order_truth_observed_trade_event_count:
+            projection.source_health.td_order_truth_observed_trade_event_count,
           browser_evidence: [
             {
               project: testInfo.project.name,

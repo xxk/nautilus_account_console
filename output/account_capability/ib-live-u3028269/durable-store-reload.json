@@ -1,0 +1,66 @@
+{
+  "schema_version": "broker_observation_store_snapshot.v1",
+  "account_id": "acct.ib.live.u3028269",
+  "store_semantics": "observation_evidence_projection_cache",
+  "truth_flags": {
+    "broker_truth": false,
+    "order_truth": false,
+    "account_truth": false,
+    "command_authority": false,
+    "readiness_truth": false
+  },
+  "reload_support": true,
+  "reload_proof": {
+    "store_snapshot_ref": "output/account_capability/ib-live-u3028269/durable-store-reload.json",
+    "store_snapshot_checksum": "sha256:71dad66a7fa1a3fb34337f9dfa8a695a68e7943425634becccb2db575ba8f86d",
+    "source_report_batch_ref": "output/account_capability/ib-live-u3028269/tws-api/executions.json",
+    "source_report_batch_checksum": "sha256:ea2f758f2b55fca27a966ccb79f3b18ad1b1e3c2b7011e2db95b4704762b0a83",
+    "reload_checkpoint_id": "broker-observation-store.reload.u3028269.real.20260620150414",
+    "records_reloaded_from_store": 22,
+    "records_loaded_from_live_memory": 0,
+    "parity_status": "blocked"
+  },
+  "persisted_families": [
+    "order_status_reports",
+    "fill_reports",
+    "funds_snapshots",
+    "positions_snapshots",
+    "session_health",
+    "freshness_cursors",
+    "provenance_refs"
+  ],
+  "persisted_record_counts": {
+    "order_status_reports": 0,
+    "fill_reports": 0,
+    "funds_snapshots": 5,
+    "positions_snapshots": 15,
+    "session_health": 1,
+    "freshness_cursors": 1
+  },
+  "replay_state": {
+    "state": "partial",
+    "blockers": [
+      {
+        "blocker_id": "real_order_fill_callbacks_not_available",
+        "reason": "read-only TWS reqExecutions succeeded but returned zero matching execution rows for the current slice",
+        "next_action": "rerun read-only reqExecutions after same-slice U3028269 executions are present"
+      }
+    ]
+  },
+  "raw_secret_values_recorded": false,
+  "real_source_refs": {
+    "source_package": "output/account_capability/ib-live-u3028269/source-package.json",
+    "executions_query": "output/account_capability/ib-live-u3028269/tws-api/executions.json",
+    "source_package_checksum": "sha256:7e08deb73d8b74bebc8dfddb5740ff54c270cf1e0a02a9401b03e10689289ff7",
+    "executions_query_checksum": "sha256:ea2f758f2b55fca27a966ccb79f3b18ad1b1e3c2b7011e2db95b4704762b0a83"
+  },
+  "boundaries": {
+    "raw_secret_values_recorded": false,
+    "raw_broker_endpoint_recorded": false,
+    "screenshot_used_for_funds_positions": false,
+    "order_action_sent": false,
+    "records_loaded_from_live_memory": 0,
+    "synthetic_evidence_used": false
+  },
+  "observed_at": "2026-06-20T15:04:14Z"
+}

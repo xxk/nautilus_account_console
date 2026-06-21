@@ -7,6 +7,7 @@
   - [AGENTS.md](../../AGENTS.md)
   - [ADR-0002 business workbench navigation](../adr/0002-adopt-business-workbench-first-account-console-navigation.md)
   - [ADR-0003 contract-first UI slice development](../adr/0003-adopt-contract-first-ui-slice-development.md)
+  - [ADR-0005 independent broker observation sessions](../adr/0005-account-console-independent-broker-observation-sessions.md)
   - [Contract-first UI slice development topic](../topics/contract-first-ui-slice-development.md)
 
 ## 1. Purpose / 目的
@@ -43,6 +44,8 @@ The `owner` field displayed in UI rows means operational responsibility for a bl
 | External strategy/runtime artifacts | external strategy/runtime owner, e.g. `nautilus_strategies` / `strategies.vnpy_portfolio` | external `source_ref` only | normalized events, ledgers, evidence packages | display refs/checksums and typed blockers | rewrite or regenerate external artifact truth locally |
 | Admission/approval/capital decisions | external approval/capital owner | no local writer | formal approval/capital artifacts outside this repo | display request/projection or blocker only | create local approval, admission or capital allocator |
 | Broker/live state | broker/runtime owner | no local writer | broker/runtime APIs/artifacts outside this repo | display normalized broker/probe projections only | call broker action or certify tradability |
+| Broker observation session capability | `account-console-broker-observation-session` accepted by ADR-0005 | `contracts/broker_observation/**`, `docs/proposals/p019-broker-observation-session-foundation/**`, `output/account_capability/ib-live-u3028269/**` evidence refs | governed read-only observation capability, not broker/runtime truth | define contracts, validators, read-only source packages, durable observation evidence and Account Mirror projections with command disabled | own broker/runtime/account/order truth, store raw secrets, expose command authority, or claim complete execution history from partial evidence |
+| P024 paper command controls | `account-console-command-contracts` + `account-console-frontend` + external `owner://nautilus_ctp_adapter` runtime owner | `docs/proposals/p024-account-console-paper-command-controls/**`, `docs/acceptance/p024-account-console-paper-command-controls/**`, `docs/acceptance/browser-evidence/p024-account-console-paper-command-controls/**` | guarded paper intent API, browser command-control projection, owner-runtime handoff/readiness refs, residual blocker audit, owner-runtime execution approval packet, runtime approval packet UI projection, owner-runtime execution handoff bundle, runtime handoff bundle UI projection and runtime execution gap audit | accept paper intent/control/display/handoff/readiness/approval-packet/UI-projection/handoff-bundle/browser-handoff-bundle/gap-audit gates; render owner refs/checksums/blockers; preserve external approval blocker before owner-runtime execution | call broker/runtime directly, write owner repo without approval, claim browser-triggered broker order, store raw secrets/endpoints, make Account Mirror a command writer |
 
 ## 4. Tracer Edge Authority / Tracer 边权限
 
@@ -185,6 +188,21 @@ P004 Phase 7 is accepted as a read-only evidence UI projection slice only. It do
 | Residual scope statement | `account-console-ui` | P004 closeout explicitly excludes ADR0044/ADR0045 loop completion, P077/P078 completion, sibling owner completion and full Account Console UI completion |
 
 P004 Phase 8 closes the P004 Account Workbench scoped phases only. It does not accept Account Console runtime truth, account truth, order truth, ledger truth, broker truth, Paper readiness, Live readiness, admission, capital, production state, full Account Console UI completion or loop completion.
+
+## 6.9 P019 Broker Observation Session Foundation Accepted Assignment / P019 Broker Observation Accepted Owner Assignment
+
+P019 and ADR-0005 are accepted for the broker-observation foundation. `account-console-broker-observation-session` is an accepted guarded capability owner for read-only observation contracts, source-package projections, durable observation evidence and Account Mirror inputs. It is not a broker runtime owner, account/order truth owner, command owner, approval owner, capital owner or trading-readiness owner.
+
+| P019 responsibility | Owner | Path / evidence |
+| --- | --- | --- |
+| ADR and proposal governance | `architecture` + `account-console-broker-observation-session` | `docs/adr/0005-account-console-independent-broker-observation-sessions.md`; `docs/proposals/p019-broker-observation-session-foundation/`; `docs/acceptance/2026-06-20-adr0005-broker-observation-session-acceptance.json` |
+| Broker observation profile and report contracts | `account-console-contracts` + P019 owner | `contracts/broker_observation/**`; `scripts/validate_adr0005_broker_observation_contracts.py` |
+| Durable observation store contract fixtures and real reload evidence | `account-console-contracts` + P019 owner | `contracts/broker_observation/fixtures/ib_tws_store_complete_reload.json`; `contracts/broker_observation/fixtures/ib_tws_store_gap_blocker.json`; `output/account_capability/ib-live-u3028269/durable-store-reload.json` |
+| Account Mirror U3028269 projection | `account-console-backend` + `account-console-frontend` | `acct.ib.live.u3028269` projects read-only TWS API funds/positions when source package is ready, keeps command disabled, `raw_secret_values_recorded=false`, no broker truth, no order action and typed residual blockers for zero execution rows |
+| Local TWS window confirmation evidence | operator/local desktop evidence owner | `output/debug/p019-tws-local-window-confirmation/tws-local-window-confirmation-blocker.json` records process/window title only; minimized/offscreen screenshot remains a blocker and not visual truth |
+| Broker/runtime/account/order source truth | external broker/runtime owner | outside this repo; Account Console may reference owner evidence only after ADR-0005 acceptance |
+
+P019 accepted foundation work authorizes only governed read-only observation after readiness, conflict, secret and no-command gates pass. It does not authorize Account Console to own broker live state, own account/order/fill truth, store raw secrets, infer trading readiness or expose submit/cancel/replace/modify controls. Missing owner-source or runtime evidence must remain a typed blocker such as `real_order_fill_callbacks_not_available`, not a local substitute truth writer.
 
 ## 7. Successor Proposal Owner Block / 后续 Proposal 必填 Owner Block
 

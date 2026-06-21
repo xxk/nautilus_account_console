@@ -15,6 +15,7 @@ def test_mirror_accounts_api_lists_bridged_accounts() -> None:
         "acct.ctp.paper.19053",
         "acct.ctp.live.025292",
         "simulated-001",
+        "acct.ib.live.u3028269",
     }
     assert all(row["route_id"] and row["evidence_partition"] for row in payload["accounts"])
 
@@ -26,13 +27,17 @@ def test_mirror_account_detail_is_read_only_and_provenanced() -> None:
     assert response.status_code == 200
     payload = response.json()
     assert payload["capabilities"]["command"] == {"enabled": False, "mode": "disabled"}
-    assert payload["capabilities"]["observation"]["mirror_state"] == "blocked"
+    assert payload["capabilities"]["observation"]["mirror_state"] == "ready"
     assert payload["source_ref"].endswith("output/account_capability/ctp-paper-19053/source-package.json")
-    assert payload["blockers"][0]["blocker_id"] == "ctp19053_real_login_source_unavailable"
     assert payload["route_context"]["route_id"] == "route.ctp.paper.19053.account-readonly"
-    assert payload["route_context"]["account_truth"] == "blocked_until_pinned_source_package"
-    assert payload["positions"] == []
+    assert payload["route_context"]["account_truth"] == "nautilus_ctp_adapter_source_package"
+    assert payload["blockers"] == []
+    assert payload["balances"]
+    assert payload["positions"]
     assert payload["orders"] == []
+    assert payload["source_health"]["open_orders_state"] == "empty"
+    assert payload["source_health"]["open_order_rows"] == 0
+    assert payload["source_health"]["order_action_sent"] is False
     assert payload["boundaries"]["read_only_projection"] is True
     assert payload["boundaries"]["order_action"] is False
 
@@ -50,6 +55,55 @@ def test_mirror_api_shows_unbridged_live_025292_as_blocked_projection() -> None:
     assert payload["source_ref"].endswith("output/account_capability/ctp-live-025292/source-package.json")
     assert payload["route_context"]["route_id"] == "route.ctp.live.025292.account-readonly"
     assert payload["route_context"]["account_truth"] == "blocked_until_pinned_source_package"
+    assert payload["boundaries"]["order_action"] is False
+
+
+def test_mirror_api_shows_ib_tws_u3028269_as_read_only_projection() -> None:
+    client = TestClient(app)
+    response = client.get("/api/mirror/accounts/acct.ib.live.u3028269")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["account_id"] == "acct.ib.live.u3028269"
+    assert payload["display_alias"] == "U3028269"
+    assert payload["source_kind"] == "ib_tws_observation"
+    assert payload["capabilities"]["command"] == {"enabled": False, "mode": "disabled"}
+    assert payload["capabilities"]["observation"]["mirror_state"] in {"blocked", "ready"}
+    assert payload["source_ref"].endswith("output/account_capability/ib-live-u3028269/source-package.json")
+    assert payload["source_health"]["api_transport"] == "ib_tws_api"
+    assert payload["source_health"]["screenshot_used_for_values"] is False
+    assert payload["source_health"]["raw_secret_values_recorded"] is False
+    assert payload["route_context"]["route_id"] == "route.ib.live.u3028269.account-readonly"
+    if payload["capabilities"]["observation"]["mirror_state"] == "ready":
+        assert payload["source_health"]["state"] == "ready"
+        assert payload["source_health"].get("blocker_id") is None
+        readonly = payload["source_health"]["executions_readonly_query"]
+        assert readonly["api_call"] == "reqExecutions"
+        assert readonly["filter_type"] == "ExecutionFilter"
+        assert readonly["complete_history_claimed"] is False
+        assert readonly["order_action_sent"] is False
+        open_orders = payload["source_health"]["open_orders_readonly_query"]
+        assert open_orders["api_call"] == "reqAllOpenOrders"
+        assert open_orders["order_action_sent"] is False
+        assert open_orders["cancel_order_sent"] is False
+        assert open_orders["replace_order_sent"] is False
+        assert payload["source_health"]["open_order_rows"] == len(payload["orders"])
+        assert payload["source_health"]["execution_report_rows"] == len(payload["fills"])
+        assert payload["route_context"]["account_truth"] == "ib_tws_api_source_package"
+        assert payload["blockers"] == []
+        assert payload["positions"]
+        assert payload["balances"]
+    else:
+        assert payload["source_health"]["blocker_id"] == "tws_api_readiness_missing"
+        assert payload["blockers"][0]["type"] == "source_unavailable"
+        assert payload["blockers"][0]["blocker_id"] == "tws_api_readiness_missing"
+        assert payload["route_context"]["account_truth"] == "blocked_until_tws_api_source_package"
+        assert payload["positions"] == []
+        assert payload["balances"] == []
+        assert payload["orders"] == []
+    assert payload["fills"] == []
+    assert payload["boundaries"]["read_only_projection"] is True
+    assert payload["boundaries"]["broker_truth"] is False
     assert payload["boundaries"]["order_action"] is False
 
 
@@ -95,7 +149,7 @@ def test_mirror_source_health_and_evidence_are_structured() -> None:
     assert health.status_code == 200
     health_payload = health.json()
     assert health_payload["schema_version"] == "account_mirror_source_health.v1"
-    assert health_payload["state"] == "blocked"
+    assert health_payload["state"] == "ready"
     assert health_payload["source_ref"].endswith("output/account_capability/ctp-paper-19053/source-package.json")
     assert health_payload["boundaries"]["order_action"] is False
 

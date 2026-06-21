@@ -1,0 +1,43 @@
+{
+  "schema": "account-console.p024.partial-fill-remaining-acceptance-state-ui.v1",
+  "proposal_id": "p024-account-console-paper-command-controls",
+  "account_id": "acct.ctp.paper.19053",
+  "route": "/accounts/acct.ctp.paper.19053",
+  "verdict": "pass",
+  "api_remaining_acceptance_state": {
+    "schema": "account-console.p024.partial-fill-remaining-acceptance-current-state.v1",
+    "status": "phase4q_remaining_acceptance_current_state_audited",
+    "verdict": "not_fully_accepted_pending_owner_repair_and_real_partial_fill",
+    "requirement_count": 5,
+    "missing_requirement_ids": [
+      "R1_owner_repair_approval",
+      "R2_owner_close_offset_repair",
+      "R3_owner_validators",
+      "R4_post_repair_partial_fill_runtime",
+      "R5_web_ui_real_partial_fill_projection"
+    ],
+    "accepted_evidence_group_count": 4,
+    "owner_code_repair_allowed": false,
+    "owner_runtime_retry_allowed": false,
+    "full_acceptance_claimed": false,
+    "real_partial_fill_claimed": false,
+    "web_ui_real_partial_fill_claimed": false
+  },
+  "browser_checks": {
+    "remaining_panel_visible": true,
+    "r1_to_r5_displayed": true,
+    "all_requirements_displayed_missing": true,
+    "evidence_groups_displayed": true,
+    "owner_repair_allowed_displayed_false": true,
+    "runtime_retry_displayed_false": true,
+    "full_acceptance_displayed_false": true,
+    "real_partial_fill_claimed_displayed_false": true,
+    "web_ui_real_partial_fill_claimed_displayed_false": true,
+    "sensitive_endpoint_wording_absent": true
+  },
+  "browser_evidence": [
+    {
+      "screenshot": "docs/acceptance/browser-evidence/p024-account-console-paper-command-controls/p024-partial-fill-remaining-acceptance-state-ui.png"
+    }
+  ]
+}

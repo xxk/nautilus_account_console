@@ -1,0 +1,355 @@
+{
+  "schema": "account-console.p019-completion-audit.v1",
+  "proposal_id": "p019-broker-observation-session-foundation",
+  "adr_id": "ADR-0005",
+  "audited_at": "2026-06-20T15:04:18Z",
+  "overall_status": "accepted_with_residual_runtime_blockers",
+  "completion_must_not_be_claimed": false,
+  "primary_runtime_blocker": "real_order_fill_callbacks_not_available",
+  "primary_runtime_blocker_detail": "same_slice_reqExecutions_returned_zero_rows",
+  "raw_secret_values_recorded": false,
+  "screenshot_used_for_funds_positions": false,
+  "order_action_sent": false,
+  "synthetic_ready_contract_is_real_account_truth": false,
+  "adr_status": {
+    "decision_status": "accepted",
+    "landing_status": "foundation_accepted",
+    "acceptance_required_before_direct_session": false,
+    "status": "accepted"
+  },
+  "runtime_truth": {
+    "tws_process_present": true,
+    "tws_account_window_ref": "U3028269_account_window",
+    "tws_api_socket_ready": true,
+    "tws_api_readiness_probe_ref": "output/debug/p019-tws-api-readiness/tws-api-readiness-probe.json",
+    "account_summary_success": true,
+    "positions_success": true,
+    "source_package_state": "ready",
+    "pipeline_summary_ref": "output/account_capability/ib-live-u3028269/pipeline-summary.json",
+    "status": "ready"
+  },
+  "real_acceptance_closeout": {
+    "closeout_summary_ref": "output/account_capability/ib-live-u3028269/real-acceptance-closeout.json",
+    "runner_ref": "scripts/run_p019_u3028269_real_acceptance_closeout.py",
+    "validator_ref": "scripts/validate_p019_u3028269_real_acceptance_closeout.py",
+    "status": "ready",
+    "blocker_id": null,
+    "pipeline_status": "ready",
+    "real_ui_parity_verdict": "pass",
+    "synthetic_evidence_used_for_real_closeout": false,
+    "required_ready_chain": [
+      "ready_for_tws_api_funds_positions_query=true",
+      "account_summary_success=true",
+      "positions_success=true",
+      "source_package_state=ready",
+      "query_source_parity=pass",
+      "real_ui_parity_verdict=pass",
+      "executions_query_success=true",
+      "execution_report_parity=blocked_when_no_real_rows",
+      "command_enabled=false",
+      "order_action=false"
+    ],
+    "execution_report_closeout": {
+      "executions_query_ref": "output/account_capability/ib-live-u3028269/tws-api/executions.json",
+      "executions_query_success": true,
+      "executions_readonly_api_call": "reqExecutions",
+      "executions_filter_type": "ExecutionFilter",
+      "executions_complete_history_claimed": false,
+      "executions_order_action_sent": false,
+      "execution_report_rows": 0,
+      "fill_count": 0,
+      "ui_execution_report_rows": 0,
+      "ui_fill_count": 0,
+      "execution_report_state": "not_available_or_empty",
+      "ui_execution_report_state": "not_available_or_empty",
+      "orders_fills_parity": "pass",
+      "execution_reports_table_parity": "pass",
+      "execution_reports_persistence_parity": "blocked",
+      "report_parity_status": "blocked",
+      "blocker_id": "real_report_rows_absent",
+      "synthetic_evidence_used": false
+    }
+  },
+  "acceptance_requirements": [
+    {
+      "id": "A1",
+      "requirement": "Observation-only broker session profile and no command APIs",
+      "current_evidence": [
+        "scripts/validate_p019_profile_security_provenance.py",
+        "scripts/validate_p019_api_boundary.py",
+        "contracts/broker_observation/fixtures/ib_tws_profile_blocked_adr0005_not_accepted.json"
+      ],
+      "current_status": "accepted",
+      "missing_for_completion": []
+    },
+    {
+      "id": "A2",
+      "requirement": "Secret/config boundary stores refs only",
+      "current_evidence": [
+        "scripts/validate_p019_profile_security_provenance.py",
+        "scripts/diagnose_p019_tws_api_config.py"
+      ],
+      "current_status": "accepted",
+      "missing_for_completion": []
+    },
+    {
+      "id": "A3",
+      "requirement": "Session conflict policy fails closed",
+      "current_evidence": [
+        "contracts/broker_observation/fixtures/ib_tws_session_conflict_policy_blocked.json",
+        "scripts/validate_adr0005_broker_observation_contracts.py"
+      ],
+      "current_status": "accepted",
+      "missing_for_completion": []
+    },
+    {
+      "id": "A4",
+      "requirement": "Observed order callbacks map to Nautilus-compatible OrderStatusReport",
+      "current_evidence": [
+        "contracts/broker_observation/fixtures/ib_tws_report_mapping_matrix.json",
+        "scripts/validate_adr0005_broker_observation_contracts.py"
+      ],
+      "current_status": "accepted_foundation_real_rows_blocked",
+      "missing_for_completion": [
+        "real callback mapper tests against authorized same-slice broker observation data"
+      ]
+    },
+    {
+      "id": "A5",
+      "requirement": "Observed fill callbacks map to Nautilus-compatible FillReport",
+      "current_evidence": [
+        "contracts/broker_observation/fixtures/ib_tws_report_mapping_matrix.json",
+        "scripts/validate_adr0005_broker_observation_contracts.py",
+        "output/account_capability/ib-live-u3028269/tws-api/executions.json",
+        "scripts/validate_p019_ib_u3028269_tws_api_queries.py",
+        "scripts/validate_p019_ib_u3028269_source_package.py"
+      ],
+      "current_status": "accepted_foundation_real_rows_blocked",
+      "missing_for_completion": [
+        "real callback mapper tests with non-empty fills/commission rows from authorized same-slice source evidence"
+      ]
+    },
+    {
+      "id": "A6",
+      "requirement": "Raw broker payload is provenance only",
+      "current_evidence": [
+        "scripts/validate_p019_profile_security_provenance.py",
+        "contracts/broker_observation/fixtures/ib_tws_report_batch_sample.json"
+      ],
+      "current_status": "accepted",
+      "missing_for_completion": []
+    },
+    {
+      "id": "A7",
+      "requirement": "Account Mirror remains projection boundary",
+      "current_evidence": [
+        "scripts/validate_account_mirror_api.py",
+        "scripts/validate_p019_api_boundary.py"
+      ],
+      "current_status": "accepted",
+      "missing_for_completion": []
+    },
+    {
+      "id": "A8",
+      "requirement": "Freshness, sequence and lag metadata before realtime claims",
+      "current_evidence": [
+        "contracts/broker_observation/fixtures/ib_tws_freshness_sequence_blocked_gap.json",
+        "scripts/validate_adr0005_broker_observation_contracts.py"
+      ],
+      "current_status": "accepted_foundation_realtime_blocked",
+      "missing_for_completion": [
+        "live or replayed freshness cursors proving sequence continuity and lag"
+      ]
+    },
+    {
+      "id": "A9",
+      "requirement": "Order reports do not enable command capability",
+      "current_evidence": [
+        "scripts/validate_p019_api_boundary.py",
+        "scripts/validate_p019_tws_api_recovery_path_guard.py",
+        "frontend/tests/e2e/p019-ib-tws-synthetic-ready-projection.spec.ts",
+        "scripts/validate_p019_u3028269_synthetic_ready_ui_contract.py"
+      ],
+      "current_status": "accepted_foundation_real_rows_blocked",
+      "missing_for_completion": [
+        "accepted real owner/runtime report-row UI/API evidence with no order action controls"
+      ]
+    },
+    {
+      "id": "A10",
+      "requirement": "Cross-broker extension shape remains broker-neutral",
+      "current_evidence": [
+        "contracts/broker_observation/fixtures/cross_broker_extension_matrix_blocked.json",
+        "scripts/validate_adr0005_broker_observation_contracts.py"
+      ],
+      "current_status": "accepted",
+      "missing_for_completion": []
+    },
+    {
+      "id": "A11",
+      "requirement": "Durable observation store persists reports/snapshots/session health/cursors",
+      "current_evidence": [
+        "contracts/broker_observation/fixtures/ib_tws_store_complete_reload.json",
+        "scripts/validate_adr0005_broker_observation_contracts.py",
+        "output/account_capability/ib-live-u3028269/durable-store-reload.json",
+        "scripts/validate_p019_u3028269_real_durable_store_reload.py"
+      ],
+      "current_status": "accepted_foundation_real_rows_blocked",
+      "missing_for_completion": [
+        "complete real durable store report-row reload parity with non-empty report rows after ADR-0005 acceptance"
+      ]
+    },
+    {
+      "id": "A12",
+      "requirement": "Replay gaps and checksum mismatches produce typed blockers",
+      "current_evidence": [
+        "contracts/broker_observation/fixtures/ib_tws_store_gap_blocker.json",
+        "scripts/validate_adr0005_broker_observation_contracts.py"
+      ],
+      "current_status": "accepted",
+      "missing_for_completion": []
+    },
+    {
+      "id": "A13",
+      "requirement": "Execution Reports render as normalized table with parity/reload proof",
+      "current_evidence": [
+        "frontend/tests/e2e/p019-ib-tws-blocked-projection.spec.ts",
+        "docs/acceptance/2026-06-20-p019-u3028269-blocked-ui-parity-evidence.json",
+        "frontend/tests/e2e/p019-ib-tws-synthetic-ready-projection.spec.ts",
+        "docs/acceptance/2026-06-20-p019-u3028269-synthetic-ready-ui-contract-evidence.json",
+        "contracts/broker_observation/fixtures/ib_tws_report_batch_sample.json",
+        "contracts/broker_observation/fixtures/ib_tws_store_complete_reload.json"
+      ],
+      "current_status": "accepted_foundation_real_rows_blocked",
+      "missing_for_completion": [
+        "real owner/runtime normalized report-row table parity",
+        "real owner/runtime durable-store persistence reload parity"
+      ]
+    },
+    {
+      "id": "A14",
+      "requirement": "U3028269 funds render as table-based multi-currency UI",
+      "current_evidence": [
+        "frontend/tests/e2e/p019-ib-tws-blocked-projection.spec.ts",
+        "docs/acceptance/2026-06-20-p019-u3028269-blocked-ui-parity-evidence.json"
+      ],
+      "current_status": "accepted",
+      "missing_for_completion": []
+    }
+  ],
+  "required_before_implementation_closeout": [
+    {
+      "id": "C1",
+      "requirement": "check_proposal_docs.py passes for P019",
+      "evidence": "scripts/check_proposal_docs.py --root . --proposal-id p019-broker-observation-session-foundation",
+      "status": "proved"
+    },
+    {
+      "id": "C2",
+      "requirement": "Focused profile schema tests exist and pass",
+      "evidence": "scripts/validate_p019_profile_security_provenance.py",
+      "status": "proved"
+    },
+    {
+      "id": "C3",
+      "requirement": "Focused session conflict policy tests exist and pass",
+      "evidence": "scripts/validate_adr0005_broker_observation_contracts.py",
+      "status": "proved"
+    },
+    {
+      "id": "C4",
+      "requirement": "Focused Nautilus-compatible order/fill report tests exist and pass",
+      "evidence": "scripts/validate_adr0005_broker_observation_contracts.py",
+      "status": "proved"
+    },
+    {
+      "id": "C5",
+      "requirement": "Focused durable observation store reload tests exist and pass",
+      "evidence": "contracts/broker_observation/fixtures/ib_tws_store_complete_reload.json and output/account_capability/ib-live-u3028269/durable-store-reload.json",
+      "status": "proved"
+    },
+    {
+      "id": "C6",
+      "requirement": "Focused Account Mirror projection tests exist and pass",
+      "evidence": "backend/tests/test_source_bridge.py and scripts/validate_account_mirror_api.py",
+      "status": "proved"
+    },
+    {
+      "id": "C7",
+      "requirement": "Negative tests prove no command APIs, raw secrets, memory-only report loss and raw payload browser truth",
+      "evidence": "scripts/validate_p019_api_boundary.py and scripts/validate_adr0005_broker_observation_contracts.py",
+      "status": "proved"
+    },
+    {
+      "id": "C8",
+      "requirement": "Browser tests prove Execution Reports table columns, row identity, provenance, reload parity and typed blockers",
+      "evidence": "frontend/tests/e2e/p019-ib-tws-blocked-projection.spec.ts and frontend/tests/e2e/p019-ib-tws-synthetic-ready-projection.spec.ts",
+      "status": "accepted_foundation_real_rows_blocked",
+      "missing_for_completion": [
+        "accepted real owner/runtime report-row parity",
+        "accepted real owner/runtime persistence reload parity"
+      ]
+    },
+    {
+      "id": "C9",
+      "requirement": "TWS U3028269 UI readback compared against same-slice TWS API/source data; funds/positions values come through authorized TWS API / owner runtime source",
+      "evidence": "output/account_capability/ib-live-u3028269/real-acceptance-closeout.json",
+      "status": "proved"
+    },
+    {
+      "id": "C10",
+      "requirement": "Readiness probe passes before any funds/positions query is attempted",
+      "evidence": "output/account_capability/ib-live-u3028269/wait-collect-summary.json and output/account_capability/ib-live-u3028269/real-acceptance-closeout.json",
+      "status": "proved"
+    }
+  ],
+  "blocking_conditions": [
+    {
+      "blocker_id": "synthetic_contract_not_real_truth",
+      "owner": "account-console-contracts",
+      "blocks": [
+        "using synthetic fixtures as real account truth"
+      ]
+    },
+    {
+      "blocker_id": "real_order_fill_callbacks_not_available",
+      "owner": "account-console-broker-observation-session",
+      "blocks": [
+        "real execution report row parity",
+        "real FillReport callback mapping parity"
+      ],
+      "evidence": "output/account_capability/ib-live-u3028269/tws-api/executions.json",
+      "retry_condition": "rerun read-only reqExecutions after same-slice U3028269 executions are present"
+    },
+    {
+      "blocker_id": "real_durable_store_reload_partial_empty_executions",
+      "owner": "account-console-broker-observation-session",
+      "blocks": [
+        "real durable-store persistence reload parity"
+      ],
+      "evidence": "output/account_capability/ib-live-u3028269/durable-store-reload.json",
+      "retry_condition": "rerun durable reload after same-slice U3028269 execution report rows are present"
+    }
+  ],
+  "real_durable_store_reload": {
+    "artifact_ref": "output/account_capability/ib-live-u3028269/durable-store-reload.json",
+    "state": "partial",
+    "parity_status": "blocked",
+    "blocker_id": "real_order_fill_callbacks_not_available",
+    "records_reloaded_from_store": 22,
+    "records_loaded_from_live_memory": 0,
+    "persisted_record_counts": {
+      "order_status_reports": 0,
+      "fill_reports": 0,
+      "funds_snapshots": 5,
+      "positions_snapshots": 15,
+      "session_health": 1,
+      "freshness_cursors": 1
+    },
+    "source_report_batch_ref": "output/account_capability/ib-live-u3028269/tws-api/executions.json",
+    "source_report_batch_checksum": "sha256:ea2f758f2b55fca27a966ccb79f3b18ad1b1e3c2b7011e2db95b4704762b0a83",
+    "store_snapshot_checksum": "sha256:71dad66a7fa1a3fb34337f9dfa8a695a68e7943425634becccb2db575ba8f86d",
+    "synthetic_evidence_used": false,
+    "order_action_sent": false
+  }
+}

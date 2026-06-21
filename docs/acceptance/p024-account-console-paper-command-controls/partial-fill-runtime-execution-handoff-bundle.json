@@ -1,0 +1,126 @@
+{
+  "schema": "account-console.p024.partial-fill-runtime-execution-handoff-bundle.v1",
+  "proposal_id": "p024-account-console-paper-command-controls",
+  "account_id": "acct.ctp.paper.19053",
+  "reviewed_at": "2026-06-21T18:08:00+08:00",
+  "status": "phase4k_partial_fill_runtime_execution_handoff_bundle_ready",
+  "verdict": "handoff_bundle_ready_runtime_not_invoked",
+  "depends_on": {
+    "approval_packet_ref": "docs/acceptance/p024-account-console-paper-command-controls/partial-fill-runtime-execution-approval-packet.json",
+    "approval_packet_schema": "account-console.p024.partial-fill-runtime-execution-approval-packet.v1",
+    "approval_packet_status": "phase4j_partial_fill_runtime_execution_approval_packet_ready",
+    "owner_artifact_scan_ref": "docs/acceptance/p024-account-console-paper-command-controls/partial-fill-owner-artifact-scan.json",
+    "owner_artifact_scan_verdict": "no_qualifying_partial_fill_then_cancel_owner_artifact_found"
+  },
+  "execution_guard": {
+    "execution_allowed": false,
+    "approval_required": true,
+    "approval_obtained": false,
+    "exact_approval_text_required": "I approve writes to D:/Nautilus/nautilus_ctp_adapter to run owner-owned guarded OpenCTP paper submit/cancel scripts for P024 partial-fill acceptance; expected impact: create owner-owned runtime/debug/readback/reconciliation artifacts outside this worktree and may submit/cancel up to one small exposure-reduction paper order in the 19053 simulation account.",
+    "owner_repo_path": "D:/Nautilus/nautilus_ctp_adapter",
+    "raw_secret_values_recorded": false,
+    "raw_broker_endpoint_recorded": false,
+    "config_raw_content_read": false
+  },
+  "runtime_input_requirements": [
+    {
+      "field": "fresh_owner_pre_snapshot_ref",
+      "required": true,
+      "reason": "proves the account still has reducible rb2610 exposure before submit"
+    },
+    {
+      "field": "quantity",
+      "required": true,
+      "allowed_values": [
+        2,
+        3
+      ],
+      "reason": "quantity must be greater than one for a real partial fill to be possible and must not exceed current reducible position"
+    },
+    {
+      "field": "risk_reviewed_limit_price",
+      "required": true,
+      "reason": "price must be selected from current owner market/readback context, not a screenshot"
+    },
+    {
+      "field": "owner_post_submit_order_identity",
+      "required": true,
+      "reason": "cancel must use owner readback order_ref/front_id/session_id/exchange_id"
+    }
+  ],
+  "operator_sequence": [
+    {
+      "step": "pre_approval_gate",
+      "action": "confirm exact partial-fill approval text is present",
+      "must_pass_before_next": true
+    },
+    {
+      "step": "owner_pre_snapshot",
+      "action": "capture fresh owner pre snapshot and verify reducible rb2610 position quantity is at least the intended order quantity",
+      "must_pass_before_next": true
+    },
+    {
+      "step": "submit_partial_fill_attempt",
+      "action": "run guarded submit template once with quantity 2 or 3 and owner-reviewed limit price",
+      "entrypoint_ref": "scripts/ctp_guarded_paper_order_loop.py",
+      "armed_flag": "--arm-paper-send",
+      "must_pass_before_next": true
+    },
+    {
+      "step": "classify_submit_lifecycle",
+      "action": "classify owner callbacks/readback as partial, full fill, no fill, reject or timeout",
+      "must_pass_before_next": true
+    },
+    {
+      "step": "cancel_remaining_if_identity_available",
+      "action": "run guarded cancel template with owner readback identity when the order is cancellable",
+      "entrypoint_ref": "scripts/ctp_guarded_paper_cancel_loop.py",
+      "armed_flag": "--arm-cancel-send",
+      "must_pass_before_next": true
+    },
+    {
+      "step": "post_cancel_readback",
+      "action": "capture post-cancel owner readback and reconciliation artifacts",
+      "must_pass_before_next": true
+    },
+    {
+      "step": "ingest_or_preserve_blocker",
+      "action": "ingest refs/checksums if partial-fill then cancel succeeded; otherwise record typed blocker with observed owner artifacts",
+      "must_pass_before_next": true
+    }
+  ],
+  "success_criteria": {
+    "non_ui_runtime": [
+      "same native order identity across submit, trade/readback and cancel",
+      "0 < filled_quantity < submitted_quantity",
+      "filled_quantity + cancelled_quantity == submitted_quantity",
+      "remaining_quantity == 0 after terminal cancel readback",
+      "redaction report confirms raw secrets and endpoints were not recorded"
+    ],
+    "web_ui_runtime": [
+      "Web UI order identity matches owner native identity refs",
+      "fill rows match owner trade callback/readback refs",
+      "cancel pending is not rendered as final",
+      "terminal cancelled state cites owner readback and reconciliation refs"
+    ]
+  },
+  "fallback_classifications": [
+    "fully_filled_not_partial_fill_then_cancel",
+    "cancelled_without_fill_not_partial_fill",
+    "rejected_or_timeout_not_partial_fill",
+    "owner_runtime_artifact_incomplete"
+  ],
+  "negative_assertions": {
+    "execution_allowed": false,
+    "approval_obtained": false,
+    "runtime_invocation_attempted": false,
+    "owner_repo_write_attempted": false,
+    "new_order_submitted": false,
+    "cancel_sent": false,
+    "full_acceptance_claimed": false,
+    "browser_fixture_promoted_to_runtime_truth": false,
+    "raw_secret_values_recorded": false,
+    "raw_broker_endpoint_recorded": false,
+    "config_raw_content_read": false
+  }
+}

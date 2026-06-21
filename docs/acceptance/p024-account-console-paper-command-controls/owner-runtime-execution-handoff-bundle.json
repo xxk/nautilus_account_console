@@ -1,0 +1,184 @@
+{
+  "schema": "account-console.p024.owner-runtime-execution-handoff-bundle.v1",
+  "proposal_id": "p024-account-console-paper-command-controls",
+  "account_id": "acct.ctp.paper.19053",
+  "reviewed_at": "2026-06-21T16:55:00+08:00",
+  "status": "phase4c_owner_runtime_execution_handoff_bundle_ready",
+  "verdict": "handoff_bundle_ready_runtime_not_invoked",
+  "depends_on": {
+    "approval_packet_ref": "docs/acceptance/p024-account-console-paper-command-controls/owner-runtime-execution-approval-packet.json",
+    "approval_packet_schema": "account-console.p024.owner-runtime-execution-approval-packet.v1",
+    "approval_packet_status": "phase4a_owner_runtime_execution_approval_packet_ready",
+    "approval_packet_ui_evidence_ref": "docs/acceptance/browser-evidence/p024-account-console-paper-command-controls/runtime-approval-packet-ui.json",
+    "approval_packet_ui_status": "phase4b_runtime_approval_packet_ui_projection_passed"
+  },
+  "execution_guard": {
+    "execution_allowed": false,
+    "approval_required": true,
+    "approval_obtained": false,
+    "exact_approval_text_required": "I approve writes to D:/Nautilus/nautilus_ctp_adapter to run owner-owned guarded OpenCTP paper submit/cancel scripts for P024; expected impact: create owner-owned runtime/debug/readback/reconciliation artifacts outside this worktree and may submit/cancel one paper order in the 19053 simulation account.",
+    "owner_repo_path": "D:/Nautilus/nautilus_ctp_adapter",
+    "raw_secret_values_recorded": false,
+    "raw_broker_endpoint_recorded": false,
+    "config_raw_content_read": false
+  },
+  "runtime_input_requirements": [
+    {
+      "field": "owner_pre_snapshot_ref",
+      "required": true,
+      "source": "owner://nautilus_ctp_adapter pre-submit account/order readback artifact",
+      "reason": "submit command must bind to a fresh owner-backed preflight snapshot"
+    },
+    {
+      "field": "owner_post_snapshot_ref",
+      "required": true,
+      "source": "owner://nautilus_ctp_adapter post-submit readback artifact",
+      "reason": "submit closeout must compare pre/post owner readbacks"
+    },
+    {
+      "field": "instrument",
+      "required": true,
+      "source": "operator-selected OpenCTP 19053 paper instrument",
+      "reason": "the bundle must not guess an instrument from screenshots or stale UI rows"
+    },
+    {
+      "field": "side",
+      "required": true,
+      "source": "operator-selected paper side",
+      "reason": "submit intent must be explicit"
+    },
+    {
+      "field": "qty",
+      "required": true,
+      "source": "operator-selected small paper quantity",
+      "reason": "submit intent must be explicit and risk-reviewable"
+    },
+    {
+      "field": "price",
+      "required": true,
+      "source": "operator-selected limit price",
+      "reason": "submit intent must not infer price from a screenshot"
+    },
+    {
+      "field": "readback_order_identity",
+      "required": true,
+      "source": "post-submit owner readback order identity",
+      "reason": "cancel must use order_ref/front_id/session_id/exchange_id from owner readback"
+    }
+  ],
+  "operator_sequence": [
+    {
+      "step": "pre_approval_gate",
+      "action": "confirm exact approval text is present in chat or operator approval channel",
+      "must_pass_before_next": true
+    },
+    {
+      "step": "owner_repo_context",
+      "action": "switch to D:/Nautilus/nautilus_ctp_adapter on the secured node",
+      "must_pass_before_next": true
+    },
+    {
+      "step": "submit_runtime",
+      "action": "run guarded submit command template from the approval packet with runtime inputs filled",
+      "entrypoint_ref": "scripts/ctp_guarded_paper_order_loop.py",
+      "armed_flag": "--arm-paper-send",
+      "must_pass_before_next": true
+    },
+    {
+      "step": "submit_readback",
+      "action": "capture post-submit owner readback and order identity",
+      "must_pass_before_next": true
+    },
+    {
+      "step": "cancel_runtime",
+      "action": "run guarded cancel command template using owner readback identity",
+      "entrypoint_ref": "scripts/ctp_guarded_paper_cancel_loop.py",
+      "armed_flag": "--arm-cancel-send",
+      "must_pass_before_next": true
+    },
+    {
+      "step": "post_run_ingest",
+      "action": "ingest refs/checksums for required submit/cancel/readback/reconciliation artifacts",
+      "must_pass_before_next": true
+    },
+    {
+      "step": "browser_closeout",
+      "action": "rerun Web UI runtime closeout and command display evidence against ingested owner artifacts",
+      "must_pass_before_next": true
+    }
+  ],
+  "required_owner_artifacts": [
+    "submit_intent.json",
+    "submit_risk_decision.json",
+    "submit_approval_decision.json",
+    "submit_gateway_event.json",
+    "post_submit_readback.json",
+    "cancel_intent.json",
+    "cancel_risk_decision.json",
+    "cancel_approval_decision.json",
+    "cancel_gateway_event.json",
+    "post_cancel_readback.json",
+    "reconciliation_result.json",
+    "redaction_report.json",
+    "command_audit.json",
+    "closeout_manifest.json"
+  ],
+  "post_handoff_gates": [
+    "python scripts\\validate_p024_owner_runtime_execution_approval_packet.py",
+    "python scripts\\validate_p024_owner_runtime_execution_handoff_bundle.py",
+    "python scripts\\validate_p024_runtime_closeout_browser_evidence.py",
+    "python scripts\\validate_p024_partial_fill_cancel_browser_evidence.py",
+    "python scripts\\validate_p024_full_acceptance_closeout.py",
+    "python scripts\\validate_p024_paper_command_controls_design.py"
+  ],
+  "blockers": [
+    {
+      "blocker_id": "p024_operator_approval_not_obtained",
+      "type": "external_write_approval_required",
+      "stage": "owner_runtime",
+      "reason": "The exact operator approval text has not been provided, so owner repo writes and paper order mutation remain forbidden.",
+      "source_ref": "docs/acceptance/p024-account-console-paper-command-controls/owner-runtime-execution-handoff-bundle.json",
+      "next_action": "obtain exact approval text before invoking owner runtime"
+    },
+    {
+      "blocker_id": "p024_runtime_inputs_not_bound",
+      "type": "runtime_inputs_required",
+      "stage": "preflight",
+      "reason": "Instrument, side, quantity, price and fresh owner readback refs must be bound at execution time.",
+      "source_ref": "docs/acceptance/p024-account-console-paper-command-controls/owner-runtime-execution-handoff-bundle.json",
+      "next_action": "bind runtime inputs from owner-backed preflight/readback artifacts after approval"
+    },
+    {
+      "blocker_id": "p024_owner_runtime_artifacts_missing",
+      "type": "owner_runtime_artifacts_missing",
+      "stage": "readback",
+      "reason": "No approved P024 owner-runtime submit/cancel run artifacts have been produced or ingested.",
+      "source_ref": "owner-repo://nautilus_ctp_adapter/output/account_command/ctp-paper-19053/<p024-runtime-run-id>/",
+      "next_action": "after approved owner execution, ingest checksum-backed submit/cancel/readback/reconciliation artifacts"
+    }
+  ],
+  "negative_assertions": {
+    "execution_allowed": false,
+    "runtime_invocation_attempted": false,
+    "owner_repo_write_attempted": false,
+    "browser_triggered_broker_order": false,
+    "gateway_send_attempted": false,
+    "broker_order_created": false,
+    "live_armed": false,
+    "account_mirror_write_authority": false,
+    "raw_secret_values_recorded": false,
+    "raw_broker_endpoint_recorded": false,
+    "config_raw_content_read": false,
+    "full_runtime_acceptance_claimed": false
+  },
+  "explicit_non_claims": [
+    "does_not_invoke_owner_runtime",
+    "does_not_write_owner_repo",
+    "does_not_send_broker_order_from_browser",
+    "does_not_create_broker_order",
+    "does_not_guess_runtime_inputs",
+    "does_not_read_raw_ctp_secret_or_endpoint",
+    "does_not_claim_live_readiness",
+    "does_not_close_real_runtime_execution"
+  ]
+}

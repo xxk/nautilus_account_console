@@ -9,8 +9,8 @@
   "scenario": "sandbox_paper_buy_one_ag2612",
   "source_ref": "contracts/source_artifacts/account_sources/nautilus_sandbox_paper_simulated_001_source.json",
   "source_checksum": "sha256:2222222222222222222222222222222222222222222222222222222222222222",
-  "projection_checkpoint_id": "sha256:a1986b7725765735d03f25ab7fa7ee3ed89bcfd12ac851c91f5097b3470b5512",
-  "projection_checksum": "sha256:7d7becb8e21380c3d7af26dcedae6c82519e6053e40355914627f2fffebb2e1a",
+  "projection_checkpoint_id": "sha256:21f1cbf0f3513fcd8236351bc576c70cf8cabdb952363fd70d86f562873c2110",
+  "projection_checksum": "sha256:5914056e8bafced0539d3554b6a48e37c798c020d6f95f624b3eccfc99c2b2cb",
   "balance": {
     "currency": "CNY",
     "equity": 1000000,
@@ -20,6 +20,8 @@
     "position_profit": 0,
     "account_uid": "sandbox-paper.simulated-001",
     "ledger_type": "simulated_sandbox_ledger",
+    "source_package_ref": "contracts/source_artifacts/account_sources/nautilus_sandbox_paper_simulated_001_source.json",
+    "source_package_checksum": "sha256:2222222222222222222222222222222222222222222222222222222222222222",
     "source_ref": "contracts/source_artifacts/account_sources/nautilus_sandbox_paper_simulated_001_source.json",
     "checksum": "sha256:2222222222222222222222222222222222222222222222222222222222222222",
     "observed_at": "2026-06-16T00:00:00Z"
@@ -39,6 +41,8 @@
     "market_value": 87300,
     "unrealized_pnl": 0,
     "ledger_type": "simulated_sandbox_ledger",
+    "source_package_ref": "contracts/source_artifacts/account_sources/nautilus_sandbox_paper_simulated_001_source.json",
+    "source_package_checksum": "sha256:2222222222222222222222222222222222222222222222222222222222222222",
     "source_ref": "contracts/source_artifacts/account_sources/nautilus_sandbox_paper_simulated_001_source.json",
     "checksum": "sha256:2222222222222222222222222222222222222222222222222222222222222222",
     "observed_at": "2026-06-16T00:00:00Z"
@@ -64,6 +68,8 @@
     "report_msg_ref": "sandbox-paper://simulated-001/orders/simulated-001-ag2612-buy-1-001/reports/001",
     "report_msg_checksum": "sha256:2222222222222222222222222222222222222222222222222222222222222222",
     "report_msg_excerpt": "Nautilus Sandbox Paper filled BUY OPEN ag2612 1 @ 5820",
+    "source_package_ref": "contracts/source_artifacts/account_sources/nautilus_sandbox_paper_simulated_001_source.json",
+    "source_package_checksum": "sha256:2222222222222222222222222222222222222222222222222222222222222222",
     "source_ref": "contracts/source_artifacts/account_sources/nautilus_sandbox_paper_simulated_001_source.json",
     "checksum": "sha256:2222222222222222222222222222222222222222222222222222222222222222",
     "observed_at": "2026-06-16T00:00:00Z"

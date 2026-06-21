@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nautilus.local/contracts/account_command/decision_and_event.schema.json",
+  "title": "Account Command Decisions And Events",
+  "type": "object",
+  "description": "Shared schema shell for RiskDecision, ApprovalDecision, ExecutionCommand, ExecutionEvent, MirrorReadback, ReconciliationResult and CommandAuditRecord fixtures.",
+  "additionalProperties": true,
+  "required": ["schema_version", "account_id", "status", "source_ref", "checksum"],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "enum": [
+        "account_command.risk_decision.v1",
+        "account_command.approval_decision.v1",
+        "account_command.execution_command.v1",
+        "account_command.execution_event.v1",
+        "account_command.mirror_readback.v1",
+        "account_command.reconciliation_result.v1",
+        "account_command.command_audit_record.v1",
+        "account_command.redaction_report.v1"
+      ]
+    },
+    "account_id": { "type": "string", "const": "acct.ctp.paper.19053" },
+    "status": { "type": "string", "minLength": 1 },
+    "source_ref": { "type": "string", "minLength": 1 },
+    "checksum": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" },
+    "raw_secret_values_recorded": { "type": "boolean", "const": false },
+    "raw_broker_endpoint_recorded": { "type": "boolean", "const": false },
+    "gateway_ack_is_final_state": { "type": "boolean", "const": false }
+  }
+}
+

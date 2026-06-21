@@ -29,6 +29,7 @@ const forbiddenVisibleText = new RegExp(
 test.describe("P079 R1 Account Console projection", () => {
   test("renders CTA-CORE-001 read-only fixtures with source refs", async ({ page }, testInfo) => {
     mkdirSync(evidenceDir, { recursive: true });
+    await page.route("**/api/mirror/**", (route) => route.abort("failed"));
 
     await page.goto("/accounts/acct.demo-19053");
     await page.getByLabel("Fixture").selectOption("r1_cta_core_001");

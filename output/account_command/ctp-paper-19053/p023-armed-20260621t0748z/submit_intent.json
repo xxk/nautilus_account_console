@@ -1,0 +1,21 @@
+{
+  "schema_version": "account_command.order_intent.v1",
+  "intent_id": "intent.ctp19053.p023-rb2610-close-20260621t0748z.submit",
+  "account_id": "acct.ctp.paper.19053",
+  "mode": "paper_armed",
+  "action": "submit",
+  "instrument": "rb2610",
+  "exchange": "SHFE",
+  "side": "SELL",
+  "quantity": 1,
+  "order_type": "LIMIT",
+  "limit_price": 3300.0,
+  "time_in_force": "GFD",
+  "offset": "CLOSEYESTERDAY",
+  "idempotency_key": "p023-rb2610-close-20260621t0748z",
+  "operator_ref": "operator-ref://local-codex/p023",
+  "preflight_ref": "output/account_command/ctp-paper-19053/preflight-20260621Tnow/owner_preflight_readback.json",
+  "raw_secret_values_recorded": false,
+  "raw_broker_endpoint_recorded": false,
+  "checksum": "sha256:b859f1ed77789db6cdf5ff7d4528e518aeebd98bf891cb496e765cab5b23911f"
+}

@@ -1,0 +1,33 @@
+{
+  "schema": "account-console.p024.partial-fill-owner-repair-ingest-audit-ui.v1",
+  "proposal_id": "p024-account-console-paper-command-controls",
+  "account_id": "acct.ctp.paper.19053",
+  "route": "/accounts/acct.ctp.paper.19053",
+  "verdict": "pass",
+  "api_owner_repair_ingest_audit": {
+    "schema": "account-console.p024.partial-fill-owner-repair-evidence-ingest-audit.v1",
+    "status": "phase4zd_owner_repair_evidence_ingested",
+    "verdict": "owner_repair_evidence_recorded_runtime_retry_packet_required",
+    "owner_repair_commit_ref": "01db0f84203db09874fdec07ec8d03fb47ca4ea7",
+    "source_checksum_count": 3,
+    "validator_count": 2,
+    "owner_repair_evidence_recorded": true,
+    "runtime_retry_authorized": false,
+    "real_partial_fill_claimed": false
+  },
+  "browser_checks": {
+    "ingest_audit_panel_visible": true,
+    "commit_ref_displayed": true,
+    "checksums_displayed": true,
+    "validators_displayed": true,
+    "owner_repair_evidence_recorded_displayed_true": true,
+    "runtime_retry_displayed_false": true,
+    "real_partial_fill_displayed_false": true,
+    "sensitive_endpoint_wording_absent": true
+  },
+  "browser_evidence": [
+    {
+      "screenshot": "docs/acceptance/browser-evidence/p024-account-console-paper-command-controls/p024-partial-fill-owner-repair-ingest-audit-ui.png"
+    }
+  ]
+}

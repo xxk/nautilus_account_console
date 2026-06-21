@@ -1,0 +1,19 @@
+{
+  "schema_version": "broker_observation_store_snapshot.v1",
+  "account_id": "acct.ib.live.u3028269",
+  "store_semantics": "broker_truth",
+  "truth_flags": {
+    "broker_truth": true,
+    "order_truth": true,
+    "account_truth": true,
+    "command_authority": false,
+    "readiness_truth": true
+  },
+  "reload_support": true,
+  "persisted_families": ["order_status_reports"],
+  "replay_state": {
+    "state": "complete",
+    "blockers": []
+  },
+  "raw_secret_values_recorded": false
+}

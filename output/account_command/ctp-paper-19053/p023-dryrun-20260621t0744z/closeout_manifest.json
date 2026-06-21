@@ -1,0 +1,66 @@
+{
+  "schema_version": "account_command.closeout_manifest.v1",
+  "account_id": "acct.ctp.paper.19053",
+  "status": "reconciled",
+  "run_id": "p023-dryrun-20260621t0744z",
+  "captured_at_utc": "2026-06-20T23:47:48Z",
+  "mode": "live_dry_run",
+  "artifact_refs": {
+    "cancel_approval_decision.json": {
+      "ref": "output/account_command/ctp-paper-19053/p023-dryrun-20260621t0744z/cancel_approval_decision.json",
+      "checksum": "sha256:070de7cb7f7fa2766acdea671e03f12f87c6512f3fefcdccbad88773c519ac1e"
+    },
+    "cancel_gateway_event.json": {
+      "ref": "output/account_command/ctp-paper-19053/p023-dryrun-20260621t0744z/cancel_gateway_event.json",
+      "checksum": "sha256:9afe9246e69be0563f6ab7bf180c410e7af1d52ae0f7f4f5089c68b79a888117"
+    },
+    "cancel_intent.json": {
+      "ref": "output/account_command/ctp-paper-19053/p023-dryrun-20260621t0744z/cancel_intent.json",
+      "checksum": "sha256:e0e18dd8dbff6897c78ebbe725b16a1a43738a10e397fc50759227a21a835a94"
+    },
+    "cancel_risk_decision.json": {
+      "ref": "output/account_command/ctp-paper-19053/p023-dryrun-20260621t0744z/cancel_risk_decision.json",
+      "checksum": "sha256:615d82408ca0d69a41d0b26e690866074357af1a8f0f55583e80be46306bf445"
+    },
+    "command_audit.json": {
+      "ref": "output/account_command/ctp-paper-19053/p023-dryrun-20260621t0744z/command_audit.json",
+      "checksum": "sha256:479b46d42900e128f8478f27d5f76e516c9051771d3623f319e9d828adfd4514"
+    },
+    "post_cancel_readback.json": {
+      "ref": "output/account_command/ctp-paper-19053/p023-dryrun-20260621t0744z/post_cancel_readback.json",
+      "checksum": "sha256:49bef3e5884dfa4a57d3b6ab080de4db81c16e8c73029827c077a12c67e5c933"
+    },
+    "post_submit_readback.json": {
+      "ref": "output/account_command/ctp-paper-19053/p023-dryrun-20260621t0744z/post_submit_readback.json",
+      "checksum": "sha256:5a7615df06957c0211ac3fa81db451e77d096bb4cf168256b5b009369e6bdf43"
+    },
+    "reconciliation_result.json": {
+      "ref": "output/account_command/ctp-paper-19053/p023-dryrun-20260621t0744z/reconciliation_result.json",
+      "checksum": "sha256:28e440bd472dbd36f4b780fa28a7db7bb319f8f3e3e393e4f599b10c9c66c28e"
+    },
+    "redaction_report.json": {
+      "ref": "output/account_command/ctp-paper-19053/p023-dryrun-20260621t0744z/redaction_report.json",
+      "checksum": "sha256:9c3e6d31eb3adb18d0bda9f76b25c90ec51c3324211c7e137dd4cba6f1750c62"
+    },
+    "submit_approval_decision.json": {
+      "ref": "output/account_command/ctp-paper-19053/p023-dryrun-20260621t0744z/submit_approval_decision.json",
+      "checksum": "sha256:c6a6d1c7acdd6945a25c38be9c0755f22de7f93ee2ca78e139f4076ca4a52fc6"
+    },
+    "submit_gateway_event.json": {
+      "ref": "output/account_command/ctp-paper-19053/p023-dryrun-20260621t0744z/submit_gateway_event.json",
+      "checksum": "sha256:d8eb86a25b94965ea4ed192b0d6e56e7637edf379c2855e5cb840d0b506b5169"
+    },
+    "submit_intent.json": {
+      "ref": "output/account_command/ctp-paper-19053/p023-dryrun-20260621t0744z/submit_intent.json",
+      "checksum": "sha256:d2aaddf1b762d2faf18d94d8cbdabed0b622f9e895b0ff22521ccd7c36d88147"
+    },
+    "submit_risk_decision.json": {
+      "ref": "output/account_command/ctp-paper-19053/p023-dryrun-20260621t0744z/submit_risk_decision.json",
+      "checksum": "sha256:b869d2c71be09cb2dd4fa5b3afae6138fcef56ab30b2d8aa46c3e7001db159df"
+    }
+  },
+  "raw_secret_values_recorded": false,
+  "raw_broker_endpoint_recorded": false,
+  "gateway_ack_is_final_state": false,
+  "checksum": "sha256:61896f8889879afcbcc660f4da3aeda03f2ebfb3ff807068549170fe13982974"
+}

@@ -51,7 +51,11 @@ def main() -> None:
             assert payload["boundaries"][key] is False, (projection.account_id, key)
         assert payload["capabilities"]["command"]["enabled"] is False, projection.account_id
         assert payload["capabilities"]["command"]["mode"] == "disabled", projection.account_id
-        if projection.account_id in {"acct.ctp.paper.19053", "acct.ctp.live.025292"}:
+        if projection.account_id == "acct.ctp.paper.19053":
+            assert not payload["blockers"], "acct.ctp.paper.19053 should project ready read-only evidence"
+            assert payload["source_health"]["state"] == "ready", "acct.ctp.paper.19053 source should be ready"
+            assert payload["source_health"]["order_action_sent"] is False, "19053 mirror projection must stay read-only"
+        if projection.account_id == "acct.ctp.live.025292":
             assert payload["blockers"], f"{projection.account_id} must remain blocked until pinned source package exists"
             assert payload["source_health"]["state"] == "blocked", f"{projection.account_id} source must not look healthy"
         if projection.account_id == "simulated-001":

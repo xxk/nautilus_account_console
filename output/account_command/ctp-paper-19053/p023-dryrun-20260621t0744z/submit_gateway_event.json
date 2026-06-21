@@ -1,0 +1,28 @@
+{
+  "schema_version": "account_command.execution_event.v1",
+  "account_id": "acct.ctp.paper.19053",
+  "status": "accepted",
+  "source_ref": "output/account_command/ctp-paper-19053/p023-dryrun-20260621t0744z/submit_intent.json",
+  "mode": "live_dry_run",
+  "paper_send_armed": false,
+  "gateway_ack_is_final_state": false,
+  "raw_secret_values_recorded": false,
+  "raw_broker_endpoint_recorded": false,
+  "live_send_armed": false,
+  "bootstrap_ready": true,
+  "mapped_submit_error": null,
+  "client_order_id": "p023-openctp19053-20260620t234744z-close-001",
+  "order_ref": 2,
+  "front_id": 1,
+  "session_id": 648937905,
+  "command_kinds": [
+    "connect",
+    "submit_order"
+  ],
+  "event_kinds": [
+    "login_succeeded",
+    "settlement_confirmed"
+  ],
+  "matched_execs": [],
+  "checksum": "sha256:8b021d095c6936607dbb1b5da444cd2f4a9ec496dff1e351d967c120d4c4dcdf"
+}

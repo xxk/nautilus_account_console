@@ -1,0 +1,33 @@
+{
+  "schema_version": "account_command.command_audit_record.v1",
+  "account_id": "acct.ctp.paper.19053",
+  "status": "reconciled",
+  "source_ref": "output/account_command/ctp-paper-19053/p023-dryrun-20260621t0744z/command_audit.json",
+  "mode": "live_dry_run",
+  "intent_refs": [
+    "output/account_command/ctp-paper-19053/p023-dryrun-20260621t0744z/submit_intent.json",
+    "output/account_command/ctp-paper-19053/p023-dryrun-20260621t0744z/cancel_intent.json"
+  ],
+  "risk_decision_refs": [
+    "output/account_command/ctp-paper-19053/p023-dryrun-20260621t0744z/submit_risk_decision.json",
+    "output/account_command/ctp-paper-19053/p023-dryrun-20260621t0744z/cancel_risk_decision.json"
+  ],
+  "approval_decision_refs": [
+    "output/account_command/ctp-paper-19053/p023-dryrun-20260621t0744z/submit_approval_decision.json",
+    "output/account_command/ctp-paper-19053/p023-dryrun-20260621t0744z/cancel_approval_decision.json"
+  ],
+  "gateway_event_refs": [
+    "output/account_command/ctp-paper-19053/p023-dryrun-20260621t0744z/submit_gateway_event.json",
+    "output/account_command/ctp-paper-19053/p023-dryrun-20260621t0744z/cancel_gateway_event.json"
+  ],
+  "readback_refs": [
+    "output/account_command/ctp-paper-19053/p023-dryrun-20260621t0744z/post_submit_readback.json",
+    "output/account_command/ctp-paper-19053/p023-dryrun-20260621t0744z/post_cancel_readback.json"
+  ],
+  "reconciliation_ref": "output/account_command/ctp-paper-19053/p023-dryrun-20260621t0744z/reconciliation_result.json",
+  "submit_intent_checksum": "sha256:d2aaddf1b762d2faf18d94d8cbdabed0b622f9e895b0ff22521ccd7c36d88147",
+  "gateway_ack_is_final_state": false,
+  "raw_secret_values_recorded": false,
+  "raw_broker_endpoint_recorded": false,
+  "checksum": "sha256:230daf58c135c903acff9d52f4f56f2981ef9e84f00cf9eaab30e3ad2052ba6e"
+}

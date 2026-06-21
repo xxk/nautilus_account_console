@@ -1,0 +1,128 @@
+{
+  "schema": "account-console.p024.partial-fill-owner-repair-implementation-plan.v1",
+  "proposal_id": "p024-account-console-paper-command-controls",
+  "account_id": "acct.ctp.paper.19053",
+  "reviewed_at": "2026-06-21T20:05:00+08:00",
+  "status": "phase4r_owner_close_offset_repair_implementation_plan_ready",
+  "verdict": "owner_repair_plan_ready_no_owner_write_attempted",
+  "depends_on": {
+    "repair_approval_packet_ref": "docs/acceptance/p024-account-console-paper-command-controls/partial-fill-owner-repair-approval-packet.json",
+    "repair_approval_packet_status": "phase4p_owner_close_offset_repair_approval_packet_ready",
+    "remaining_acceptance_current_state_ref": "docs/acceptance/p024-account-console-paper-command-controls/partial-fill-remaining-acceptance-current-state.json",
+    "remaining_acceptance_current_state_status": "phase4q_remaining_acceptance_current_state_audited"
+  },
+  "owner_read_context": {
+    "owner_repo_ref": "owner-repo://nautilus_ctp_adapter",
+    "owner_repo_path": "D:/Nautilus/nautilus_ctp_adapter",
+    "owner_repo_write_attempted": false,
+    "source_refs": [
+      {
+        "source_id": "guarded_order_loop_owner_rule",
+        "ref": "owner-repo://nautilus_ctp_adapter/scripts/ctp_guarded_paper_order_loop.py",
+        "symbol": "build_close_offset_owner_rule_semantics",
+        "observed_current_behavior": "owner rule blocks rejected callback offset as submit truth only when position_effect=CLOSETODAY, expected_offset=3 and submit_offset=3"
+      },
+      {
+        "source_id": "guarded_order_loop_tests",
+        "ref": "owner-repo://nautilus_ctp_adapter/tests/test_guarded_paper_order_loop.py",
+        "symbol": "test_close_offset_owner_rule_blocks_callback_offset_as_submit_truth",
+        "observed_current_behavior": "focused test covers CLOSETODAY offset 3 versus rejected OnRspOrderInsert offset 1, but not CLOSEYESTERDAY offset 4"
+      },
+      {
+        "source_id": "execution_client_mapping",
+        "ref": "owner-repo://nautilus_ctp_adapter/src/nautilus_ctp_adapter/adapters/ctp/execution_client.py",
+        "symbol": "CtpExecutionClient._native_comb_offset_value",
+        "observed_current_behavior": "native mapping already returns CLOSEYESTERDAY -> 4"
+      }
+    ]
+  },
+  "planned_owner_changes_after_exact_approval": [
+    {
+      "change_id": "owner_rule_generalize_close_offset_submit_observed",
+      "target_ref": "owner-repo://nautilus_ctp_adapter/scripts/ctp_guarded_paper_order_loop.py",
+      "target_symbol": "build_close_offset_owner_rule_semantics",
+      "implementation_shape": "replace the close_today_submit_observed-only predicate with a close_offset_submit_observed predicate that accepts CLOSETODAY expected/submit offset 3 and CLOSEYESTERDAY expected/submit offset 4 while preserving submit_boundary_matches",
+      "must_preserve": [
+        "callback_offset_rewrites_submit_truth remains false",
+        "auto_downgrade_to_generic_close_allowed remains false",
+        "requires_owner_resolution_before_retry remains true when rejected callback offset mismatches submit boundary",
+        "writes_truth remains false"
+      ]
+    },
+    {
+      "change_id": "owner_rule_wording_include_close_yesterday",
+      "target_ref": "owner-repo://nautilus_ctp_adapter/scripts/ctp_guarded_paper_order_loop.py",
+      "target_symbol": "build_close_offset_owner_rule_semantics",
+      "implementation_shape": "update rule text so it names close-offset submit-boundary provenance generically or explicitly includes CLOSETODAY and CLOSEYESTERDAY",
+      "must_preserve": [
+        "typed_blocker_only_not_fill_or_closeout_truth",
+        "primary_rule_source_required remains true unless stronger owner repair evidence changes the gate in a separate audited step"
+      ]
+    },
+    {
+      "change_id": "focused_close_yesterday_test",
+      "target_ref": "owner-repo://nautilus_ctp_adapter/tests/test_guarded_paper_order_loop.py",
+      "target_symbol": "test_close_offset_owner_rule_blocks_callback_offset_as_submit_truth",
+      "implementation_shape": "add a dedicated CLOSEYESTERDAY scenario or parameterize the existing focused test for CLOSETODAY offset 3 and CLOSEYESTERDAY offset 4; both must use rejected OnRspOrderInsert offset 1",
+      "must_assert": [
+        "disposition == owner_rule_blocks_callback_offset_as_submit_truth",
+        "expected_submit_offset_from_position_effect == 4 for CLOSEYESTERDAY",
+        "observed_submit_boundary_offset == 4 for CLOSEYESTERDAY",
+        "callback_offset_flags == [1]",
+        "callback_sources == [OnRspOrderInsert]",
+        "callback_is_rejection_diagnostic_only is true",
+        "auto_downgrade_to_generic_close_allowed is false",
+        "requires_owner_resolution_before_retry is true",
+        "writes_truth is false"
+      ]
+    }
+  ],
+  "post_repair_validator_sequence": [
+    {
+      "stage": "owner_unit_focus",
+      "command": "python -m pytest tests/test_guarded_paper_order_loop.py -q",
+      "required_before_retry": true
+    },
+    {
+      "stage": "owner_integration_regression",
+      "command": "python -m pytest tests/test_nautilus_integration.py -q",
+      "required_before_retry": true
+    },
+    {
+      "stage": "account_console_repair_plan_gate",
+      "command": "python scripts/validate_p024_partial_fill_owner_repair_implementation_plan.py",
+      "required_before_retry": true
+    },
+    {
+      "stage": "account_console_design_gate",
+      "command": "python scripts/validate_p024_paper_command_controls_design.py",
+      "required_before_retry": true
+    }
+  ],
+  "post_repair_runtime_attempt_gate": {
+    "runtime_attempt_allowed_by_this_plan": false,
+    "fresh_approval_required": true,
+    "maximum_additional_attempts_after_repair": 1,
+    "risk_shape": "exposure_reduction_only",
+    "success_formula": "0 < filled_quantity < submitted_quantity",
+    "terminal_cancel_formula": "filled_quantity + cancelled_quantity == submitted_quantity and remaining_quantity == 0 after terminal cancel readback"
+  },
+  "forbidden_repair_shapes": [
+    "do not rewrite or store raw CTP secrets, auth codes or broker endpoints in account-console",
+    "do not treat rejected OnRspOrderInsert offset 1 as submit truth",
+    "do not downgrade CLOSEYESTERDAY to generic CLOSE without a separate owner-approved rule source and audit",
+    "do not mark partial-fill runtime accepted from zero-fill, fully-filled, cancelled-without-fill or browser fixture evidence",
+    "do not run another paper order before owner repair approval, owner validators, updated account-console packets and fresh runtime attempt approval"
+  ],
+  "negative_assertions": {
+    "owner_repo_write_attempted_by_this_plan": false,
+    "owner_runtime_invocation_attempted": false,
+    "owner_repair_claimed_complete": false,
+    "runtime_retry_authorized": false,
+    "partial_fill_claimed": false,
+    "full_acceptance_claimed": false,
+    "raw_secret_values_recorded": false,
+    "raw_broker_endpoint_recorded": false,
+    "config_raw_content_recorded": false
+  }
+}

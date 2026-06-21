@@ -1,5 +1,6 @@
 import {
   AlertTriangle,
+  CircleX,
   Clipboard,
   Database,
   FileSearch,
@@ -8,6 +9,7 @@ import {
   Layers,
   ListFilter,
   Radio,
+  Send,
   ShieldAlert,
   Waypoints
 } from "lucide-react";
@@ -85,8 +87,29 @@ import type {
   AccountIncidentsFixtureState,
   AccountIncidentsPanelReadModel,
   AccountKind,
+  CancelIntentRequest,
+  CommandApiResult,
+  CommandPartialFillOwnerRepairApprovalPacket,
+  CommandPartialFillRemainingAcceptanceCurrentState,
+  CommandPartialFillOwnerRepairEvidenceIngestGate,
+  CommandPartialFillOwnerRepairEvidenceIngestAudit,
+  CommandPartialFillPostRepairRuntimeRetryApprovalPacket,
+  CommandPartialFillPostRepairRuntimeAttemptAudit,
+  CommandPartialFillOwnerRepairExecutionHandoffBundle,
+  CommandPartialFillOwnerRepairImplementationPlan,
+  CommandPartialFillOwnerRepairPatchPreview,
+  CommandPartialFillOwnerRepairPreflightSourceAudit,
+  CommandPartialFillRuntimeExecutionApprovalPacket,
+  CommandPartialFillRuntimeExecutionHandoffBundle,
+  CommandRuntimeCloseout,
+  CommandRuntimeExecutionApprovalPacket,
+  CommandRuntimeExecutionGapAudit,
+  CommandRuntimeExecutionHandoffBundle,
+  CommandRuntimeInvocationReadiness,
+  CommandRuntimeRunRequest,
   AccountOrderDetailFixtureState,
   AccountOrderDetailPanelReadModel,
+  AccountExecutionReportRow,
   AccountOrdersFixtureState,
   AccountOrdersPanelReadModel,
   AccountOrderRow,
@@ -109,13 +132,35 @@ import type {
   MirrorAccountProjection,
   MirrorAccountSummary,
   MirrorEvidenceResponse,
-  MirrorSourceHealthResponse
+  MirrorSourceHealthResponse,
+  OrderIntentRequest
 } from "./types";
 import {
+  cancelPaperOrderIntent,
+  fetchCommandPartialFillOwnerRepairApprovalPacket,
+  fetchCommandPartialFillRemainingAcceptanceCurrentState,
+  fetchCommandPartialFillOwnerRepairEvidenceIngestGate,
+  fetchCommandPartialFillOwnerRepairEvidenceIngestAudit,
+  fetchCommandPartialFillPostRepairRuntimeRetryApprovalPacket,
+  fetchCommandPartialFillPostRepairRuntimeAttemptAudit,
+  fetchCommandPartialFillOwnerRepairExecutionHandoffBundle,
+  fetchCommandPartialFillOwnerRepairImplementationPlan,
+  fetchCommandPartialFillOwnerRepairPatchPreview,
+  fetchCommandPartialFillOwnerRepairPreflightSourceAudit,
+  fetchCommandPartialFillRuntimeExecutionApprovalPacket,
+  fetchCommandPartialFillRuntimeExecutionHandoffBundle,
+  fetchCommandRuntimeExecutionApprovalPacket,
+  fetchCommandRuntimeExecutionGapAudit,
+  fetchCommandRuntimeExecutionHandoffBundle,
+  fetchCommandRuntimeInvocationReadiness,
+  fetchCommandRuntimeCloseout,
   fetchMirrorAccount,
   fetchMirrorAccounts,
   fetchMirrorEvidence,
-  fetchMirrorSourceHealth
+  fetchMirrorSourceHealth,
+  prepareCancelRuntimeRunRequest,
+  prepareSubmitRuntimeRunRequest,
+  submitPaperOrderIntent
 } from "./api";
 
 type AccountHealthFixtureId = AccountHealthPanelFixtureState | "adr0044_foundation";
@@ -371,7 +416,7 @@ function sideLabel(value: unknown): AccountOrderRow["side"] {
 
 function orderStatusLabel(value: unknown): AccountOrderRow["status"] {
   const normalized = asText(value).toLowerCase();
-  if (normalized === "submitted" || normalized === "working") {
+  if (normalized === "submitted" || normalized === "presubmitted" || normalized === "working" || normalized === "accepted") {
     return "working";
   }
   if (normalized === "filled") {
@@ -383,13 +428,48 @@ function orderStatusLabel(value: unknown): AccountOrderRow["status"] {
   if (normalized === "rejected") {
     return "rejected";
   }
-  if (normalized === "partial") {
+  if (normalized === "partial" || normalized === "partially_filled" || normalized === "partfilled") {
     return "partial";
+  }
+  if (normalized === "cancel_pending" || normalized === "cancelpending" || normalized === "pending_cancel") {
+    return "cancel_pending";
   }
   if (normalized === "blocked" || normalized === "stale") {
     return normalized;
   }
   return "unknown";
+}
+
+function orderTypeLabel(value: unknown): AccountOrderRow["order_type"] {
+  const normalized = asText(value).toUpperCase();
+  if (normalized === "LMT" || normalized === "LIMIT") {
+    return "LIMIT";
+  }
+  if (normalized === "MKT" || normalized === "MARKET") {
+    return "MARKET";
+  }
+  return "UNKNOWN";
+}
+
+function reportStatusLabel(value: unknown): string {
+  const label = asText(value);
+  const normalized = label.toLowerCase();
+  if (
+    [
+      "accepted",
+      "submitted",
+      "working",
+      "partial",
+      "filled",
+      "alltraded",
+      "cancelled",
+      "canceled",
+      "rejected"
+    ].includes(normalized)
+  ) {
+    return label.toUpperCase();
+  }
+  return label;
 }
 
 function accountKindFromDomain(domain: string): AccountKind {
@@ -494,8 +574,20 @@ function mirrorBoundaries(readback: MirrorWorkbenchReadback) {
 
 function mirrorSummaryReadModel(readback: MirrorWorkbenchReadback): AccountSummaryPanelReadModel {
   const selected = readback.selected;
-  const balance = selected.balances[0] ?? {};
+  const balance = selected.balances.find((row) => row.currency === "USD") ?? selected.balances[0] ?? {};
   const blockers = mirrorBlockers([...(selected.blockers ?? []), ...(readback.sourceHealth?.blockers ?? [])]);
+  const currencyBalances = selected.balances.filter((row) => row.currency !== "BASE").map((row) => ({
+    currency: asText(row.currency, "unknown"),
+    cash: asNumber(row.cash ?? row.total_cash ?? row.equity),
+    available_cash: asNumber(row.available_cash),
+    buying_power: asNumber(row.available_cash),
+    margin_used: asNumber(row.margin_used),
+    equity: asNumber(row.equity ?? row.net_liquidation_by_currency),
+    unrealized_pnl: asNumber(row.unrealized_pnl),
+    exchange_rate: asNumber(row.exchange_rate),
+    source_ref: asText(row.source_ref, selected.source_ref),
+    checksum: asText(row.checksum, selected.source_checksum)
+  }));
   return {
     schema_version: "account_summary_panel.v1",
     workbench: "Account Workbench",
@@ -519,7 +611,7 @@ function mirrorSummaryReadModel(readback: MirrorWorkbenchReadback): AccountSumma
     },
     pnl: {
       realized: null,
-      unrealized: asNumber(balance.position_profit),
+      unrealized: asNumber(balance.unrealized_pnl ?? balance.position_profit),
       fees: null,
       taxes: null
     },
@@ -533,6 +625,7 @@ function mirrorSummaryReadModel(readback: MirrorWorkbenchReadback): AccountSumma
       latest_settlement_ref: selected.source_ref,
       position_carryover_ref: selected.source_ref
     },
+    currency_balances: currencyBalances,
     positions: selected.positions.map((position) => ({
       instrument: asText(position.instrument),
       net_qty: asNumber(position.net_qty),
@@ -604,17 +697,21 @@ function mirrorOrdersReadModel(readback: MirrorWorkbenchReadback): AccountOrders
     orders: readback.selected.orders.map((order) => {
       const quantity = asNumber(order.quantity);
       const filledQuantity = asNumber(order.filled_quantity) ?? 0;
+      const remainingQuantity = asNumber(order.remaining_quantity);
       return {
         account_id: readback.selected.account_id,
         client_order_id: asText(order.client_order_id),
         instrument: asText(order.instrument),
         side: sideLabel(order.side),
         offset: "UNKNOWN",
-        order_type: "UNKNOWN",
-        limit_price: asNumber(order.limit_price),
+        order_type: orderTypeLabel(order.order_type),
+        limit_price: asNumber(order.limit_price ?? order.price),
         quantity,
         filled_quantity: filledQuantity,
-        remaining_quantity: quantity === null ? null : quantity - filledQuantity,
+        remaining_quantity: remainingQuantity ?? (quantity === null ? null : quantity - filledQuantity),
+        cancelled_quantity: asNumber(order.cancelled_quantity ?? order.withdrawn_quantity),
+        time_in_force: asText(order.time_in_force, "missing"),
+        destination: asText(order.destination ?? order.exchange, "missing"),
         status: orderStatusLabel(order.status),
         lifecycle_ref: asText(order.venue_order_id, readback.selected.source_ref),
         report_provenance_ref: asText(order.report_provenance_ref, readback.selected.source_ref),
@@ -626,6 +723,173 @@ function mirrorOrdersReadModel(readback: MirrorWorkbenchReadback): AccountOrders
     source_refs: mirrorEvidenceRefs(readback),
     boundaries: mirrorBoundaries(readback),
     rejection_rules: ["Do not treat gateway acknowledgements as final account state without mirror readback."]
+  };
+}
+
+function mirrorExecutionReportRows(readback: MirrorWorkbenchReadback): AccountExecutionReportRow[] {
+  const storeReload = readback.selected.source_health.store_reload as Record<string, unknown> | undefined;
+  const reloadCheckpointId = storeReload
+    ? asText(storeReload.reload_checkpoint_id, "unknown")
+    : null;
+  const orderRows = readback.selected.orders.map((order) => ({
+    account_id: readback.selected.account_id,
+    report_id: asText(order.report_id, asText(order.client_order_id)),
+    report_type: "OrderStatusReport" as const,
+    client_order_id: asText(order.client_order_id),
+    venue_order_id: asText(order.venue_order_id, asText(order.lifecycle_ref, "missing")),
+    instrument: asText(order.instrument_id, asText(order.instrument)),
+    side: sideLabel(order.side),
+    status_or_trade: reportStatusLabel(order.order_status ?? order.status),
+    quantity: asNumber(order.quantity),
+    filled_quantity: asNumber(order.filled_quantity),
+    remaining_quantity: asNumber(order.remaining_quantity),
+    limit_or_last_price: asNumber(order.price ?? order.limit_price),
+    sequence: asNumber(order.sequence),
+    source_ref: asText(order.source_ref ?? order.report_provenance_ref, readback.selected.source_ref),
+    checksum: asText(order.source_checksum ?? order.checksum, readback.selected.source_checksum),
+    reload_checkpoint_id: reloadCheckpointId
+  }));
+  const fillRows = readback.selected.fills.map((fill) => ({
+    account_id: readback.selected.account_id,
+    report_id: asText(fill.report_id, asText(fill.trade_id)),
+    report_type: "FillReport" as const,
+    client_order_id: asText(fill.client_order_id),
+    venue_order_id: asText(fill.venue_order_id, "missing"),
+    instrument: asText(fill.instrument_id, asText(fill.instrument)),
+    side: sideLabel(fill.side),
+    status_or_trade: asText(fill.trade_id, asText(fill.order_status, "unknown")),
+    quantity: asNumber(fill.quantity),
+    filled_quantity: asNumber(fill.filled_quantity),
+    remaining_quantity: asNumber(fill.remaining_quantity),
+    limit_or_last_price: asNumber(fill.last_px ?? fill.price),
+    sequence: asNumber(fill.sequence),
+    source_ref: asText(fill.source_ref, readback.selected.source_ref),
+    checksum: asText(fill.source_checksum ?? fill.checksum, readback.selected.source_checksum),
+    reload_checkpoint_id: reloadCheckpointId
+  }));
+  return [...orderRows, ...fillRows].sort((left, right) => {
+    const leftSeq = left.sequence ?? Number.MAX_SAFE_INTEGER;
+    const rightSeq = right.sequence ?? Number.MAX_SAFE_INTEGER;
+    if (leftSeq !== rightSeq) {
+      return leftSeq - rightSeq;
+    }
+    return left.report_id.localeCompare(right.report_id);
+  });
+}
+
+function commandStatusRefs(value: unknown): string[] {
+  return Array.isArray(value) ? value.map((item) => asText(item)).filter((item) => item !== "unknown") : [];
+}
+
+function commandStatusBlockerText(blocker: Record<string, unknown>) {
+  return [
+    asText(blocker.type, asText(blocker.stage, "command_status")),
+    asText(blocker.reason, asText(blocker.kind, "missing evidence")),
+    asText(blocker.source_ref, "missing source ref")
+  ].join(" | ");
+}
+
+function commandResultToStatus(result: CommandApiResult): MirrorAccountProjection["command_status"] {
+  return {
+    schema_version: "account_command.ui_status_projection.v1",
+    status: result.status,
+    command_audit_ref: result.intent_ref,
+    risk_decision_refs: result.risk_decision_ref ? [result.risk_decision_ref] : [],
+    approval_decision_refs: result.approval_decision_ref ? [result.approval_decision_ref] : [],
+    gateway_event_refs: result.gateway_event_refs,
+    readback_refs: result.readback_refs,
+    reconciliation_ref: result.reconciliation_ref ?? null,
+    gateway_ack_is_final_state: result.gateway_ack_is_final_state,
+    readback_required: true,
+    reconciliation_required: true,
+    blockers: result.blockers.map((blocker) => ({ ...blocker }))
+  };
+}
+
+function runtimeCloseoutToStatus(closeout: CommandRuntimeCloseout): MirrorAccountProjection["command_status"] {
+  return {
+    schema_version: "account_command.ui_status_projection.v1",
+    status: closeout.status,
+    command_audit_ref: closeout.command_audit_ref,
+    risk_decision_refs: closeout.risk_decision_refs,
+    approval_decision_refs: closeout.approval_decision_refs,
+    gateway_event_refs: closeout.gateway_event_refs,
+    readback_refs: closeout.readback_refs,
+    reconciliation_ref: closeout.reconciliation_ref,
+    gateway_ack_is_final_state: closeout.gateway_ack_is_final_state,
+    readback_required: true,
+    reconciliation_required: true,
+    blockers: []
+  };
+}
+
+function isP024PaperArmed(readback: MirrorWorkbenchReadback | null): boolean {
+  const command = readback?.selected.capabilities.command;
+  const allowedActions = command?.allowed_actions ?? [];
+  return (
+    readback?.selected.account_id === "acct.ctp.paper.19053" &&
+    command?.enabled === true &&
+    command.mode === "paper_armed" &&
+    allowedActions.includes("submit") &&
+    allowedActions.includes("cancel")
+  );
+}
+
+function defaultSubmitIntent(readback: MirrorWorkbenchReadback): OrderIntentRequest {
+  const accountId = readback.selected.account_id as "acct.ctp.paper.19053";
+  const preflightRef = asText(readback.selected.source_ref);
+  const keySeed = readback.selected.projection_checkpoint_id.replaceAll(":", "-").replaceAll("/", "-");
+  return {
+    schema_version: "account_command.order_intent.v1",
+    intent_id: `intent.p024.ui.submit.${keySeed.slice(0, 32).toLowerCase()}`,
+    account_id: accountId,
+    mode: "paper_armed",
+    action: "submit",
+    instrument: "rb2610",
+    exchange: "SHFE",
+    side: "BUY",
+    quantity: 1,
+    order_type: "LIMIT",
+    limit_price: 24910,
+    time_in_force: "GFD",
+    offset: "OPEN",
+    idempotency_key: `p024-ui-submit-${keySeed}`.slice(0, 80),
+    operator_ref: "operator://account-console-web-ui/p024",
+    preflight_ref: preflightRef,
+    raw_secret_values_recorded: false,
+    raw_broker_endpoint_recorded: false
+  };
+}
+
+function cancelIntentForOrder(readback: MirrorWorkbenchReadback, order: AccountOrderRow): CancelIntentRequest {
+  const stableOrderId = order.client_order_id || order.lifecycle_ref || order.source_ref;
+  const sourceOrder =
+    readback.selected.orders.find(
+      (item) =>
+        asText(item.client_order_id) === order.client_order_id ||
+        asText(item.venue_order_id) === order.lifecycle_ref
+    ) ?? {};
+  const keySeed = `${readback.selected.projection_checkpoint_id}-${stableOrderId}`
+    .replaceAll(":", "-")
+    .replaceAll("/", "-");
+  return {
+    schema_version: "account_command.cancel_intent.v1",
+    intent_id: `intent.p024.ui.cancel.${keySeed.slice(0, 32).toLowerCase()}`,
+    account_id: readback.selected.account_id as "acct.ctp.paper.19053",
+    mode: "paper_armed",
+    action: "cancel",
+    instrument: order.instrument,
+    exchange: order.destination && order.destination !== "missing" ? order.destination : asText(sourceOrder.exchange, "SHFE"),
+    client_order_id: asText(sourceOrder.client_order_id, order.client_order_id || stableOrderId),
+    venue_order_id: asText(sourceOrder.venue_order_id, order.lifecycle_ref ?? stableOrderId),
+    order_ref: asText(sourceOrder.order_ref, order.lifecycle_ref ?? stableOrderId),
+    front_id: asNumber(sourceOrder.front_id) ?? 0,
+    session_id: asNumber(sourceOrder.session_id) ?? 0,
+    idempotency_key: `p024-ui-cancel-${keySeed}`.slice(0, 80),
+    operator_ref: "operator://account-console-web-ui/p024",
+    readback_ref: order.source_ref,
+    raw_secret_values_recorded: false,
+    raw_broker_endpoint_recorded: false
   };
 }
 
@@ -901,6 +1165,7 @@ export function App() {
             ) : (
               <AccountWorkbenchTerminalPanel
                 mirrorAccounts={mirrorReadback?.accounts ?? null}
+                mirrorReadback={mirrorReadback}
                 mirrorReadbackError={mirrorReadbackError}
                 sourceHealthDetails={mirrorReadback?.selected.source_health ?? null}
                 summary={terminalSummary}
@@ -1191,6 +1456,7 @@ function numberTone(value: number | null): string {
 
 function AccountWorkbenchTerminalPanel({
   mirrorAccounts,
+  mirrorReadback,
   mirrorReadbackError,
   sourceHealthDetails,
   summary,
@@ -1200,6 +1466,7 @@ function AccountWorkbenchTerminalPanel({
   onFixtureState
 }: {
   mirrorAccounts: MirrorAccountSummary[] | null;
+  mirrorReadback: MirrorWorkbenchReadback | null;
   mirrorReadbackError: string | null;
   sourceHealthDetails: Record<string, unknown> | null;
   summary: AccountSummaryPanelReadModel;
@@ -1230,6 +1497,105 @@ function AccountWorkbenchTerminalPanel({
     (position) => position.account_id === summary.account.account_id
   );
   const visibleOrders = orders.orders.filter((order) => order.account_id === summary.account.account_id);
+  const [commandResult, setCommandResult] = useState<CommandApiResult | null>(null);
+  const [commandError, setCommandError] = useState<string | null>(null);
+  const [runtimeRunRequest, setRuntimeRunRequest] = useState<CommandRuntimeRunRequest | null>(null);
+  const [runtimeRunRequestError, setRuntimeRunRequestError] = useState<string | null>(null);
+  const [runtimeReadiness, setRuntimeReadiness] = useState<CommandRuntimeInvocationReadiness | null>(null);
+  const [runtimeReadinessError, setRuntimeReadinessError] = useState<string | null>(null);
+  const [runtimeApprovalPacket, setRuntimeApprovalPacket] =
+    useState<CommandRuntimeExecutionApprovalPacket | null>(null);
+  const [runtimeApprovalPacketError, setRuntimeApprovalPacketError] = useState<string | null>(null);
+  const [runtimeHandoffBundle, setRuntimeHandoffBundle] =
+    useState<CommandRuntimeExecutionHandoffBundle | null>(null);
+  const [runtimeHandoffBundleError, setRuntimeHandoffBundleError] = useState<string | null>(null);
+  const [partialFillApprovalPacket, setPartialFillApprovalPacket] =
+    useState<CommandPartialFillRuntimeExecutionApprovalPacket | null>(null);
+  const [partialFillApprovalPacketError, setPartialFillApprovalPacketError] = useState<string | null>(null);
+  const [partialFillHandoffBundle, setPartialFillHandoffBundle] =
+    useState<CommandPartialFillRuntimeExecutionHandoffBundle | null>(null);
+  const [partialFillHandoffBundleError, setPartialFillHandoffBundleError] = useState<string | null>(null);
+  const [runtimeExecutionGapAudit, setRuntimeExecutionGapAudit] =
+    useState<CommandRuntimeExecutionGapAudit | null>(null);
+  const [runtimeExecutionGapAuditError, setRuntimeExecutionGapAuditError] = useState<string | null>(null);
+  const [partialFillOwnerRepairPlan, setPartialFillOwnerRepairPlan] =
+    useState<CommandPartialFillOwnerRepairImplementationPlan | null>(null);
+  const [partialFillOwnerRepairPlanError, setPartialFillOwnerRepairPlanError] = useState<string | null>(null);
+  const [partialFillOwnerRepairApprovalPacket, setPartialFillOwnerRepairApprovalPacket] =
+    useState<CommandPartialFillOwnerRepairApprovalPacket | null>(null);
+  const [partialFillOwnerRepairApprovalPacketError, setPartialFillOwnerRepairApprovalPacketError] =
+    useState<string | null>(null);
+  const [partialFillRemainingAcceptanceState, setPartialFillRemainingAcceptanceState] =
+    useState<CommandPartialFillRemainingAcceptanceCurrentState | null>(null);
+  const [partialFillRemainingAcceptanceStateError, setPartialFillRemainingAcceptanceStateError] =
+    useState<string | null>(null);
+  const [partialFillOwnerRepairIngestGate, setPartialFillOwnerRepairIngestGate] =
+    useState<CommandPartialFillOwnerRepairEvidenceIngestGate | null>(null);
+  const [partialFillOwnerRepairIngestGateError, setPartialFillOwnerRepairIngestGateError] =
+    useState<string | null>(null);
+  const [partialFillOwnerRepairIngestAudit, setPartialFillOwnerRepairIngestAudit] =
+    useState<CommandPartialFillOwnerRepairEvidenceIngestAudit | null>(null);
+  const [partialFillOwnerRepairIngestAuditError, setPartialFillOwnerRepairIngestAuditError] =
+    useState<string | null>(null);
+  const [partialFillPostRepairRuntimeRetryPacket, setPartialFillPostRepairRuntimeRetryPacket] =
+    useState<CommandPartialFillPostRepairRuntimeRetryApprovalPacket | null>(null);
+  const [partialFillPostRepairRuntimeRetryPacketError, setPartialFillPostRepairRuntimeRetryPacketError] =
+    useState<string | null>(null);
+  const [partialFillPostRepairRuntimeAttemptAudit, setPartialFillPostRepairRuntimeAttemptAudit] =
+    useState<CommandPartialFillPostRepairRuntimeAttemptAudit | null>(null);
+  const [partialFillPostRepairRuntimeAttemptAuditError, setPartialFillPostRepairRuntimeAttemptAuditError] =
+    useState<string | null>(null);
+  const [partialFillOwnerRepairPreflight, setPartialFillOwnerRepairPreflight] =
+    useState<CommandPartialFillOwnerRepairPreflightSourceAudit | null>(null);
+  const [partialFillOwnerRepairPreflightError, setPartialFillOwnerRepairPreflightError] =
+    useState<string | null>(null);
+  const [partialFillOwnerRepairPatchPreview, setPartialFillOwnerRepairPatchPreview] =
+    useState<CommandPartialFillOwnerRepairPatchPreview | null>(null);
+  const [partialFillOwnerRepairPatchPreviewError, setPartialFillOwnerRepairPatchPreviewError] =
+    useState<string | null>(null);
+  const [partialFillOwnerRepairExecutionHandoff, setPartialFillOwnerRepairExecutionHandoff] =
+    useState<CommandPartialFillOwnerRepairExecutionHandoffBundle | null>(null);
+  const [partialFillOwnerRepairExecutionHandoffError, setPartialFillOwnerRepairExecutionHandoffError] =
+    useState<string | null>(null);
+  const [runtimeCloseout, setRuntimeCloseout] = useState<CommandRuntimeCloseout | null>(null);
+  const [runtimeCloseoutError, setRuntimeCloseoutError] = useState<string | null>(null);
+  const paperArmed = isP024PaperArmed(mirrorReadback);
+  const submitIntent = mirrorReadback && paperArmed ? defaultSubmitIntent(mirrorReadback) : null;
+  const cancelEligibleOrder = paperArmed
+    ? visibleOrders.find((order) => {
+        const remaining = order.remaining_quantity ?? 0;
+        return remaining > 0 && Boolean(order.lifecycle_ref) && order.status !== "cancel_pending";
+      })
+    : null;
+  const commandStatus = commandResult
+    ? commandResultToStatus(commandResult)
+    : mirrorReadback?.selected.command_status
+      ? mirrorReadback.selected.command_status
+      : runtimeCloseout
+        ? runtimeCloseoutToStatus(runtimeCloseout)
+        : null;
+  const executionReportRows = mirrorReadback
+    ? mirrorExecutionReportRows(mirrorReadback).filter((report) => report.account_id === summary.account.account_id)
+    : visibleOrders
+        .filter((order) => order.report_provenance_ref)
+        .map((order, index) => ({
+          account_id: order.account_id,
+          report_id: `${order.client_order_id}-${order.report_provenance_ref}`,
+          report_type: "OrderStatusReport" as const,
+          client_order_id: order.client_order_id,
+          venue_order_id: order.lifecycle_ref,
+          instrument: order.instrument,
+          side: order.side,
+          status_or_trade: order.status,
+          quantity: order.quantity,
+          filled_quantity: order.filled_quantity,
+          remaining_quantity: order.remaining_quantity,
+          limit_or_last_price: order.limit_price,
+          sequence: index + 1,
+          source_ref: order.report_provenance_ref ?? order.source_ref,
+          checksum: order.checksum,
+          reload_checkpoint_id: null
+        }));
   const allBlockers: AccountSummaryBlocker[] = Array.from(
     new Map(
       [
@@ -1270,6 +1636,312 @@ function AccountWorkbenchTerminalPanel({
       ref: "orders locked"
     }
   ];
+
+  useEffect(() => {
+    if (summary.account.account_id !== "acct.ctp.paper.19053") {
+      setRuntimeCloseout(null);
+      setRuntimeCloseoutError(null);
+      setRuntimeReadiness(null);
+      setRuntimeReadinessError(null);
+      setRuntimeApprovalPacket(null);
+      setRuntimeApprovalPacketError(null);
+      setRuntimeHandoffBundle(null);
+      setRuntimeHandoffBundleError(null);
+      setPartialFillApprovalPacket(null);
+      setPartialFillApprovalPacketError(null);
+      setPartialFillHandoffBundle(null);
+      setPartialFillHandoffBundleError(null);
+      setRuntimeExecutionGapAudit(null);
+      setRuntimeExecutionGapAuditError(null);
+      setPartialFillOwnerRepairPlan(null);
+      setPartialFillOwnerRepairPlanError(null);
+      setPartialFillOwnerRepairApprovalPacket(null);
+      setPartialFillOwnerRepairApprovalPacketError(null);
+      setPartialFillRemainingAcceptanceState(null);
+      setPartialFillRemainingAcceptanceStateError(null);
+      setPartialFillOwnerRepairIngestGate(null);
+      setPartialFillOwnerRepairIngestGateError(null);
+      setPartialFillOwnerRepairIngestAudit(null);
+      setPartialFillOwnerRepairIngestAuditError(null);
+      setPartialFillPostRepairRuntimeRetryPacket(null);
+      setPartialFillPostRepairRuntimeRetryPacketError(null);
+      setPartialFillPostRepairRuntimeAttemptAudit(null);
+      setPartialFillPostRepairRuntimeAttemptAuditError(null);
+      setPartialFillOwnerRepairPreflight(null);
+      setPartialFillOwnerRepairPreflightError(null);
+      setPartialFillOwnerRepairPatchPreview(null);
+      setPartialFillOwnerRepairPatchPreviewError(null);
+      setPartialFillOwnerRepairExecutionHandoff(null);
+      setPartialFillOwnerRepairExecutionHandoffError(null);
+      return;
+    }
+    let active = true;
+    async function loadRuntimeEvidence() {
+      const [
+        closeoutResult,
+        readinessResult,
+        approvalPacketResult,
+        handoffBundleResult,
+        partialFillApprovalResult,
+        partialFillHandoffResult,
+        gapAuditResult,
+        ownerRepairPlanResult,
+        ownerRepairApprovalPacketResult,
+        remainingAcceptanceStateResult,
+        ownerRepairIngestGateResult,
+        ownerRepairIngestAuditResult,
+        postRepairRuntimeRetryPacketResult,
+        postRepairRuntimeAttemptAuditResult,
+        ownerRepairPreflightResult,
+        ownerRepairPatchPreviewResult,
+        ownerRepairExecutionHandoffResult
+      ] =
+        await Promise.allSettled([
+          fetchCommandRuntimeCloseout(summary.account.account_id),
+          fetchCommandRuntimeInvocationReadiness(summary.account.account_id),
+          fetchCommandRuntimeExecutionApprovalPacket(summary.account.account_id),
+          fetchCommandRuntimeExecutionHandoffBundle(summary.account.account_id),
+          fetchCommandPartialFillRuntimeExecutionApprovalPacket(summary.account.account_id),
+          fetchCommandPartialFillRuntimeExecutionHandoffBundle(summary.account.account_id),
+          fetchCommandRuntimeExecutionGapAudit(summary.account.account_id),
+          fetchCommandPartialFillOwnerRepairImplementationPlan(summary.account.account_id),
+          fetchCommandPartialFillOwnerRepairApprovalPacket(summary.account.account_id),
+          fetchCommandPartialFillRemainingAcceptanceCurrentState(summary.account.account_id),
+          fetchCommandPartialFillOwnerRepairEvidenceIngestGate(summary.account.account_id),
+          fetchCommandPartialFillOwnerRepairEvidenceIngestAudit(summary.account.account_id),
+          fetchCommandPartialFillPostRepairRuntimeRetryApprovalPacket(summary.account.account_id),
+          fetchCommandPartialFillPostRepairRuntimeAttemptAudit(summary.account.account_id),
+          fetchCommandPartialFillOwnerRepairPreflightSourceAudit(summary.account.account_id),
+          fetchCommandPartialFillOwnerRepairPatchPreview(summary.account.account_id),
+          fetchCommandPartialFillOwnerRepairExecutionHandoffBundle(summary.account.account_id)
+        ]);
+      if (!active) {
+        return;
+      }
+      if (closeoutResult.status === "fulfilled") {
+        setRuntimeCloseout(closeoutResult.value);
+        setRuntimeCloseoutError(null);
+      } else {
+        const message =
+          closeoutResult.reason instanceof Error ? closeoutResult.reason.message : "runtime closeout unavailable";
+        setRuntimeCloseout(null);
+        setRuntimeCloseoutError(message);
+      }
+      if (readinessResult.status === "fulfilled") {
+        setRuntimeReadiness(readinessResult.value);
+        setRuntimeReadinessError(null);
+      } else {
+        const message =
+          readinessResult.reason instanceof Error ? readinessResult.reason.message : "runtime readiness unavailable";
+        setRuntimeReadiness(null);
+        setRuntimeReadinessError(message);
+      }
+      if (approvalPacketResult.status === "fulfilled") {
+        setRuntimeApprovalPacket(approvalPacketResult.value);
+        setRuntimeApprovalPacketError(null);
+      } else {
+        const message =
+          approvalPacketResult.reason instanceof Error
+            ? approvalPacketResult.reason.message
+            : "runtime approval packet unavailable";
+        setRuntimeApprovalPacket(null);
+        setRuntimeApprovalPacketError(message);
+      }
+      if (handoffBundleResult.status === "fulfilled") {
+        setRuntimeHandoffBundle(handoffBundleResult.value);
+        setRuntimeHandoffBundleError(null);
+      } else {
+        const message =
+          handoffBundleResult.reason instanceof Error
+            ? handoffBundleResult.reason.message
+            : "runtime handoff bundle unavailable";
+        setRuntimeHandoffBundle(null);
+        setRuntimeHandoffBundleError(message);
+      }
+      if (partialFillApprovalResult.status === "fulfilled") {
+        setPartialFillApprovalPacket(partialFillApprovalResult.value);
+        setPartialFillApprovalPacketError(null);
+      } else {
+        const message =
+          partialFillApprovalResult.reason instanceof Error
+            ? partialFillApprovalResult.reason.message
+            : "partial-fill approval packet unavailable";
+        setPartialFillApprovalPacket(null);
+        setPartialFillApprovalPacketError(message);
+      }
+      if (partialFillHandoffResult.status === "fulfilled") {
+        setPartialFillHandoffBundle(partialFillHandoffResult.value);
+        setPartialFillHandoffBundleError(null);
+      } else {
+        const message =
+          partialFillHandoffResult.reason instanceof Error
+            ? partialFillHandoffResult.reason.message
+            : "partial-fill handoff bundle unavailable";
+        setPartialFillHandoffBundle(null);
+        setPartialFillHandoffBundleError(message);
+      }
+      if (gapAuditResult.status === "fulfilled") {
+        setRuntimeExecutionGapAudit(gapAuditResult.value);
+        setRuntimeExecutionGapAuditError(null);
+      } else {
+        const message =
+          gapAuditResult.reason instanceof Error
+            ? gapAuditResult.reason.message
+            : "runtime execution gap audit unavailable";
+        setRuntimeExecutionGapAudit(null);
+        setRuntimeExecutionGapAuditError(message);
+      }
+      if (ownerRepairPlanResult.status === "fulfilled") {
+        setPartialFillOwnerRepairPlan(ownerRepairPlanResult.value);
+        setPartialFillOwnerRepairPlanError(null);
+      } else {
+        const message =
+          ownerRepairPlanResult.reason instanceof Error
+            ? ownerRepairPlanResult.reason.message
+            : "partial-fill owner repair plan unavailable";
+        setPartialFillOwnerRepairPlan(null);
+        setPartialFillOwnerRepairPlanError(message);
+      }
+      if (ownerRepairApprovalPacketResult.status === "fulfilled") {
+        setPartialFillOwnerRepairApprovalPacket(ownerRepairApprovalPacketResult.value);
+        setPartialFillOwnerRepairApprovalPacketError(null);
+      } else {
+        const message =
+          ownerRepairApprovalPacketResult.reason instanceof Error
+            ? ownerRepairApprovalPacketResult.reason.message
+            : "partial-fill owner repair approval packet unavailable";
+        setPartialFillOwnerRepairApprovalPacket(null);
+        setPartialFillOwnerRepairApprovalPacketError(message);
+      }
+      if (remainingAcceptanceStateResult.status === "fulfilled") {
+        setPartialFillRemainingAcceptanceState(remainingAcceptanceStateResult.value);
+        setPartialFillRemainingAcceptanceStateError(null);
+      } else {
+        const message =
+          remainingAcceptanceStateResult.reason instanceof Error
+            ? remainingAcceptanceStateResult.reason.message
+            : "partial-fill remaining acceptance current state unavailable";
+        setPartialFillRemainingAcceptanceState(null);
+        setPartialFillRemainingAcceptanceStateError(message);
+      }
+      if (ownerRepairIngestGateResult.status === "fulfilled") {
+        setPartialFillOwnerRepairIngestGate(ownerRepairIngestGateResult.value);
+        setPartialFillOwnerRepairIngestGateError(null);
+      } else {
+        const message =
+          ownerRepairIngestGateResult.reason instanceof Error
+            ? ownerRepairIngestGateResult.reason.message
+            : "partial-fill owner repair ingest gate unavailable";
+        setPartialFillOwnerRepairIngestGate(null);
+        setPartialFillOwnerRepairIngestGateError(message);
+      }
+      if (ownerRepairIngestAuditResult.status === "fulfilled") {
+        setPartialFillOwnerRepairIngestAudit(ownerRepairIngestAuditResult.value);
+        setPartialFillOwnerRepairIngestAuditError(null);
+      } else {
+        const message =
+          ownerRepairIngestAuditResult.reason instanceof Error
+            ? ownerRepairIngestAuditResult.reason.message
+            : "partial-fill owner repair ingest audit unavailable";
+        setPartialFillOwnerRepairIngestAudit(null);
+        setPartialFillOwnerRepairIngestAuditError(message);
+      }
+      if (postRepairRuntimeRetryPacketResult.status === "fulfilled") {
+        setPartialFillPostRepairRuntimeRetryPacket(postRepairRuntimeRetryPacketResult.value);
+        setPartialFillPostRepairRuntimeRetryPacketError(null);
+      } else {
+        const message =
+          postRepairRuntimeRetryPacketResult.reason instanceof Error
+            ? postRepairRuntimeRetryPacketResult.reason.message
+            : "partial-fill post-repair runtime retry packet unavailable";
+        setPartialFillPostRepairRuntimeRetryPacket(null);
+        setPartialFillPostRepairRuntimeRetryPacketError(message);
+      }
+      if (postRepairRuntimeAttemptAuditResult.status === "fulfilled") {
+        setPartialFillPostRepairRuntimeAttemptAudit(postRepairRuntimeAttemptAuditResult.value);
+        setPartialFillPostRepairRuntimeAttemptAuditError(null);
+      } else {
+        const message =
+          postRepairRuntimeAttemptAuditResult.reason instanceof Error
+            ? postRepairRuntimeAttemptAuditResult.reason.message
+            : "partial-fill post-repair runtime attempt audit unavailable";
+        setPartialFillPostRepairRuntimeAttemptAudit(null);
+        setPartialFillPostRepairRuntimeAttemptAuditError(message);
+      }
+      if (ownerRepairPreflightResult.status === "fulfilled") {
+        setPartialFillOwnerRepairPreflight(ownerRepairPreflightResult.value);
+        setPartialFillOwnerRepairPreflightError(null);
+      } else {
+        const message =
+          ownerRepairPreflightResult.reason instanceof Error
+            ? ownerRepairPreflightResult.reason.message
+            : "partial-fill owner repair preflight source audit unavailable";
+        setPartialFillOwnerRepairPreflight(null);
+        setPartialFillOwnerRepairPreflightError(message);
+      }
+      if (ownerRepairPatchPreviewResult.status === "fulfilled") {
+        setPartialFillOwnerRepairPatchPreview(ownerRepairPatchPreviewResult.value);
+        setPartialFillOwnerRepairPatchPreviewError(null);
+      } else {
+        const message =
+          ownerRepairPatchPreviewResult.reason instanceof Error
+            ? ownerRepairPatchPreviewResult.reason.message
+            : "partial-fill owner repair patch preview unavailable";
+        setPartialFillOwnerRepairPatchPreview(null);
+        setPartialFillOwnerRepairPatchPreviewError(message);
+      }
+      if (ownerRepairExecutionHandoffResult.status === "fulfilled") {
+        setPartialFillOwnerRepairExecutionHandoff(ownerRepairExecutionHandoffResult.value);
+        setPartialFillOwnerRepairExecutionHandoffError(null);
+      } else {
+        const message =
+          ownerRepairExecutionHandoffResult.reason instanceof Error
+            ? ownerRepairExecutionHandoffResult.reason.message
+            : "partial-fill owner repair execution handoff unavailable";
+        setPartialFillOwnerRepairExecutionHandoff(null);
+        setPartialFillOwnerRepairExecutionHandoffError(message);
+      }
+    }
+    void loadRuntimeEvidence();
+    return () => {
+      active = false;
+    };
+  }, [summary.account.account_id]);
+
+  async function handleSubmitIntent() {
+    if (!mirrorReadback || !submitIntent) {
+      return;
+    }
+    try {
+      setCommandError(null);
+      setRuntimeRunRequestError(null);
+      const result = await submitPaperOrderIntent(mirrorReadback.selected.account_id, submitIntent);
+      setCommandResult(result);
+      const handoff = await prepareSubmitRuntimeRunRequest(mirrorReadback.selected.account_id, submitIntent);
+      setRuntimeRunRequest(handoff);
+    } catch (error) {
+      setCommandError(error instanceof Error ? error.message : "submit intent request failed");
+      setRuntimeRunRequestError(error instanceof Error ? error.message : "submit runtime handoff unavailable");
+    }
+  }
+
+  async function handleCancelIntent(order: AccountOrderRow) {
+    if (!mirrorReadback) {
+      return;
+    }
+    try {
+      setCommandError(null);
+      setRuntimeRunRequestError(null);
+      const cancelIntent = cancelIntentForOrder(mirrorReadback, order);
+      const result = await cancelPaperOrderIntent(mirrorReadback.selected.account_id, cancelIntent);
+      setCommandResult(result);
+      const handoff = await prepareCancelRuntimeRunRequest(mirrorReadback.selected.account_id, cancelIntent);
+      setRuntimeRunRequest(handoff);
+    } catch (error) {
+      setCommandError(error instanceof Error ? error.message : "cancel intent request failed");
+      setRuntimeRunRequestError(error instanceof Error ? error.message : "cancel runtime handoff unavailable");
+    }
+  }
 
   return (
     <section className="terminal-workbench-shell" data-testid="terminal-workbench-shell">
@@ -1477,6 +2149,120 @@ function AccountWorkbenchTerminalPanel({
               />
               <Metric label="Positions" testId="account-summary-position-count" value={String(visiblePositions.length)} />
             </div>
+            <div className="terminal-panel terminal-table-panel terminal-funds-panel">
+              <div className="terminal-panel-header">
+                <h3>Funds</h3>
+                <span>{summary.context.reducer_checkpoint_id}</span>
+              </div>
+              <div className="terminal-data-table-wrap">
+                <table className="terminal-data-table compact" data-testid="tws-multi-currency-funds-table">
+                  <thead>
+                    <tr>
+                      <th>Currency</th>
+                      <th>Cash</th>
+                      <th>Available</th>
+                      <th>Buying power</th>
+                      <th>Margin</th>
+                      <th>Equity/net liq</th>
+                      <th>Unrealized PnL</th>
+                      <th>FX/provenance</th>
+                      <th>Source</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {summary.fixture_state === "blocked" && allBlockers.length > 0 ? (
+                      allBlockers.map((blocker) => (
+                        <tr data-testid="tws-funds-blocker" key={`funds-${blocker.blocker_id}`}>
+                          <td data-label="Currency">blocked</td>
+                          <td className="numeric-cell" data-label="Cash">missing</td>
+                          <td className="numeric-cell" data-label="Available">missing</td>
+                          <td className="numeric-cell" data-label="Buying power">missing</td>
+                          <td className="numeric-cell" data-label="Margin">missing</td>
+                          <td className="numeric-cell" data-label="Equity/net liq">missing</td>
+                          <td className="numeric-cell" data-label="Unrealized PnL">missing</td>
+                          <td data-label="FX/provenance" data-testid="tws-fx-provenance">
+                            {formatLabel(blocker.kind)}
+                          </td>
+                          <td data-label="Source">
+                            <CopyableCode label="funds blocker source ref" value={blocker.source_ref} />
+                          </td>
+                        </tr>
+                      ))
+                    ) : (summary.currency_balances ?? []).length > 0 ? (
+                      (summary.currency_balances ?? []).map((balance) => (
+                      <tr data-testid="tws-currency-balance-row" key={`funds-${balance.currency}`}>
+                        <td data-label="Currency">{balance.currency}</td>
+                        <td className="numeric-cell" data-label="Cash">
+                          {formatMoney(balance.cash, balance.currency)}
+                        </td>
+                        <td className="numeric-cell" data-label="Available">
+                          {formatMoney(balance.available_cash, balance.currency)}
+                        </td>
+                        <td className="numeric-cell" data-label="Buying power">
+                          {formatMoney(balance.buying_power, balance.currency)}
+                        </td>
+                        <td className="numeric-cell" data-label="Margin">
+                          {formatMoney(balance.margin_used, balance.currency)}
+                        </td>
+                        <td className="numeric-cell" data-label="Equity/net liq">
+                          {formatMoney(balance.equity, balance.currency)}
+                        </td>
+                        <td className={`numeric-cell ${numberTone(balance.unrealized_pnl)}`} data-label="Unrealized PnL">
+                          {formatMoney(balance.unrealized_pnl, balance.currency)}
+                        </td>
+                        <td data-label="FX/provenance" data-testid="tws-fx-provenance">
+                          {balance.exchange_rate === null ? "source currency" : `FX ${balance.exchange_rate.toLocaleString()}`}
+                        </td>
+                        <td data-label="Source">
+                          <CopyableCode label="funds source ref" value={balance.source_ref} />
+                        </td>
+                      </tr>
+                      ))
+                    ) : summary.balances.cash !== null ||
+                      summary.balances.available_cash !== null ||
+                      summary.margin.initial_margin !== null ||
+                      summary.pnl.unrealized !== null ? (
+                      <tr data-testid="tws-currency-balance-row">
+                        <td data-label="Currency">{baseCurrency}</td>
+                        <td className="numeric-cell" data-label="Cash">
+                          {formatMoney(summary.balances.cash, baseCurrency)}
+                        </td>
+                        <td className="numeric-cell" data-label="Available">
+                          {formatMoney(summary.balances.available_cash, baseCurrency)}
+                        </td>
+                        <td className="numeric-cell" data-label="Buying power">
+                          {formatMoney(summary.balances.buying_power, baseCurrency)}
+                        </td>
+                        <td className="numeric-cell" data-label="Margin">
+                          {formatMoney(summary.margin.initial_margin, baseCurrency)}
+                        </td>
+                        <td className="numeric-cell" data-label="Equity/net liq">
+                          {formatMoney(summary.balances.cash, baseCurrency)}
+                        </td>
+                        <td className={`numeric-cell ${numberTone(summary.pnl.unrealized)}`} data-label="Unrealized PnL">
+                          {formatMoney(summary.pnl.unrealized, baseCurrency)}
+                        </td>
+                        <td data-label="FX/provenance" data-testid="tws-fx-provenance">
+                          source currency
+                        </td>
+                        <td data-label="Source">
+                          <CopyableCode label="funds source ref" value={summary.source_refs[0]?.source_ref ?? summary.context.run_id} />
+                        </td>
+                      </tr>
+                    ) : (
+                      <tr data-testid="tws-funds-empty-state">
+                        <td colSpan={9}>No funds rows in this fixture projection.</td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+              <div className="funds-rollup" data-testid="tws-base-currency-rollup">
+                <span>Base currency rollup</span>
+                <StateBadge value={summary.fixture_state === "blocked" ? "blocked" : "healthy"} />
+                <span>{summary.fixture_state === "blocked" ? "blocked until source package" : baseCurrency}</span>
+              </div>
+            </div>
           </section>
 
           <section className="terminal-panel terminal-table-panel">
@@ -1501,9 +2287,9 @@ function AccountWorkbenchTerminalPanel({
                   </tr>
                 </thead>
                 <tbody>
-                  {visiblePositions.length > 0 ? (
-                    visiblePositions.map((position) => (
-                      <tr data-testid="account-position-projection-row" key={position.checksum}>
+                    {visiblePositions.length > 0 ? (
+                    visiblePositions.map((position, index) => (
+                      <tr data-testid="account-position-projection-row" key={`${position.checksum}-${index}`}>
                         <td data-label="Instrument">{position.instrument}</td>
                         <td data-label="Direction">
                           <StateBadge value={position.direction} />
@@ -1546,11 +2332,11 @@ function AccountWorkbenchTerminalPanel({
 
           <section className="terminal-panel terminal-bottom-tape" data-testid="account-bottom-tape">
             <div className="terminal-panel-header">
-              <h3>Orders Tape</h3>
-              <span>{orders.context.reducer_checkpoint_id}</span>
+              <h3>Open Orders / 挂单</h3>
+              <span data-testid="tws-open-order-count">{visibleOrders.length}</span>
             </div>
             <div className="terminal-data-table-wrap">
-              <table className="terminal-data-table compact">
+              <table className="terminal-data-table compact" data-testid="tws-open-orders-table">
                 <thead>
                   <tr>
                     <th>Client order</th>
@@ -1561,41 +2347,134 @@ function AccountWorkbenchTerminalPanel({
                     <th>Qty</th>
                     <th>Filled</th>
                     <th>Remaining</th>
+                    <th>Cancelled</th>
                     <th>Evidence</th>
                   </tr>
                 </thead>
                 <tbody>
                   {visibleOrders.length > 0 ? (
                     visibleOrders.map((order) => (
-                      <tr key={order.checksum}>
-                        <td data-label="Client order">{order.client_order_id}</td>
-                        <td data-label="Instrument">{order.instrument}</td>
-                        <td data-label="Side">
+                      <tr data-testid="tws-open-order-row" key={`${order.source_ref}-${order.client_order_id}`}>
+                        <td data-label="Client order" data-testid="tws-open-order-client-order-id">
+                          <span>{order.client_order_id}</span>
+                          <span data-testid="account-order-identity">{order.lifecycle_ref ?? order.client_order_id}</span>
+                        </td>
+                        <td data-label="Instrument" data-testid="tws-open-order-instrument">{order.instrument}</td>
+                        <td data-label="Side" data-testid="tws-open-order-side">
                           <StateBadge value={order.side} />
                         </td>
-                        <td data-label="Status">
-                          <StateBadge value={order.status} />
+                        <td data-label="Status" data-testid="tws-open-order-status">
+                          <span data-testid="account-order-status">
+                            <StateBadge value={order.status} />
+                          </span>
+                          {order.status === "partial" ? (
+                            <span data-testid="account-order-partial-fill-row">partial</span>
+                          ) : null}
+                          {order.status === "cancel_pending" ? (
+                            <span data-testid="account-cancel-pending-ref">
+                              {order.report_provenance_ref ?? order.source_ref}
+                            </span>
+                          ) : null}
                         </td>
-                        <td className="numeric-cell" data-label="Limit">
+                        <td className="numeric-cell" data-label="Limit" data-testid="tws-open-order-limit-price">
                           {order.limit_price ?? "missing"}
                         </td>
-                        <td className="numeric-cell" data-label="Qty">
-                          {order.quantity ?? "missing"}
+                        <td className="numeric-cell" data-label="Qty" data-testid="tws-open-order-quantity">
+                          <span data-testid="account-order-submitted-quantity">{order.quantity ?? "missing"}</span>
                         </td>
-                        <td className="numeric-cell" data-label="Filled">
-                          {order.filled_quantity ?? "missing"}
+                        <td className="numeric-cell" data-label="Filled" data-testid="tws-open-order-filled">
+                          <span data-testid="account-order-filled-quantity">{order.filled_quantity ?? "missing"}</span>
                         </td>
-                        <td className="numeric-cell" data-label="Remaining">
-                          {order.remaining_quantity ?? "missing"}
+                        <td className="numeric-cell" data-label="Remaining" data-testid="tws-open-order-remaining">
+                          <span data-testid="account-order-remaining-quantity">{order.remaining_quantity ?? "missing"}</span>
+                          {order.status === "partial" || order.status === "working" ? (
+                            <span data-testid="account-remaining-cancel-quantity">
+                              {order.remaining_quantity ?? "missing"}
+                            </span>
+                          ) : null}
                         </td>
-                        <td data-label="Evidence">
+                        <td className="numeric-cell" data-label="Cancelled" data-testid="tws-open-order-cancelled">
+                          <span data-testid="account-order-cancelled-quantity">
+                            {order.cancelled_quantity ?? "missing"}
+                          </span>
+                        </td>
+                        <td data-label="Evidence" data-testid="tws-open-order-source-ref">
                           <CopyableCode label="order source ref" value={order.source_ref} />
                         </td>
                       </tr>
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={9}>No order rows in this fixture projection.</td>
+                      <td colSpan={10} data-testid="tws-open-order-empty-state">No open order rows in this mirror projection.</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <section className="terminal-panel" data-testid="account-fills-tape">
+            <div className="terminal-panel-header">
+              <h3>Fills / 成交单</h3>
+              <span data-testid="tws-fill-count">
+                {executionReportRows.filter((report) => report.report_type === "FillReport").length}
+              </span>
+            </div>
+            <div className="terminal-data-table-wrap">
+              <table className="terminal-data-table compact" data-testid="tws-fills-table">
+                <thead>
+                  <tr>
+                    <th>Report id</th>
+                    <th>Client order</th>
+                    <th>Venue order</th>
+                    <th>Instrument</th>
+                    <th>Side</th>
+                    <th>Trade/status</th>
+                    <th>Filled</th>
+                    <th>Last price</th>
+                    <th>Sequence</th>
+                    <th>Source</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {executionReportRows.filter((report) => report.report_type === "FillReport").length > 0 ? (
+                    executionReportRows
+                      .filter((report) => report.report_type === "FillReport")
+                      .map((report) => (
+                        <tr data-testid="tws-fill-row" key={`${report.report_id}-${report.source_ref}`}>
+                          <td data-label="Report id" data-testid="tws-fill-report-id">{report.report_id}</td>
+                          <td data-label="Client order" data-testid="tws-fill-client-order-id">
+                            {report.client_order_id}
+                          </td>
+                          <td data-label="Venue order" data-testid="tws-fill-venue-order-id">
+                            {report.venue_order_id ?? "missing"}
+                          </td>
+                          <td data-label="Instrument" data-testid="tws-fill-instrument">{report.instrument}</td>
+                          <td data-label="Side" data-testid="tws-fill-side">
+                            <StateBadge value={report.side} />
+                          </td>
+                          <td data-label="Trade/status" data-testid="tws-fill-status-or-trade">
+                            {report.status_or_trade}
+                          </td>
+                          <td className="numeric-cell" data-label="Filled" data-testid="tws-fill-filled-quantity">
+                            <span data-testid="account-fill-quantity">{report.filled_quantity ?? "missing"}</span>
+                          </td>
+                          <td className="numeric-cell" data-label="Last price" data-testid="tws-fill-last-price">
+                            <span data-testid="account-fill-price">{report.limit_or_last_price ?? "missing"}</span>
+                          </td>
+                          <td data-label="Sequence" data-testid="tws-fill-sequence">
+                            {report.sequence ?? "missing"}
+                          </td>
+                          <td data-label="Source" data-testid="tws-fill-source-ref">
+                            <span data-testid="account-fill-source-ref">
+                              <CopyableCode label="fill source ref" value={report.source_ref} />
+                            </span>
+                          </td>
+                        </tr>
+                      ))
+                  ) : (
+                    <tr data-testid="tws-fill-empty-state">
+                      <td colSpan={10}>No fill rows in this mirror projection.</td>
                     </tr>
                   )}
                 </tbody>
@@ -1606,55 +2485,112 @@ function AccountWorkbenchTerminalPanel({
           <section className="terminal-panel" data-testid="account-order-execution-report">
             <div className="terminal-panel-header">
               <h3>Execution Reports</h3>
-              <span>{visibleOrders.filter((order) => order.report_provenance_ref).length}</span>
+              <span>{executionReportRows.length}</span>
             </div>
-            {visibleOrders.some((order) => order.report_provenance_ref) ? (
-              <div className="order-list">
-                {visibleOrders
-                  .filter((order) => order.report_provenance_ref)
-                  .map((order) => (
-                    <article
-                      className="order-card"
-                      data-testid="account-order-execution-report-row"
-                      key={`${order.client_order_id}-${order.report_provenance_ref}`}
-                    >
-                      <div className="order-card-head">
-                        <div>
-                          <strong>{order.client_order_id}</strong>
-                          <span>{order.status}</span>
-                        </div>
-                        <StateBadge value="read-only" />
-                      </div>
-                      <dl className="detail-list two-column">
-                        <div>
-                          <dt>Instrument</dt>
-                          <dd>{order.instrument}</dd>
-                        </div>
-                        <div>
-                          <dt>Side</dt>
-                          <dd>{order.side}</dd>
-                        </div>
-                        <div>
-                          <dt>Report status</dt>
-                          <dd>{order.status}</dd>
-                        </div>
-                        <div>
-                          <dt>Authority</dt>
-                          <dd>execution report provenance only</dd>
-                        </div>
-                      </dl>
-                      <CopyableCode
-                        label="report provenance ref"
-                        value={order.report_provenance_ref ?? "missing"}
-                      />
-                      <CopyableCode label="order source ref" value={order.source_ref} />
-                      <CopyableCode label="order checksum" value={order.checksum} />
-                    </article>
-                  ))}
-              </div>
-            ) : (
-              <p className="muted">No execution report provenance rows in this projection.</p>
-            )}
+            <div className="terminal-data-table-wrap">
+              <table className="terminal-data-table compact" data-testid="tws-execution-reports-table">
+                <thead>
+                  <tr>
+                    <th>Report type</th>
+                    <th>Client order</th>
+                    <th>Venue order</th>
+                    <th>Instrument</th>
+                    <th>Side</th>
+                    <th>Status/trade</th>
+                    <th>Quantity</th>
+                    <th>Filled</th>
+                    <th>Remaining</th>
+                    <th>Limit/last</th>
+                    <th>Sequence</th>
+                    <th>Source</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {executionReportRows.length > 0 ? (
+                    executionReportRows
+                      .map((report) => (
+                        <tr
+                          data-testid="tws-execution-report-row"
+                          key={`${report.report_id}-${report.source_ref}`}
+                        >
+                          <td data-label="Report type" data-testid="tws-execution-report-type">
+                            {report.report_type}
+                          </td>
+                          <td data-label="Client order" data-testid="tws-execution-report-client-order-id">
+                            {report.client_order_id}
+                          </td>
+                          <td data-label="Venue order" data-testid="tws-execution-report-venue-order-id">
+                            {report.venue_order_id ?? "missing"}
+                          </td>
+                          <td data-label="Instrument">{report.instrument}</td>
+                          <td data-label="Side">
+                            <StateBadge value={report.side} />
+                          </td>
+                          <td data-label="Status/trade">{report.status_or_trade}</td>
+                          <td className="numeric-cell" data-label="Quantity">
+                            {report.quantity ?? "missing"}
+                          </td>
+                          <td className="numeric-cell" data-label="Filled">
+                            {report.filled_quantity ?? "missing"}
+                          </td>
+                          <td className="numeric-cell" data-label="Remaining">
+                            {report.remaining_quantity ?? "missing"}
+                          </td>
+                          <td className="numeric-cell" data-label="Limit/last">
+                            {report.limit_or_last_price ?? "missing"}
+                          </td>
+                          <td data-label="Sequence" data-testid="tws-execution-report-sequence">
+                            {report.sequence ?? "missing"}
+                          </td>
+                          <td data-label="Source" data-testid="tws-execution-report-source-ref">
+                            <CopyableCode
+                              label="report provenance ref"
+                              value={report.source_ref}
+                            />
+                            {report.reload_checkpoint_id ? (
+                              <small data-testid="tws-execution-report-reload-ref">
+                                {report.reload_checkpoint_id}
+                              </small>
+                            ) : null}
+                          </td>
+                        </tr>
+                      ))
+                  ) : allBlockers.length > 0 ? (
+                    allBlockers.map((blocker) => (
+                      <tr data-testid="tws-execution-report-blocker" key={`execution-report-${blocker.blocker_id}`}>
+                        <td data-label="Report type">blocked</td>
+                        <td data-label="Client order" colSpan={2}>
+                          {blocker.blocker_id}
+                        </td>
+                        <td data-label="Instrument">missing</td>
+                        <td data-label="Side">missing</td>
+                        <td data-label="Status/trade">{formatLabel(blocker.kind)}</td>
+                        <td className="numeric-cell" data-label="Quantity">
+                          missing
+                        </td>
+                        <td className="numeric-cell" data-label="Filled">
+                          missing
+                        </td>
+                        <td className="numeric-cell" data-label="Remaining">
+                          missing
+                        </td>
+                        <td className="numeric-cell" data-label="Limit/last">
+                          missing
+                        </td>
+                        <td data-label="Sequence">blocked</td>
+                        <td data-label="Source">
+                          <CopyableCode label="execution report blocker source ref" value={blocker.source_ref} />
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr data-testid="tws-execution-report-empty-state">
+                      <td colSpan={12}>No execution report provenance rows in this projection.</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
           </section>
         </main>
 
@@ -1723,23 +2659,161 @@ function AccountWorkbenchTerminalPanel({
           <section className="terminal-panel" data-testid="account-command-capability-state">
             <div className="terminal-panel-header">
               <h3>Command Plane</h3>
-              <StateBadge value={summary.boundaries.action_controls ? "warning" : "empty"} />
+              <StateBadge value={paperArmed ? "partial" : summary.boundaries.action_controls ? "warning" : "empty"} />
             </div>
             <dl className="detail-list">
               <div>
                 <dt>Mode</dt>
-                <dd>observation only</dd>
+                <dd data-testid="account-command-mode">{paperArmed ? "paper_armed" : "observation only"}</dd>
               </div>
               <div>
                 <dt>Controls</dt>
-                <dd>none mounted</dd>
+                <dd data-testid="account-command-controls-state">{paperArmed ? "mounted" : "none mounted"}</dd>
               </div>
               <div>
                 <dt>Broker adapter</dt>
-                <dd>not bound in this view</dd>
+                <dd>{paperArmed ? "P024 API gate" : "not bound in this view"}</dd>
               </div>
             </dl>
+            {paperArmed && submitIntent ? (
+              <div className="command-control-stack" data-testid="account-paper-command-banner">
+                <div className="command-preflight-row">
+                  <span data-testid="account-command-preflight-ref">{submitIntent.preflight_ref}</span>
+                </div>
+                <form
+                  className="command-form"
+                  data-testid="account-submit-order-form"
+                  onSubmit={(event) => {
+                    event.preventDefault();
+                    void handleSubmitIntent();
+                  }}
+                >
+                  <label>
+                    Instrument
+                    <input readOnly value={submitIntent.instrument} />
+                  </label>
+                  <label>
+                    Qty
+                    <input readOnly value={submitIntent.quantity} />
+                  </label>
+                  <label>
+                    Limit
+                    <input readOnly value={submitIntent.limit_price} />
+                  </label>
+                  <span className="command-idempotency" data-testid="account-submit-idempotency-key">
+                    {submitIntent.idempotency_key}
+                  </span>
+                  <button data-testid="account-submit-order-button" type="submit">
+                    <Send size={14} />
+                    Submit
+                  </button>
+                </form>
+                {cancelEligibleOrder ? (
+                  <div className="command-cancel-row">
+                    <span data-testid="account-cancel-order-identity">
+                      {cancelEligibleOrder.lifecycle_ref ?? cancelEligibleOrder.client_order_id}
+                    </span>
+                    <button
+                      data-testid="account-cancel-order-button"
+                      onClick={() => void handleCancelIntent(cancelEligibleOrder)}
+                      type="button"
+                    >
+                      <CircleX size={14} />
+                      Cancel
+                    </button>
+                  </div>
+                ) : null}
+                {commandError ? (
+                  <div className="state-callout stale" data-testid="account-command-control-blocker">
+                    {commandError}
+                  </div>
+                ) : null}
+              </div>
+            ) : null}
           </section>
+
+          <CommandRuntimeRunRequestPanel request={runtimeRunRequest} error={runtimeRunRequestError} />
+
+          <CommandRuntimeInvocationReadinessPanel readiness={runtimeReadiness} error={runtimeReadinessError} />
+
+          <CommandRuntimeExecutionApprovalPacketPanel
+            error={runtimeApprovalPacketError}
+            packet={runtimeApprovalPacket}
+          />
+
+          <CommandRuntimeExecutionHandoffBundlePanel
+            bundle={runtimeHandoffBundle}
+            error={runtimeHandoffBundleError}
+          />
+
+          <CommandPartialFillRuntimeExecutionApprovalPacketPanel
+            error={partialFillApprovalPacketError}
+            packet={partialFillApprovalPacket}
+          />
+
+          <CommandPartialFillRuntimeExecutionHandoffBundlePanel
+            bundle={partialFillHandoffBundle}
+            error={partialFillHandoffBundleError}
+          />
+
+          <CommandRuntimeExecutionGapAuditPanel
+            audit={runtimeExecutionGapAudit}
+            error={runtimeExecutionGapAuditError}
+          />
+
+          <CommandPartialFillOwnerRepairApprovalPacketPanel
+            error={partialFillOwnerRepairApprovalPacketError}
+            packet={partialFillOwnerRepairApprovalPacket}
+          />
+
+          <CommandPartialFillRemainingAcceptanceStatePanel
+            error={partialFillRemainingAcceptanceStateError}
+            state={partialFillRemainingAcceptanceState}
+          />
+
+          <CommandPartialFillOwnerRepairImplementationPlanPanel
+            error={partialFillOwnerRepairPlanError}
+            plan={partialFillOwnerRepairPlan}
+          />
+
+          <CommandPartialFillOwnerRepairEvidenceIngestGatePanel
+            error={partialFillOwnerRepairIngestGateError}
+            gate={partialFillOwnerRepairIngestGate}
+          />
+
+          <CommandPartialFillOwnerRepairEvidenceIngestAuditPanel
+            audit={partialFillOwnerRepairIngestAudit}
+            error={partialFillOwnerRepairIngestAuditError}
+          />
+
+          <CommandPartialFillPostRepairRuntimeRetryApprovalPacketPanel
+            error={partialFillPostRepairRuntimeRetryPacketError}
+            packet={partialFillPostRepairRuntimeRetryPacket}
+          />
+
+          <CommandPartialFillPostRepairRuntimeAttemptAuditPanel
+            audit={partialFillPostRepairRuntimeAttemptAudit}
+            error={partialFillPostRepairRuntimeAttemptAuditError}
+          />
+
+          <CommandPartialFillOwnerRepairPreflightSourceAuditPanel
+            audit={partialFillOwnerRepairPreflight}
+            error={partialFillOwnerRepairPreflightError}
+          />
+
+          <CommandPartialFillOwnerRepairPatchPreviewPanel
+            error={partialFillOwnerRepairPatchPreviewError}
+            preview={partialFillOwnerRepairPatchPreview}
+          />
+
+          <CommandPartialFillOwnerRepairExecutionHandoffPanel
+            bundle={partialFillOwnerRepairExecutionHandoff}
+            error={partialFillOwnerRepairExecutionHandoffError}
+          />
+
+          <CommandRuntimeCloseoutPanel closeout={runtimeCloseout} error={runtimeCloseoutError} />
+
+          <CommandStatusPanel status={commandStatus} />
 
           <section className="terminal-panel" data-testid="account-summary-boundary-list">
             <div className="terminal-panel-header">
@@ -1971,8 +3045,12 @@ function AccountSummaryPanel({
         <div className="drawer-section">
           <h3>Source Refs</h3>
           <div className="evidence-stack">
-            {fixture.source_refs.map((source) => (
-              <article className="evidence-item" data-testid="account-summary-source-ref" key={source.checksum}>
+            {fixture.source_refs.map((source, index) => (
+              <article
+                className="evidence-item"
+                data-testid="account-summary-source-ref"
+                key={`${source.checksum}-${index}`}
+              >
                 <strong>{formatLabel(source.kind)}</strong>
                 <dl className="detail-list">
                   <div>
@@ -2117,7 +3195,7 @@ function AccountOrdersPanel({
           {fixture.orders.length > 0 ? (
             <div className="order-list">
               {fixture.orders.map((order) => (
-                <OrderRowCard order={order} key={order.checksum} />
+                <OrderRowCard order={order} key={`${order.source_ref}-${order.client_order_id}`} />
               ))}
             </div>
           ) : (
@@ -2984,12 +4062,15 @@ function OrderRowCard({ order }: { order: AccountOrderRow }) {
     <article className="order-card" data-testid="account-order-row">
       <div className="order-card-head">
         <div>
-          <strong>{order.client_order_id}</strong>
+          <strong data-testid="tws-open-order-client-order-id">{order.client_order_id}</strong>
           <span>
-            {order.instrument} · {order.side} · {order.offset}
+            <span data-testid="tws-open-order-instrument">{order.instrument}</span> ·{" "}
+            <span data-testid="tws-open-order-side">{order.side}</span> · {order.offset}
           </span>
         </div>
-        <StateBadge value={order.status} />
+        <span data-testid="tws-open-order-status">
+          <StateBadge value={order.status} />
+        </span>
       </div>
       <dl className="detail-list two-column">
         <div>
@@ -2998,26 +4079,36 @@ function OrderRowCard({ order }: { order: AccountOrderRow }) {
         </div>
         <div>
           <dt>Limit</dt>
-          <dd>{order.limit_price ?? "missing"}</dd>
+          <dd data-testid="tws-open-order-limit-price">{order.limit_price ?? "missing"}</dd>
         </div>
         <div>
           <dt>Quantity</dt>
-          <dd>{order.quantity ?? "missing"}</dd>
+          <dd data-testid="tws-open-order-quantity">{order.quantity ?? "missing"}</dd>
         </div>
         <div>
           <dt>Filled</dt>
-          <dd>{order.filled_quantity ?? "missing"}</dd>
+          <dd data-testid="tws-open-order-filled">{order.filled_quantity ?? "missing"}</dd>
         </div>
         <div>
           <dt>Remaining</dt>
-          <dd>{order.remaining_quantity ?? "missing"}</dd>
+          <dd data-testid="tws-open-order-remaining">{order.remaining_quantity ?? "missing"}</dd>
+        </div>
+        <div>
+          <dt>TIF</dt>
+          <dd data-testid="tws-open-order-time-in-force">{order.time_in_force ?? "missing"}</dd>
+        </div>
+        <div>
+          <dt>Destination</dt>
+          <dd data-testid="tws-open-order-destination">{order.destination ?? "missing"}</dd>
         </div>
         <div>
           <dt>Lifecycle ref</dt>
           <dd>{order.lifecycle_ref ? <CopyableCode label="lifecycle ref" value={order.lifecycle_ref} /> : "missing"}</dd>
         </div>
       </dl>
-      <CopyableCode label="order source ref" value={order.source_ref} />
+      <span data-testid="tws-open-order-source-ref">
+        <CopyableCode label="order source ref" value={order.source_ref} />
+      </span>
     </article>
   );
 }
@@ -3638,6 +4729,1905 @@ function SelectFilter({
         ))}
       </select>
     </label>
+  );
+}
+
+function CommandRuntimeRunRequestPanel({
+  request,
+  error
+}: {
+  request: CommandRuntimeRunRequest | null;
+  error: string | null;
+}) {
+  return (
+    <section className="terminal-panel" data-testid="account-runtime-handoff-panel">
+      <div className="terminal-panel-header">
+        <h3>Runtime Handoff</h3>
+        <StateBadge value={request ? "blocked" : error ? "blocked" : "empty"} />
+      </div>
+      {request ? (
+        <div className="evidence-stack compact-evidence-stack">
+          <div className="evidence-item">
+            <strong>Action</strong>
+            <span data-testid="account-runtime-handoff-action">{request.action}</span>
+          </div>
+          <div className="evidence-item">
+            <strong>Status</strong>
+            <span data-testid="account-runtime-handoff-status">{request.status}</span>
+          </div>
+          <div className="evidence-item">
+            <strong>Entrypoint</strong>
+            <span data-testid="account-runtime-handoff-entrypoint">{request.owner_runtime_entrypoint_ref}</span>
+          </div>
+          <div className="evidence-item">
+            <strong>Config</strong>
+            <span data-testid="account-runtime-handoff-config-ref">{request.owner_runtime_config_ref}</span>
+          </div>
+          <div className="evidence-item">
+            <strong>Preflight</strong>
+            <CopyableCode label="runtime handoff preflight" value={request.source_preflight_ref} />
+          </div>
+          {request.readback_ref ? (
+            <div className="evidence-item">
+              <strong>Readback</strong>
+              <span data-testid="account-runtime-handoff-readback-ref">{request.readback_ref}</span>
+            </div>
+          ) : null}
+          <div className="evidence-item">
+            <strong>Checksum</strong>
+            <span data-testid="account-runtime-handoff-checksum">{request.run_request_checksum}</span>
+          </div>
+          <div className="evidence-item">
+            <strong>Runtime invoked</strong>
+            <span data-testid="account-runtime-handoff-invoked">
+              {String(request.runtime_invocation_attempted)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Browser trigger</strong>
+            <span data-testid="account-runtime-handoff-web-trigger">
+              {String(request.browser_triggered_broker_order)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Raw secrets</strong>
+            <span data-testid="account-runtime-handoff-raw-secret">
+              {String(request.raw_secret_values_recorded)}
+            </span>
+          </div>
+          {request.blockers.map((blocker) => (
+            <div className="evidence-item" data-testid="account-runtime-handoff-blocker" key={blocker.blocker_id}>
+              <strong>{blocker.type}</strong>
+              <span>{blocker.next_action}</span>
+            </div>
+          ))}
+          {request.explicit_non_claims.map((claim) => (
+            <div className="evidence-item" data-testid="account-runtime-handoff-non-claim" key={claim}>
+              <strong>Non-claim</strong>
+              <span>{claim}</span>
+            </div>
+          ))}
+        </div>
+      ) : error ? (
+        <div className="state-callout blocked" data-testid="account-runtime-handoff-error">
+          {error}
+        </div>
+      ) : (
+        <p className="muted">No owner-runtime handoff request has been prepared from this browser session.</p>
+      )}
+    </section>
+  );
+}
+
+function CommandRuntimeInvocationReadinessPanel({
+  readiness,
+  error
+}: {
+  readiness: CommandRuntimeInvocationReadiness | null;
+  error: string | null;
+}) {
+  return (
+    <section className="terminal-panel" data-testid="account-runtime-readiness-panel">
+      <div className="terminal-panel-header">
+        <h3>Runtime Readiness</h3>
+        <StateBadge value={readiness ? "blocked" : error ? "blocked" : "empty"} />
+      </div>
+      {readiness ? (
+        <div className="evidence-stack compact-evidence-stack">
+          <div className="evidence-item">
+            <strong>Status</strong>
+            <span data-testid="account-runtime-readiness-status">{readiness.status}</span>
+          </div>
+          <div className="evidence-item">
+            <strong>Owner</strong>
+            <span data-testid="account-runtime-readiness-owner">{readiness.owner_runtime.owner_ref}</span>
+          </div>
+          <div className="evidence-item">
+            <strong>Repo</strong>
+            <span data-testid="account-runtime-readiness-owner-path">{readiness.owner_runtime.owner_repo_path}</span>
+          </div>
+          <div className="evidence-item">
+            <strong>Config</strong>
+            <span data-testid="account-runtime-readiness-config-ref">{readiness.owner_runtime.config_ref}</span>
+          </div>
+          <div className="evidence-item">
+            <strong>Config raw read</strong>
+            <span data-testid="account-runtime-readiness-config-raw">
+              {String(readiness.owner_runtime.config_raw_content_read)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Approval required</strong>
+            <span data-testid="account-runtime-readiness-approval-required">
+              {String(readiness.external_write_approval_request.required)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Approval obtained</strong>
+            <span data-testid="account-runtime-readiness-approval-obtained">
+              {String(readiness.external_write_approval_request.obtained)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Runtime invoked</strong>
+            <span data-testid="account-runtime-readiness-invoked">
+              {String(readiness.negative_assertions.runtime_invocation_attempted)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Owner write</strong>
+            <span data-testid="account-runtime-readiness-owner-write">
+              {String(readiness.negative_assertions.owner_repo_write_attempted)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Browser trigger</strong>
+            <span data-testid="account-runtime-readiness-browser-trigger">
+              {String(readiness.negative_assertions.browser_triggered_broker_order)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Raw secrets</strong>
+            <span data-testid="account-runtime-readiness-raw-secret">
+              {String(readiness.negative_assertions.raw_secret_values_recorded)}
+            </span>
+          </div>
+          {readiness.entrypoints.map((entrypoint) => (
+            <div className="evidence-item" data-testid="account-runtime-readiness-entrypoint" key={entrypoint.action}>
+              <strong>{entrypoint.action}</strong>
+              <span>
+                {entrypoint.entrypoint_ref} / {entrypoint.armed_flag}
+              </span>
+            </div>
+          ))}
+          {readiness.blockers.map((blocker) => (
+            <div className="evidence-item" data-testid="account-runtime-readiness-blocker" key={blocker.blocker_id}>
+              <strong>{blocker.type}</strong>
+              <span>{blocker.next_action}</span>
+            </div>
+          ))}
+          {readiness.explicit_non_claims.map((claim) => (
+            <div className="evidence-item" data-testid="account-runtime-readiness-non-claim" key={claim}>
+              <strong>Non-claim</strong>
+              <span>{claim}</span>
+            </div>
+          ))}
+        </div>
+      ) : error ? (
+        <div className="state-callout blocked" data-testid="account-runtime-readiness-error">
+          {error}
+        </div>
+      ) : (
+        <p className="muted">No owner-runtime invocation readiness evidence is mounted for this account.</p>
+      )}
+    </section>
+  );
+}
+
+function CommandRuntimeExecutionApprovalPacketPanel({
+  packet,
+  error
+}: {
+  packet: CommandRuntimeExecutionApprovalPacket | null;
+  error: string | null;
+}) {
+  return (
+    <section className="terminal-panel" data-testid="account-runtime-approval-packet-panel">
+      <div className="terminal-panel-header">
+        <h3>Runtime Approval</h3>
+        <StateBadge value={packet ? "blocked" : error ? "blocked" : "empty"} />
+      </div>
+      {packet ? (
+        <div className="evidence-stack compact-evidence-stack">
+          <div className="evidence-item">
+            <strong>Status</strong>
+            <span data-testid="account-runtime-approval-packet-status">{packet.status}</span>
+          </div>
+          <div className="evidence-item">
+            <strong>Verdict</strong>
+            <span data-testid="account-runtime-approval-packet-verdict">{packet.verdict}</span>
+          </div>
+          <div className="evidence-item">
+            <strong>Owner path</strong>
+            <span data-testid="account-runtime-approval-packet-owner-path">
+              {packet.required_operator_approval.approval_path}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Approval required</strong>
+            <span data-testid="account-runtime-approval-packet-required">
+              {String(packet.required_operator_approval.required)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Approval obtained</strong>
+            <span data-testid="account-runtime-approval-packet-obtained">
+              {String(packet.required_operator_approval.obtained)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Runtime invoked</strong>
+            <span data-testid="account-runtime-approval-packet-invoked">
+              {String(packet.negative_assertions.runtime_invocation_attempted)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Owner write</strong>
+            <span data-testid="account-runtime-approval-packet-owner-write">
+              {String(packet.negative_assertions.owner_repo_write_attempted)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Broker order</strong>
+            <span data-testid="account-runtime-approval-packet-broker-order">
+              {String(packet.negative_assertions.broker_order_created)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Approval text</strong>
+            <span data-testid="account-runtime-approval-packet-exact-text">
+              {packet.required_operator_approval.exact_approval_text}
+            </span>
+          </div>
+          {packet.entrypoints.map((entrypoint) => (
+            <div
+              className="evidence-item"
+              data-testid="account-runtime-approval-packet-entrypoint"
+              key={entrypoint.action}
+            >
+              <strong>{entrypoint.action}</strong>
+              <span>
+                {entrypoint.entrypoint_ref} / {entrypoint.armed_flag}
+              </span>
+            </div>
+          ))}
+          {packet.blockers.map((blocker) => (
+            <div
+              className="evidence-item"
+              data-testid="account-runtime-approval-packet-blocker"
+              key={blocker.blocker_id}
+            >
+              <strong>{blocker.type}</strong>
+              <span>{blocker.next_action}</span>
+            </div>
+          ))}
+        </div>
+      ) : error ? (
+        <div className="state-callout blocked" data-testid="account-runtime-approval-packet-error">
+          {error}
+        </div>
+      ) : (
+        <p className="muted">No owner-runtime execution approval packet is mounted for this account.</p>
+      )}
+    </section>
+  );
+}
+
+function CommandRuntimeExecutionHandoffBundlePanel({
+  bundle,
+  error
+}: {
+  bundle: CommandRuntimeExecutionHandoffBundle | null;
+  error: string | null;
+}) {
+  return (
+    <section className="terminal-panel" data-testid="account-runtime-handoff-bundle-panel">
+      <div className="terminal-panel-header">
+        <h3>Runtime Bundle</h3>
+        <StateBadge value={bundle ? "blocked" : error ? "blocked" : "empty"} />
+      </div>
+      {bundle ? (
+        <div className="evidence-stack compact-evidence-stack">
+          <div className="evidence-item">
+            <strong>Status</strong>
+            <span data-testid="account-runtime-handoff-bundle-status">{bundle.status}</span>
+          </div>
+          <div className="evidence-item">
+            <strong>Verdict</strong>
+            <span data-testid="account-runtime-handoff-bundle-verdict">{bundle.verdict}</span>
+          </div>
+          <div className="evidence-item">
+            <strong>Execution allowed</strong>
+            <span data-testid="account-runtime-handoff-bundle-execution-allowed">
+              {String(bundle.execution_guard.execution_allowed)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Approval obtained</strong>
+            <span data-testid="account-runtime-handoff-bundle-approval-obtained">
+              {String(bundle.execution_guard.approval_obtained)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Runtime invoked</strong>
+            <span data-testid="account-runtime-handoff-bundle-invoked">
+              {String(bundle.negative_assertions.runtime_invocation_attempted)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Owner write</strong>
+            <span data-testid="account-runtime-handoff-bundle-owner-write">
+              {String(bundle.negative_assertions.owner_repo_write_attempted)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Broker order</strong>
+            <span data-testid="account-runtime-handoff-bundle-broker-order">
+              {String(bundle.negative_assertions.broker_order_created)}
+            </span>
+          </div>
+          {bundle.runtime_input_requirements.map((item) => (
+            <div
+              className="evidence-item"
+              data-testid="account-runtime-handoff-bundle-input"
+              key={item.field}
+            >
+              <strong>{item.field}</strong>
+              <span>{item.reason}</span>
+            </div>
+          ))}
+          {bundle.operator_sequence.map((item) => (
+            <div
+              className="evidence-item"
+              data-testid="account-runtime-handoff-bundle-step"
+              key={item.step}
+            >
+              <strong>{item.step}</strong>
+              <span>
+                {item.action}
+                {item.armed_flag ? ` / ${item.armed_flag}` : ""}
+              </span>
+            </div>
+          ))}
+          <div className="evidence-item">
+            <strong>Artifacts</strong>
+            <span data-testid="account-runtime-handoff-bundle-artifact-count">
+              {bundle.required_owner_artifacts.length}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Gates</strong>
+            <span data-testid="account-runtime-handoff-bundle-gate-count">
+              {bundle.post_handoff_gates.length}
+            </span>
+          </div>
+          {bundle.blockers.map((blocker) => (
+            <div
+              className="evidence-item"
+              data-testid="account-runtime-handoff-bundle-blocker"
+              key={blocker.blocker_id}
+            >
+              <strong>{blocker.type}</strong>
+              <span>{blocker.next_action}</span>
+            </div>
+          ))}
+        </div>
+      ) : error ? (
+        <div className="state-callout blocked" data-testid="account-runtime-handoff-bundle-error">
+          {error}
+        </div>
+      ) : (
+        <p className="muted">No owner-runtime execution handoff bundle is mounted for this account.</p>
+      )}
+    </section>
+  );
+}
+
+function CommandPartialFillRuntimeExecutionApprovalPacketPanel({
+  packet,
+  error
+}: {
+  packet: CommandPartialFillRuntimeExecutionApprovalPacket | null;
+  error: string | null;
+}) {
+  return (
+    <section className="terminal-panel" data-testid="account-partial-fill-runtime-approval-packet-panel">
+      <div className="terminal-panel-header">
+        <h3>Partial Fill Approval</h3>
+        <StateBadge value={packet ? "blocked" : error ? "blocked" : "empty"} />
+      </div>
+      {packet ? (
+        <div className="evidence-stack compact-evidence-stack">
+          <div className="evidence-item">
+            <strong>Status</strong>
+            <span data-testid="account-partial-fill-runtime-approval-packet-status">{packet.status}</span>
+          </div>
+          <div className="evidence-item">
+            <strong>Verdict</strong>
+            <span data-testid="account-partial-fill-runtime-approval-packet-verdict">{packet.verdict}</span>
+          </div>
+          <div className="evidence-item">
+            <strong>Owner path</strong>
+            <span data-testid="account-partial-fill-runtime-approval-packet-owner-path">
+              {packet.required_operator_approval.approval_path}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Approval required</strong>
+            <span data-testid="account-partial-fill-runtime-approval-packet-required">
+              {String(packet.required_operator_approval.required)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Approval obtained</strong>
+            <span data-testid="account-partial-fill-runtime-approval-packet-obtained">
+              {String(packet.required_operator_approval.obtained)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Runtime invoked</strong>
+            <span data-testid="account-partial-fill-runtime-approval-packet-invoked">
+              {String(packet.negative_assertions.runtime_invocation_attempted)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Owner write</strong>
+            <span data-testid="account-partial-fill-runtime-approval-packet-owner-write">
+              {String(packet.negative_assertions.owner_repo_write_attempted)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>New order</strong>
+            <span data-testid="account-partial-fill-runtime-approval-packet-new-order">
+              {String(packet.negative_assertions.new_order_submitted)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Cancel sent</strong>
+            <span data-testid="account-partial-fill-runtime-approval-packet-cancel-sent">
+              {String(packet.negative_assertions.cancel_sent)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Approval text</strong>
+            <span data-testid="account-partial-fill-runtime-approval-packet-exact-text">
+              {packet.required_operator_approval.exact_approval_text}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Partial formula</strong>
+            <span data-testid="account-partial-fill-runtime-approval-packet-formula">
+              {packet.attempt_constraints.partial_fill_success_formula}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Cancel formula</strong>
+            <span data-testid="account-partial-fill-runtime-approval-packet-formula">
+              {packet.attempt_constraints.terminal_cancel_success_formula}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Remaining formula</strong>
+            <span data-testid="account-partial-fill-runtime-approval-packet-formula">
+              {packet.attempt_constraints.post_cancel_remaining_quantity_formula}
+            </span>
+          </div>
+          {packet.entrypoints.map((entrypoint) => (
+            <div
+              className="evidence-item"
+              data-testid="account-partial-fill-runtime-approval-packet-entrypoint"
+              key={entrypoint.action}
+            >
+              <strong>{entrypoint.action}</strong>
+              <span>
+                {entrypoint.entrypoint_ref} / {entrypoint.armed_flag}
+              </span>
+            </div>
+          ))}
+          {packet.blockers.map((blocker) => (
+            <div
+              className="evidence-item"
+              data-testid="account-partial-fill-runtime-approval-packet-blocker"
+              key={blocker.blocker_id}
+            >
+              <strong>{blocker.type}</strong>
+              <span>{blocker.next_action}</span>
+            </div>
+          ))}
+        </div>
+      ) : error ? (
+        <div className="state-callout blocked" data-testid="account-partial-fill-runtime-approval-packet-error">
+          {error}
+        </div>
+      ) : (
+        <p className="muted">No partial-fill runtime execution approval packet is mounted for this account.</p>
+      )}
+    </section>
+  );
+}
+
+function CommandPartialFillRuntimeExecutionHandoffBundlePanel({
+  bundle,
+  error
+}: {
+  bundle: CommandPartialFillRuntimeExecutionHandoffBundle | null;
+  error: string | null;
+}) {
+  return (
+    <section className="terminal-panel" data-testid="account-partial-fill-runtime-handoff-bundle-panel">
+      <div className="terminal-panel-header">
+        <h3>Partial Fill Bundle</h3>
+        <StateBadge value={bundle ? "blocked" : error ? "blocked" : "empty"} />
+      </div>
+      {bundle ? (
+        <div className="evidence-stack compact-evidence-stack">
+          <div className="evidence-item">
+            <strong>Status</strong>
+            <span data-testid="account-partial-fill-runtime-handoff-bundle-status">{bundle.status}</span>
+          </div>
+          <div className="evidence-item">
+            <strong>Verdict</strong>
+            <span data-testid="account-partial-fill-runtime-handoff-bundle-verdict">{bundle.verdict}</span>
+          </div>
+          <div className="evidence-item">
+            <strong>Execution allowed</strong>
+            <span data-testid="account-partial-fill-runtime-handoff-bundle-execution-allowed">
+              {String(bundle.execution_guard.execution_allowed)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Approval obtained</strong>
+            <span data-testid="account-partial-fill-runtime-handoff-bundle-approval-obtained">
+              {String(bundle.execution_guard.approval_obtained)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Runtime invoked</strong>
+            <span data-testid="account-partial-fill-runtime-handoff-bundle-invoked">
+              {String(bundle.negative_assertions.runtime_invocation_attempted)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Owner write</strong>
+            <span data-testid="account-partial-fill-runtime-handoff-bundle-owner-write">
+              {String(bundle.negative_assertions.owner_repo_write_attempted)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>New order</strong>
+            <span data-testid="account-partial-fill-runtime-handoff-bundle-new-order">
+              {String(bundle.negative_assertions.new_order_submitted)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Cancel sent</strong>
+            <span data-testid="account-partial-fill-runtime-handoff-bundle-cancel-sent">
+              {String(bundle.negative_assertions.cancel_sent)}
+            </span>
+          </div>
+          {bundle.runtime_input_requirements.map((item) => (
+            <div
+              className="evidence-item"
+              data-testid="account-partial-fill-runtime-handoff-bundle-input"
+              key={item.field}
+            >
+              <strong>{item.field}</strong>
+              <span>{item.reason}</span>
+            </div>
+          ))}
+          {bundle.operator_sequence.map((item) => (
+            <div
+              className="evidence-item"
+              data-testid="account-partial-fill-runtime-handoff-bundle-step"
+              key={item.step}
+            >
+              <strong>{item.step}</strong>
+              <span>
+                {item.action}
+                {item.armed_flag ? ` / ${item.armed_flag}` : ""}
+              </span>
+            </div>
+          ))}
+          {bundle.success_criteria.non_ui_runtime.map((criterion) => (
+            <div
+              className="evidence-item"
+              data-testid="account-partial-fill-runtime-handoff-bundle-success"
+              key={`non-ui-${criterion}`}
+            >
+              <strong>Non-UI</strong>
+              <span>{criterion}</span>
+            </div>
+          ))}
+          {bundle.success_criteria.web_ui_runtime.map((criterion) => (
+            <div
+              className="evidence-item"
+              data-testid="account-partial-fill-runtime-handoff-bundle-success"
+              key={`web-ui-${criterion}`}
+            >
+              <strong>Web UI</strong>
+              <span>{criterion}</span>
+            </div>
+          ))}
+          {bundle.fallback_classifications.map((classification) => (
+            <div
+              className="evidence-item"
+              data-testid="account-partial-fill-runtime-handoff-bundle-fallback"
+              key={classification}
+            >
+              <strong>Fallback</strong>
+              <span>{classification}</span>
+            </div>
+          ))}
+        </div>
+      ) : error ? (
+        <div className="state-callout blocked" data-testid="account-partial-fill-runtime-handoff-bundle-error">
+          {error}
+        </div>
+      ) : (
+        <p className="muted">No partial-fill runtime execution handoff bundle is mounted for this account.</p>
+      )}
+    </section>
+  );
+}
+
+function CommandRuntimeExecutionGapAuditPanel({
+  audit,
+  error
+}: {
+  audit: CommandRuntimeExecutionGapAudit | null;
+  error: string | null;
+}) {
+  const a4 = audit?.not_accepted_scenarios.find((scenario) => scenario.id === "A4");
+  return (
+    <section className="terminal-panel" data-testid="account-runtime-execution-gap-panel">
+      <div className="terminal-panel-header">
+        <h3>Acceptance Gap</h3>
+        <StateBadge value={audit ? "blocked" : error ? "blocked" : "empty"} />
+      </div>
+      {audit ? (
+        <div className="evidence-stack compact-evidence-stack">
+          <div className="evidence-item">
+            <strong>Status</strong>
+            <span data-testid="account-runtime-execution-gap-status">{audit.status}</span>
+          </div>
+          <div className="evidence-item">
+            <strong>Verdict</strong>
+            <span data-testid="account-runtime-execution-gap-verdict">{audit.verdict}</span>
+          </div>
+          <div className="evidence-item">
+            <strong>Final claimed</strong>
+            <span data-testid="account-runtime-execution-gap-final-claimed">
+              {String(audit.negative_assertions.final_acceptance_claimed)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Accepted scenarios</strong>
+            <span data-testid="account-runtime-execution-gap-accepted-count">
+              {audit.accepted_scenarios.length}
+            </span>
+          </div>
+          {a4 ? (
+            <div className="evidence-item" data-testid="account-runtime-execution-gap-not-accepted">
+              <strong>{a4.id}</strong>
+              <span>
+                {a4.current_status} / {a4.required_evidence_shape}
+              </span>
+            </div>
+          ) : null}
+          <div className="evidence-item">
+            <strong>Approval obtained</strong>
+            <span data-testid="account-runtime-execution-gap-approval-obtained">
+              {String(audit.external_write_approval.obtained)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Approval path</strong>
+            <span data-testid="account-runtime-execution-gap-approval-path">
+              {audit.external_write_approval.approval_path}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Runtime invoked</strong>
+            <span data-testid="account-runtime-execution-gap-invoked">
+              {String(audit.negative_assertions.runtime_invocation_attempted)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Owner write</strong>
+            <span data-testid="account-runtime-execution-gap-owner-write">
+              {String(audit.negative_assertions.owner_repo_write_attempted)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Broker order</strong>
+            <span data-testid="account-runtime-execution-gap-broker-order">
+              {String(audit.negative_assertions.broker_order_created)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Artifacts</strong>
+            <span data-testid="account-runtime-execution-gap-artifact-count">
+              {audit.required_owner_artifacts.length}
+            </span>
+          </div>
+          {audit.required_before_goal_complete.map((item) => (
+            <div className="evidence-item" data-testid="account-runtime-execution-gap-required" key={item}>
+              <strong>{item}</strong>
+              <span>required before all acceptance</span>
+            </div>
+          ))}
+          {audit.residual_blockers.map((blocker) => (
+            <div
+              className="evidence-item"
+              data-testid="account-runtime-execution-gap-blocker"
+              key={blocker.blocker_id}
+            >
+              <strong>{blocker.type}</strong>
+              <span>{blocker.next_action}</span>
+            </div>
+          ))}
+        </div>
+      ) : error ? (
+        <div className="state-callout blocked" data-testid="account-runtime-execution-gap-error">
+          {error}
+        </div>
+      ) : (
+        <p className="muted">No runtime execution gap audit is mounted for this account.</p>
+      )}
+    </section>
+  );
+}
+
+function CommandPartialFillOwnerRepairApprovalPacketPanel({
+  packet,
+  error
+}: {
+  packet: CommandPartialFillOwnerRepairApprovalPacket | null;
+  error: string | null;
+}) {
+  return (
+    <section className="terminal-panel" data-testid="account-partial-fill-owner-repair-approval-packet-panel">
+      <div className="terminal-panel-header">
+        <h3>Owner Repair Approval Packet</h3>
+        <StateBadge value={packet ? "blocked" : error ? "blocked" : "empty"} />
+      </div>
+      {packet ? (
+        <div className="evidence-stack compact-evidence-stack">
+          <div className="evidence-item">
+            <strong>Status</strong>
+            <span data-testid="account-partial-fill-owner-repair-approval-packet-status">{packet.status}</span>
+          </div>
+          <div className="evidence-item">
+            <strong>Verdict</strong>
+            <span data-testid="account-partial-fill-owner-repair-approval-packet-verdict">{packet.verdict}</span>
+          </div>
+          <div className="evidence-item">
+            <strong>Owner path</strong>
+            <span data-testid="account-partial-fill-owner-repair-approval-packet-owner-path">
+              {packet.required_owner_repair_approval.approval_path}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Approval obtained</strong>
+            <span data-testid="account-partial-fill-owner-repair-approval-packet-obtained">
+              {String(packet.required_owner_repair_approval.obtained)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Current approval matches</strong>
+            <span data-testid="account-partial-fill-owner-repair-approval-packet-current-matches">
+              {String(packet.current_thread_approval_assessment.matches_current_next_action)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Runtime retry</strong>
+            <span data-testid="account-partial-fill-owner-repair-approval-packet-runtime-retry">
+              {String(packet.retry_gate.runtime_invocation_allowed)}
+            </span>
+          </div>
+          <div className="evidence-item" data-testid="account-partial-fill-owner-repair-approval-packet-exact-text">
+            <strong>Exact approval</strong>
+            <span>{packet.required_owner_repair_approval.exact_approval_text_required}</span>
+          </div>
+          {packet.required_owner_repair_scope.expected_owner_changes.map((change) => (
+            <div
+              className="evidence-item"
+              data-testid="account-partial-fill-owner-repair-approval-packet-change"
+              key={change}
+            >
+              <strong>Owner change</strong>
+              <span>{change}</span>
+            </div>
+          ))}
+          {packet.required_owner_repair_scope.required_owner_validators_before_retry.map((validator) => (
+            <div
+              className="evidence-item"
+              data-testid="account-partial-fill-owner-repair-approval-packet-validator"
+              key={validator}
+            >
+              <strong>Validator</strong>
+              <span>{validator}</span>
+            </div>
+          ))}
+          {packet.residual_blockers.map((blocker) => (
+            <div
+              className="evidence-item"
+              data-testid="account-partial-fill-owner-repair-approval-packet-blocker"
+              key={blocker.blocker_id}
+            >
+              <strong>{blocker.type}</strong>
+              <span>{blocker.next_action}</span>
+            </div>
+          ))}
+          <div className="evidence-item">
+            <strong>Owner write</strong>
+            <span data-testid="account-partial-fill-owner-repair-approval-packet-owner-write">
+              {String(packet.negative_assertions.owner_repo_write_attempted_by_this_packet)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Additional order</strong>
+            <span data-testid="account-partial-fill-owner-repair-approval-packet-additional-order">
+              {String(packet.negative_assertions.additional_order_authorized)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Partial-fill claimed</strong>
+            <span data-testid="account-partial-fill-owner-repair-approval-packet-partial-claimed">
+              {String(packet.negative_assertions.partial_fill_claimed)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Full claimed</strong>
+            <span data-testid="account-partial-fill-owner-repair-approval-packet-full-claimed">
+              {String(packet.negative_assertions.full_acceptance_claimed)}
+            </span>
+          </div>
+        </div>
+      ) : error ? (
+        <div className="state-callout blocked" data-testid="account-partial-fill-owner-repair-approval-packet-error">
+          {error}
+        </div>
+      ) : (
+        <p className="muted">No partial-fill owner repair approval packet is mounted for this account.</p>
+      )}
+    </section>
+  );
+}
+
+function CommandPartialFillRemainingAcceptanceStatePanel({
+  state,
+  error
+}: {
+  state: CommandPartialFillRemainingAcceptanceCurrentState | null;
+  error: string | null;
+}) {
+  return (
+    <section className="terminal-panel" data-testid="account-partial-fill-remaining-acceptance-panel">
+      <div className="terminal-panel-header">
+        <h3>Remaining Acceptance</h3>
+        <StateBadge value={state ? "blocked" : error ? "blocked" : "empty"} />
+      </div>
+      {state ? (
+        <div className="evidence-stack compact-evidence-stack">
+          <div className="evidence-item">
+            <strong>Status</strong>
+            <span data-testid="account-partial-fill-remaining-acceptance-status">{state.status}</span>
+          </div>
+          <div className="evidence-item">
+            <strong>Verdict</strong>
+            <span data-testid="account-partial-fill-remaining-acceptance-verdict">{state.verdict}</span>
+          </div>
+          <div className="evidence-item">
+            <strong>Full claimed</strong>
+            <span data-testid="account-partial-fill-remaining-acceptance-full-claimed">
+              {String(state.negative_assertions.full_acceptance_claimed)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Owner repair allowed</strong>
+            <span data-testid="account-partial-fill-remaining-acceptance-owner-repair-allowed">
+              {String(state.next_authorized_action.owner_code_repair_allowed)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Runtime retry allowed</strong>
+            <span data-testid="account-partial-fill-remaining-acceptance-runtime-retry">
+              {String(state.next_authorized_action.owner_runtime_retry_allowed)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Latest attempt</strong>
+            <span data-testid="account-partial-fill-remaining-acceptance-latest-attempt">
+              {state.current_authoritative_state.latest_real_partial_fill_attempt_classification}
+            </span>
+          </div>
+          {state.remaining_acceptance_requirements.map((requirement) => (
+            <div
+              className="evidence-item"
+              data-testid="account-partial-fill-remaining-acceptance-requirement"
+              key={requirement.requirement_id}
+            >
+              <strong>{requirement.requirement_id}</strong>
+              <span>
+                {requirement.current_status} / {requirement.required_evidence_shape}
+              </span>
+            </div>
+          ))}
+          {state.accepted_evidence_groups.map((group) => (
+            <div
+              className="evidence-item"
+              data-testid="account-partial-fill-remaining-acceptance-evidence-group"
+              key={group.group_id}
+            >
+              <strong>{group.group_id}</strong>
+              <span>{group.status}</span>
+            </div>
+          ))}
+          <div className="evidence-item">
+            <strong>Real partial claimed</strong>
+            <span data-testid="account-partial-fill-remaining-acceptance-real-partial-claimed">
+              {String(state.negative_assertions.real_partial_fill_claimed)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Web UI real partial claimed</strong>
+            <span data-testid="account-partial-fill-remaining-acceptance-web-ui-claimed">
+              {String(state.negative_assertions.web_ui_real_partial_fill_claimed)}
+            </span>
+          </div>
+        </div>
+      ) : error ? (
+        <div className="state-callout blocked" data-testid="account-partial-fill-remaining-acceptance-error">
+          {error}
+        </div>
+      ) : (
+        <p className="muted">No partial-fill remaining acceptance state is mounted for this account.</p>
+      )}
+    </section>
+  );
+}
+
+function CommandPartialFillOwnerRepairImplementationPlanPanel({
+  plan,
+  error
+}: {
+  plan: CommandPartialFillOwnerRepairImplementationPlan | null;
+  error: string | null;
+}) {
+  return (
+    <section className="terminal-panel" data-testid="account-partial-fill-owner-repair-plan-panel">
+      <div className="terminal-panel-header">
+        <h3>Owner Repair Plan</h3>
+        <StateBadge value={plan ? "blocked" : error ? "blocked" : "empty"} />
+      </div>
+      {plan ? (
+        <div className="evidence-stack compact-evidence-stack">
+          <div className="evidence-item">
+            <strong>Status</strong>
+            <span data-testid="account-partial-fill-owner-repair-plan-status">{plan.status}</span>
+          </div>
+          <div className="evidence-item">
+            <strong>Verdict</strong>
+            <span data-testid="account-partial-fill-owner-repair-plan-verdict">{plan.verdict}</span>
+          </div>
+          <div className="evidence-item">
+            <strong>Owner path</strong>
+            <span data-testid="account-partial-fill-owner-repair-plan-owner-path">
+              {plan.owner_read_context.owner_repo_path}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Owner write</strong>
+            <span data-testid="account-partial-fill-owner-repair-plan-owner-write">
+              {String(plan.owner_read_context.owner_repo_write_attempted)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Runtime retry</strong>
+            <span data-testid="account-partial-fill-owner-repair-plan-runtime-retry">
+              {String(plan.post_repair_runtime_attempt_gate.runtime_attempt_allowed_by_this_plan)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Fresh approval</strong>
+            <span data-testid="account-partial-fill-owner-repair-plan-fresh-approval">
+              {String(plan.post_repair_runtime_attempt_gate.fresh_approval_required)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Success formula</strong>
+            <span data-testid="account-partial-fill-owner-repair-plan-success-formula">
+              {plan.post_repair_runtime_attempt_gate.success_formula}
+            </span>
+          </div>
+          {plan.owner_read_context.source_refs.map((source) => (
+            <div
+              className="evidence-item"
+              data-testid="account-partial-fill-owner-repair-plan-source"
+              key={source.source_id}
+            >
+              <strong>{source.symbol}</strong>
+              <span>{source.observed_current_behavior}</span>
+            </div>
+          ))}
+          {plan.planned_owner_changes_after_exact_approval.map((change) => (
+            <div
+              className="evidence-item"
+              data-testid="account-partial-fill-owner-repair-plan-change"
+              key={change.change_id}
+            >
+              <strong>{change.change_id}</strong>
+              <span>{change.implementation_shape}</span>
+            </div>
+          ))}
+          {plan.post_repair_validator_sequence.map((validator) => (
+            <div
+              className="evidence-item"
+              data-testid="account-partial-fill-owner-repair-plan-validator"
+              key={validator.stage}
+            >
+              <strong>{validator.stage}</strong>
+              <span>{validator.command}</span>
+            </div>
+          ))}
+          {plan.forbidden_repair_shapes.map((shape) => (
+            <div
+              className="evidence-item"
+              data-testid="account-partial-fill-owner-repair-plan-forbidden"
+              key={shape}
+            >
+              <strong>Forbidden</strong>
+              <span>{shape}</span>
+            </div>
+          ))}
+          <div className="evidence-item">
+            <strong>Partial fill claimed</strong>
+            <span data-testid="account-partial-fill-owner-repair-plan-partial-claimed">
+              {String(plan.negative_assertions.partial_fill_claimed)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Full acceptance claimed</strong>
+            <span data-testid="account-partial-fill-owner-repair-plan-full-claimed">
+              {String(plan.negative_assertions.full_acceptance_claimed)}
+            </span>
+          </div>
+        </div>
+      ) : error ? (
+        <div className="state-callout blocked" data-testid="account-partial-fill-owner-repair-plan-error">
+          {error}
+        </div>
+      ) : (
+        <p className="muted">No partial-fill owner repair plan is mounted for this account.</p>
+      )}
+    </section>
+  );
+}
+
+function CommandPartialFillOwnerRepairEvidenceIngestGatePanel({
+  gate,
+  error
+}: {
+  gate: CommandPartialFillOwnerRepairEvidenceIngestGate | null;
+  error: string | null;
+}) {
+  return (
+    <section className="terminal-panel" data-testid="account-partial-fill-owner-repair-ingest-gate-panel">
+      <div className="terminal-panel-header">
+        <h3>Repair Evidence Ingest</h3>
+        <StateBadge value={gate ? "blocked" : error ? "blocked" : "empty"} />
+      </div>
+      {gate ? (
+        <div className="evidence-stack compact-evidence-stack">
+          <div className="evidence-item">
+            <strong>Status</strong>
+            <span data-testid="account-partial-fill-owner-repair-ingest-gate-status">{gate.status}</span>
+          </div>
+          <div className="evidence-item">
+            <strong>Verdict</strong>
+            <span data-testid="account-partial-fill-owner-repair-ingest-gate-verdict">{gate.verdict}</span>
+          </div>
+          <div className="evidence-item">
+            <strong>Owner path</strong>
+            <span data-testid="account-partial-fill-owner-repair-ingest-gate-owner-path">
+              {gate.ingest_scope.owner_repo_path}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Runtime retry</strong>
+            <span data-testid="account-partial-fill-owner-repair-ingest-gate-runtime-retry">
+              {String(gate.ingest_scope.runtime_retry_allowed_by_ingest_gate)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Runtime evidence</strong>
+            <span data-testid="account-partial-fill-owner-repair-ingest-gate-runtime-evidence">
+              {String(gate.ingest_scope.accepts_owner_runtime_partial_fill_evidence)}
+            </span>
+          </div>
+          {gate.required_owner_repair_evidence.map((item) => (
+            <div
+              className="evidence-item"
+              data-testid="account-partial-fill-owner-repair-ingest-gate-required"
+              key={item.evidence_id}
+            >
+              <strong>{item.evidence_id}</strong>
+              <span>
+                {item.current_status} / {item.required_shape}
+              </span>
+            </div>
+          ))}
+          {gate.post_ingest_required_account_console_updates.map((item) => (
+            <div
+              className="evidence-item"
+              data-testid="account-partial-fill-owner-repair-ingest-gate-update"
+              key={item}
+            >
+              <strong>Update</strong>
+              <span>{item}</span>
+            </div>
+          ))}
+          {gate.reject_evidence_if.map((item) => (
+            <div
+              className="evidence-item"
+              data-testid="account-partial-fill-owner-repair-ingest-gate-reject"
+              key={item}
+            >
+              <strong>Reject</strong>
+              <span>{item}</span>
+            </div>
+          ))}
+          <div className="evidence-item">
+            <strong>Repair evidence</strong>
+            <span data-testid="account-partial-fill-owner-repair-ingest-gate-evidence-recorded">
+              {String(gate.negative_assertions.owner_repair_evidence_recorded)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Full acceptance</strong>
+            <span data-testid="account-partial-fill-owner-repair-ingest-gate-full-claimed">
+              {String(gate.negative_assertions.full_acceptance_claimed)}
+            </span>
+          </div>
+        </div>
+      ) : error ? (
+        <div className="state-callout blocked" data-testid="account-partial-fill-owner-repair-ingest-gate-error">
+          {error}
+        </div>
+      ) : (
+        <p className="muted">No partial-fill owner repair evidence ingest gate is mounted for this account.</p>
+      )}
+    </section>
+  );
+}
+
+function CommandPartialFillOwnerRepairEvidenceIngestAuditPanel({
+  audit,
+  error
+}: {
+  audit: CommandPartialFillOwnerRepairEvidenceIngestAudit | null;
+  error: string | null;
+}) {
+  return (
+    <section className="terminal-panel" data-testid="account-partial-fill-owner-repair-ingest-audit-panel">
+      <div className="terminal-panel-header">
+        <h3>Repair Evidence Ingested</h3>
+        <StateBadge value={audit ? "ready" : error ? "blocked" : "empty"} />
+      </div>
+      {audit ? (
+        <div className="evidence-stack compact-evidence-stack">
+          <div className="evidence-item">
+            <strong>Status</strong>
+            <span data-testid="account-partial-fill-owner-repair-ingest-audit-status">{audit.status}</span>
+          </div>
+          <div className="evidence-item">
+            <strong>Verdict</strong>
+            <span data-testid="account-partial-fill-owner-repair-ingest-audit-verdict">{audit.verdict}</span>
+          </div>
+          <div className="evidence-item">
+            <strong>Commit</strong>
+            <span data-testid="account-partial-fill-owner-repair-ingest-audit-commit">
+              {audit.owner_repair_evidence.owner_repair_commit_ref}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Owner path</strong>
+            <span data-testid="account-partial-fill-owner-repair-ingest-audit-owner-path">
+              {audit.owner_repair_evidence.owner_repo_path}
+            </span>
+          </div>
+          {audit.post_repair_source_checksums.map((item) => (
+            <div
+              className="evidence-item"
+              data-testid="account-partial-fill-owner-repair-ingest-audit-checksum"
+              key={item.path}
+            >
+              <strong>{item.required_symbol}</strong>
+              <span>{item.sha256}</span>
+            </div>
+          ))}
+          {audit.owner_validator_refs.map((item) => (
+            <div
+              className="evidence-item"
+              data-testid="account-partial-fill-owner-repair-ingest-audit-validator"
+              key={item.evidence_id}
+            >
+              <strong>{item.evidence_id}</strong>
+              <span>
+                exit {item.exit_code} / {item.stdout_tail}
+              </span>
+            </div>
+          ))}
+          <div className="evidence-item">
+            <strong>Repair evidence</strong>
+            <span data-testid="account-partial-fill-owner-repair-ingest-audit-evidence-recorded">
+              {String(audit.ingest_decision.owner_repair_evidence_recorded)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Runtime retry</strong>
+            <span data-testid="account-partial-fill-owner-repair-ingest-audit-runtime-retry">
+              {String(audit.ingest_decision.runtime_retry_authorized)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Real partial fill</strong>
+            <span data-testid="account-partial-fill-owner-repair-ingest-audit-real-partial">
+              {String(audit.negative_assertions.real_partial_fill_claimed)}
+            </span>
+          </div>
+        </div>
+      ) : error ? (
+        <div className="state-callout blocked" data-testid="account-partial-fill-owner-repair-ingest-audit-error">
+          {error}
+        </div>
+      ) : (
+        <p className="muted">No partial-fill owner repair evidence ingest audit is mounted for this account.</p>
+      )}
+    </section>
+  );
+}
+
+function CommandPartialFillPostRepairRuntimeRetryApprovalPacketPanel({
+  packet,
+  error
+}: {
+  packet: CommandPartialFillPostRepairRuntimeRetryApprovalPacket | null;
+  error: string | null;
+}) {
+  return (
+    <section className="terminal-panel" data-testid="account-partial-fill-post-repair-runtime-retry-packet-panel">
+      <div className="terminal-panel-header">
+        <h3>Post-Repair Runtime Retry</h3>
+        <StateBadge value={packet ? "ready" : error ? "blocked" : "empty"} />
+      </div>
+      {packet ? (
+        <div className="evidence-stack compact-evidence-stack">
+          <div className="evidence-item">
+            <strong>Status</strong>
+            <span data-testid="account-partial-fill-post-repair-runtime-retry-packet-status">{packet.status}</span>
+          </div>
+          <div className="evidence-item">
+            <strong>Verdict</strong>
+            <span data-testid="account-partial-fill-post-repair-runtime-retry-packet-verdict">{packet.verdict}</span>
+          </div>
+          <div className="evidence-item">
+            <strong>Authorized</strong>
+            <span data-testid="account-partial-fill-post-repair-runtime-retry-packet-authorized">
+              {String(packet.runtime_retry_guard.runtime_retry_authorized_by_packet)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Max attempts</strong>
+            <span data-testid="account-partial-fill-post-repair-runtime-retry-packet-max-attempts">
+              {packet.runtime_retry_guard.maximum_attempts}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Exposure reduction</strong>
+            <span data-testid="account-partial-fill-post-repair-runtime-retry-packet-exposure-reduction">
+              {String(packet.runtime_retry_guard.exposure_reduction_only)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Owner path</strong>
+            <span data-testid="account-partial-fill-post-repair-runtime-retry-packet-owner-path">
+              {packet.runtime_retry_guard.owner_repo_path}
+            </span>
+          </div>
+          {packet.required_runtime_evidence.map((item) => (
+            <div
+              className="evidence-item"
+              data-testid="account-partial-fill-post-repair-runtime-retry-packet-required"
+              key={item}
+            >
+              <strong>Runtime evidence</strong>
+              <span>{item}</span>
+            </div>
+          ))}
+          <div className="evidence-item">
+            <strong>Runtime invoked</strong>
+            <span data-testid="account-partial-fill-post-repair-runtime-retry-packet-invoked">
+              {String(packet.negative_assertions_before_runtime.owner_runtime_invocation_attempted_by_packet)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Real partial fill</strong>
+            <span data-testid="account-partial-fill-post-repair-runtime-retry-packet-real-partial">
+              {String(packet.negative_assertions_before_runtime.real_partial_fill_claimed)}
+            </span>
+          </div>
+        </div>
+      ) : error ? (
+        <div className="state-callout blocked" data-testid="account-partial-fill-post-repair-runtime-retry-packet-error">
+          {error}
+        </div>
+      ) : (
+        <p className="muted">No post-repair runtime retry approval packet is mounted for this account.</p>
+      )}
+    </section>
+  );
+}
+
+function CommandPartialFillPostRepairRuntimeAttemptAuditPanel({
+  audit,
+  error
+}: {
+  audit: CommandPartialFillPostRepairRuntimeAttemptAudit | null;
+  error: string | null;
+}) {
+  return (
+    <section className="terminal-panel" data-testid="account-partial-fill-post-repair-runtime-attempt-panel">
+      <div className="terminal-panel-header">
+        <h3>Post-Repair Runtime Attempt</h3>
+        <StateBadge value={audit ? "blocked" : error ? "blocked" : "empty"} />
+      </div>
+      {audit ? (
+        <div className="evidence-stack compact-evidence-stack">
+          <div className="evidence-item">
+            <strong>Status</strong>
+            <span data-testid="account-partial-fill-post-repair-runtime-attempt-status">{audit.status}</span>
+          </div>
+          <div className="evidence-item">
+            <strong>Verdict</strong>
+            <span data-testid="account-partial-fill-post-repair-runtime-attempt-verdict">{audit.verdict}</span>
+          </div>
+          <div className="evidence-item">
+            <strong>Order</strong>
+            <span data-testid="account-partial-fill-post-repair-runtime-attempt-order">
+              {String(audit.owner_runtime_attempt.client_order_id)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Filled</strong>
+            <span data-testid="account-partial-fill-post-repair-runtime-attempt-filled">
+              {String(audit.runtime_observation.filled_quantity)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Remaining</strong>
+            <span data-testid="account-partial-fill-post-repair-runtime-attempt-remaining">
+              {String(audit.runtime_observation.remaining_quantity)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Partial fill</strong>
+            <span data-testid="account-partial-fill-post-repair-runtime-attempt-partial">
+              {String(audit.runtime_observation.partial_fill_formula_satisfied)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Retry authorized</strong>
+            <span data-testid="account-partial-fill-post-repair-runtime-attempt-retry">
+              {String(audit.negative_assertions.additional_runtime_retry_authorized)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Position delta</strong>
+            <span data-testid="account-partial-fill-post-repair-runtime-attempt-position-delta">
+              {String(audit.position_readback_delta.delta)}
+            </span>
+          </div>
+          {audit.owner_artifact_refs.map((item) => (
+            <div
+              className="evidence-item"
+              data-testid="account-partial-fill-post-repair-runtime-attempt-artifact"
+              key={item.artifact_id}
+            >
+              <strong>{item.artifact_id}</strong>
+              <span>{item.sha256}</span>
+            </div>
+          ))}
+        </div>
+      ) : error ? (
+        <div className="state-callout blocked" data-testid="account-partial-fill-post-repair-runtime-attempt-error">
+          {error}
+        </div>
+      ) : (
+        <p className="muted">No post-repair runtime attempt audit is mounted for this account.</p>
+      )}
+    </section>
+  );
+}
+
+function CommandPartialFillOwnerRepairPreflightSourceAuditPanel({
+  audit,
+  error
+}: {
+  audit: CommandPartialFillOwnerRepairPreflightSourceAudit | null;
+  error: string | null;
+}) {
+  return (
+    <section className="terminal-panel" data-testid="account-partial-fill-owner-repair-preflight-panel">
+      <div className="terminal-panel-header">
+        <h3>Repair Preflight</h3>
+        <StateBadge value={audit ? "blocked" : error ? "blocked" : "empty"} />
+      </div>
+      {audit ? (
+        <div className="evidence-stack compact-evidence-stack">
+          <div className="evidence-item">
+            <strong>Status</strong>
+            <span data-testid="account-partial-fill-owner-repair-preflight-status">{audit.status}</span>
+          </div>
+          <div className="evidence-item">
+            <strong>Verdict</strong>
+            <span data-testid="account-partial-fill-owner-repair-preflight-verdict">{audit.verdict}</span>
+          </div>
+          <div className="evidence-item">
+            <strong>Owner path</strong>
+            <span data-testid="account-partial-fill-owner-repair-preflight-owner-path">
+              {audit.owner_repo.owner_repo_path}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Owner head</strong>
+            <span data-testid="account-partial-fill-owner-repair-preflight-head">{audit.owner_repo.head_ref}</span>
+          </div>
+          <div className="evidence-item">
+            <strong>Owner write</strong>
+            <span data-testid="account-partial-fill-owner-repair-preflight-owner-write">
+              {String(audit.owner_repo.write_attempted_by_audit)}
+            </span>
+          </div>
+          {audit.source_checks.map((item) => (
+            <div
+              className="evidence-item"
+              data-testid="account-partial-fill-owner-repair-preflight-source"
+              key={item.path}
+            >
+              <strong>{item.path}</strong>
+              <span>
+                {item.sha256.slice(0, 12)} / {item.current_gap}
+              </span>
+            </div>
+          ))}
+          <div className="evidence-item">
+            <strong>Repair approval</strong>
+            <span data-testid="account-partial-fill-owner-repair-preflight-repair-approval">
+              {String(audit.operator_approval_delta.sufficient_for_owner_code_repair)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Retry approval</strong>
+            <span data-testid="account-partial-fill-owner-repair-preflight-retry-approval">
+              {String(audit.operator_approval_delta.sufficient_for_post_repair_runtime_retry)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Blind retry</strong>
+            <span data-testid="account-partial-fill-owner-repair-preflight-blind-retry">
+              {String(audit.next_required_action.blind_script_retry_rejected)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Runtime invoked</strong>
+            <span data-testid="account-partial-fill-owner-repair-preflight-runtime-invoked">
+              {String(audit.negative_assertions.owner_runtime_invocation_attempted)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Full acceptance</strong>
+            <span data-testid="account-partial-fill-owner-repair-preflight-full-claimed">
+              {String(audit.negative_assertions.full_acceptance_claimed)}
+            </span>
+          </div>
+        </div>
+      ) : error ? (
+        <div className="state-callout blocked" data-testid="account-partial-fill-owner-repair-preflight-error">
+          {error}
+        </div>
+      ) : (
+        <p className="muted">No partial-fill owner repair preflight source audit is mounted for this account.</p>
+      )}
+    </section>
+  );
+}
+
+function CommandPartialFillOwnerRepairPatchPreviewPanel({
+  preview,
+  error
+}: {
+  preview: CommandPartialFillOwnerRepairPatchPreview | null;
+  error: string | null;
+}) {
+  return (
+    <section className="terminal-panel" data-testid="account-partial-fill-owner-repair-patch-preview-panel">
+      <div className="terminal-panel-header">
+        <h3>Repair Patch Preview</h3>
+        <StateBadge value={preview ? "blocked" : error ? "blocked" : "empty"} />
+      </div>
+      {preview ? (
+        <div className="evidence-stack compact-evidence-stack">
+          <div className="evidence-item">
+            <strong>Status</strong>
+            <span data-testid="account-partial-fill-owner-repair-patch-preview-status">{preview.status}</span>
+          </div>
+          <div className="evidence-item">
+            <strong>Verdict</strong>
+            <span data-testid="account-partial-fill-owner-repair-patch-preview-verdict">{preview.verdict}</span>
+          </div>
+          <div className="evidence-item">
+            <strong>Owner path</strong>
+            <span data-testid="account-partial-fill-owner-repair-patch-preview-owner-path">
+              {preview.owner_baseline.owner_repo_path}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Owner write</strong>
+            <span data-testid="account-partial-fill-owner-repair-patch-preview-owner-write">
+              {String(preview.owner_baseline.owner_repo_write_attempted_by_preview)}
+            </span>
+          </div>
+          {preview.owner_baseline.baseline_files.map((item) => (
+            <div
+              className="evidence-item"
+              data-testid="account-partial-fill-owner-repair-patch-preview-baseline"
+              key={item.path}
+            >
+              <strong>{item.path}</strong>
+              <span>{item.sha256.slice(0, 12)}</span>
+            </div>
+          ))}
+          {preview.previewed_owner_patch.map((item) => (
+            <div
+              className="evidence-item"
+              data-testid="account-partial-fill-owner-repair-patch-preview-patch"
+              key={item.patch_id}
+            >
+              <strong>{item.patch_id}</strong>
+              <span>
+                {item.target_symbol} / {item.edit_shape}
+              </span>
+            </div>
+          ))}
+          {preview.post_patch_required_validators.map((item) => (
+            <div
+              className="evidence-item"
+              data-testid="account-partial-fill-owner-repair-patch-preview-validator"
+              key={item.evidence_id}
+            >
+              <strong>{item.evidence_id}</strong>
+              <span>{item.command}</span>
+            </div>
+          ))}
+          <div className="evidence-item">
+            <strong>Runtime retry</strong>
+            <span data-testid="account-partial-fill-owner-repair-patch-preview-runtime-retry">
+              {String(preview.post_patch_runtime_gate.runtime_retry_authorized_by_preview)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Fresh approval</strong>
+            <span data-testid="account-partial-fill-owner-repair-patch-preview-fresh-approval">
+              {String(preview.post_patch_runtime_gate.fresh_runtime_retry_approval_required_after_patch)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Patch applied</strong>
+            <span data-testid="account-partial-fill-owner-repair-patch-preview-applied">
+              {String(preview.negative_assertions.owner_patch_applied)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Full acceptance</strong>
+            <span data-testid="account-partial-fill-owner-repair-patch-preview-full-claimed">
+              {String(preview.negative_assertions.full_acceptance_claimed)}
+            </span>
+          </div>
+        </div>
+      ) : error ? (
+        <div className="state-callout blocked" data-testid="account-partial-fill-owner-repair-patch-preview-error">
+          {error}
+        </div>
+      ) : (
+        <p className="muted">No partial-fill owner repair patch preview is mounted for this account.</p>
+      )}
+    </section>
+  );
+}
+
+function CommandPartialFillOwnerRepairExecutionHandoffPanel({
+  bundle,
+  error
+}: {
+  bundle: CommandPartialFillOwnerRepairExecutionHandoffBundle | null;
+  error: string | null;
+}) {
+  return (
+    <section className="terminal-panel" data-testid="account-partial-fill-owner-repair-execution-handoff-panel">
+      <div className="terminal-panel-header">
+        <h3>Repair Execution Handoff</h3>
+        <StateBadge value={bundle ? "blocked" : error ? "blocked" : "empty"} />
+      </div>
+      {bundle ? (
+        <div className="evidence-stack compact-evidence-stack">
+          <div className="evidence-item">
+            <strong>Status</strong>
+            <span data-testid="account-partial-fill-owner-repair-execution-handoff-status">{bundle.status}</span>
+          </div>
+          <div className="evidence-item">
+            <strong>Verdict</strong>
+            <span data-testid="account-partial-fill-owner-repair-execution-handoff-verdict">{bundle.verdict}</span>
+          </div>
+          <div className="evidence-item">
+            <strong>Owner path</strong>
+            <span data-testid="account-partial-fill-owner-repair-execution-handoff-owner-path">
+              {bundle.owner_repo_context.owner_repo_path}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Execution</strong>
+            <span data-testid="account-partial-fill-owner-repair-execution-handoff-execution">
+              {String(bundle.execution_guard.execution_allowed)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Owner write</strong>
+            <span data-testid="account-partial-fill-owner-repair-execution-handoff-owner-write">
+              {String(bundle.execution_guard.owner_repo_write_allowed_by_this_bundle)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Runtime retry</strong>
+            <span data-testid="account-partial-fill-owner-repair-execution-handoff-runtime-retry">
+              {String(bundle.execution_guard.runtime_retry_authorized_by_this_bundle)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Exact approval</strong>
+            <span data-testid="account-partial-fill-owner-repair-execution-handoff-approval">
+              {String(bundle.execution_guard.requires_exact_owner_repair_approval)}
+            </span>
+          </div>
+          {bundle.operator_sequence_after_exact_approval.map((item) => (
+            <div
+              className="evidence-item"
+              data-testid="account-partial-fill-owner-repair-execution-handoff-step"
+              key={item.step}
+            >
+              <strong>{item.step}</strong>
+              <span>{item.command ?? item.required_output_shape}</span>
+            </div>
+          ))}
+          {bundle.required_post_handoff_artifacts.map((item) => (
+            <div
+              className="evidence-item"
+              data-testid="account-partial-fill-owner-repair-execution-handoff-artifact"
+              key={item}
+            >
+              <strong>Artifact</strong>
+              <span>{item}</span>
+            </div>
+          ))}
+          <div className="evidence-item">
+            <strong>Patch applied</strong>
+            <span data-testid="account-partial-fill-owner-repair-execution-handoff-patch-applied">
+              {String(bundle.negative_assertions.owner_patch_applied)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Full acceptance</strong>
+            <span data-testid="account-partial-fill-owner-repair-execution-handoff-full-claimed">
+              {String(bundle.negative_assertions.full_acceptance_claimed)}
+            </span>
+          </div>
+        </div>
+      ) : error ? (
+        <div className="state-callout blocked" data-testid="account-partial-fill-owner-repair-execution-handoff-error">
+          {error}
+        </div>
+      ) : (
+        <p className="muted">No partial-fill owner repair execution handoff is mounted for this account.</p>
+      )}
+    </section>
+  );
+}
+
+function CommandRuntimeCloseoutPanel({
+  closeout,
+  error
+}: {
+  closeout: CommandRuntimeCloseout | null;
+  error: string | null;
+}) {
+  return (
+    <section className="terminal-panel" data-testid="account-runtime-closeout-panel">
+      <div className="terminal-panel-header">
+        <h3>Runtime Closeout</h3>
+        <StateBadge value={closeout ? closeout.status : error ? "blocked" : "empty"} />
+      </div>
+      {closeout ? (
+        <div className="evidence-stack compact-evidence-stack">
+          <div className="evidence-item">
+            <strong>Run</strong>
+            <span data-testid="account-runtime-closeout-run-id">{closeout.run_id}</span>
+          </div>
+          <div className="evidence-item">
+            <strong>Status</strong>
+            <span data-testid="account-runtime-closeout-status">{closeout.status}</span>
+          </div>
+          <div className="evidence-item">
+            <strong>Manifest</strong>
+            <CopyableCode label="runtime closeout manifest" value={closeout.closeout_manifest_ref} />
+          </div>
+          <div className="evidence-item">
+            <strong>Checksum</strong>
+            <span data-testid="account-runtime-closeout-manifest-checksum">
+              {closeout.closeout_manifest_checksum}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Gateway send</strong>
+            <span data-testid="account-runtime-closeout-gateway-send">
+              {String(closeout.runtime_gateway_send_observed)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Browser trigger</strong>
+            <span data-testid="account-runtime-closeout-web-trigger">
+              {String(closeout.browser_triggered_broker_order)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Raw secrets</strong>
+            <span data-testid="account-runtime-closeout-raw-secret">
+              {String(closeout.raw_secret_values_recorded)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Gateway final</strong>
+            <span data-testid="account-runtime-closeout-gateway-final">
+              {String(closeout.gateway_ack_is_final_state)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Artifacts</strong>
+            <span data-testid="account-runtime-closeout-artifact-count">
+              {Object.keys(closeout.artifact_checksums).length}
+            </span>
+          </div>
+          {closeout.explicit_non_claims.map((claim) => (
+            <div className="evidence-item" data-testid="account-runtime-closeout-non-claim" key={claim}>
+              <strong>Non-claim</strong>
+              <span>{claim}</span>
+            </div>
+          ))}
+        </div>
+      ) : error ? (
+        <div className="state-callout blocked" data-testid="account-runtime-closeout-error">
+          {error}
+        </div>
+      ) : (
+        <p className="muted">No runtime command closeout evidence is mounted for this account.</p>
+      )}
+    </section>
+  );
+}
+
+function CommandStatusPanel({
+  status
+}: {
+  status: MirrorAccountProjection["command_status"] | null;
+}) {
+  const riskRefs = commandStatusRefs(status?.risk_decision_refs);
+  const approvalRefs = commandStatusRefs(status?.approval_decision_refs);
+  const gatewayRefs = commandStatusRefs(status?.gateway_event_refs);
+  const readbackRefs = commandStatusRefs(status?.readback_refs);
+  const blockers = Array.isArray(status?.blockers) ? status.blockers : [];
+  const reconciliationRef = asText(status?.reconciliation_ref, "");
+  const commandAuditRef = asText(status?.command_audit_ref, "");
+  const hasReadback = readbackRefs.length > 0;
+  const hasReconciliation = reconciliationRef.length > 0;
+  const hasGatewayFinalClaim = status?.gateway_ack_is_final_state === true;
+  const derivedBlockers = [
+    ...blockers.map(commandStatusBlockerText),
+    ...(status && !hasReadback ? ["missing readback refs"] : []),
+    ...(status && !hasReconciliation ? ["missing reconciliation ref"] : []),
+    ...(hasGatewayFinalClaim ? ["gateway ack is not final account state"] : [])
+  ];
+  const displayState = !status
+    ? "empty"
+    : derivedBlockers.length > 0
+      ? "blocked"
+      : asText(status.status, "unknown");
+
+  return (
+    <section className="terminal-panel" data-testid="account-command-status-panel">
+      <div className="terminal-panel-header">
+        <h3>Command Status</h3>
+        <StateBadge value={displayState} />
+      </div>
+      {status ? (
+        <div className="evidence-stack compact-evidence-stack">
+          <div className="evidence-item" data-testid="account-command-audit-ref">
+            <strong>Audit</strong>
+            {commandAuditRef ? (
+              <CopyableCode label="command audit ref" value={commandAuditRef} />
+            ) : (
+              <span>missing audit ref</span>
+            )}
+          </div>
+          {riskRefs.map((ref) => (
+            <div className="evidence-item" data-testid="account-command-risk-ref" key={ref}>
+              <strong>Risk</strong>
+              <CopyableCode label="command risk ref" value={ref} />
+            </div>
+          ))}
+          {approvalRefs.map((ref) => (
+            <div className="evidence-item" data-testid="account-command-approval-ref" key={ref}>
+              <strong>Approval</strong>
+              <CopyableCode label="command approval ref" value={ref} />
+            </div>
+          ))}
+          {gatewayRefs.map((ref) => (
+            <div className="evidence-item" data-testid="account-command-gateway-ref" key={ref}>
+              <strong>Gateway</strong>
+              <CopyableCode label="command gateway ref" value={ref} />
+            </div>
+          ))}
+          {readbackRefs.map((ref) => (
+            <div className="evidence-item" data-testid="account-command-readback-ref" key={ref}>
+              <strong>Readback</strong>
+              <CopyableCode label="command readback ref" value={ref} />
+            </div>
+          ))}
+          {hasReconciliation ? (
+            <div className="evidence-item" data-testid="account-command-reconciliation-ref">
+              <strong>Reconcile</strong>
+              <CopyableCode label="command reconciliation ref" value={reconciliationRef} />
+            </div>
+          ) : null}
+          <div className="evidence-item">
+            <strong>Gateway final</strong>
+            <span data-testid="account-command-gateway-final-state">
+              {status.gateway_ack_is_final_state === true ? "invalid" : "false"}
+            </span>
+          </div>
+        </div>
+      ) : (
+        <p className="muted">No command audit evidence in this read-only projection.</p>
+      )}
+      {derivedBlockers.length > 0 ? (
+        <div className="blocker-list">
+          {derivedBlockers.map((blocker) => (
+            <article className="blocker-item" data-testid="account-command-blocker" key={blocker}>
+              {blocker}
+            </article>
+          ))}
+        </div>
+      ) : null}
+    </section>
   );
 }
 

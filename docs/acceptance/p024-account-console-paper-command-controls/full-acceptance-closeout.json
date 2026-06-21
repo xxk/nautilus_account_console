@@ -1,0 +1,349 @@
+{
+  "schema": "account-console.p024.full-acceptance-closeout.v1",
+  "proposal_id": "p024-account-console-paper-command-controls",
+  "account_id": "acct.ctp.paper.19053",
+  "reviewed_at": "2026-06-21T15:40:00+08:00",
+  "status": "phase4_residual_blocker_audit_passed",
+  "verdict": "accepted_with_residual_owner_runtime_blockers",
+  "accepted_scope": [
+    "backend_paper_command_api_contract_gate",
+    "frontend_guarded_command_controls",
+    "runtime_closeout_readonly_projection",
+    "partial_fill_then_cancel_ui_display_contract",
+    "owner_runtime_handoff_request_projection",
+    "owner_runtime_invocation_readiness",
+    "runtime_readiness_ui_projection",
+    "owner_runtime_execution_approval_packet",
+    "runtime_approval_packet_ui_projection",
+    "owner_runtime_execution_handoff_bundle",
+    "runtime_handoff_bundle_ui_projection",
+    "runtime_execution_gap_audit",
+    "proposal_docs_and_adr_boundary"
+  ],
+  "not_accepted_scope": [
+    "new_browser_triggered_owner_runtime_submit_cancel_execution",
+    "new_p024_gateway_send_from_web_ui",
+    "new_p024_broker_order_created_from_web_ui",
+    "real_p024_partial_fill_runtime",
+    "live_armed_mode",
+    "account_mirror_write_authority",
+    "replace_or_modify_order"
+  ],
+  "required_gates": [
+    {
+      "id": "p024_backend_command_api",
+      "command": "python scripts\\validate_p024_paper_command_api.py",
+      "pass_signal": "P024_PAPER_COMMAND_API_OK",
+      "status": "passed"
+    },
+    {
+      "id": "p024_ui_command_controls",
+      "command": "npx playwright test tests/e2e/p024-paper-command-controls.spec.ts --project=desktop && python scripts\\validate_p024_ui_command_controls_browser_evidence.py",
+      "pass_signal": "P024_UI_COMMAND_CONTROLS_BROWSER_EVIDENCE_OK",
+      "status": "passed"
+    },
+    {
+      "id": "p024_runtime_closeout_projection",
+      "command": "npx playwright test tests/e2e/p024-runtime-closeout-evidence.spec.ts --project=desktop && python scripts\\validate_p024_runtime_closeout_browser_evidence.py",
+      "pass_signal": "P024_RUNTIME_CLOSEOUT_BROWSER_EVIDENCE_OK",
+      "status": "passed"
+    },
+    {
+      "id": "p024_partial_fill_cancel_display",
+      "command": "npx playwright test tests/e2e/p024-partial-fill-cancel-order-display.spec.ts --project=desktop && python scripts\\validate_p024_partial_fill_cancel_browser_evidence.py",
+      "pass_signal": "P024_PARTIAL_FILL_CANCEL_BROWSER_EVIDENCE_OK",
+      "status": "passed"
+    },
+    {
+      "id": "p024_runtime_handoff_request",
+      "command": "npx playwright test tests/e2e/p024-runtime-handoff-request.spec.ts --project=desktop && python scripts\\validate_p024_runtime_handoff_browser_evidence.py",
+      "pass_signal": "P024_RUNTIME_HANDOFF_BROWSER_EVIDENCE_OK",
+      "status": "passed"
+    },
+    {
+      "id": "p024_owner_runtime_invocation_readiness",
+      "command": "python scripts\\validate_p024_owner_runtime_invocation_readiness.py",
+      "pass_signal": "P024_OWNER_RUNTIME_INVOCATION_READINESS_OK",
+      "status": "passed"
+    },
+    {
+      "id": "p024_runtime_readiness_ui_projection",
+      "command": "npx playwright test tests/e2e/p024-runtime-invocation-readiness.spec.ts --project=desktop && python scripts\\validate_p024_runtime_readiness_browser_evidence.py",
+      "pass_signal": "P024_RUNTIME_READINESS_BROWSER_EVIDENCE_OK",
+      "status": "passed"
+    },
+    {
+      "id": "p024_owner_runtime_execution_approval_packet",
+      "command": "python scripts\\validate_p024_owner_runtime_execution_approval_packet.py",
+      "pass_signal": "P024_OWNER_RUNTIME_EXECUTION_APPROVAL_PACKET_OK",
+      "status": "passed"
+    },
+    {
+      "id": "p024_runtime_approval_packet_ui_projection",
+      "command": "npx playwright test tests/e2e/p024-runtime-execution-approval-packet.spec.ts --project=desktop && python scripts\\validate_p024_runtime_approval_packet_browser_evidence.py",
+      "pass_signal": "P024_RUNTIME_APPROVAL_PACKET_BROWSER_EVIDENCE_OK",
+      "status": "passed"
+    },
+    {
+      "id": "p024_owner_runtime_execution_handoff_bundle",
+      "command": "python scripts\\validate_p024_owner_runtime_execution_handoff_bundle.py",
+      "pass_signal": "P024_OWNER_RUNTIME_EXECUTION_HANDOFF_BUNDLE_OK",
+      "status": "passed"
+    },
+    {
+      "id": "p024_runtime_handoff_bundle_ui_projection",
+      "command": "npx playwright test tests/e2e/p024-runtime-execution-handoff-bundle.spec.ts --project=desktop && python scripts\\validate_p024_runtime_handoff_bundle_browser_evidence.py",
+      "pass_signal": "P024_RUNTIME_HANDOFF_BUNDLE_BROWSER_EVIDENCE_OK",
+      "status": "passed"
+    },
+    {
+      "id": "p024_runtime_execution_gap_audit",
+      "command": "python scripts\\validate_p024_runtime_execution_gap_audit.py && npx playwright test tests/e2e/p024-runtime-execution-gap-audit.spec.ts --project=desktop && python scripts\\validate_p024_runtime_execution_gap_browser_evidence.py",
+      "pass_signal": "P024_RUNTIME_EXECUTION_GAP_AUDIT_OK; P024_RUNTIME_EXECUTION_GAP_BROWSER_EVIDENCE_OK",
+      "status": "passed"
+    },
+    {
+      "id": "p024_design_and_adr",
+      "command": "python scripts\\validate_p024_paper_command_controls_design.py && python scripts\\validate_adr0007_account_command_capability.py",
+      "pass_signal": "P024_PAPER_COMMAND_CONTROLS_DESIGN_OK; ADR0007_ACCOUNT_COMMAND_CAPABILITY_OK",
+      "status": "passed"
+    },
+    {
+      "id": "p019_boundary",
+      "command": "python scripts\\validate_p019_api_boundary.py",
+      "pass_signal": "P019_API_BOUNDARY_OK",
+      "status": "passed"
+    },
+    {
+      "id": "proposal_docs",
+      "command": "python scripts\\check_proposal_docs.py --root . --proposal-id p024-account-console-paper-command-controls",
+      "pass_signal": "PROPOSAL_DOCS_OK",
+      "status": "passed"
+    }
+  ],
+  "scenario_matrix": [
+    {
+      "id": "A1",
+      "scenario": "Backend command API accepts paper submit intent",
+      "verification_shape": "pytest + P024 API validator",
+      "status": "passed",
+      "evidence_refs": [
+        "backend/tests/test_command_api.py::test_submit_intent_accepts_paper_armed_contract_without_gateway_send",
+        "scripts/validate_p024_paper_command_api.py"
+      ]
+    },
+    {
+      "id": "A2",
+      "scenario": "Account Mirror remains read-only",
+      "verification_shape": "route audit + pytest",
+      "status": "passed",
+      "evidence_refs": [
+        "backend/tests/test_command_api.py::test_account_mirror_routes_remain_read_only",
+        "scripts/validate_p019_api_boundary.py"
+      ]
+    },
+    {
+      "id": "A3",
+      "scenario": "Command controls render only in paper_armed mode",
+      "verification_shape": "Playwright + browser evidence validator",
+      "status": "passed",
+      "evidence_refs": [
+        "frontend/tests/e2e/p024-paper-command-controls.spec.ts",
+        "docs/acceptance/browser-evidence/p024-account-console-paper-command-controls/command-controls-ui.json"
+      ]
+    },
+    {
+      "id": "A4",
+      "scenario": "Submit writes intent/risk/approval/gateway/readback/reconcile refs",
+      "verification_shape": "owner runtime artifacts + reconciliation validator",
+      "status": "blocked_pending_owner_runtime_execution",
+      "blocker_refs": [
+        "p024_external_owner_runtime_write_approval_required",
+        "p024_owner_runtime_artifacts_missing"
+      ]
+    },
+    {
+      "id": "A5",
+      "scenario": "Submit idempotency prevents duplicate order",
+      "verification_shape": "pytest + browser contract",
+      "status": "passed",
+      "evidence_refs": [
+        "backend/tests/test_command_api.py::test_submit_intent_is_idempotent_by_key",
+        "docs/acceptance/browser-evidence/p024-account-console-paper-command-controls/command-controls-ui.json"
+      ]
+    },
+    {
+      "id": "A6",
+      "scenario": "Risk/approval fail closed",
+      "verification_shape": "API contract gate",
+      "status": "passed_pre_gateway_contract_gate",
+      "evidence_refs": [
+        "backend/tests/test_command_api.py::assert_pre_gateway_result",
+        "scripts/validate_p024_paper_command_api.py"
+      ],
+      "residual_note": "real risk/approval artifacts are produced only by the owner-runtime execution path after external approval"
+    },
+    {
+      "id": "A7",
+      "scenario": "Cancel uses latest readback identity",
+      "verification_shape": "API/browser + readback artifact ref",
+      "status": "passed",
+      "evidence_refs": [
+        "backend/tests/test_command_api.py::test_cancel_intent_requires_readback_identity_and_stays_pre_gateway",
+        "frontend/tests/e2e/p024-partial-fill-cancel-order-display.spec.ts"
+      ]
+    },
+    {
+      "id": "A8",
+      "scenario": "UI status waits for readback/reconcile",
+      "verification_shape": "browser evidence + gateway final-state negative assertions",
+      "status": "passed_display_contract_real_runtime_blocked",
+      "evidence_refs": [
+        "docs/acceptance/browser-evidence/p024-account-console-paper-command-controls/runtime-closeout-ui.json",
+        "docs/acceptance/browser-evidence/p024-account-console-paper-command-controls/partial-fill-cancel-order-display.json"
+      ]
+    },
+    {
+      "id": "A9",
+      "scenario": "Secret redaction",
+      "verification_shape": "artifact and browser evidence redaction validators",
+      "status": "passed",
+      "evidence_refs": [
+        "scripts/validate_p024_owner_runtime_invocation_readiness.py",
+        "scripts/validate_p024_runtime_readiness_browser_evidence.py"
+      ]
+    },
+    {
+      "id": "A10",
+      "scenario": "Partial fill then cancel Web UI order display correctness",
+      "verification_shape": "Playwright + browser evidence validator",
+      "status": "passed",
+      "evidence_refs": [
+        "frontend/tests/e2e/p024-partial-fill-cancel-order-display.spec.ts",
+        "scripts/validate_p024_partial_fill_cancel_browser_evidence.py"
+      ]
+    },
+    {
+      "id": "A11",
+      "scenario": "Runtime closeout evidence appears in Web UI without browser-trigger claim",
+      "verification_shape": "Playwright + API route audit + browser evidence JSON",
+      "status": "passed",
+      "evidence_refs": [
+        "frontend/tests/e2e/p024-runtime-closeout-evidence.spec.ts",
+        "scripts/validate_p024_runtime_closeout_browser_evidence.py"
+      ]
+    },
+    {
+      "id": "A12",
+      "scenario": "Web UI prepares owner-runtime submit/cancel handoff without invoking broker runtime",
+      "verification_shape": "Playwright + API route audit + browser evidence JSON",
+      "status": "passed",
+      "evidence_refs": [
+        "frontend/tests/e2e/p024-runtime-handoff-request.spec.ts",
+        "scripts/validate_p024_runtime_handoff_browser_evidence.py"
+      ]
+    },
+    {
+      "id": "A13",
+      "scenario": "Owner-runtime invocation readiness and external approval scope are frozen",
+      "verification_shape": "readiness artifact + owner script checksum validator",
+      "status": "passed_blocked_by_external_approval",
+      "evidence_refs": [
+        "docs/acceptance/p024-account-console-paper-command-controls/owner-runtime-invocation-readiness.json",
+        "scripts/validate_p024_owner_runtime_invocation_readiness.py"
+      ]
+    },
+    {
+      "id": "A14",
+      "scenario": "Runtime readiness blocker appears in Web UI without broker execution claims",
+      "verification_shape": "Playwright + API route audit + browser evidence JSON",
+      "status": "passed",
+      "evidence_refs": [
+        "frontend/tests/e2e/p024-runtime-invocation-readiness.spec.ts",
+        "scripts/validate_p024_runtime_readiness_browser_evidence.py"
+      ]
+    },
+    {
+      "id": "A15",
+      "scenario": "Runtime handoff bundle appears in Web UI without execution permission",
+      "verification_shape": "Playwright + API route audit + browser evidence JSON",
+      "status": "passed",
+      "evidence_refs": [
+        "frontend/tests/e2e/p024-runtime-execution-handoff-bundle.spec.ts",
+        "scripts/validate_p024_runtime_handoff_bundle_browser_evidence.py"
+      ]
+    },
+    {
+      "id": "A16",
+      "scenario": "Runtime execution gap is visible until owner-runtime artifacts exist",
+      "verification_shape": "artifact validator + Playwright + API route audit + browser evidence JSON",
+      "status": "passed_blocked_by_owner_runtime_execution",
+      "evidence_refs": [
+        "docs/acceptance/p024-account-console-paper-command-controls/runtime-execution-gap-audit.json",
+        "frontend/tests/e2e/p024-runtime-execution-gap-audit.spec.ts",
+        "scripts/validate_p024_runtime_execution_gap_audit.py",
+        "scripts/validate_p024_runtime_execution_gap_browser_evidence.py"
+      ]
+    }
+  ],
+  "residual_blockers": [
+    {
+      "blocker_id": "p024_external_owner_runtime_write_approval_required",
+      "type": "external_write_approval_required",
+      "stage": "owner_runtime",
+      "owner_ref": "owner://nautilus_ctp_adapter",
+      "approval_path": "D:/Nautilus/nautilus_ctp_adapter",
+      "required_before": "new_browser_triggered_owner_runtime_submit_cancel_execution",
+      "next_action": "operator must explicitly approve owner repo writes before guarded owner scripts are invoked"
+    },
+    {
+      "blocker_id": "p024_owner_runtime_artifacts_missing",
+      "type": "owner_runtime_artifacts_missing",
+      "stage": "readback",
+      "required_artifacts": [
+        "submit_intent.json",
+        "submit_risk_decision.json",
+        "submit_approval_decision.json",
+        "submit_gateway_event.json",
+        "post_submit_readback.json",
+        "cancel_intent.json",
+        "cancel_risk_decision.json",
+        "cancel_approval_decision.json",
+        "cancel_gateway_event.json",
+        "post_cancel_readback.json",
+        "reconciliation_result.json",
+        "redaction_report.json",
+        "command_audit.json",
+        "closeout_manifest.json"
+      ],
+      "next_action": "ingest checksum-backed owner runtime artifacts after approved owner execution"
+    },
+    {
+      "blocker_id": "p024_real_partial_fill_runtime_missing",
+      "type": "owner_runtime_partial_fill_state_missing",
+      "stage": "runtime",
+      "required_before": "real partial-fill runtime acceptance",
+      "next_action": "provide real or owner-approved partial-fill state with order and trade readbacks"
+    }
+  ],
+  "negative_assertions": {
+    "runtime_invocation_attempted": false,
+    "owner_repo_write_attempted": false,
+    "browser_triggered_broker_order": false,
+    "gateway_send_attempted_from_browser": false,
+    "broker_order_created_from_browser": false,
+    "live_armed": false,
+    "account_mirror_write_authority": false,
+    "raw_secret_values_recorded": false,
+    "raw_broker_endpoint_recorded": false,
+    "full_runtime_acceptance_claimed": false
+  },
+  "explicit_non_claims": [
+    "does_not_claim_new_browser_triggered_owner_runtime_execution",
+    "does_not_claim_live_readiness",
+    "does_not_write_owner_repo",
+    "does_not_send_broker_order_from_browser",
+    "does_not_close_real_runtime_execution_until_owner_artifacts_exist",
+    "does_not_use_screenshot_as_order_or_runtime_truth"
+  ]
+}

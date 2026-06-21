@@ -1,0 +1,58 @@
+{
+  "schema": "account-console.p024.partial-fill-owner-repair-preflight-source-audit.v1",
+  "proposal_id": "p024-account-console-paper-command-controls",
+  "account_id": "acct.ctp.paper.19053",
+  "reviewed_at": "2026-06-21T21:15:00+08:00",
+  "status": "phase4v_owner_repair_preflight_source_audited",
+  "verdict": "owner_repair_still_required_before_runtime_retry",
+  "owner_repo": {
+    "owner_repo_ref": "owner-repo://nautilus_ctp_adapter",
+    "owner_repo_path": "D:/Nautilus/nautilus_ctp_adapter",
+    "head_ref": "6a50b023814b440dbb6d660e4a2e97dba6f44a24",
+    "write_attempted_by_audit": false
+  },
+  "source_checks": [
+    {
+      "path": "scripts/ctp_guarded_paper_order_loop.py",
+      "sha256": "632c42352952def2f31f97d42dfbb834b23baf6086346fee7c5717588112e7c5",
+      "required_symbol_present": true,
+      "current_gap": "build_close_offset_owner_rule_semantics only gates the rejected-callback diagnostic rule through CLOSETODAY offset 3, not the P024 required CLOSEYESTERDAY offset 4 shape"
+    },
+    {
+      "path": "tests/test_guarded_paper_order_loop.py",
+      "sha256": "f5b776eb1abc216ffc0a1e325bc2274a4fb730c01236494a749e56f00d485fd9",
+      "required_symbol_present": true,
+      "current_gap": "focused owner tests do not include the P024 ingest-gate assertion shape expected_submit_offset_from_position_effect == 4 with callback_offset_flags == [1]"
+    },
+    {
+      "path": "tests/test_nautilus_integration.py",
+      "sha256": "7ac6eb0c80c46a1f5c9cc87f68a2d8a4354beaf366a292caf0ed1f6dfc5f6c24",
+      "required_symbol_present": true,
+      "current_gap": "integration coverage has native CLOSEYESTERDAY constants, but does not by itself prove the guarded-loop rejected-callback repair"
+    }
+  ],
+  "operator_approval_delta": {
+    "latest_user_approval_observed_scope": "run owner-owned guarded OpenCTP paper submit/cancel scripts for P024",
+    "sufficient_for_owner_code_repair": false,
+    "sufficient_for_post_repair_runtime_retry": false,
+    "required_exact_approval_before_owner_write_or_retry": "I approve writes to D:/Nautilus/nautilus_ctp_adapter to repair owner close-offset semantics for P024 and, only after validators pass and account-console approval packets are updated, run at most one additional guarded OpenCTP paper partial-fill attempt in the 19053 simulation account; expected impact: create owner-owned code/runtime/debug/readback/reconciliation artifacts outside this worktree and may submit/cancel up to one small exposure-reduction paper order."
+  },
+  "next_required_action": {
+    "owner_code_repair_allowed_by_current_audit": false,
+    "owner_runtime_retry_allowed_by_current_audit": false,
+    "blind_script_retry_rejected": true,
+    "reason": "current owner source still lacks the required CLOSEYESTERDAY offset 4 rejected-callback repair evidence, so running guarded scripts without repair would not advance full acceptance"
+  },
+  "negative_assertions": {
+    "owner_repo_write_attempted": false,
+    "owner_code_repair_claimed": false,
+    "owner_validator_pass_claimed": false,
+    "owner_runtime_invocation_attempted": false,
+    "post_repair_runtime_retry_authorized": false,
+    "real_partial_fill_claimed": false,
+    "full_acceptance_claimed": false,
+    "raw_secret_values_recorded": false,
+    "raw_broker_endpoint_recorded": false,
+    "config_raw_content_recorded": false
+  }
+}

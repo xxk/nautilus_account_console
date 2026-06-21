@@ -1,6 +1,6 @@
 # ADR Index / ADR 索引
 
-- Updated: 2026-06-15
+- Updated: 2026-06-21
 - Project: `nautilus_account_console`
 - Template: [ADR模板 / ADR Template](ADR模板_ADR%20Template.md)
 
@@ -12,6 +12,14 @@
 | [ADR-0002](0002-adopt-business-workbench-first-account-console-navigation.md) | Business workbench first account console navigation | Organize Account Console UI by Daily Closeout, Intraday Monitor, Account Workbench, Allocation Admin, Risk And Reconcile, Evidence Explorer and Stream Ops first; artifact routes are drill-downs, not the primary business model. |
 | [ADR-0003](0003-adopt-contract-first-ui-slice-development.md) | Contract-first UI slice development | Future UI work must use contract-first panel slices; detailed implementation method, slice queue and change acceptance live in topic/proposal docs. |
 | [ADR-0004](0004-adopt-account-mirror-observation-and-command-plane.md) | Account Capability Fabric with mirror readback | Account Console binds account identity to explicit observation, command, risk/approval, reconciliation and evidence capabilities; Account Mirror remains read-only and future commands must reconcile through mirror readback. |
+| [ADR-0005](0005-account-console-independent-broker-observation-sessions.md) | Account Console Independent Broker Observation Sessions | Account Console may own governed read-only broker observation sessions through shared contracts, no-secret/no-command gates, durable observation evidence and Account Mirror projection; broker truth, command authority and complete-history claims remain external or typed blocked. |
+
+## Proposed ADRs
+
+| ADR | Title | Proposed question |
+| --- | --- | --- |
+| [ADR-0006](0006-adopt-project-local-and-shared-knowledge-base.md) | Project-Local Knowledge Router And Shared Knowledge Base | Decide how Account Console should establish a reusable project-local knowledge router and knowledge-base sample while adopting `D:\Nautilus\global_docs\knowledge-common`, minimizing AI context reads and avoiding a second truth source. |
+| [ADR-0007](0007-adopt-governed-account-command-capability.md) | Governed Account Command Capability | Decide whether Account Console may implement submit/cancel capability through OrderIntent, risk/approval, Command Gateway, execution event, Account Mirror readback and reconciliation evidence, without making Account Mirror or UI a broker writer. |
 
 ## Usage Rules
 

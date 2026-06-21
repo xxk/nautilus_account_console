@@ -1,0 +1,125 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nautilus.local/contracts/broker_observation/freshness_sequence_checkpoint.schema.json",
+  "title": "Broker Observation Freshness Sequence Checkpoint",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "checkpoint_id",
+    "account_id",
+    "source_kind",
+    "observation_mode",
+    "raw_secret_values_recorded",
+    "command",
+    "cursor",
+    "freshness",
+    "sequence_window",
+    "claim_guard"
+  ],
+  "properties": {
+    "schema_version": { "type": "string", "const": "broker_observation_freshness_sequence_checkpoint.v1" },
+    "checkpoint_id": { "type": "string" },
+    "account_id": { "type": "string", "pattern": "^acct\\.[a-z0-9_.-]+$" },
+    "source_kind": {
+      "type": "string",
+      "enum": [
+        "ib_tws_observation",
+        "ctp_observation",
+        "stock_broker_observation",
+        "cqg_observation",
+        "tt_observation"
+      ]
+    },
+    "observation_mode": { "type": "string", "enum": ["blocked", "snapshot", "replay", "polling", "streaming"] },
+    "raw_secret_values_recorded": { "type": "boolean", "const": false },
+    "command": {
+      "type": "object",
+      "required": ["enabled", "allowed_actions"],
+      "properties": {
+        "enabled": { "type": "boolean", "const": false },
+        "allowed_actions": { "type": "array", "maxItems": 0 }
+      },
+      "additionalProperties": false
+    },
+    "cursor": {
+      "type": "object",
+      "required": [
+        "source_cursor_ref",
+        "durable_cursor_ref",
+        "last_observed_sequence",
+        "last_persisted_sequence",
+        "next_expected_sequence",
+        "continuity"
+      ],
+      "properties": {
+        "source_cursor_ref": { "type": "string" },
+        "durable_cursor_ref": { "type": "string" },
+        "last_observed_sequence": { "type": "integer", "minimum": 0 },
+        "last_persisted_sequence": { "type": "integer", "minimum": 0 },
+        "next_expected_sequence": { "type": "integer", "minimum": 0 },
+        "continuity": { "type": "string", "enum": ["complete", "partial", "gap", "unknown"] }
+      },
+      "additionalProperties": false
+    },
+    "freshness": {
+      "type": "object",
+      "required": [
+        "observed_at",
+        "received_at",
+        "persisted_at",
+        "max_observation_lag_ms",
+        "max_persist_lag_ms",
+        "freshness_state"
+      ],
+      "properties": {
+        "observed_at": { "type": "string" },
+        "received_at": { "type": "string" },
+        "persisted_at": { "type": "string" },
+        "max_observation_lag_ms": { "type": "integer", "minimum": 0 },
+        "max_persist_lag_ms": { "type": "integer", "minimum": 0 },
+        "freshness_state": { "type": "string", "enum": ["fresh", "stale", "blocked", "unknown"] }
+      },
+      "additionalProperties": false
+    },
+    "sequence_window": {
+      "type": "object",
+      "required": ["first_sequence", "last_sequence", "record_count", "gap_count"],
+      "properties": {
+        "first_sequence": { "type": "integer", "minimum": 0 },
+        "last_sequence": { "type": "integer", "minimum": 0 },
+        "record_count": { "type": "integer", "minimum": 0 },
+        "gap_count": { "type": "integer", "minimum": 0 }
+      },
+      "additionalProperties": false
+    },
+    "claim_guard": {
+      "type": "object",
+      "required": [
+        "may_claim_realtime",
+        "may_claim_complete_history",
+        "may_claim_trading_readiness",
+        "blockers"
+      ],
+      "properties": {
+        "may_claim_realtime": { "type": "boolean", "const": false },
+        "may_claim_complete_history": { "type": "boolean" },
+        "may_claim_trading_readiness": { "type": "boolean", "const": false },
+        "blockers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["blocker_id", "reason", "next_action"],
+            "properties": {
+              "blocker_id": { "type": "string" },
+              "reason": { "type": "string" },
+              "next_action": { "type": "string" }
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,61 @@
+{
+  "schema": "account-console.p019-tws-api-wait-collect-summary.v1",
+  "proposal_id": "p019-broker-observation-session-foundation",
+  "account_id": "acct.ib.live.u3028269",
+  "display_alias": "U3028269",
+  "started_at": "2026-06-20T15:09:23Z",
+  "completed_at": "2026-06-20T15:09:59Z",
+  "status": "ready",
+  "blocker_id": null,
+  "attempt_count": 1,
+  "attempts": [
+    {
+      "attempt_index": 1,
+      "observed_at": "2026-06-20T15:09:26Z",
+      "readiness_ref": "output/debug/p019-tws-api-readiness/tws-api-readiness-probe.json",
+      "ready_for_tws_api_funds_positions_query": true,
+      "blocker_id": null,
+      "blocker_reasons": [],
+      "steps": [
+        {
+          "command": "python scripts/probe_p019_tws_api_readiness.py",
+          "returncode": 0,
+          "ok": true,
+          "stdout_tail": [
+            "{\"status\": \"ready\", \"output\": \"D:\\\\Nautilus\\\\_worktrees\\\\r1-hb-contract\\\\nautilus_account_console\\\\output\\\\debug\\\\p019-tws-api-readiness\\\\tws-api-readiness-probe.json\"}"
+          ],
+          "stderr_tail": []
+        },
+        {
+          "command": "python scripts/validate_p019_tws_api_readiness_probe.py",
+          "returncode": 0,
+          "ok": true,
+          "stdout_tail": [
+            "P019_TWS_API_READINESS_PROBE_OK: status=ready account_query_sent=false"
+          ],
+          "stderr_tail": []
+        }
+      ]
+    }
+  ],
+  "pipeline_ran": true,
+  "pipeline_step": {
+    "command": "python scripts/run_p019_ib_u3028269_tws_api_pipeline.py --summary D:\\Nautilus\\_worktrees\\r1-hb-contract\\nautilus_account_console\\output\\account_capability\\ib-live-u3028269\\pipeline-summary.json",
+    "returncode": 0,
+    "ok": true,
+    "stdout_tail": [
+      "{\"status\": \"ready\", \"blocker_id\": null, \"summary\": \"D:\\\\Nautilus\\\\_worktrees\\\\r1-hb-contract\\\\nautilus_account_console\\\\output\\\\account_capability\\\\ib-live-u3028269\\\\pipeline-summary.json\"}"
+    ],
+    "stderr_tail": []
+  },
+  "pipeline_summary_ref": "output/account_capability/ib-live-u3028269/pipeline-summary.json",
+  "boundaries": {
+    "raw_secret_values_recorded": false,
+    "raw_broker_endpoint_recorded": false,
+    "tws_api_account_query_sent_before_readiness": false,
+    "funds_positions_values_recorded_before_readiness": false,
+    "screenshot_used_for_funds_positions": false,
+    "order_action_sent": false
+  },
+  "retry_condition": null
+}

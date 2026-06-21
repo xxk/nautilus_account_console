@@ -2,8 +2,9 @@ from __future__ import annotations
 
 from datetime import datetime
 from enum import StrEnum
+from typing import Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class AccountKind(StrEnum):
@@ -99,6 +100,7 @@ class MirrorAccountProjection(BaseModel):
     orders: list[dict]
     fills: list[dict]
     source_health: dict
+    command_status: dict | None = None
     blockers: list[dict]
     projection_checkpoint_id: str
     projection_checksum: str
@@ -166,6 +168,440 @@ class MirrorSourceHealthResponse(BaseModel):
     projection_checksum: str
     blockers: list[dict]
     boundaries: dict
+
+
+class OrderIntentRequest(BaseModel):
+    schema_version: Literal["account_command.order_intent.v1"]
+    intent_id: str = Field(pattern=r"^intent\.[a-z0-9_.-]+$")
+    account_id: Literal["acct.ctp.paper.19053"]
+    mode: Literal["paper_armed", "live_dry_run", "live_armed"]
+    action: Literal["submit"]
+    instrument: str = Field(min_length=1)
+    exchange: str = Field(min_length=1)
+    side: Literal["BUY", "SELL"]
+    quantity: int = Field(ge=1)
+    order_type: Literal["LIMIT"]
+    limit_price: float = Field(gt=0)
+    time_in_force: Literal["GFD", "IOC", "FAK", "FOK"]
+    offset: Literal["OPEN", "CLOSE", "CLOSETODAY", "CLOSEYESTERDAY"]
+    idempotency_key: str = Field(min_length=12)
+    operator_ref: str = Field(min_length=1)
+    preflight_ref: str = Field(min_length=1)
+    raw_secret_values_recorded: Literal[False]
+    raw_broker_endpoint_recorded: Literal[False]
+
+
+class CancelIntentRequest(BaseModel):
+    schema_version: Literal["account_command.cancel_intent.v1"]
+    intent_id: str = Field(pattern=r"^intent\.[a-z0-9_.-]+$")
+    account_id: Literal["acct.ctp.paper.19053"]
+    mode: Literal["paper_armed", "live_dry_run", "live_armed"]
+    action: Literal["cancel"]
+    instrument: str = Field(min_length=1)
+    exchange: str = Field(min_length=1)
+    client_order_id: str = Field(min_length=1)
+    venue_order_id: str = Field(min_length=1)
+    order_ref: str = Field(min_length=1)
+    front_id: int
+    session_id: int
+    idempotency_key: str = Field(min_length=12)
+    operator_ref: str = Field(min_length=1)
+    readback_ref: str = Field(min_length=1)
+    raw_secret_values_recorded: Literal[False]
+    raw_broker_endpoint_recorded: Literal[False]
+
+
+class CommandBlocker(BaseModel):
+    blocker_id: str
+    type: str
+    stage: str
+    reason: str
+    source_ref: str
+    next_action: str
+
+
+class CommandApiResult(BaseModel):
+    schema_version: Literal["account_command.command_api_result.v1"]
+    proposal_id: Literal["p024-account-console-paper-command-controls"]
+    account_id: str
+    action: Literal["submit", "cancel"]
+    mode: str
+    status: Literal["accepted_for_risk", "blocked"]
+    command_id: str
+    intent_id: str
+    intent_ref: str
+    idempotency_key: str
+    idempotency_enforced: bool
+    next_required_stage: str
+    blockers: list[CommandBlocker]
+    risk_decision_ref: str | None = None
+    approval_decision_ref: str | None = None
+    gateway_event_refs: list[str] = Field(default_factory=list)
+    readback_refs: list[str] = Field(default_factory=list)
+    reconciliation_ref: str | None = None
+    gateway_ack_is_final_state: Literal[False]
+    gateway_send_attempted: Literal[False]
+    broker_order_created: Literal[False]
+    runtime_duplicate_send_attempted: Literal[False]
+    raw_secret_values_recorded: Literal[False]
+    raw_broker_endpoint_recorded: Literal[False]
+
+
+class CommandRuntimeCloseout(BaseModel):
+    schema_version: Literal["account_command.runtime_closeout.v1"]
+    proposal_id: Literal["p024-account-console-paper-command-controls"]
+    account_id: Literal["acct.ctp.paper.19053"]
+    run_id: str
+    mode: Literal["paper_armed"]
+    status: Literal["reconciled"]
+    closeout_manifest_ref: str
+    closeout_manifest_checksum: str
+    command_audit_ref: str
+    command_audit_checksum: str
+    intent_refs: list[str]
+    risk_decision_refs: list[str]
+    approval_decision_refs: list[str]
+    gateway_event_refs: list[str]
+    readback_refs: list[str]
+    reconciliation_ref: str
+    artifact_checksums: dict[str, str]
+    runtime_gateway_send_observed: Literal[True]
+    broker_order_created: Literal[True]
+    browser_triggered_broker_order: Literal[False]
+    gateway_ack_is_final_state: Literal[False]
+    raw_secret_values_recorded: Literal[False]
+    raw_broker_endpoint_recorded: Literal[False]
+    runtime_duplicate_send_attempted: Literal[False]
+    source_owner_ref: str
+    explicit_non_claims: list[str]
+
+
+class CommandRuntimeRunRequest(BaseModel):
+    schema_version: Literal["account_command.owner_runtime_run_request.v1"]
+    proposal_id: Literal["p024-account-console-paper-command-controls"]
+    account_id: Literal["acct.ctp.paper.19053"]
+    action: Literal["submit", "cancel"]
+    mode: Literal["paper_armed"]
+    status: Literal["blocked_until_owner_runtime_invocation"]
+    command_id: str
+    intent_id: str
+    intent_ref: str
+    idempotency_key: str
+    owner_runtime_owner_ref: Literal["owner://nautilus_ctp_adapter"]
+    owner_runtime_repo_ref: Literal["owner-repo://nautilus_ctp_adapter"]
+    owner_runtime_entrypoint_ref: str
+    owner_runtime_config_ref: str
+    source_preflight_ref: str
+    readback_ref: str | None = None
+    expected_output_root_ref: str
+    runtime_invocation_attempted: Literal[False]
+    browser_triggered_broker_order: Literal[False]
+    gateway_send_attempted: Literal[False]
+    broker_order_created: Literal[False]
+    raw_secret_values_recorded: Literal[False]
+    raw_broker_endpoint_recorded: Literal[False]
+    external_write_approval_required: Literal[True]
+    blockers: list[CommandBlocker]
+    explicit_non_claims: list[str]
+    run_request_checksum: str
+
+
+class CommandRuntimeInvocationReadiness(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    schema_: Literal["account-console.p024.owner-runtime-invocation-readiness.v1"] = Field(alias="schema")
+    proposal_id: Literal["p024-account-console-paper-command-controls"]
+    account_id: Literal["acct.ctp.paper.19053"]
+    status: Literal["blocked_waiting_for_external_owner_runtime_write_approval"]
+    verdict: Literal["readiness_package_passed_runtime_not_invoked"]
+    reviewed_at: str
+    owner_runtime: dict
+    entrypoints: list[dict]
+    predecessor_evidence: dict
+    external_write_approval_request: dict
+    planned_runtime_commands: list[dict]
+    acceptance_after_owner_run: dict
+    negative_assertions: dict
+    blockers: list[CommandBlocker]
+    explicit_non_claims: list[str]
+
+
+class CommandRuntimeExecutionApprovalPacket(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    schema_: Literal["account-console.p024.owner-runtime-execution-approval-packet.v1"] = Field(alias="schema")
+    proposal_id: Literal["p024-account-console-paper-command-controls"]
+    account_id: Literal["acct.ctp.paper.19053"]
+    reviewed_at: str
+    status: Literal["phase4a_owner_runtime_execution_approval_packet_ready"]
+    verdict: Literal["approval_packet_ready_runtime_not_invoked"]
+    owner_runtime: dict
+    required_operator_approval: dict
+    planned_execution: dict
+    entrypoints: list[dict]
+    command_templates: list[dict]
+    required_post_run_artifacts: list[str]
+    post_run_acceptance_gates: list[str]
+    blockers: list[CommandBlocker]
+    negative_assertions: dict
+    explicit_non_claims: list[str]
+
+
+class CommandRuntimeExecutionHandoffBundle(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    schema_: Literal["account-console.p024.owner-runtime-execution-handoff-bundle.v1"] = Field(alias="schema")
+    proposal_id: Literal["p024-account-console-paper-command-controls"]
+    account_id: Literal["acct.ctp.paper.19053"]
+    reviewed_at: str
+    status: Literal["phase4c_owner_runtime_execution_handoff_bundle_ready"]
+    verdict: Literal["handoff_bundle_ready_runtime_not_invoked"]
+    depends_on: dict
+    execution_guard: dict
+    runtime_input_requirements: list[dict]
+    operator_sequence: list[dict]
+    required_owner_artifacts: list[str]
+    post_handoff_gates: list[str]
+    blockers: list[CommandBlocker]
+    negative_assertions: dict
+    explicit_non_claims: list[str]
+
+
+class CommandPartialFillRuntimeExecutionApprovalPacket(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    schema_: Literal["account-console.p024.partial-fill-runtime-execution-approval-packet.v1"] = Field(alias="schema")
+    proposal_id: Literal["p024-account-console-paper-command-controls"]
+    account_id: Literal["acct.ctp.paper.19053"]
+    reviewed_at: str
+    status: Literal["phase4j_partial_fill_runtime_execution_approval_packet_ready"]
+    verdict: Literal["approval_packet_ready_runtime_not_invoked"]
+    owner_runtime: dict
+    required_operator_approval: dict
+    planned_execution: dict
+    entrypoints: list[dict]
+    attempt_constraints: dict
+    command_templates: list[dict]
+    required_post_run_artifacts: list[str]
+    post_run_acceptance_gates: list[str]
+    blockers: list[dict]
+    negative_assertions: dict
+    explicit_non_claims: list[str]
+
+
+class CommandPartialFillRuntimeExecutionHandoffBundle(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    schema_: Literal["account-console.p024.partial-fill-runtime-execution-handoff-bundle.v1"] = Field(alias="schema")
+    proposal_id: Literal["p024-account-console-paper-command-controls"]
+    account_id: Literal["acct.ctp.paper.19053"]
+    reviewed_at: str
+    status: Literal["phase4k_partial_fill_runtime_execution_handoff_bundle_ready"]
+    verdict: Literal["handoff_bundle_ready_runtime_not_invoked"]
+    depends_on: dict
+    execution_guard: dict
+    runtime_input_requirements: list[dict]
+    operator_sequence: list[dict]
+    success_criteria: dict
+    fallback_classifications: list[str]
+    negative_assertions: dict
+
+
+class CommandRuntimeExecutionGapAudit(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    schema_: Literal["account-console.p024.runtime-execution-gap-audit.v1"] = Field(alias="schema")
+    proposal_id: Literal["p024-account-console-paper-command-controls"]
+    account_id: Literal["acct.ctp.paper.19053"]
+    reviewed_at: str
+    status: Literal["phase4e_final_runtime_execution_gap_audited"]
+    verdict: Literal["blocked_pending_owner_runtime_execution"]
+    goal_state: Literal["all_acceptance_requires_owner_runtime_execution_artifacts"]
+    accepted_scenarios: list[str]
+    not_accepted_scenarios: list[dict]
+    required_before_goal_complete: list[str]
+    external_write_approval: dict
+    owner_runtime_refs: dict
+    required_owner_artifacts: list[str]
+    post_execution_gates: list[str]
+    residual_blockers: list[dict]
+    negative_assertions: dict
+    explicit_non_claims: list[str]
+
+
+class CommandPartialFillOwnerRepairImplementationPlan(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    schema_: Literal["account-console.p024.partial-fill-owner-repair-implementation-plan.v1"] = Field(alias="schema")
+    proposal_id: Literal["p024-account-console-paper-command-controls"]
+    account_id: Literal["acct.ctp.paper.19053"]
+    reviewed_at: str
+    status: Literal["phase4r_owner_close_offset_repair_implementation_plan_ready"]
+    verdict: Literal["owner_repair_plan_ready_no_owner_write_attempted"]
+    depends_on: dict
+    owner_read_context: dict
+    planned_owner_changes_after_exact_approval: list[dict]
+    post_repair_validator_sequence: list[dict]
+    post_repair_runtime_attempt_gate: dict
+    forbidden_repair_shapes: list[str]
+    negative_assertions: dict
+
+
+class CommandPartialFillOwnerRepairApprovalPacket(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    schema_: Literal["account-console.p024.partial-fill-owner-repair-approval-packet.v1"] = Field(alias="schema")
+    proposal_id: Literal["p024-account-console-paper-command-controls"]
+    account_id: Literal["acct.ctp.paper.19053"]
+    reviewed_at: str
+    status: Literal["phase4p_owner_close_offset_repair_approval_packet_ready"]
+    verdict: Literal["owner_repair_approval_required_before_retry"]
+    depends_on: dict
+    current_thread_approval_assessment: dict
+    required_owner_repair_approval: dict
+    required_owner_repair_scope: dict
+    retry_gate: dict
+    residual_blockers: list[dict]
+    negative_assertions: dict
+
+
+class CommandPartialFillRemainingAcceptanceCurrentState(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    schema_: Literal["account-console.p024.partial-fill-remaining-acceptance-current-state.v1"] = Field(alias="schema")
+    proposal_id: Literal["p024-account-console-paper-command-controls"]
+    account_id: Literal["acct.ctp.paper.19053"]
+    reviewed_at: str
+    status: Literal["phase4q_remaining_acceptance_current_state_audited"]
+    verdict: Literal["not_fully_accepted_pending_owner_repair_and_real_partial_fill"]
+    current_authoritative_state: dict
+    accepted_evidence_groups: list[dict]
+    remaining_acceptance_requirements: list[dict]
+    next_authorized_action: dict
+    negative_assertions: dict
+
+
+class CommandPartialFillOwnerRepairEvidenceIngestGate(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    schema_: Literal["account-console.p024.partial-fill-owner-repair-evidence-ingest-gate.v1"] = Field(alias="schema")
+    proposal_id: Literal["p024-account-console-paper-command-controls"]
+    account_id: Literal["acct.ctp.paper.19053"]
+    reviewed_at: str
+    status: Literal["phase4t_owner_repair_evidence_ingest_gate_ready"]
+    verdict: Literal["ingest_gate_ready_owner_repair_evidence_missing"]
+    depends_on: dict
+    ingest_scope: dict
+    required_owner_repair_evidence: list[dict]
+    post_ingest_required_account_console_updates: list[str]
+    reject_evidence_if: list[str]
+    negative_assertions: dict
+
+
+class CommandPartialFillOwnerRepairEvidenceIngestAudit(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    schema_: Literal["account-console.p024.partial-fill-owner-repair-evidence-ingest-audit.v1"] = Field(alias="schema")
+    proposal_id: Literal["p024-account-console-paper-command-controls"]
+    account_id: Literal["acct.ctp.paper.19053"]
+    reviewed_at: str
+    status: Literal["phase4zd_owner_repair_evidence_ingested"]
+    verdict: Literal["owner_repair_evidence_recorded_runtime_retry_packet_required"]
+    depends_on: dict
+    owner_repair_evidence: dict
+    post_repair_source_checksums: list[dict]
+    owner_validator_refs: list[dict]
+    ingest_decision: dict
+    remaining_runtime_evidence_required: list[str]
+    negative_assertions: dict
+
+
+class CommandPartialFillPostRepairRuntimeRetryApprovalPacket(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    schema_: Literal["account-console.p024.partial-fill-post-repair-runtime-retry-approval-packet.v1"] = Field(alias="schema")
+    proposal_id: Literal["p024-account-console-paper-command-controls"]
+    account_id: Literal["acct.ctp.paper.19053"]
+    reviewed_at: str
+    status: Literal["phase4ze_post_repair_runtime_retry_approval_packet_ready"]
+    verdict: Literal["one_guarded_post_repair_paper_attempt_authorized"]
+    depends_on: dict
+    operator_approval: dict
+    runtime_retry_guard: dict
+    required_runtime_evidence: list[str]
+    success_formula: dict
+    fallback_if_not_partial: dict
+    negative_assertions_before_runtime: dict
+
+
+class CommandPartialFillPostRepairRuntimeAttemptAudit(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    schema_: Literal["account-console.p024.partial-fill-post-repair-runtime-attempt-audit.v1"] = Field(alias="schema")
+    proposal_id: Literal["p024-account-console-paper-command-controls"]
+    account_id: Literal["acct.ctp.paper.19053"]
+    reviewed_at: str
+    status: Literal["phase4zf_post_repair_runtime_attempt_full_fill_blocker_recorded"]
+    verdict: Literal["real_paper_order_filled_not_partial_fill_no_cancel_remainder"]
+    depends_on: dict
+    owner_runtime_attempt: dict
+    owner_artifact_refs: list[dict]
+    runtime_observation: dict
+    position_readback_delta: dict
+    acceptance_decision: dict
+    negative_assertions: dict
+
+
+class CommandPartialFillOwnerRepairPreflightSourceAudit(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    schema_: Literal["account-console.p024.partial-fill-owner-repair-preflight-source-audit.v1"] = Field(alias="schema")
+    proposal_id: Literal["p024-account-console-paper-command-controls"]
+    account_id: Literal["acct.ctp.paper.19053"]
+    reviewed_at: str
+    status: Literal["phase4v_owner_repair_preflight_source_audited"]
+    verdict: Literal["owner_repair_still_required_before_runtime_retry"]
+    owner_repo: dict
+    source_checks: list[dict]
+    operator_approval_delta: dict
+    next_required_action: dict
+    negative_assertions: dict
+
+
+class CommandPartialFillOwnerRepairPatchPreview(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    schema_: Literal["account-console.p024.partial-fill-owner-repair-patch-preview.v1"] = Field(alias="schema")
+    proposal_id: Literal["p024-account-console-paper-command-controls"]
+    account_id: Literal["acct.ctp.paper.19053"]
+    reviewed_at: str
+    status: Literal["phase4x_owner_repair_patch_preview_ready"]
+    verdict: Literal["patch_preview_ready_owner_write_not_authorized"]
+    depends_on: dict
+    owner_baseline: dict
+    previewed_owner_patch: list[dict]
+    post_patch_required_validators: list[dict]
+    post_patch_runtime_gate: dict
+    forbidden_preview_shapes: list[str]
+    negative_assertions: dict
+
+
+class CommandPartialFillOwnerRepairExecutionHandoffBundle(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    schema_: Literal["account-console.p024.partial-fill-owner-repair-execution-handoff-bundle.v1"] = Field(alias="schema")
+    proposal_id: Literal["p024-account-console-paper-command-controls"]
+    account_id: Literal["acct.ctp.paper.19053"]
+    reviewed_at: str
+    status: Literal["phase4z_owner_repair_execution_handoff_bundle_ready"]
+    verdict: Literal["handoff_bundle_ready_owner_write_not_invoked"]
+    depends_on: dict
+    execution_guard: dict
+    owner_repo_context: dict
+    operator_sequence_after_exact_approval: list[dict]
+    required_post_handoff_artifacts: list[str]
+    success_criteria_before_runtime_retry: list[str]
+    negative_assertions: dict
 
 
 class Health(BaseModel):

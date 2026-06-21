@@ -1,0 +1,44 @@
+{
+  "schema_version": "broker_observation_store_snapshot.v1",
+  "account_id": "acct.ib.live.u3028269",
+  "store_semantics": "observation_evidence_projection_cache",
+  "truth_flags": {
+    "broker_truth": false,
+    "order_truth": false,
+    "account_truth": false,
+    "command_authority": false,
+    "readiness_truth": false
+  },
+  "reload_support": true,
+  "reload_proof": {
+    "store_snapshot_ref": "contracts/broker_observation/fixtures/invalid_store_memory_only_reload.json",
+    "store_snapshot_checksum": "sha256:7777777777777777777777777777777777777777777777777777777777777777",
+    "source_report_batch_ref": "contracts/broker_observation/fixtures/ib_tws_report_batch_sample.json",
+    "source_report_batch_checksum": "sha256:8888888888888888888888888888888888888888888888888888888888888888",
+    "reload_checkpoint_id": "broker-observation-store.reload.u3028269.invalid-memory.001",
+    "records_reloaded_from_store": 0,
+    "records_loaded_from_live_memory": 2,
+    "parity_status": "passed"
+  },
+  "persisted_families": [
+    "order_status_reports",
+    "fill_reports",
+    "funds_snapshots",
+    "positions_snapshots",
+    "session_health",
+    "freshness_cursors"
+  ],
+  "persisted_record_counts": {
+    "order_status_reports": 0,
+    "fill_reports": 0,
+    "funds_snapshots": 0,
+    "positions_snapshots": 0,
+    "session_health": 1,
+    "freshness_cursors": 1
+  },
+  "replay_state": {
+    "state": "complete",
+    "blockers": []
+  },
+  "raw_secret_values_recorded": false
+}

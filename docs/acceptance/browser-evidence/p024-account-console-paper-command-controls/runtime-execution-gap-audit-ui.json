@@ -1,0 +1,51 @@
+{
+  "schema": "account-console.p024.runtime-execution-gap-audit-ui.v1",
+  "proposal_id": "p024-account-console-paper-command-controls",
+  "account_id": "acct.ctp.paper.19053",
+  "route": "/accounts/acct.ctp.paper.19053",
+  "verdict": "pass",
+  "api_gap_audit": {
+    "schema": "account-console.p024.runtime-execution-gap-audit.v1",
+    "status": "phase4e_final_runtime_execution_gap_audited",
+    "verdict": "blocked_pending_owner_runtime_execution",
+    "accepted_scenario_count": 14,
+    "not_accepted_scenario_count": 1,
+    "required_before_goal_complete_count": 8,
+    "required_owner_artifact_count": 14,
+    "blocker_count": 3,
+    "final_acceptance_claimed": false,
+    "runtime_invocation_attempted": false,
+    "owner_repo_write_attempted": false,
+    "browser_triggered_broker_order": false,
+    "broker_order_created": false,
+    "raw_secret_values_recorded": false,
+    "raw_broker_endpoint_recorded": false
+  },
+  "browser_checks": {
+    "gap_panel_visible": true,
+    "verdict_displayed_blocked": true,
+    "final_acceptance_claimed_displayed_false": true,
+    "a4_not_accepted_displayed": true,
+    "approval_obtained_displayed_false": true,
+    "runtime_invocation_displayed_false": true,
+    "owner_write_displayed_false": true,
+    "broker_order_displayed_false": true,
+    "required_items_displayed": true,
+    "blocker_items_displayed": true,
+    "sensitive_endpoint_wording_absent": true
+  },
+  "explicit_non_claims": [
+    "does_not_claim_all_acceptance_complete",
+    "does_not_invoke_owner_runtime",
+    "does_not_write_owner_repo",
+    "does_not_send_broker_order_from_browser",
+    "does_not_create_broker_order",
+    "does_not_read_raw_ctp_secret_or_endpoint",
+    "does_not_use_screenshot_as_order_or_runtime_truth"
+  ],
+  "browser_evidence": [
+    {
+      "screenshot": "docs/acceptance/browser-evidence/p024-account-console-paper-command-controls/p024-runtime-execution-gap-audit-ui.png"
+    }
+  ]
+}

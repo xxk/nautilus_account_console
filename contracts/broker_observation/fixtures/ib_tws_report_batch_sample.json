@@ -1,0 +1,76 @@
+{
+  "schema_version": "broker_observation_report_batch.v1",
+  "account_id": "acct.ib.live.u3028269",
+  "source_kind": "ib_tws_observation",
+  "reports": [
+    {
+      "report_id": "report.ib.u3028269.order-status.000001",
+      "nautilus_report_type": "OrderStatusReport",
+      "account_id": "acct.ib.live.u3028269",
+      "instrument_id": "AAPL.NASDAQ",
+      "client_order_id": "C-ADR0005-000001",
+      "venue_order_id": "V-ADR0005-000001",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "time_in_force": "DAY",
+      "order_status": "ACCEPTED",
+      "quantity": 100,
+      "filled_quantity": 0,
+      "remaining_quantity": 100,
+      "price": 180.5,
+      "avg_price": null,
+      "trade_id": null,
+      "last_px": null,
+      "last_qty": null,
+      "commission": null,
+      "event_timestamp": "2026-06-20T02:00:00Z",
+      "observed_timestamp": "2026-06-20T02:00:00.100Z",
+      "received_timestamp": "2026-06-20T02:00:00.120Z",
+      "sequence": 1,
+      "source_ref": "observation-ref://ib-tws/u3028269/reports/000001",
+      "source_checksum": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+      "raw_payload_provenance": {
+        "payload_ref": "raw-payload-ref://ib-tws/u3028269/order-status/000001",
+        "payload_checksum": "sha256:2222222222222222222222222222222222222222222222222222222222222222",
+        "excerpt_redacted": true
+      }
+    },
+    {
+      "report_id": "report.ib.u3028269.fill.000002",
+      "nautilus_report_type": "FillReport",
+      "account_id": "acct.ib.live.u3028269",
+      "instrument_id": "AAPL.NASDAQ",
+      "client_order_id": "C-ADR0005-000001",
+      "venue_order_id": "V-ADR0005-000001",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "time_in_force": "DAY",
+      "order_status": "FILLED",
+      "quantity": 100,
+      "filled_quantity": 100,
+      "remaining_quantity": 0,
+      "price": 180.5,
+      "avg_price": 180.45,
+      "trade_id": "T-ADR0005-000002",
+      "last_px": 180.45,
+      "last_qty": 100,
+      "commission": 1.25,
+      "event_timestamp": "2026-06-20T02:00:01Z",
+      "observed_timestamp": "2026-06-20T02:00:01.100Z",
+      "received_timestamp": "2026-06-20T02:00:01.130Z",
+      "sequence": 2,
+      "source_ref": "observation-ref://ib-tws/u3028269/reports/000002",
+      "source_checksum": "sha256:3333333333333333333333333333333333333333333333333333333333333333",
+      "raw_payload_provenance": {
+        "payload_ref": "raw-payload-ref://ib-tws/u3028269/fill/000002",
+        "payload_checksum": "sha256:4444444444444444444444444444444444444444444444444444444444444444",
+        "excerpt_redacted": true
+      }
+    }
+  ],
+  "raw_secret_values_recorded": false,
+  "command": {
+    "enabled": false,
+    "allowed_actions": []
+  }
+}

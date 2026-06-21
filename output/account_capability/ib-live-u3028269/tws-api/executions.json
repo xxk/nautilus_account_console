@@ -1,0 +1,36 @@
+{
+  "schema": "account-console.ib-tws-api-query.v1",
+  "account_id": "acct.ib.live.u3028269",
+  "display_alias": "U3028269",
+  "query_kind": "executions",
+  "source_kind": "ib_tws_api",
+  "success": true,
+  "tws_api_login_confirmed": true,
+  "query_started_at": "2026-06-20T15:09:56Z",
+  "query_completed_at": "2026-06-20T15:09:58Z",
+  "raw_secret_values_recorded": false,
+  "raw_broker_endpoint_recorded": false,
+  "screenshot_used_for_values": false,
+  "order_action_sent": false,
+  "account_ref": "ib-account-ref://U3028269",
+  "executions": [],
+  "commissions": [],
+  "execution_report_rows": 0,
+  "readonly_query": {
+    "api_call": "reqExecutions",
+    "filter_type": "ExecutionFilter",
+    "filter_account_ref": "ib-account-ref://U3028269",
+    "filter_account_raw_value_recorded": false,
+    "query_scope": "current_tws_session_matching_account_filter",
+    "request_id": "exec-readonly-9002",
+    "order_action_sent": false,
+    "complete_history_claimed": false
+  },
+  "empty_state": "not_available_or_no_matching_executions",
+  "explicit_non_claims": [
+    "does_not_prove_complete_order_history",
+    "does_not_authorize_order_action",
+    "does_not_prove_durable_store_reload_parity"
+  ],
+  "query_checksum": "sha256:ac3e8c6038bab56b3cfb3996eabe4d4b5d1d2698abd0073871c506a09c7774b5"
+}

@@ -1,0 +1,90 @@
+{
+  "schema": "account-console.p024.partial-fill-owner-repair-approval-packet.v1",
+  "proposal_id": "p024-account-console-paper-command-controls",
+  "account_id": "acct.ctp.paper.19053",
+  "reviewed_at": "2026-06-21T19:05:00+08:00",
+  "status": "phase4p_owner_close_offset_repair_approval_packet_ready",
+  "verdict": "owner_repair_approval_required_before_retry",
+  "depends_on": {
+    "gap_audit_ref": "docs/acceptance/p024-account-console-paper-command-controls/partial-fill-close-offset-owner-rule-gap-audit.json",
+    "gap_audit_status": "phase4o_close_yesterday_owner_rule_gap_audited",
+    "latest_attempt_audit_ref": "docs/acceptance/p024-account-console-paper-command-controls/partial-fill-runtime-execution-attempt-audit.json",
+    "latest_owner_attempt_result_ref": "owner-repo://nautilus_ctp_adapter/output/account_command/ctp-paper-19053/p024-partial-fill-runtime-20260621T174616p0800/submit_owner_runtime_result.json",
+    "latest_owner_attempt_result_sha256": "5bc122ae2051d3bd92ab5d5b8f517da7a2f070bce6b395f9fc7fe79d801ba688"
+  },
+  "current_thread_approval_assessment": {
+    "approval_text_observed": true,
+    "approval_scope": "owner_runtime_script_execution_only",
+    "approval_path": "D:/Nautilus/nautilus_ctp_adapter",
+    "approved_expected_impact": "create owner-owned runtime/debug/readback/reconciliation artifacts outside this worktree and may submit/cancel one paper order in the 19053 simulation account",
+    "matches_current_next_action": false,
+    "reason": "phase4o changed the next valid action from another submit/cancel runtime attempt to owner close-offset semantic repair or source closure before any retry",
+    "runtime_retry_authorized_by_this_packet": false,
+    "owner_code_repair_authorized_by_this_packet": false
+  },
+  "required_owner_repair_approval": {
+    "required": true,
+    "obtained": false,
+    "approval_path": "D:/Nautilus/nautilus_ctp_adapter",
+    "exact_approval_text_required": "I approve writes to D:/Nautilus/nautilus_ctp_adapter to repair owner close-offset semantics for P024 and, only after validators pass and account-console approval packets are updated, run at most one additional guarded OpenCTP paper partial-fill attempt in the 19053 simulation account; expected impact: create owner-owned code/runtime/debug/readback/reconciliation artifacts outside this worktree and may submit/cancel up to one small exposure-reduction paper order.",
+    "reason": "owner-side CLOSEYESTERDAY rejected-callback offset semantics must be repaired or source-closed before another real paper partial-fill attempt can produce qualifying evidence"
+  },
+  "required_owner_repair_scope": {
+    "owner_repo_ref": "owner-repo://nautilus_ctp_adapter",
+    "owner_repo_path": "D:/Nautilus/nautilus_ctp_adapter",
+    "allowed_write_scope_after_approval": [
+      "owner source/tests needed to repair CLOSEYESTERDAY close-offset semantics",
+      "owner-owned runtime/debug/readback/reconciliation artifacts for at most one post-repair guarded paper partial-fill attempt"
+    ],
+    "expected_owner_changes": [
+      "extend build_close_offset_owner_rule_semantics so CLOSEYESTERDAY submit-boundary offset 4 is not rewritten by rejected OnRspOrderInsert callback offset 1",
+      "add focused owner tests proving rejected callback offset cannot override CLOSEYESTERDAY submit truth",
+      "preserve no-retry behavior unless owner validators pass and account-console approval packets are updated"
+    ],
+    "required_owner_validators_before_retry": [
+      "python -m pytest tests/test_guarded_paper_order_loop.py -q",
+      "python -m pytest tests/test_nautilus_integration.py -q"
+    ],
+    "required_account_console_followup_before_retry": [
+      "record owner repair commit/ref and validator results without raw secrets",
+      "update partial-fill runtime execution approval packet and handoff bundle",
+      "re-run account-console P024 design and repair packet validators"
+    ]
+  },
+  "retry_gate": {
+    "additional_partial_fill_order_authorized": false,
+    "runtime_invocation_allowed": false,
+    "owner_repair_required_first": true,
+    "owner_repair_evidence_required": true,
+    "fresh_post_repair_runtime_attempt_approval_required": true,
+    "reason": "the latest real attempt was rejected before partial fill; repeating submit/cancel before repair would not satisfy non-UI or Web UI partial-fill acceptance"
+  },
+  "residual_blockers": [
+    {
+      "blocker_id": "p024_owner_repair_approval_not_obtained",
+      "type": "external_owner_write_approval_missing_for_repair",
+      "next_action": "operator must provide the exact owner repair approval text before owner source/test writes"
+    },
+    {
+      "blocker_id": "p024_close_yesterday_owner_rule_gap",
+      "type": "owner_runtime_close_offset_semantics_gap",
+      "next_action": "repair or source-close CLOSEYESTERDAY rejected-callback offset semantics in owner repo"
+    },
+    {
+      "blocker_id": "p024_real_partial_fill_runtime_missing",
+      "type": "owner_runtime_partial_fill_state_missing",
+      "next_action": "after owner repair, updated packets and fresh approval, produce a qualifying partial-fill then cancel artifact set or preserve the typed blocker"
+    }
+  ],
+  "negative_assertions": {
+    "owner_repo_write_attempted_by_this_packet": false,
+    "owner_runtime_invocation_attempted": false,
+    "owner_code_repair_authorized_by_current_thread_text": false,
+    "additional_order_authorized": false,
+    "partial_fill_claimed": false,
+    "full_acceptance_claimed": false,
+    "raw_secret_values_recorded": false,
+    "raw_broker_endpoint_recorded": false,
+    "config_raw_content_recorded": false
+  }
+}

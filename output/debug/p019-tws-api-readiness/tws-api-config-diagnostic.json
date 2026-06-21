@@ -1,0 +1,99 @@
+{
+  "schema": "account-console.p019-tws-api-config-diagnostic.v1",
+  "proposal_id": "p019-broker-observation-session-foundation",
+  "account_id": "acct.ib.live.u3028269",
+  "display_alias": "U3028269",
+  "observed_at": "2026-06-20T15:09:53Z",
+  "diagnostic_kind": "tws_api_config",
+  "tws_process": {
+    "present": true,
+    "process_name": "tws",
+    "process_id": 12764,
+    "window_title_ref": "U3028269_account_window",
+    "responding": true
+  },
+  "config_search_ref": "local-file-ref://C:/Jts",
+  "candidate_config_count": 4,
+  "latest_config_candidate": {
+    "config_ref": "local-file-ref://C:/Jts/1045/gffiklmeamhoiehlgjoifpcbcjmdkpaijiiacdbc/tws.xml",
+    "last_write_time": "2026-06-20T14:21:03Z",
+    "length_bytes": 3381029,
+    "api_settings": {
+      "socketClient": "false",
+      "allowOnlyLocalhost": "true",
+      "port": "7497"
+    },
+    "api_socket_enabled": false
+  },
+  "config_candidates": [
+    {
+      "config_ref": "local-file-ref://C:/Jts/1045/gffiklmeamhoiehlgjoifpcbcjmdkpaijiiacdbc/tws.xml",
+      "last_write_time": "2026-06-20T14:21:03Z",
+      "length_bytes": 3381029,
+      "api_settings": {
+        "socketClient": "false",
+        "allowOnlyLocalhost": "true",
+        "port": "7497"
+      },
+      "api_socket_enabled": false
+    },
+    {
+      "config_ref": "local-file-ref://C:/Jts/gffiklmeamhoiehlgjoifpcbcjmdkpaijiiacdbc/tws.xml",
+      "last_write_time": "2026-05-04T13:30:24Z",
+      "length_bytes": 247407,
+      "api_settings": {
+        "socketClient": null,
+        "allowOnlyLocalhost": null,
+        "port": null
+      },
+      "api_socket_enabled": false
+    },
+    {
+      "config_ref": "local-file-ref://C:/Jts/1034/gffiklmeamhoiehlgjoifpcbcjmdkpaijiiacdbc/tws.xml",
+      "last_write_time": "2026-04-09T01:52:51Z",
+      "length_bytes": 3621823,
+      "api_settings": {
+        "socketClient": "true",
+        "allowOnlyLocalhost": "false",
+        "port": "7496"
+      },
+      "api_socket_enabled": true
+    },
+    {
+      "config_ref": "local-file-ref://C:/Jts/1034_reinstall/gffiklmeamhoiehlgjoifpcbcjmdkpaijiiacdbc/tws.xml",
+      "last_write_time": "2026-04-09T01:52:51Z",
+      "length_bytes": 3621823,
+      "api_settings": {
+        "socketClient": "true",
+        "allowOnlyLocalhost": "false",
+        "port": "7496"
+      },
+      "api_socket_enabled": true
+    }
+  ],
+  "connect_port_refs": {
+    "tws_live_default": {
+      "connectable": false
+    },
+    "tws_paper_default": {
+      "connectable": true
+    },
+    "gateway_live_default": {
+      "connectable": false
+    },
+    "gateway_paper_default": {
+      "connectable": false
+    }
+  },
+  "ready_for_tws_api_funds_positions_query": true,
+  "typed_blocker": null,
+  "boundaries": {
+    "raw_config_file_contents_recorded": false,
+    "raw_secret_values_recorded": false,
+    "raw_broker_endpoint_recorded": false,
+    "tws_api_account_query_sent": false,
+    "funds_positions_values_recorded": false,
+    "screenshot_used_for_funds_positions": false,
+    "order_action_sent": false
+  }
+}

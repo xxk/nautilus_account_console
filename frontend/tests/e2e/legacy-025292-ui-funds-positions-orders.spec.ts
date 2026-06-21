@@ -59,7 +59,7 @@ test("direct 025292 route renders funds, positions and orders or fails closed", 
       "No position rows in this fixture projection."
     );
     await expect(page.getByTestId("account-bottom-tape")).toContainText(
-      "No order rows in this fixture projection."
+      "No open order rows in this mirror projection."
     );
     await page.screenshot({ fullPage: true, path: screenshot });
     if (testInfo.project.name === "desktop") {

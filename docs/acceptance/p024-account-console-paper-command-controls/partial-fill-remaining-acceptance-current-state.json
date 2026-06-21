@@ -1,0 +1,104 @@
+{
+  "schema": "account-console.p024.partial-fill-remaining-acceptance-current-state.v1",
+  "proposal_id": "p024-account-console-paper-command-controls",
+  "account_id": "acct.ctp.paper.19053",
+  "reviewed_at": "2026-06-21T19:35:00+08:00",
+  "status": "phase4q_remaining_acceptance_current_state_audited",
+  "verdict": "not_fully_accepted_pending_owner_repair_and_real_partial_fill",
+  "current_authoritative_state": {
+    "account_console_worktree_clean_at_review": true,
+    "owner_repo_code_change_recorded_for_close_offset_repair": false,
+    "owner_repo_runtime_artifacts_present": true,
+    "latest_real_partial_fill_attempt_classification": "rejected_before_partial_fill_not_partial_fill",
+    "latest_owner_repair_gate": "phase4p_owner_close_offset_repair_approval_packet_ready",
+    "full_acceptance_claimed": false
+  },
+  "accepted_evidence_groups": [
+    {
+      "group_id": "api_and_ui_contracts",
+      "status": "accepted",
+      "evidence_refs": [
+        "python scripts/validate_p024_paper_command_api.py",
+        "python -m pytest backend/tests/test_command_api.py -q",
+        "python scripts/validate_p024_paper_command_controls_design.py"
+      ]
+    },
+    {
+      "group_id": "browser_display_contracts",
+      "status": "accepted_as_browser_contract_not_runtime_truth",
+      "evidence_refs": [
+        "python scripts/validate_p024_partial_fill_cancel_browser_evidence.py",
+        "python scripts/validate_p024_partial_fill_runtime_approval_packet_browser_evidence.py",
+        "python scripts/validate_p024_partial_fill_runtime_handoff_bundle_browser_evidence.py"
+      ]
+    },
+    {
+      "group_id": "real_owner_submit_cancel_non_partial_runtime",
+      "status": "accepted_for_submit_cancel_callback_closeout_only",
+      "evidence_refs": [
+        "docs/acceptance/p024-account-console-paper-command-controls/owner-runtime-execution-attempt-audit.json",
+        "python scripts/validate_p024_owner_runtime_execution_attempt_audit.py"
+      ]
+    },
+    {
+      "group_id": "real_partial_fill_failed_attempt_classification",
+      "status": "accepted_as_blocker_evidence",
+      "evidence_refs": [
+        "docs/acceptance/p024-account-console-paper-command-controls/partial-fill-runtime-execution-attempt-audit.json",
+        "docs/acceptance/p024-account-console-paper-command-controls/partial-fill-close-offset-owner-rule-gap-audit.json",
+        "docs/acceptance/p024-account-console-paper-command-controls/partial-fill-owner-repair-approval-packet.json"
+      ]
+    }
+  ],
+  "remaining_acceptance_requirements": [
+    {
+      "requirement_id": "R1_owner_repair_approval",
+      "required_evidence_shape": "exact operator approval text for owner close-offset repair and post-repair at-most-one retry",
+      "current_status": "missing",
+      "current_blocker_id": "p024_owner_repair_approval_not_obtained"
+    },
+    {
+      "requirement_id": "R2_owner_close_offset_repair",
+      "required_evidence_shape": "owner commit/ref plus tests proving CLOSEYESTERDAY submit-boundary offset 4 is not rewritten by rejected callback offset 1",
+      "current_status": "missing",
+      "current_blocker_id": "p024_close_yesterday_owner_rule_gap"
+    },
+    {
+      "requirement_id": "R3_owner_validators",
+      "required_evidence_shape": "owner-side pytest results for guarded order loop and integration tests after repair",
+      "current_status": "missing",
+      "required_commands": [
+        "python -m pytest tests/test_guarded_paper_order_loop.py -q",
+        "python -m pytest tests/test_nautilus_integration.py -q"
+      ]
+    },
+    {
+      "requirement_id": "R4_post_repair_partial_fill_runtime",
+      "required_evidence_shape": "owner-owned guarded paper artifact set with same native order identity, 0 < filled_quantity < submitted_quantity, terminal cancel of remainder, readback and reconciliation checksums",
+      "current_status": "missing",
+      "current_blocker_id": "p024_real_partial_fill_runtime_missing"
+    },
+    {
+      "requirement_id": "R5_web_ui_real_partial_fill_projection",
+      "required_evidence_shape": "Playwright/browser evidence cross-checking the real owner refs/checksums, stable order identity, stable fill rows and terminal cancel readback",
+      "current_status": "missing",
+      "current_blocker_id": "p024_web_ui_real_partial_fill_projection_missing"
+    }
+  ],
+  "next_authorized_action": {
+    "owner_code_repair_allowed": false,
+    "owner_runtime_retry_allowed": false,
+    "account_console_only_work_allowed": true,
+    "required_exact_approval_before_owner_repair_or_retry": "I approve writes to D:/Nautilus/nautilus_ctp_adapter to repair owner close-offset semantics for P024 and, only after validators pass and account-console approval packets are updated, run at most one additional guarded OpenCTP paper partial-fill attempt in the 19053 simulation account; expected impact: create owner-owned code/runtime/debug/readback/reconciliation artifacts outside this worktree and may submit/cancel up to one small exposure-reduction paper order."
+  },
+  "negative_assertions": {
+    "full_acceptance_claimed": false,
+    "owner_repair_claimed": false,
+    "post_repair_runtime_retry_claimed": false,
+    "real_partial_fill_claimed": false,
+    "web_ui_real_partial_fill_claimed": false,
+    "raw_secret_values_recorded": false,
+    "raw_broker_endpoint_recorded": false,
+    "config_raw_content_recorded": false
+  }
+}

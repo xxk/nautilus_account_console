@@ -1,0 +1,88 @@
+{
+  "schema": "account-console.p024.partial-fill-owner-repair-evidence-ingest-audit.v1",
+  "proposal_id": "p024-account-console-paper-command-controls",
+  "account_id": "acct.ctp.paper.19053",
+  "reviewed_at": "2026-06-21T23:35:00+08:00",
+  "status": "phase4zd_owner_repair_evidence_ingested",
+  "verdict": "owner_repair_evidence_recorded_runtime_retry_packet_required",
+  "depends_on": {
+    "ingest_gate_ref": "docs/acceptance/p024-account-console-paper-command-controls/partial-fill-owner-repair-evidence-ingest-gate.json",
+    "ingest_gate_status": "phase4t_owner_repair_evidence_ingest_gate_ready",
+    "execution_handoff_ref": "docs/acceptance/p024-account-console-paper-command-controls/partial-fill-owner-repair-execution-handoff-bundle.json",
+    "execution_handoff_status": "phase4z_owner_repair_execution_handoff_bundle_ready",
+    "operator_approval_text_observed": true
+  },
+  "owner_repair_evidence": {
+    "owner_repo_ref": "owner-repo://nautilus_ctp_adapter",
+    "owner_repo_path": "D:/Nautilus/nautilus_ctp_adapter",
+    "owner_branch_or_ref": "main",
+    "owner_repair_commit_ref": "01db0f84203db09874fdec07ec8d03fb47ca4ea7",
+    "owner_repair_commit_subject": "fix: preserve close yesterday submit offset truth",
+    "approval_text_ref": "user-message://2026-06-21/p024-owner-repair-and-one-runtime-attempt-approval",
+    "owner_repo_write_attempted": true,
+    "owner_runtime_invocation_attempted": false,
+    "raw_secret_values_recorded": false,
+    "raw_broker_endpoint_recorded": false,
+    "config_raw_content_recorded": false
+  },
+  "post_repair_source_checksums": [
+    {
+      "path": "owner-repo://nautilus_ctp_adapter/scripts/ctp_guarded_paper_order_loop.py",
+      "sha256": "DBF9CCE8663B207C1BDE53BA0EEB320483C9E61F04443494059E5822555EE2BD",
+      "required_symbol": "build_close_offset_owner_rule_semantics",
+      "repair_assertion": "CLOSEYESTERDAY submit-boundary offset 4 is protected from rejected OnRspOrderInsert callback offset 1"
+    },
+    {
+      "path": "owner-repo://nautilus_ctp_adapter/tests/test_guarded_paper_order_loop.py",
+      "sha256": "8A5619A117262F90EAD774C07E2725A32CE2C5F1A074D230961D3E795B100B89",
+      "required_symbol": "test_close_yesterday_owner_rule_blocks_callback_offset_as_submit_truth",
+      "repair_assertion": "focused test covers CLOSEYESTERDAY offset 4 versus callback offset 1"
+    },
+    {
+      "path": "owner-repo://nautilus_ctp_adapter/src/nautilus_ctp_adapter/adapters/ctp/execution_client.py",
+      "sha256": "967D107602119F53E23FDD79F8B337A51A3BCB832E4130D3E1AB54C66599ED76",
+      "required_symbol": "_on_td_exec_callback_with_state",
+      "repair_assertion": "matched exec events preserve submit request provenance for runtime readback correlation"
+    }
+  ],
+  "owner_validator_refs": [
+    {
+      "evidence_id": "owner_focus_validator_result",
+      "command": "python -m pytest tests/test_guarded_paper_order_loop.py -q -p no:cacheprovider",
+      "exit_code": 0,
+      "stdout_tail": "57 passed in 0.92s",
+      "validator_run_sha256": "sha256:2c7a6b2a7e3f6f52e78520a04b8c4e701e9553cf2092ec0c1d0969c1f8dc39d1"
+    },
+    {
+      "evidence_id": "owner_integration_validator_result",
+      "command": "python -m pytest tests/test_nautilus_integration.py -q -p no:cacheprovider",
+      "exit_code": 0,
+      "stdout_tail": "88 passed in 0.77s",
+      "validator_run_sha256": "sha256:2a5eaa3f64264da38df1048ad643fe7db2be81d4d7a86c59e8fe3af5d743f088"
+    }
+  ],
+  "ingest_decision": {
+    "owner_repair_evidence_recorded": true,
+    "owner_validators_passed": true,
+    "account_console_approval_packets_updated": false,
+    "runtime_retry_authorized": false,
+    "requires_post_repair_runtime_retry_packet": true,
+    "maximum_runtime_attempts_after_repair": 1
+  },
+  "remaining_runtime_evidence_required": [
+    "fresh post-repair guarded OpenCTP paper partial-fill attempt artifact set",
+    "pre/post readback proving 0 < filled_quantity < submitted_quantity",
+    "cancel/readback proving filled_quantity + cancelled_quantity == submitted_quantity and remaining_quantity == 0",
+    "Web UI projection of the real owner runtime refs and checksums"
+  ],
+  "negative_assertions": {
+    "owner_runtime_invocation_attempted": false,
+    "post_repair_runtime_retry_claimed": false,
+    "real_partial_fill_claimed": false,
+    "web_ui_real_partial_fill_claimed": false,
+    "full_acceptance_claimed": false,
+    "raw_secret_values_recorded": false,
+    "raw_broker_endpoint_recorded": false,
+    "config_raw_content_recorded": false
+  }
+}

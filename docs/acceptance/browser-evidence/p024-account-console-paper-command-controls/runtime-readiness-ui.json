@@ -1,0 +1,55 @@
+{
+  "schema": "account-console.p024.runtime-readiness-ui.v1",
+  "proposal_id": "p024-account-console-paper-command-controls",
+  "account_id": "acct.ctp.paper.19053",
+  "route": "/accounts/acct.ctp.paper.19053",
+  "verdict": "pass",
+  "api_readiness": {
+    "schema": "account-console.p024.owner-runtime-invocation-readiness.v1",
+    "status": "blocked_waiting_for_external_owner_runtime_write_approval",
+    "verdict": "readiness_package_passed_runtime_not_invoked",
+    "owner_ref": "owner://nautilus_ctp_adapter",
+    "owner_repo_path": "D:/Nautilus/nautilus_ctp_adapter",
+    "config_ref": "cfgs/local/ctp.openctp.tts.7x24.local.json",
+    "config_raw_content_read": false,
+    "approval_required": true,
+    "approval_obtained": false,
+    "entrypoint_count": 2,
+    "blocker_count": 2,
+    "runtime_invocation_attempted": false,
+    "owner_repo_write_attempted": false,
+    "browser_triggered_broker_order": false,
+    "gateway_send_attempted": false,
+    "broker_order_created": false,
+    "raw_secret_values_recorded": false,
+    "raw_broker_endpoint_recorded": false
+  },
+  "browser_checks": {
+    "readiness_panel_visible": true,
+    "owner_ref_displayed": true,
+    "owner_path_displayed": true,
+    "config_ref_displayed_without_raw_endpoint": true,
+    "approval_required_displayed_true": true,
+    "approval_obtained_displayed_false": true,
+    "runtime_invocation_displayed_false": true,
+    "owner_write_displayed_false": true,
+    "browser_trigger_displayed_false": true,
+    "raw_secret_displayed_false": true,
+    "entrypoints_displayed": true,
+    "blockers_displayed": true,
+    "sensitive_endpoint_wording_absent": true
+  },
+  "explicit_non_claims": [
+    "does_not_invoke_owner_runtime",
+    "does_not_send_broker_order_from_browser",
+    "does_not_write_owner_repo",
+    "does_not_read_raw_ctp_secret_or_endpoint",
+    "does_not_claim_live_readiness",
+    "does_not_close_phase_3_runtime_execution"
+  ],
+  "browser_evidence": [
+    {
+      "screenshot": "docs/acceptance/browser-evidence/p024-account-console-paper-command-controls/p024-runtime-readiness-ui.png"
+    }
+  ]
+}

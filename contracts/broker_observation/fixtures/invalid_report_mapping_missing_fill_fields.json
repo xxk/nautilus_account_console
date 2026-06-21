@@ -1,0 +1,97 @@
+{
+  "schema_version": "broker_observation_report_mapping_matrix.v1",
+  "matrix_id": "broker-observation-report-mapping.invalid.missing-fill-fields",
+  "account_id": "acct.ib.live.u3028269",
+  "source_kind": "ib_tws_observation",
+  "raw_secret_values_recorded": false,
+  "command": {
+    "enabled": false,
+    "allowed_actions": []
+  },
+  "mappings": [
+    {
+      "callback_kind": "ib_tws.orderStatus",
+      "target_report_type": "OrderStatusReport",
+      "required_target_fields": [
+        "report_id",
+        "account_id",
+        "instrument_id",
+        "client_order_id",
+        "venue_order_id",
+        "order_status",
+        "quantity",
+        "filled_quantity",
+        "remaining_quantity",
+        "event_timestamp",
+        "observed_timestamp",
+        "received_timestamp",
+        "sequence",
+        "source_ref",
+        "source_checksum",
+        "raw_payload_provenance"
+      ],
+      "field_map": [
+        {
+          "target_field": "order_status",
+          "source_field_ref": "ib_tws.orderStatus.status",
+          "semantics": "Broker status."
+        },
+        {
+          "target_field": "venue_order_id",
+          "source_field_ref": "ib_tws.orderStatus.orderId",
+          "semantics": "Broker order id."
+        }
+      ],
+      "provenance_fields": [
+        "source_ref",
+        "source_checksum",
+        "raw_payload_provenance.payload_ref",
+        "raw_payload_provenance.payload_checksum",
+        "raw_payload_provenance.excerpt_redacted"
+      ],
+      "raw_payload_is_canonical": false
+    },
+    {
+      "callback_kind": "ib_tws.execDetails",
+      "target_report_type": "FillReport",
+      "required_target_fields": [
+        "report_id",
+        "account_id",
+        "instrument_id",
+        "client_order_id",
+        "venue_order_id",
+        "trade_id",
+        "last_px",
+        "last_qty",
+        "event_timestamp",
+        "observed_timestamp",
+        "received_timestamp",
+        "sequence",
+        "source_ref",
+        "source_checksum",
+        "raw_payload_provenance"
+      ],
+      "field_map": [
+        {
+          "target_field": "venue_order_id",
+          "source_field_ref": "ib_tws.execDetails.execution.orderId",
+          "semantics": "Broker order id only; missing trade id and execution values."
+        }
+      ],
+      "provenance_fields": [
+        "source_ref",
+        "source_checksum",
+        "raw_payload_provenance.payload_ref",
+        "raw_payload_provenance.payload_checksum",
+        "raw_payload_provenance.excerpt_redacted"
+      ],
+      "raw_payload_is_canonical": false
+    }
+  ],
+  "raw_payload_policy": {
+    "payload_ref_required": true,
+    "payload_checksum_required": true,
+    "excerpt_must_be_redacted": true,
+    "browser_may_parse_raw_payload": false
+  }
+}

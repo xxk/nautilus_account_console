@@ -6,6 +6,8 @@ from hashlib import sha256
 from pathlib import Path
 from typing import Any
 
+from .route_context import route_context_from_capability_bundle, validate_route_context
+
 
 ROOT = Path(__file__).resolve().parents[3]
 DEFAULT_SOURCE_DIR = ROOT / "contracts" / "ui" / "fixtures" / "account_capability"
@@ -14,53 +16,6 @@ DEFAULT_SOURCE_DIR = ROOT / "contracts" / "ui" / "fixtures" / "account_capabilit
 def _checksum(payload: Any) -> str:
     encoded = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
     return "sha256:" + sha256(encoded).hexdigest()
-
-
-def _fallback_route_context_for_bundle(payload: dict[str, Any]) -> dict[str, Any]:
-    account = payload["account"]
-    account_id = str(account["account_id"])
-    source_ref = payload["capabilities"]["observation"]["source_ref"]
-    if account_id == "acct.ctp.paper.19053":
-        return {
-            "state": "blocked",
-            "route_id": "route.ctp.paper.19053.account-readonly",
-            "account_alias": "19053",
-            "market_data_source": "not_in_scope_for_account_readback",
-            "execution_adapter": "ctp_td.19053.blocked_until_source_package",
-            "account_truth": "blocked_until_pinned_source_package",
-            "risk_domain": "paper",
-            "evidence_partition": "account/acct.ctp.paper.19053/blocked-source-package",
-            "context_ref": source_ref["source_ref"],
-            "context_checksum": source_ref["checksum"],
-            "blocker_id": "ctp19053_source_package_pending",
-        }
-    if account_id == "acct.ctp.live.025292":
-        return {
-            "state": "blocked",
-            "route_id": "route.ctp.live.025292.account-readonly",
-            "account_alias": "025292",
-            "market_data_source": "not_in_scope_for_account_readback",
-            "execution_adapter": "ctp_td.025292.blocked_until_source_package",
-            "account_truth": "blocked_until_pinned_source_package",
-            "risk_domain": "live",
-            "evidence_partition": "account/acct.ctp.live.025292/blocked-source-package",
-            "context_ref": source_ref["source_ref"],
-            "context_checksum": source_ref["checksum"],
-            "blocker_id": "ctp025292_source_package_pending",
-        }
-    return {
-        "state": "projected",
-        "route_id": f"route.{account_id.removeprefix('acct.')}.readonly",
-        "account_alias": str(account["display_alias"]),
-        "market_data_source": "not_in_scope_for_account_readback",
-        "execution_adapter": str(account["source_kind"]),
-        "account_truth": str(source_ref["owner"]),
-        "risk_domain": str(account["account_domain"]),
-        "evidence_partition": f"account/{account_id}/source-package",
-        "context_ref": source_ref["source_ref"],
-        "context_checksum": source_ref["checksum"],
-        "blocker_id": None,
-    }
 
 
 @dataclass(frozen=True)
@@ -79,6 +34,7 @@ class MirrorProjection:
     orders: list[dict[str, Any]]
     fills: list[dict[str, Any]]
     source_health: dict[str, Any]
+    command_status: dict[str, Any] | None
     blockers: list[dict[str, Any]]
     projection_checkpoint_id: str
     projection_checksum: str
@@ -110,6 +66,7 @@ class MirrorProjection:
             "orders": self.orders,
             "fills": self.fills,
             "source_health": self.source_health,
+            "command_status": self.command_status,
             "blockers": self.blockers,
             "projection_checkpoint_id": self.projection_checkpoint_id,
             "projection_checksum": self.projection_checksum,
@@ -151,12 +108,15 @@ class AccountMirrorStore:
         account = payload["account"]
         capabilities = payload["capabilities"]
         observations = payload["observations"]
+        command_status = payload.get("command_status")
         source_ref = capabilities["observation"]["source_ref"]
-        route_context = payload.get("route_context") or _fallback_route_context_for_bundle(payload)
+        route_context = payload.get("route_context") or route_context_from_capability_bundle(payload)
+        validate_route_context(route_context, str(account["account_id"]))
         checkpoint_seed = {
             "account": account,
             "capabilities": capabilities,
             "observations": observations,
+            "command_status": command_status,
             "route_context": route_context,
             "source_path": source_path,
         }
@@ -167,6 +127,7 @@ class AccountMirrorStore:
             "source_checksum": source_ref["checksum"],
             "checkpoint_id": checkpoint_id,
             "observations": observations,
+            "command_status": command_status,
             "route_context": route_context,
             "boundaries": payload["boundaries"],
         }
@@ -186,6 +147,7 @@ class AccountMirrorStore:
             orders=list(observations["orders"]),
             fills=list(observations["fills"]),
             source_health=dict(observations["source_health"]),
+            command_status=dict(command_status) if command_status else None,
             blockers=list(observations["blockers"]),
             projection_checkpoint_id=checkpoint_id,
             projection_checksum=projection_checksum,

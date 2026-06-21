@@ -1,0 +1,35 @@
+{
+  "schema": "account-console.p024.partial-fill-owner-repair-preflight-ui.v1",
+  "proposal_id": "p024-account-console-paper-command-controls",
+  "account_id": "acct.ctp.paper.19053",
+  "route": "/accounts/acct.ctp.paper.19053",
+  "verdict": "pass",
+  "api_owner_repair_preflight": {
+    "schema": "account-console.p024.partial-fill-owner-repair-preflight-source-audit.v1",
+    "status": "phase4v_owner_repair_preflight_source_audited",
+    "verdict": "owner_repair_still_required_before_runtime_retry",
+    "source_check_count": 3,
+    "owner_repo_write_attempted": false,
+    "repair_approval_sufficient": false,
+    "retry_approval_sufficient": false,
+    "blind_script_retry_rejected": true,
+    "runtime_invocation_attempted": false,
+    "full_acceptance_claimed": false
+  },
+  "browser_checks": {
+    "preflight_panel_visible": true,
+    "source_checks_displayed": true,
+    "owner_write_displayed_false": true,
+    "repair_approval_displayed_false": true,
+    "retry_approval_displayed_false": true,
+    "blind_retry_displayed_true": true,
+    "runtime_invoked_displayed_false": true,
+    "full_acceptance_claimed_displayed_false": true,
+    "sensitive_endpoint_wording_absent": true
+  },
+  "browser_evidence": [
+    {
+      "screenshot": "docs/acceptance/browser-evidence/p024-account-console-paper-command-controls/p024-partial-fill-owner-repair-preflight-ui.png"
+    }
+  ]
+}

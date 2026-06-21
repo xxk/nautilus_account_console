@@ -1,0 +1,49 @@
+{
+  "schema_version": "broker_observation_cross_broker_extension_matrix.v1",
+  "matrix_id": "broker-observation-cross-broker-extension.invalid.missing-tt",
+  "adr_id": "ADR-0005",
+  "raw_secret_values_recorded": false,
+  "canonical_contracts": [
+    "broker_observation_profile.v1",
+    "broker_observation_session_conflict_policy.v1",
+    "broker_observation_report_batch.v1",
+    "broker_observation_freshness_sequence_checkpoint.v1",
+    "broker_observation_store_snapshot.v1",
+    "account_mirror_projection.v1"
+  ],
+  "broker_rows": [
+    {
+      "broker_family": "ib_tws",
+      "source_kind": "ib_tws_observation",
+      "profile_contract": "broker_observation_profile.v1",
+      "report_contract": "broker_observation_report_batch.v1",
+      "store_contract": "broker_observation_store_snapshot.v1",
+      "freshness_contract": "broker_observation_freshness_sequence_checkpoint.v1",
+      "projection_boundary": "account_mirror",
+      "command_allowed": false,
+      "raw_secret_values_recorded": false,
+      "status": "pre_acceptance_blocked",
+      "blocker_id": "adr0005_not_accepted"
+    },
+    {
+      "broker_family": "ctp",
+      "source_kind": "ctp_observation",
+      "profile_contract": "broker_observation_profile.v1",
+      "report_contract": "broker_observation_report_batch.v1",
+      "store_contract": "broker_observation_store_snapshot.v1",
+      "freshness_contract": "broker_observation_freshness_sequence_checkpoint.v1",
+      "projection_boundary": "account_mirror",
+      "command_allowed": false,
+      "raw_secret_values_recorded": false,
+      "status": "not_implemented_blocked",
+      "blocker_id": "broker_adapter_not_implemented"
+    }
+  ],
+  "extension_rules": {
+    "no_broker_specific_ui_truth": true,
+    "no_command_from_observation": true,
+    "no_raw_secret_material": true,
+    "missing_adapter_blocks": true,
+    "new_broker_must_extend_matrix": true
+  }
+}

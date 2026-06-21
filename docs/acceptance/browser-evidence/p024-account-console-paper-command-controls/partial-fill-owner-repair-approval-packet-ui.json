@@ -1,0 +1,43 @@
+{
+  "schema": "account-console.p024.partial-fill-owner-repair-approval-packet-ui.v1",
+  "proposal_id": "p024-account-console-paper-command-controls",
+  "account_id": "acct.ctp.paper.19053",
+  "route": "/accounts/acct.ctp.paper.19053",
+  "verdict": "pass",
+  "api_owner_repair_approval_packet": {
+    "schema": "account-console.p024.partial-fill-owner-repair-approval-packet.v1",
+    "status": "phase4p_owner_close_offset_repair_approval_packet_ready",
+    "verdict": "owner_repair_approval_required_before_retry",
+    "approval_obtained": false,
+    "current_approval_matches_next_action": false,
+    "exact_approval_text_present": true,
+    "owner_change_count": 3,
+    "owner_validator_count": 2,
+    "blocker_count": 3,
+    "runtime_retry_allowed": false,
+    "additional_order_authorized": false,
+    "owner_repo_write_attempted": false,
+    "partial_fill_claimed": false,
+    "full_acceptance_claimed": false
+  },
+  "browser_checks": {
+    "approval_packet_panel_visible": true,
+    "exact_approval_text_displayed": true,
+    "owner_changes_displayed": true,
+    "validators_displayed": true,
+    "blockers_displayed": true,
+    "approval_obtained_displayed_false": true,
+    "current_approval_matches_displayed_false": true,
+    "runtime_retry_displayed_false": true,
+    "owner_write_displayed_false": true,
+    "additional_order_displayed_false": true,
+    "partial_fill_claimed_displayed_false": true,
+    "full_acceptance_claimed_displayed_false": true,
+    "sensitive_endpoint_wording_absent": true
+  },
+  "browser_evidence": [
+    {
+      "screenshot": "docs/acceptance/browser-evidence/p024-account-console-paper-command-controls/p024-partial-fill-owner-repair-approval-packet-ui.png"
+    }
+  ]
+}

@@ -1,0 +1,120 @@
+{
+  "schema": "account-console.p019-evidence-lane-manifest.v1",
+  "proposal_id": "p019-broker-observation-session-foundation",
+  "adr_id": "ADR-0005",
+  "status": "accepted_with_lane_separation",
+  "blocker_id": null,
+  "raw_secret_values_recorded": false,
+  "lanes": [
+    {
+      "lane_id": "p018-owner-source-package",
+      "proposal_id": "p018-ib-tws-readonly-account-console",
+      "lane_kind": "owner_source_package",
+      "authority_owner": "nautilus_strategies",
+      "purpose": "Owner-produced IB TWS source package readback into Account Mirror and Account Console UI.",
+      "allowed_evidence_roots": [
+        "owner-source-ref://p018/ib-tws/u3028269/",
+        "docs/proposals/p018-ib-tws-readonly-account-console/"
+      ],
+      "forbidden_claims": [
+        "Account Console owns direct TWS session",
+        "Account Console imports ibapi",
+        "P018 owner source package proves ADR-0005 direct observation session acceptance",
+        "source package screenshot proves broker/account/order truth"
+      ],
+      "direct_session_allowed": false,
+      "may_satisfy_p019_direct_observation_acceptance": false,
+      "may_be_used_by_p019_with_explicit_mapping": true,
+      "required_mapping_fields": [
+        "source_package_ref",
+        "source_package_checksum",
+        "source_package_collected_at",
+        "mapped_to_contract",
+        "mapping_owner",
+        "raw_secret_values_recorded"
+      ]
+    },
+    {
+      "lane_id": "p019-adr0005-governed-observation-session",
+      "proposal_id": "p019-broker-observation-session-foundation",
+      "lane_kind": "governed_observation_session",
+      "authority_owner": "account-console-broker-observation-session",
+      "purpose": "ADR-0005 governed read-only broker observation session contracts, accepted U3028269 TWS API funds/positions evidence and residual typed runtime blockers.",
+      "allowed_evidence_roots": [
+        "contracts/broker_observation/",
+        "docs/proposals/p019-broker-observation-session-foundation/",
+        "docs/acceptance/2026-06-20-p019-u3028269-blocked-ui-parity-evidence.json",
+        "docs/acceptance/2026-06-20-p019-u3028269-real-ui-parity-evidence.json",
+        "docs/acceptance/2026-06-20-adr0005-broker-observation-session-acceptance.json",
+        "output/debug/p019-tws-local-window-confirmation/",
+        "output/account_capability/ib-live-u3028269/"
+      ],
+      "forbidden_claims": [
+        "Account Console owns broker runtime truth",
+        "Account Console owns account/order/fill truth",
+        "Account Console stores raw broker secrets",
+        "observation session connectivity proves live readiness",
+        "observation session connectivity permits submit/cancel/replace/modify",
+        "zero real executions proves complete order/fill history"
+      ],
+      "direct_session_allowed": false,
+      "may_satisfy_p018_owner_source_package_acceptance": false,
+      "current_allowed_work": [
+        "schemas",
+        "fixtures",
+        "typed_blockers",
+        "negative_tests",
+        "blocked_ui_states",
+        "owner_map_accepted_guard",
+        "real_funds_positions_parity",
+        "residual_runtime_blockers"
+      ]
+    },
+    {
+      "lane_id": "p019-synthetic-contract-ready-path",
+      "proposal_id": "p019-broker-observation-session-foundation",
+      "lane_kind": "synthetic_contract_guard",
+      "authority_owner": "account-console-broker-observation-session",
+      "purpose": "Synthetic ready-path fixtures prove TWS API query artifact to source-package to Account Mirror mapping without claiming real U3028269 account truth.",
+      "allowed_evidence_roots": [
+        "contracts/broker_observation/fixtures/ib_tws_u3028269_ready_*.synthetic.json",
+        "scripts/validate_p019_ib_tws_ready_source_contract.py",
+        "backend/tests/test_source_bridge.py::test_ib_tws_ready_source_package_projects_ready_without_command",
+        "frontend/tests/e2e/p019-ib-tws-synthetic-ready-projection.spec.ts",
+        "docs/acceptance/2026-06-20-p019-u3028269-synthetic-ready-ui-contract-evidence.json",
+        "scripts/validate_p019_u3028269_synthetic_ready_ui_contract.py"
+      ],
+      "forbidden_claims": [
+        "synthetic ready fixture proves real U3028269 funds",
+        "synthetic ready fixture proves real U3028269 positions",
+        "synthetic ready fixture closes UI funds/positions parity",
+        "synthetic ready fixture satisfies P018 owner source-package acceptance",
+        "synthetic ready fixture authorizes direct broker session",
+        "synthetic ready fixture authorizes order action"
+      ],
+      "direct_session_allowed": false,
+      "may_satisfy_real_funds_positions_parity": false,
+      "may_satisfy_p018_owner_source_package_acceptance": false,
+      "may_satisfy_p019_direct_observation_acceptance": false,
+      "synthetic_contract_only": true,
+      "required_real_closeout_chain": [
+        "local_tws_api_readiness_probe_pass",
+        "readonly_tws_api_account_summary_success",
+        "readonly_tws_api_positions_success",
+        "source_package_built_from_real_query_artifacts",
+        "account_mirror_projection_from_real_source_package",
+        "ui_parity_against_same_slice_tws_api_source"
+      ]
+    }
+  ],
+  "cross_lane_rules": {
+    "same_artifact_must_not_close_both_lanes_without_mapping": true,
+    "p018_source_package_is_not_p019_direct_session_evidence": true,
+    "p019_blocked_projection_is_not_p018_owner_source_package_evidence": true,
+    "p019_synthetic_ready_contract_is_not_real_funds_positions_evidence": true,
+    "p019_synthetic_ready_contract_is_not_p018_owner_source_package_evidence": true,
+    "screenshots_are_rendering_evidence_only": true,
+    "raw_secret_values_recorded": false,
+    "required_blocker_when_mapping_missing": "p018_p019_lane_mapping_missing"
+  }
+}

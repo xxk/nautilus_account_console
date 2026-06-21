@@ -1,0 +1,118 @@
+{
+  "schema": "account-console.p024.partial-fill-owner-repair-evidence-ingest-gate.v1",
+  "proposal_id": "p024-account-console-paper-command-controls",
+  "account_id": "acct.ctp.paper.19053",
+  "reviewed_at": "2026-06-21T20:40:00+08:00",
+  "status": "phase4t_owner_repair_evidence_ingest_gate_ready",
+  "verdict": "ingest_gate_ready_owner_repair_evidence_missing",
+  "depends_on": {
+    "owner_repair_plan_ref": "docs/acceptance/p024-account-console-paper-command-controls/partial-fill-owner-repair-implementation-plan.json",
+    "owner_repair_plan_status": "phase4r_owner_close_offset_repair_implementation_plan_ready",
+    "owner_repair_plan_ui_ref": "docs/acceptance/browser-evidence/p024-account-console-paper-command-controls/partial-fill-owner-repair-plan-ui.json",
+    "owner_repair_plan_ui_verdict": "pass"
+  },
+  "ingest_scope": {
+    "owner_repo_ref": "owner-repo://nautilus_ctp_adapter",
+    "owner_repo_path": "D:/Nautilus/nautilus_ctp_adapter",
+    "raw_secret_values_allowed": false,
+    "raw_broker_endpoint_allowed": false,
+    "config_raw_content_allowed": false,
+    "runtime_retry_allowed_by_ingest_gate": false,
+    "accepts_owner_code_repair_evidence": true,
+    "accepts_owner_runtime_partial_fill_evidence": false
+  },
+  "required_owner_repair_evidence": [
+    {
+      "evidence_id": "owner_repair_commit",
+      "required_shape": "owner git commit/ref after exact repair approval",
+      "current_status": "missing",
+      "must_include": [
+        "commit_sha",
+        "branch_or_ref",
+        "approval_text_ref",
+        "raw_secret_values_recorded=false"
+      ]
+    },
+    {
+      "evidence_id": "guarded_order_loop_source_checksum",
+      "required_shape": "post-repair checksum for scripts/ctp_guarded_paper_order_loop.py",
+      "current_status": "missing",
+      "must_include": [
+        "owner-repo://nautilus_ctp_adapter/scripts/ctp_guarded_paper_order_loop.py",
+        "sha256",
+        "build_close_offset_owner_rule_semantics"
+      ]
+    },
+    {
+      "evidence_id": "focused_owner_tests_checksum",
+      "required_shape": "post-repair checksum for tests/test_guarded_paper_order_loop.py with CLOSEYESTERDAY offset 4 focused assertions",
+      "current_status": "missing",
+      "must_include": [
+        "owner-repo://nautilus_ctp_adapter/tests/test_guarded_paper_order_loop.py",
+        "CLOSEYESTERDAY",
+        "expected_submit_offset_from_position_effect == 4",
+        "callback_offset_flags == [1]"
+      ]
+    },
+    {
+      "evidence_id": "owner_focus_validator_result",
+      "required_shape": "owner validator output for python -m pytest tests/test_guarded_paper_order_loop.py -q",
+      "current_status": "missing",
+      "must_include": [
+        "command",
+        "exit_code=0",
+        "stdout_tail_or_artifact_ref",
+        "validator_run_sha256"
+      ]
+    },
+    {
+      "evidence_id": "owner_integration_validator_result",
+      "required_shape": "owner validator output for python -m pytest tests/test_nautilus_integration.py -q",
+      "current_status": "missing",
+      "must_include": [
+        "command",
+        "exit_code=0",
+        "stdout_tail_or_artifact_ref",
+        "validator_run_sha256"
+      ]
+    },
+    {
+      "evidence_id": "account_console_ingest_audit",
+      "required_shape": "account-console follow-up artifact recording owner commit/checksums/validator refs without raw secrets",
+      "current_status": "missing",
+      "must_include": [
+        "owner_commit_ref",
+        "post_repair_source_checksums",
+        "owner_validator_refs",
+        "runtime_retry_authorized=false"
+      ]
+    }
+  ],
+  "post_ingest_required_account_console_updates": [
+    "update partial-fill remaining acceptance current-state audit from repair evidence missing to repair evidence recorded",
+    "update partial-fill runtime approval packet and handoff bundle only after owner repair evidence passes",
+    "run python scripts/validate_p024_partial_fill_owner_repair_evidence_ingest_gate.py",
+    "run python scripts/validate_p024_paper_command_controls_design.py",
+    "keep runtime retry disallowed until a fresh post-repair runtime attempt approval is recorded"
+  ],
+  "reject_evidence_if": [
+    "owner commit/ref is missing",
+    "owner source checksum is missing or does not cite build_close_offset_owner_rule_semantics",
+    "focused owner tests do not include CLOSEYESTERDAY offset 4 versus rejected OnRspOrderInsert offset 1",
+    "owner validator command is missing, failed or only represented as chat text",
+    "raw secrets, raw broker endpoints or raw config content appear in account-console artifacts",
+    "runtime retry, partial-fill runtime pass or full acceptance is claimed before a separate fresh runtime attempt approval and qualifying runtime artifact set"
+  ],
+  "negative_assertions": {
+    "owner_repair_evidence_recorded": false,
+    "owner_repo_write_attempted_by_this_gate": false,
+    "owner_runtime_invocation_attempted": false,
+    "runtime_retry_authorized": false,
+    "partial_fill_runtime_claimed": false,
+    "web_ui_real_partial_fill_claimed": false,
+    "full_acceptance_claimed": false,
+    "raw_secret_values_recorded": false,
+    "raw_broker_endpoint_recorded": false,
+    "config_raw_content_recorded": false
+  }
+}

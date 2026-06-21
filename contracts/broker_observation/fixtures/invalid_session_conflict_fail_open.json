@@ -1,0 +1,36 @@
+{
+  "schema_version": "broker_observation_session_conflict_policy.v1",
+  "policy_id": "broker-observation-conflict.invalid.fail-open",
+  "account_id": "acct.ib.live.u3028269",
+  "source_kind": "ib_tws_observation",
+  "session_owner": "account-console-broker-observation-session",
+  "raw_secret_values_recorded": false,
+  "fail_closed": false,
+  "conflict_keys": [
+    "broker_username_ref",
+    "host_port_ref",
+    "client_id_ref",
+    "session_owner",
+    "nautilus_trading_session_ref",
+    "broker_connection_slot_ref"
+  ],
+  "unknown_owner_policy": "allowed",
+  "direct_session_allowed": true,
+  "evaluations": [
+    {
+      "case_id": "unknown_owner",
+      "input_refs": [
+        "owner-session-ref://ib-tws/u3028269/unknown-owner"
+      ],
+      "decision": "allowed",
+      "blocker_id": null,
+      "session_allowed": true,
+      "reason": "Incorrectly allows unknown owner.",
+      "next_action": "This fixture must be rejected."
+    }
+  ],
+  "command": {
+    "enabled": false,
+    "allowed_actions": []
+  }
+}
