@@ -736,6 +736,18 @@ function mirrorExecutionReportRows(readback: MirrorWorkbenchReadback): AccountEx
   });
 }
 
+function commandStatusRefs(value: unknown): string[] {
+  return Array.isArray(value) ? value.map((item) => asText(item)).filter((item) => item !== "unknown") : [];
+}
+
+function commandStatusBlockerText(blocker: Record<string, unknown>) {
+  return [
+    asText(blocker.stage, "command_status"),
+    asText(blocker.reason, asText(blocker.kind, "missing evidence")),
+    asText(blocker.source_ref, "missing source ref")
+  ].join(" | ");
+}
+
 export function App() {
   const currentPath = window.location.pathname;
   const isIntradayMonitorRoute = currentPath === "/monitor";
@@ -2135,7 +2147,7 @@ function AccountWorkbenchTerminalPanel({
             <dl className="detail-list">
               <div>
                 <dt>Mode</dt>
-                <dd>observation only</dd>
+                <dd data-testid="account-command-mode">observation only</dd>
               </div>
               <div>
                 <dt>Controls</dt>
@@ -2147,6 +2159,8 @@ function AccountWorkbenchTerminalPanel({
               </div>
             </dl>
           </section>
+
+          <CommandStatusPanel status={mirrorReadback?.selected.command_status ?? null} />
 
           <section className="terminal-panel" data-testid="account-summary-boundary-list">
             <div className="terminal-panel-header">
@@ -4062,6 +4076,102 @@ function SelectFilter({
         ))}
       </select>
     </label>
+  );
+}
+
+function CommandStatusPanel({
+  status
+}: {
+  status: MirrorAccountProjection["command_status"] | null;
+}) {
+  const riskRefs = commandStatusRefs(status?.risk_decision_refs);
+  const approvalRefs = commandStatusRefs(status?.approval_decision_refs);
+  const gatewayRefs = commandStatusRefs(status?.gateway_event_refs);
+  const readbackRefs = commandStatusRefs(status?.readback_refs);
+  const blockers = Array.isArray(status?.blockers) ? status.blockers : [];
+  const reconciliationRef = asText(status?.reconciliation_ref, "");
+  const commandAuditRef = asText(status?.command_audit_ref, "");
+  const hasReadback = readbackRefs.length > 0;
+  const hasReconciliation = reconciliationRef.length > 0;
+  const hasGatewayFinalClaim = status?.gateway_ack_is_final_state === true;
+  const derivedBlockers = [
+    ...blockers.map(commandStatusBlockerText),
+    ...(status && !hasReadback ? ["missing readback refs"] : []),
+    ...(status && !hasReconciliation ? ["missing reconciliation ref"] : []),
+    ...(hasGatewayFinalClaim ? ["gateway ack is not final account state"] : [])
+  ];
+  const displayState = !status
+    ? "empty"
+    : derivedBlockers.length > 0
+      ? "blocked"
+      : asText(status.status, "unknown");
+
+  return (
+    <section className="terminal-panel" data-testid="account-command-status-panel">
+      <div className="terminal-panel-header">
+        <h3>Command Status</h3>
+        <StateBadge value={displayState} />
+      </div>
+      {status ? (
+        <div className="evidence-stack compact-evidence-stack">
+          <div className="evidence-item" data-testid="account-command-audit-ref">
+            <strong>Audit</strong>
+            {commandAuditRef ? (
+              <CopyableCode label="command audit ref" value={commandAuditRef} />
+            ) : (
+              <span>missing audit ref</span>
+            )}
+          </div>
+          {riskRefs.map((ref) => (
+            <div className="evidence-item" data-testid="account-command-risk-ref" key={ref}>
+              <strong>Risk</strong>
+              <CopyableCode label="command risk ref" value={ref} />
+            </div>
+          ))}
+          {approvalRefs.map((ref) => (
+            <div className="evidence-item" data-testid="account-command-approval-ref" key={ref}>
+              <strong>Approval</strong>
+              <CopyableCode label="command approval ref" value={ref} />
+            </div>
+          ))}
+          {gatewayRefs.map((ref) => (
+            <div className="evidence-item" data-testid="account-command-gateway-ref" key={ref}>
+              <strong>Gateway</strong>
+              <CopyableCode label="command gateway ref" value={ref} />
+            </div>
+          ))}
+          {readbackRefs.map((ref) => (
+            <div className="evidence-item" data-testid="account-command-readback-ref" key={ref}>
+              <strong>Readback</strong>
+              <CopyableCode label="command readback ref" value={ref} />
+            </div>
+          ))}
+          {hasReconciliation ? (
+            <div className="evidence-item" data-testid="account-command-reconciliation-ref">
+              <strong>Reconcile</strong>
+              <CopyableCode label="command reconciliation ref" value={reconciliationRef} />
+            </div>
+          ) : null}
+          <div className="evidence-item">
+            <strong>Gateway final</strong>
+            <span data-testid="account-command-gateway-final-state">
+              {status.gateway_ack_is_final_state === true ? "invalid" : "false"}
+            </span>
+          </div>
+        </div>
+      ) : (
+        <p className="muted">No command audit evidence in this read-only projection.</p>
+      )}
+      {derivedBlockers.length > 0 ? (
+        <div className="blocker-list">
+          {derivedBlockers.map((blocker) => (
+            <article className="blocker-item" data-testid="account-command-blocker" key={blocker}>
+              {blocker}
+            </article>
+          ))}
+        </div>
+      ) : null}
+    </section>
   );
 }
 

@@ -87,4 +87,4 @@ P023 must keep the live scenario catalog current before implementation starts. T
 
 P023 paper runtime is accepted for the guarded OpenCTP 19053 paper lane. Current Account Console web/API command capability remains disabled.
 
-Phase 1 command contracts are landed behind `validate_p023_account_command_contracts.py`, including submit idempotency replay contract-lock evidence. Phase 3 dry-run and Phase 4/5 real paper submit/cancel are landed behind `validate_p023_openctp19053_command_run.py`. Live trading readiness remains blocked.
+Phase 1 command contracts are landed behind `validate_p023_account_command_contracts.py`, including submit idempotency replay contract-lock evidence. Phase 3 dry-run and Phase 4/5 real paper submit/cancel are landed behind `validate_p023_openctp19053_command_run.py`. Phase 6 UI command status evidence is landed behind `validate_p023_ui_status_browser_evidence.py` with command controls still disabled. Live trading readiness remains blocked.

@@ -12,6 +12,7 @@
 | P023 command contracts | `python scripts\validate_p023_account_command_contracts.py` | `P023_ACCOUNT_COMMAND_CONTRACTS_OK` | Order/cancel/audit contracts, fixtures and negative sensitive-boundary gates |
 | P023 design validator | `python scripts\validate_p023_openctp_19053_command_acceptance_design.py` | `P023_OPENCTP_19053_COMMAND_ACCEPTANCE_DESIGN_OK` | P023 acceptance design completeness |
 | P023 paper command run | `python scripts\validate_p023_openctp19053_command_run.py --run-dir output\account_command\ctp-paper-19053\p023-armed-20260621t0748z --source-package output\account_capability\ctp-paper-19053\source-package.json` | `P023_OPENCTP19053_COMMAND_RUN_OK` | Real OpenCTP 19053 paper submit/cancel/readback/reconciliation and read-model projection guard |
+| P023 UI status browser evidence | `python scripts\validate_p023_ui_status_browser_evidence.py` | `P023_UI_STATUS_BROWSER_EVIDENCE_OK` | Web UI command status evidence from audit/readback/reconciliation; gateway ack final-state rejection; command controls disabled |
 | P023 partial-fill browser evidence | `python scripts\validate_p023_partial_fill_browser_evidence.py` | `P023_PARTIAL_FILL_BROWSER_EVIDENCE_OK` | Web UI order display correctness and `partial_cancel_display=pass` for partial fill then cancel; runtime partial-fill remains typed blocker |
 | Proposal docs | `python scripts\check_proposal_docs.py --root . --proposal-id p023-openctp-19053-paper-command-capability` | `PROPOSAL_DOCS_OK` | Proposal structure |
 
@@ -34,10 +35,12 @@ The 10 scenario groups have two acceptance surfaces:
 | A6 | positive | Paper cancel uses readback identity | cancel integration test | cancel uses screenshot/UI text/latest path | runtime_accepted |
 | A7 | positive | Post-cancel readback reconciles | `ReqQryOrder` terminal state evidence | missing terminal state is hidden as success | runtime_accepted |
 | A8 | positive | Secret redaction | artifact redaction validator | raw password/front/auth/token recorded | runtime_accepted |
-| A9 | positive | UI status evidence | Playwright + API projection | UI shows command complete without readback/reconcile | planned |
+| A9 | positive | UI status evidence | Playwright + API projection + browser evidence validator | UI shows command complete without readback/reconcile | browser_status_evidence_ready_command_controls_disabled |
 | A10 | positive | Partial fill then cancel | `ReqQryTrade` + `ReqQryOrder` + reconciliation validator plus browser order-display gate | partial fill inferred from UI/gateway ack/screenshot | browser_order_display_contract_ready_runtime_blocked |
 
 A4 is contract-locked by `account_command.submit_idempotency_replay.v1`: the replay fixture pins the original submit intent, gateway event, readback and command audit by SHA256, requires the same idempotency key to map to the same command result and same broker order identity, and requires `runtime_duplicate_send_attempted=false`. This is not a real duplicate runtime send claim; it prevents a second broker order from being accepted by contract while command controls remain disabled.
+
+A9 is accepted for the read-only status surface by `account-console.p023.ui-status-evidence.v1`: the Web UI shows command audit, risk, approval, gateway, readback and reconciliation refs when they are present, rejects a gateway-ack-only state as blocked, and records `command_controls_enabled=false`.
 
 A10 supersedes the earlier `designed_runtime_blocker_until_partial_state` design-only state for the Web UI order-display surface: the browser order display contract is ready, while real OpenCTP partial-fill runtime and command action controls remain typed blockers. The Web UI contract must also prove `partial_cancel_display_verdict=pass`: S2 fill rows sum to the displayed filled quantity, the S2 cancel target equals the readback remaining quantity, S3 preserves quantities while cancel is pending, and S4 preserves filled trades while showing remaining quantity `0` and cancelled quantity equal to S2 remaining.
 

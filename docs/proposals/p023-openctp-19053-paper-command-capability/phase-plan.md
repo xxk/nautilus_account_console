@@ -15,8 +15,8 @@
 | Phase 4 | OpenCTP 19053 paper submit | Phase 3 | Real paper submit event plus `ReqQryOrder` post-submit readback match | completed_paper_submit |
 | Phase 5 | OpenCTP 19053 paper cancel | Phase 4 | Cancel event plus `ReqQryOrder` terminal readback match | completed_paper_cancel |
 | Phase 5b | OpenCTP 19053 partial-fill lifecycle | Phase 5 | `ReqQryTrade` partial fill, `ReqQryOrder` remaining quantity, cancel remaining quantity and reconciliation match, or typed runtime blocker | designed_runtime_blocker_until_partial_state |
-| Phase 6 | UI command status | Phase 5 | UI shows command status from audit + mirror readback; no gateway-ack-as-final-state | read_model_refreshed_command_controls_disabled |
-| Phase 7 | Closeout | Phase 6 | P023 acceptance evidence and browser/API/validator gates pass | runtime_closeout_accepted_browser_pending |
+| Phase 6 | UI command status | Phase 5 | UI shows command status from audit + mirror readback; no gateway-ack-as-final-state | ui_status_evidence_accepted_command_controls_disabled |
+| Phase 7 | Closeout | Phase 6 | P023 acceptance evidence and browser/API/validator gates pass | runtime_closeout_accepted_partial_runtime_blocked |
 
 ## ADR Decision Coverage Mapping
 
@@ -49,6 +49,10 @@ Primary ADR: ADR-0007
 ## Submit Idempotency Replay Contract
 
 A4 is landed as a contract-lock gate, not as a second live or paper broker send. `submit_idempotency_replay_valid.json` pins the real P023 submit intent, gateway event, post-submit readback and command audit by SHA256. The validator requires one idempotency key, one command result, `same_broker_order_identity=true`, `duplicate_broker_order_created=false`, `gateway_send_replayed=false`, and `runtime_duplicate_send_attempted=false`. Negative fixtures reject a second broker identity and a missing source ref.
+
+## UI Command Status Evidence
+
+A9 is landed as a read-only browser gate. `ui-status-evidence.json` records a reconciled command status stage with audit/risk/approval/gateway/readback/reconciliation refs and a gateway-ack-only negative stage that remains blocked. The UI status panel is accepted while command controls remain disabled.
 
 ## Partial-Fill Runtime Sequence
 

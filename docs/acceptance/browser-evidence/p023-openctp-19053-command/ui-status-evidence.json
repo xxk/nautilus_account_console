@@ -1,0 +1,77 @@
+{
+  "schema": "account-console.p023.ui-status-evidence.v1",
+  "proposal_id": "p023-openctp-19053-paper-command-capability",
+  "account_id": "acct.ctp.paper.19053",
+  "route": "/accounts/acct.ctp.paper.19053",
+  "ui09_status_evidence_verdict": "pass",
+  "gateway_ack_final_state_rejected": true,
+  "command_controls_enabled": false,
+  "command_mode": "disabled",
+  "stages": [
+    {
+      "stage": "reconciled",
+      "label": "audit/readback/reconcile complete",
+      "browser": {
+        "audit_ref_seen": "Auditoutput/account_command/ctp-paper-19053/p023-armed-20260621t0748z/command_audit.json",
+        "gateway_ref_seen": "Gatewayoutput/account_command/ctp-paper-19053/p023-armed-20260621t0748z/submit_gateway_event.json",
+        "gateway_final_state": "false",
+        "readback_ref_count": 1,
+        "reconciliation_ref_count": 1,
+        "blocker_count": 0
+      },
+      "api": {
+        "status": "reconciled",
+        "command_audit_ref": "output/account_command/ctp-paper-19053/p023-armed-20260621t0748z/command_audit.json",
+        "gateway_event_refs": [
+          "output/account_command/ctp-paper-19053/p023-armed-20260621t0748z/submit_gateway_event.json"
+        ],
+        "readback_refs": [
+          "output/account_command/ctp-paper-19053/p023-armed-20260621t0748z/post_submit_readback.json"
+        ],
+        "reconciliation_ref": "output/account_command/ctp-paper-19053/p023-armed-20260621t0748z/reconciliation_result.json",
+        "gateway_ack_is_final_state": false
+      },
+      "verdict": "pass"
+    },
+    {
+      "stage": "gateway_ack_only_blocked",
+      "label": "gateway ack without readback is blocked",
+      "browser": {
+        "audit_ref_seen": "Auditoutput/account_command/ctp-paper-19053/p023-armed-20260621t0748z/command_audit.json",
+        "gateway_ref_seen": "Gatewayoutput/account_command/ctp-paper-19053/p023-armed-20260621t0748z/submit_gateway_event.json",
+        "gateway_final_state": "invalid",
+        "readback_ref_count": 0,
+        "reconciliation_ref_count": 0,
+        "blocker_count": 4
+      },
+      "api": {
+        "status": "blocked",
+        "command_audit_ref": "output/account_command/ctp-paper-19053/p023-armed-20260621t0748z/command_audit.json",
+        "gateway_event_refs": [
+          "output/account_command/ctp-paper-19053/p023-armed-20260621t0748z/submit_gateway_event.json"
+        ],
+        "readback_refs": [],
+        "reconciliation_ref": null,
+        "gateway_ack_is_final_state": true
+      },
+      "verdict": "pass"
+    }
+  ],
+  "explicit_non_claims": [
+    "does_not_submit_orders",
+    "does_not_cancel_orders",
+    "does_not_enable_command_controls",
+    "does_not_treat_gateway_ack_as_final_state",
+    "does_not_use_screenshot_as_command_truth"
+  ],
+  "browser_evidence": [
+    {
+      "stage": "reconciled",
+      "screenshot": "docs/acceptance/browser-evidence/p023-openctp-19053-command/command-status-reconciled.png"
+    },
+    {
+      "stage": "gateway_ack_only_blocked",
+      "screenshot": "docs/acceptance/browser-evidence/p023-openctp-19053-command/command-status-blocked.png"
+    }
+  ]
+}

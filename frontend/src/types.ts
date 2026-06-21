@@ -72,6 +72,21 @@ export interface MirrorCapabilities {
   command: MirrorCapabilityState;
 }
 
+export interface MirrorCommandStatusProjection {
+  schema_version?: string;
+  status?: string | null;
+  command_audit_ref?: string | null;
+  risk_decision_refs?: string[];
+  approval_decision_refs?: string[];
+  gateway_event_refs?: string[];
+  readback_refs?: string[];
+  reconciliation_ref?: string | null;
+  gateway_ack_is_final_state?: boolean | null;
+  readback_required?: boolean | null;
+  reconciliation_required?: boolean | null;
+  blockers?: Record<string, unknown>[];
+}
+
 export interface MirrorAccountSummary {
   account_id: string;
   display_alias: string;
@@ -112,6 +127,7 @@ export interface MirrorAccountProjection {
   orders: Record<string, unknown>[];
   fills: Record<string, unknown>[];
   source_health: Record<string, unknown>;
+  command_status?: MirrorCommandStatusProjection | null;
   blockers: Record<string, unknown>[];
   projection_checkpoint_id: string;
   projection_checksum: string;

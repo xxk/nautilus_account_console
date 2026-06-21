@@ -16,6 +16,9 @@ Every browser acceptance run must write:
 ```text
 docs/acceptance/browser-evidence/p023-openctp-19053-command/<project>/
   disabled-state.png
+  command-status-reconciled.png
+  command-status-blocked.png
+  ui-status-evidence.json
   submit-readback.png
   partial-fill-readback.png
   partial-fill-order-display.json
@@ -92,6 +95,16 @@ docs/acceptance/browser-evidence/p023-openctp-19053-command/<project>/
 | UI-13 | G4 | partial fill then cancel is displayed from readback | filled qty, remaining qty, cancel target and refs match API projection |
 
 ## Partial Fill Web UI Acceptance
+
+## UI-09 Command Status Evidence
+
+UI-09 passes when `ui-status-evidence.json` proves that the browser command status panel is sourced from API projection fields and command artifacts, not from gateway ack alone. The positive stage must show `account-command-audit-ref`, `account-command-risk-ref`, `account-command-approval-ref`, `account-command-gateway-ref`, `account-command-readback-ref`, and `account-command-reconciliation-ref`. The negative stage must omit readback/reconciliation refs, show `account-command-blocker`, and display `account-command-gateway-final-state=invalid`. Command controls must remain disabled and absent.
+
+The UI-09 browser contract gate is:
+
+```text
+python scripts\validate_p023_ui_status_browser_evidence.py
+```
 
 UI-13 is accepted only when the browser projection matches command artifacts and API projection for the same order identity. The UI may display a progress indicator, but the progress indicator is decorative and cannot be the source of truth.
 

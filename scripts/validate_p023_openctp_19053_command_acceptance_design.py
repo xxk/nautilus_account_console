@@ -65,6 +65,8 @@ def validate_proposal_docs() -> None:
         "Account Mirror as broker writer",
         "P023 paper runtime is accepted",
         "submit idempotency replay contract-lock evidence",
+        "Phase 6 UI command status evidence",
+        "validate_p023_ui_status_browser_evidence.py",
     ]:
         require(phrase in readme, f"P023 README missing {phrase}")
 
@@ -79,6 +81,10 @@ def validate_proposal_docs() -> None:
         "completed_paper_submit",
         "completed_paper_cancel",
         "designed_runtime_blocker_until_partial_state",
+        "ui_status_evidence_accepted_command_controls_disabled",
+        "UI Command Status Evidence",
+        "ui-status-evidence.json",
+        "gateway-ack-only negative stage",
         "Submit Idempotency Replay Contract",
         "submit_idempotency_replay_valid.json",
         "runtime_duplicate_send_attempted=false",
@@ -95,7 +101,9 @@ def validate_proposal_docs() -> None:
         "P023_OPENCTP_19053_COMMAND_ACCEPTANCE_DESIGN_OK",
         "P023_ACCOUNT_COMMAND_CONTRACTS_OK",
         "P023_OPENCTP19053_COMMAND_RUN_OK",
+        "P023_UI_STATUS_BROWSER_EVIDENCE_OK",
         "P023_PARTIAL_FILL_BROWSER_EVIDENCE_OK",
+        "validate_p023_ui_status_browser_evidence.py",
         "partial_cancel_display=pass",
         "validate_p023_account_command_contracts.py",
         "validate_p023_openctp19053_command_run.py",
@@ -110,6 +118,10 @@ def validate_proposal_docs() -> None:
         "same broker order identity",
         "Paper cancel uses readback identity",
         "Post-cancel readback reconciles",
+        "browser_status_evidence_ready_command_controls_disabled",
+        "account-console.p023.ui-status-evidence.v1",
+        "gateway-ack-only state as blocked",
+        "command_controls_enabled=false",
         "Partial fill then cancel",
         "designed_runtime_blocker_until_partial_state",
         "browser_order_display_contract_ready_runtime_blocked",
@@ -211,6 +223,9 @@ def validate_proposal_docs() -> None:
         "`account-submit-order-button`",
         "`account-cancel-order-button`",
         "`account-command-reconciliation-ref`",
+        "ui-status-evidence.json",
+        "command-status-reconciled.png",
+        "command-status-blocked.png",
         "partial-fill-order-display.json",
         "`account-order-identity`",
         "`account-order-status`",
@@ -227,6 +242,9 @@ def validate_proposal_docs() -> None:
         "UI-01",
         "UI-12",
         "UI-13",
+        "UI-09 Command Status Evidence",
+        "account-command-gateway-final-state=invalid",
+        "validate_p023_ui_status_browser_evidence.py",
         "Partial Fill Web UI Acceptance",
         "UI-13 Order Display Correctness",
         "partial_cancel_display_verdict=pass",
@@ -281,6 +299,7 @@ def validate_contract_gate_landed() -> None:
     require((ROOT / "scripts" / "validate_p023_account_command_contracts.py").exists(), "missing P023 command contract validator")
     require((ROOT / "scripts" / "run_p023_openctp19053_command_acceptance.py").exists(), "missing P023 command runtime runner")
     require((ROOT / "scripts" / "validate_p023_openctp19053_command_run.py").exists(), "missing P023 command run validator")
+    require((ROOT / "scripts" / "validate_p023_ui_status_browser_evidence.py").exists(), "missing P023 UI status validator")
     for filename in [
         "order_intent.schema.json",
         "cancel_intent.schema.json",

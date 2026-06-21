@@ -99,6 +99,7 @@ class MirrorAccountProjection(BaseModel):
     orders: list[dict]
     fills: list[dict]
     source_health: dict
+    command_status: dict | None = None
     blockers: list[dict]
     projection_checkpoint_id: str
     projection_checksum: str

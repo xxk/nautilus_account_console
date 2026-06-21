@@ -34,6 +34,7 @@ class MirrorProjection:
     orders: list[dict[str, Any]]
     fills: list[dict[str, Any]]
     source_health: dict[str, Any]
+    command_status: dict[str, Any] | None
     blockers: list[dict[str, Any]]
     projection_checkpoint_id: str
     projection_checksum: str
@@ -65,6 +66,7 @@ class MirrorProjection:
             "orders": self.orders,
             "fills": self.fills,
             "source_health": self.source_health,
+            "command_status": self.command_status,
             "blockers": self.blockers,
             "projection_checkpoint_id": self.projection_checkpoint_id,
             "projection_checksum": self.projection_checksum,
@@ -106,6 +108,7 @@ class AccountMirrorStore:
         account = payload["account"]
         capabilities = payload["capabilities"]
         observations = payload["observations"]
+        command_status = payload.get("command_status")
         source_ref = capabilities["observation"]["source_ref"]
         route_context = payload.get("route_context") or route_context_from_capability_bundle(payload)
         validate_route_context(route_context, str(account["account_id"]))
@@ -113,6 +116,7 @@ class AccountMirrorStore:
             "account": account,
             "capabilities": capabilities,
             "observations": observations,
+            "command_status": command_status,
             "route_context": route_context,
             "source_path": source_path,
         }
@@ -123,6 +127,7 @@ class AccountMirrorStore:
             "source_checksum": source_ref["checksum"],
             "checkpoint_id": checkpoint_id,
             "observations": observations,
+            "command_status": command_status,
             "route_context": route_context,
             "boundaries": payload["boundaries"],
         }
@@ -142,6 +147,7 @@ class AccountMirrorStore:
             orders=list(observations["orders"]),
             fills=list(observations["fills"]),
             source_health=dict(observations["source_health"]),
+            command_status=dict(command_status) if command_status else None,
             blockers=list(observations["blockers"]),
             projection_checkpoint_id=checkpoint_id,
             projection_checksum=projection_checksum,
