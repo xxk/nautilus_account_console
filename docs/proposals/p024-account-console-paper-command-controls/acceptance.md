@@ -1,7 +1,7 @@
 # P024 Acceptance / Account Console Paper Command Controls
 
 - Proposal ID: `p024-account-console-paper-command-controls`
-- Status: phase1_backend_contract_gate_passed
+- Status: phase3b_partial_fill_cancel_ui_display_passed
 - Primary ADR: ADR-0007
 
 ## Scope
@@ -16,6 +16,8 @@ Out of scope: live trading, replace order, Account Mirror write authority, direc
 | --- | --- | --- | --- |
 | P024 design gate | `python scripts\validate_p024_paper_command_controls_design.py` | `P024_PAPER_COMMAND_CONTROLS_DESIGN_OK` | Proposal docs, ADR coverage, current no-controls boundary |
 | P024 backend command API | `python scripts\validate_p024_paper_command_api.py` | `P024_PAPER_COMMAND_API_OK` | Paper-only submit/cancel intent API, fail-closed before gateway, mirror remains read-only |
+| P024 frontend command controls | `npx playwright test tests/e2e/p024-paper-command-controls.spec.ts --project=desktop` then `python scripts\validate_p024_ui_command_controls_browser_evidence.py` | `P024_UI_COMMAND_CONTROLS_BROWSER_EVIDENCE_OK` | Disabled controls absent; `paper_armed` controls visible; submit/cancel call Phase 1 API; gateway send remains false |
+| P024 partial-fill cancel display | `npx playwright test tests/e2e/p024-partial-fill-cancel-order-display.spec.ts --project=desktop` then `python scripts\validate_p024_partial_fill_cancel_browser_evidence.py` | `P024_PARTIAL_FILL_CANCEL_BROWSER_EVIDENCE_OK` | S1-S4 Web UI order/fill display correctness; cancel pending is not final; runtime partial-fill remains typed blocker |
 | P023 runtime predecessor | `python scripts\validate_p023_openctp19053_command_run.py --run-dir output\account_command\ctp-paper-19053\p023-armed-20260621t0748z --source-package output\account_capability\ctp-paper-19053\source-package.json` | `P023_OPENCTP19053_COMMAND_RUN_OK` | Predecessor paper command evidence |
 | Proposal docs | `python scripts\check_proposal_docs.py --root . --proposal-id p024-account-console-paper-command-controls` | `PROPOSAL_DOCS_OK` | Proposal structure |
 
@@ -25,14 +27,14 @@ Out of scope: live trading, replace order, Account Mirror write authority, direc
 | --- | --- | --- | --- | --- | --- |
 | A1 | positive | Backend command API accepts paper submit intent | API contract + command artifact validator | endpoint bypasses risk/approval | phase1_backend_contract_gate_passed |
 | A2 | positive | Account Mirror remains read-only | route audit | `/api/mirror` exposes POST/PUT/DELETE | design_gate_ready |
-| A3 | positive | Command controls render only in `paper_armed` mode | Playwright + API projection | controls appear while disabled | planned |
+| A3 | positive | Command controls render only in `paper_armed` mode | Playwright + API projection | controls appear while disabled | phase2_frontend_guarded_controls_passed |
 | A4 | positive | Submit writes intent/risk/approval/gateway/readback/reconcile refs | integration + artifact validator | gateway ack alone is final | planned |
-| A5 | positive | Submit idempotency prevents duplicate order | retry/duplicate-click test | duplicate broker order identity appears | planned |
+| A5 | positive | Submit idempotency prevents duplicate order | retry/duplicate-click test | duplicate broker order identity appears | phase2_frontend_guarded_controls_passed |
 | A6 | positive | Risk/approval fail closed | negative API tests | missing risk/approval reaches gateway | planned |
 | A7 | positive | Cancel uses latest readback identity | API/browser + readback artifact | cancel uses UI row text or screenshot | phase1_backend_contract_gate_passed |
 | A8 | positive | UI status waits for readback/reconcile | browser evidence | final state shown without readback/reconcile | planned |
 | A9 | positive | Secret redaction | artifact redaction gate | raw password/front/auth/token recorded | planned |
-| A10 | positive | Partial fill then cancel Web UI order display correctness | Playwright + `partial-fill-cancel-ui-acceptance.md` + browser evidence JSON | identity changes, fill rows drift, or quantity formulas fail | design_gate_ready |
+| A10 | positive | Partial fill then cancel Web UI order display correctness | Playwright + `partial-fill-cancel-ui-acceptance.md` + browser evidence JSON | identity changes, fill rows drift, or quantity formulas fail | phase3b_partial_fill_cancel_ui_display_passed |
 
 ## Partial Fill Then Cancel Acceptance
 
@@ -53,7 +55,7 @@ Required identity and provenance checks:
 4. `account-cancel-pending-ref` cites command audit evidence and never proves final state by itself.
 5. The final canceled display requires readback and reconciliation evidence, not gateway acknowledgement alone.
 
-Current predecessor evidence is P023 display-contract evidence only: `python scripts\validate_p023_partial_fill_browser_evidence.py` returns `P023_PARTIAL_FILL_BROWSER_EVIDENCE_OK` and explicitly states runtime partial-fill remains a typed blocker until real or owner-approved partial-fill state exists. P024 implementation must regenerate P024-scoped browser evidence before closeout.
+P024 browser evidence is now proposal-scoped: `python scripts\validate_p024_partial_fill_cancel_browser_evidence.py` returns `P024_PARTIAL_FILL_CANCEL_BROWSER_EVIDENCE_OK`. This is display-contract evidence only and explicitly preserves `typed_blocker_until_real_or_owner_approved_partial_fill_state`; it does not claim real partial-fill runtime or broker truth.
 
 ## Phase 1 Backend Command API Acceptance
 
@@ -65,6 +67,18 @@ P024 Phase 1 exposes only these backend routes:
 The API accepts only `account_id=acct.ctp.paper.19053` and `mode=paper_armed`. A valid request returns `status=accepted_for_risk`, deterministic `command_id`, `idempotency_enforced=true`, `gateway_send_attempted=false`, `broker_order_created=false`, `runtime_duplicate_send_attempted=false`, `gateway_ack_is_final_state=false`, `raw_secret_values_recorded=false`, and blockers for `risk_decision_required` plus `approval_decision_required`.
 
 This is a contract gate only. It does not send broker commands and does not enable Web UI command controls.
+
+## Phase 2 Frontend Guarded Controls Acceptance
+
+Browser evidence proves:
+
+1. Disabled projection has no `account-submit-order-form`, `account-submit-order-button` or `account-cancel-order-button`.
+2. `paper_armed` projection shows `account-paper-command-banner`, `account-command-preflight-ref`, `account-submit-order-form`, `account-submit-idempotency-key`, `account-submit-order-button`, `account-cancel-order-identity` and `account-cancel-order-button`.
+3. Submit and cancel call only the P024 Phase 1 API and both return `accepted_for_risk`.
+4. Browser evidence records `paper_armed_controls_visible=true`, `gateway_send_attempted=false`, `broker_order_created=false` and `gateway_ack_is_final_state=false`.
+5. The cancel request uses readback identity and readback ref from the order row, not screenshot or row text alone.
+
+This remains browser/control contract evidence. It does not claim real Web UI OpenCTP runtime command execution.
 
 ## Negative Acceptance
 
@@ -93,4 +107,4 @@ This is a contract gate only. It does not send broker commands and does not enab
 
 ## Evidence Boundary
 
-Implementation/browser evidence is required before implementation closeout. Until Phase 1-4 are implemented, P024 remains `design_gate_ready`, not runtime accepted.
+Implementation/browser evidence is required before implementation closeout. Phase 1, Phase 2 and Phase 3b browser/contract gates are accepted; Phase 3 real Web UI submit/cancel runtime and Phase 4 closeout remain pending.

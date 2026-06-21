@@ -1,5 +1,6 @@
 import {
   AlertTriangle,
+  CircleX,
   Clipboard,
   Database,
   FileSearch,
@@ -8,6 +9,7 @@ import {
   Layers,
   ListFilter,
   Radio,
+  Send,
   ShieldAlert,
   Waypoints
 } from "lucide-react";
@@ -85,6 +87,8 @@ import type {
   AccountIncidentsFixtureState,
   AccountIncidentsPanelReadModel,
   AccountKind,
+  CancelIntentRequest,
+  CommandApiResult,
   AccountOrderDetailFixtureState,
   AccountOrderDetailPanelReadModel,
   AccountExecutionReportRow,
@@ -110,13 +114,16 @@ import type {
   MirrorAccountProjection,
   MirrorAccountSummary,
   MirrorEvidenceResponse,
-  MirrorSourceHealthResponse
+  MirrorSourceHealthResponse,
+  OrderIntentRequest
 } from "./types";
 import {
+  cancelPaperOrderIntent,
   fetchMirrorAccount,
   fetchMirrorAccounts,
   fetchMirrorEvidence,
-  fetchMirrorSourceHealth
+  fetchMirrorSourceHealth,
+  submitPaperOrderIntent
 } from "./api";
 
 type AccountHealthFixtureId = AccountHealthPanelFixtureState | "adr0044_foundation";
@@ -742,10 +749,92 @@ function commandStatusRefs(value: unknown): string[] {
 
 function commandStatusBlockerText(blocker: Record<string, unknown>) {
   return [
-    asText(blocker.stage, "command_status"),
+    asText(blocker.type, asText(blocker.stage, "command_status")),
     asText(blocker.reason, asText(blocker.kind, "missing evidence")),
     asText(blocker.source_ref, "missing source ref")
   ].join(" | ");
+}
+
+function commandResultToStatus(result: CommandApiResult): MirrorAccountProjection["command_status"] {
+  return {
+    schema_version: "account_command.ui_status_projection.v1",
+    status: result.status,
+    command_audit_ref: result.intent_ref,
+    risk_decision_refs: result.risk_decision_ref ? [result.risk_decision_ref] : [],
+    approval_decision_refs: result.approval_decision_ref ? [result.approval_decision_ref] : [],
+    gateway_event_refs: result.gateway_event_refs,
+    readback_refs: result.readback_refs,
+    reconciliation_ref: result.reconciliation_ref ?? null,
+    gateway_ack_is_final_state: result.gateway_ack_is_final_state,
+    readback_required: true,
+    reconciliation_required: true,
+    blockers: result.blockers.map((blocker) => ({ ...blocker }))
+  };
+}
+
+function isP024PaperArmed(readback: MirrorWorkbenchReadback | null): boolean {
+  const command = readback?.selected.capabilities.command;
+  const allowedActions = command?.allowed_actions ?? [];
+  return (
+    readback?.selected.account_id === "acct.ctp.paper.19053" &&
+    command?.enabled === true &&
+    command.mode === "paper_armed" &&
+    allowedActions.includes("submit") &&
+    allowedActions.includes("cancel")
+  );
+}
+
+function defaultSubmitIntent(readback: MirrorWorkbenchReadback): OrderIntentRequest {
+  const accountId = readback.selected.account_id as "acct.ctp.paper.19053";
+  const preflightRef = asText(readback.selected.source_ref);
+  const keySeed = readback.selected.projection_checkpoint_id.replaceAll(":", "-").replaceAll("/", "-");
+  return {
+    schema_version: "account_command.order_intent.v1",
+    intent_id: `intent.p024.ui.submit.${keySeed.slice(0, 32).toLowerCase()}`,
+    account_id: accountId,
+    mode: "paper_armed",
+    action: "submit",
+    instrument: "rb2610",
+    exchange: "SHFE",
+    side: "BUY",
+    quantity: 1,
+    order_type: "LIMIT",
+    limit_price: 24910,
+    time_in_force: "GFD",
+    offset: "OPEN",
+    idempotency_key: `p024-ui-submit-${keySeed}`.slice(0, 80),
+    operator_ref: "operator://account-console-web-ui/p024",
+    preflight_ref: preflightRef,
+    raw_secret_values_recorded: false,
+    raw_broker_endpoint_recorded: false
+  };
+}
+
+function cancelIntentForOrder(readback: MirrorWorkbenchReadback, order: AccountOrderRow): CancelIntentRequest {
+  const sourceOrder =
+    readback.selected.orders.find((item) => asText(item.client_order_id) === order.client_order_id) ?? {};
+  const keySeed = `${readback.selected.projection_checkpoint_id}-${order.client_order_id}`
+    .replaceAll(":", "-")
+    .replaceAll("/", "-");
+  return {
+    schema_version: "account_command.cancel_intent.v1",
+    intent_id: `intent.p024.ui.cancel.${keySeed.slice(0, 32).toLowerCase()}`,
+    account_id: readback.selected.account_id as "acct.ctp.paper.19053",
+    mode: "paper_armed",
+    action: "cancel",
+    instrument: order.instrument,
+    exchange: order.destination && order.destination !== "missing" ? order.destination : asText(sourceOrder.exchange, "SHFE"),
+    client_order_id: order.client_order_id,
+    venue_order_id: asText(sourceOrder.venue_order_id, order.lifecycle_ref ?? order.client_order_id),
+    order_ref: asText(sourceOrder.order_ref, order.lifecycle_ref ?? order.client_order_id),
+    front_id: asNumber(sourceOrder.front_id) ?? 0,
+    session_id: asNumber(sourceOrder.session_id) ?? 0,
+    idempotency_key: `p024-ui-cancel-${keySeed}`.slice(0, 80),
+    operator_ref: "operator://account-console-web-ui/p024",
+    readback_ref: order.source_ref,
+    raw_secret_values_recorded: false,
+    raw_broker_endpoint_recorded: false
+  };
 }
 
 export function App() {
@@ -1363,6 +1452,19 @@ function AccountWorkbenchTerminalPanel({
     (position) => position.account_id === summary.account.account_id
   );
   const visibleOrders = orders.orders.filter((order) => order.account_id === summary.account.account_id);
+  const [commandResult, setCommandResult] = useState<CommandApiResult | null>(null);
+  const [commandError, setCommandError] = useState<string | null>(null);
+  const paperArmed = isP024PaperArmed(mirrorReadback);
+  const submitIntent = mirrorReadback && paperArmed ? defaultSubmitIntent(mirrorReadback) : null;
+  const cancelEligibleOrder = paperArmed
+    ? visibleOrders.find((order) => {
+        const remaining = order.remaining_quantity ?? 0;
+        return remaining > 0 && Boolean(order.lifecycle_ref) && order.status !== "cancel_pending";
+      })
+    : null;
+  const commandStatus = commandResult
+    ? commandResultToStatus(commandResult)
+    : mirrorReadback?.selected.command_status ?? null;
   const executionReportRows = mirrorReadback
     ? mirrorExecutionReportRows(mirrorReadback).filter((report) => report.account_id === summary.account.account_id)
     : visibleOrders
@@ -1425,6 +1527,35 @@ function AccountWorkbenchTerminalPanel({
       ref: "orders locked"
     }
   ];
+
+  async function handleSubmitIntent() {
+    if (!mirrorReadback || !submitIntent) {
+      return;
+    }
+    try {
+      setCommandError(null);
+      const result = await submitPaperOrderIntent(mirrorReadback.selected.account_id, submitIntent);
+      setCommandResult(result);
+    } catch (error) {
+      setCommandError(error instanceof Error ? error.message : "submit intent request failed");
+    }
+  }
+
+  async function handleCancelIntent(order: AccountOrderRow) {
+    if (!mirrorReadback) {
+      return;
+    }
+    try {
+      setCommandError(null);
+      const result = await cancelPaperOrderIntent(
+        mirrorReadback.selected.account_id,
+        cancelIntentForOrder(mirrorReadback, order)
+      );
+      setCommandResult(result);
+    } catch (error) {
+      setCommandError(error instanceof Error ? error.message : "cancel intent request failed");
+    }
+  }
 
   return (
     <section className="terminal-workbench-shell" data-testid="terminal-workbench-shell">
@@ -2142,25 +2273,80 @@ function AccountWorkbenchTerminalPanel({
           <section className="terminal-panel" data-testid="account-command-capability-state">
             <div className="terminal-panel-header">
               <h3>Command Plane</h3>
-              <StateBadge value={summary.boundaries.action_controls ? "warning" : "empty"} />
+              <StateBadge value={paperArmed ? "partial" : summary.boundaries.action_controls ? "warning" : "empty"} />
             </div>
             <dl className="detail-list">
               <div>
                 <dt>Mode</dt>
-                <dd data-testid="account-command-mode">observation only</dd>
+                <dd data-testid="account-command-mode">{paperArmed ? "paper_armed" : "observation only"}</dd>
               </div>
               <div>
                 <dt>Controls</dt>
-                <dd>none mounted</dd>
+                <dd data-testid="account-command-controls-state">{paperArmed ? "mounted" : "none mounted"}</dd>
               </div>
               <div>
                 <dt>Broker adapter</dt>
-                <dd>not bound in this view</dd>
+                <dd>{paperArmed ? "P024 API gate" : "not bound in this view"}</dd>
               </div>
             </dl>
+            {paperArmed && submitIntent ? (
+              <div className="command-control-stack" data-testid="account-paper-command-banner">
+                <div className="command-preflight-row">
+                  <span data-testid="account-command-preflight-ref">{submitIntent.preflight_ref}</span>
+                </div>
+                <form
+                  className="command-form"
+                  data-testid="account-submit-order-form"
+                  onSubmit={(event) => {
+                    event.preventDefault();
+                    void handleSubmitIntent();
+                  }}
+                >
+                  <label>
+                    Instrument
+                    <input readOnly value={submitIntent.instrument} />
+                  </label>
+                  <label>
+                    Qty
+                    <input readOnly value={submitIntent.quantity} />
+                  </label>
+                  <label>
+                    Limit
+                    <input readOnly value={submitIntent.limit_price} />
+                  </label>
+                  <span className="command-idempotency" data-testid="account-submit-idempotency-key">
+                    {submitIntent.idempotency_key}
+                  </span>
+                  <button data-testid="account-submit-order-button" type="submit">
+                    <Send size={14} />
+                    Submit
+                  </button>
+                </form>
+                {cancelEligibleOrder ? (
+                  <div className="command-cancel-row">
+                    <span data-testid="account-cancel-order-identity">
+                      {cancelEligibleOrder.lifecycle_ref ?? cancelEligibleOrder.client_order_id}
+                    </span>
+                    <button
+                      data-testid="account-cancel-order-button"
+                      onClick={() => void handleCancelIntent(cancelEligibleOrder)}
+                      type="button"
+                    >
+                      <CircleX size={14} />
+                      Cancel
+                    </button>
+                  </div>
+                ) : null}
+                {commandError ? (
+                  <div className="state-callout stale" data-testid="account-command-control-blocker">
+                    {commandError}
+                  </div>
+                ) : null}
+              </div>
+            ) : null}
           </section>
 
-          <CommandStatusPanel status={mirrorReadback?.selected.command_status ?? null} />
+          <CommandStatusPanel status={commandStatus} />
 
           <section className="terminal-panel" data-testid="account-summary-boundary-list">
             <div className="terminal-panel-header">

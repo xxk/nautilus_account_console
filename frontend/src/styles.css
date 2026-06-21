@@ -532,6 +532,70 @@ select {
   overflow: auto;
 }
 
+.command-control-stack {
+  border-top: 1px solid #edf1f4;
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+  padding-top: 12px;
+}
+
+.command-preflight-row,
+.command-idempotency,
+.command-cancel-row span {
+  color: #60717d;
+  font-size: 11px;
+  overflow-wrap: anywhere;
+}
+
+.command-form {
+  display: grid;
+  gap: 8px;
+}
+
+.command-form label {
+  display: grid;
+  gap: 4px;
+}
+
+.command-form input {
+  background: #f7faf9;
+  border: 1px solid #d8e0e5;
+  border-radius: 4px;
+  font: inherit;
+  min-width: 0;
+  padding: 6px 7px;
+}
+
+.command-form button,
+.command-cancel-row button {
+  align-items: center;
+  border: 1px solid #1c6b5a;
+  border-radius: 4px;
+  display: inline-flex;
+  gap: 6px;
+  justify-content: center;
+  min-height: 32px;
+}
+
+.command-form button {
+  background: #1f7a68;
+  color: #ffffff;
+}
+
+.command-cancel-row {
+  border-top: 1px solid #edf1f4;
+  display: grid;
+  gap: 8px;
+  padding-top: 10px;
+}
+
+.command-cancel-row button {
+  background: #fff8f7;
+  border-color: #b94b42;
+  color: #9b2c22;
+}
+
 .panel-main,
 .detail-drawer {
   background: #ffffff;

@@ -50,7 +50,7 @@ def validate_adr() -> None:
     for phrase in [
         'adr_id: "0007"',
         "decision_status: proposed",
-        "landing_status: p024_phase1_backend_contract_gate",
+        "landing_status: p024_phase3b_partial_fill_cancel_ui_contract_gate",
         "Governed Account Command Capability",
         "Account Mirror never sends commands",
         "Gateway acknowledgement 不是最终账户状态",
@@ -58,6 +58,8 @@ def validate_adr() -> None:
         "`live_armed`",
         "Phase 0: ADR/proposal/contract skeleton, no command implementation.",
         "P024 Phase 1 backend command API is accepted as a contract gate only",
+        "P024 Phase 2 frontend guarded controls are accepted as browser contract evidence only",
+        "P024 Phase 3b partial-fill cancel UI display is accepted as browser display-contract evidence only",
         "gateway_send_attempted=false",
     ]:
         require(phrase in text, f"ADR-0007 missing phrase: {phrase}")
@@ -122,7 +124,7 @@ def main() -> None:
     validate_existing_design_gate_still_closed()
     validate_capability_fixtures_still_disabled()
     validate_backend_has_only_p024_command_routes()
-    print("ADR0007_ACCOUNT_COMMAND_CAPABILITY_OK: status=proposed landing=p024_phase1_backend_contract_gate")
+    print("ADR0007_ACCOUNT_COMMAND_CAPABILITY_OK: status=proposed landing=p024_phase3b_partial_fill_cancel_ui_contract_gate")
 
 
 if __name__ == "__main__":

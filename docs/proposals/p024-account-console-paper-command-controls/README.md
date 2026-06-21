@@ -1,7 +1,7 @@
 # P024 Account Console Paper Command Controls
 
 - Proposal ID: `p024-account-console-paper-command-controls`
-- Status: phase1_backend_contract_gate_passed
+- Status: phase3b_partial_fill_cancel_ui_display_passed
 - ADR carrier: yes
 - Primary ADR: ADR-0007
 - Predecessor: [P023 OpenCTP 19053 Paper Command Capability](../p023-openctp-19053-paper-command-capability/README.md)
@@ -37,8 +37,11 @@ P024 does not enable `live_armed`, production admission, capital approval, or Ac
 | --- | --- | --- |
 | P023 paper runtime | Real OpenCTP 19053 paper submit/cancel/readback accepted | `python scripts\validate_p023_openctp19053_command_run.py --run-dir output\account_command\ctp-paper-19053\p023-armed-20260621t0748z --source-package output\account_capability\ctp-paper-19053\source-package.json` |
 | P023 UI status | Read-only status evidence accepted; command controls disabled | `python scripts\validate_p023_ui_status_browser_evidence.py` |
-| Current controls | No Web/API command controls are accepted yet | `python scripts\validate_p024_paper_command_controls_design.py` |
+| P024 design gate | Proposal docs, ADR coverage and command boundary remain machine-checked | `python scripts\validate_p024_paper_command_controls_design.py` |
+| Current controls | Guarded Web/API paper command controls are accepted as browser/API contract gates only | `python scripts\validate_p024_ui_command_controls_browser_evidence.py` |
 | Phase 1 backend API | P024 backend accepts paper `OrderIntent` and `CancelIntent` contract requests, stops before risk/approval/gateway and keeps Account Mirror read-only | `python scripts\validate_p024_paper_command_api.py` |
+| Phase 2 frontend controls | Web UI hides controls while disabled, mounts submit/cancel only for `paper_armed` projection, calls P024 API and keeps gateway send false | `python scripts\validate_p024_ui_command_controls_browser_evidence.py` |
+| Phase 3b partial-fill display | Web UI order display contract passes S1 working, S2 partial, S3 cancel pending and S4 remaining cancelled with stable fill/order identities | `python scripts\validate_p024_partial_fill_cancel_browser_evidence.py` |
 
 ## Document Map
 
@@ -56,7 +59,9 @@ P024 does not enable `live_armed`, production admission, capital approval, or Ac
 | --- | --- | --- | --- |
 | ADR backfill | archive_only | ADR-0007 successor proposal list | design_gate_ready |
 | Backend command API contract gate | archive_only | P024 paper intent API accepts submit/cancel requests and fails closed before gateway | phase1_backend_contract_gate_passed |
+| Frontend guarded controls | archive_only | Browser evidence proves disabled controls absent and `paper_armed` controls route to Phase 1 API with no gateway send | phase2_frontend_guarded_controls_passed |
+| Partial-fill cancel display | archive_only | Browser evidence proves S1-S4 order/fill display correctness and typed runtime blocker | phase3b_partial_fill_cancel_ui_display_passed |
 | Architecture / ownership backfill | required before implementation closeout | command gateway owner map | not_started |
-| Proposal-local evidence | archive_only | `acceptance.md` and future browser/runtime evidence | phase1_backend_contract_gate_passed |
+| Proposal-local evidence | archive_only | `acceptance.md`, browser command-controls evidence and P024 partial-fill display evidence; runtime Web UI broker command evidence remains future | phase3b_partial_fill_cancel_ui_display_passed |
 
 No stable rule graduation: proposal-local evidence only until implementation and runtime gates pass.

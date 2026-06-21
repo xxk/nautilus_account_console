@@ -1,7 +1,7 @@
 # P024 Partial Fill Then Cancel UI Acceptance
 
 - Proposal ID: `p024-account-console-paper-command-controls`
-- Status: phase1_backend_contract_gate_passed
+- Status: phase3b_partial_fill_cancel_ui_display_passed
 - Primary ADR: ADR-0007
 - Account: `acct.ctp.paper.19053`
 
@@ -9,7 +9,7 @@
 
 This document defines Web UI acceptance for the order display after a partial fill and cancellation of the remaining quantity. It verifies display correctness only when backed by typed evidence. It does not turn screenshots, browser text or TickTrader UI state into order truth.
 
-P024 closeout must produce P024-scoped browser evidence under `docs/acceptance/browser-evidence/p024-account-console-paper-command-controls/partial-fill-cancel-order-display.json`. Current P023 predecessor evidence can be used only as display-contract input and remains explicit that real runtime partial-fill is blocked until a real or owner-approved partial-fill state exists.
+P024 closeout produces P024-scoped browser evidence under `docs/acceptance/browser-evidence/p024-account-console-paper-command-controls/partial-fill-cancel-order-display.json`. Current evidence remains explicit that real runtime partial-fill is blocked until a real or owner-approved partial-fill state exists.
 
 ## Stage Model
 
@@ -30,6 +30,7 @@ P024 closeout must produce P024-scoped browser evidence under `docs/acceptance/b
 | `s2_cancel_target_equals_s2_remaining_quantity` | `account-remaining-cancel-quantity` equals S2 `account-order-remaining-quantity` |
 | `s3_quantities_unchanged_until_cancel_readback` | S3 submitted, filled, remaining and fill rows equal S2 |
 | `s3_no_remaining_cancel_quantity_visible` | no second cancel target remains visible while cancel is pending |
+| `s3_cancel_pending_is_not_terminal` | S3 gateway/cancel-pending state is not final account state |
 | `s4_filled_quantity_preserved_after_cancel` | S4 filled quantity equals S2 filled quantity |
 | `s4_cancelled_quantity_equals_s2_remaining_quantity` | S4 cancelled quantity equals S2 remaining quantity |
 | `s4_remaining_quantity_zero` | S4 remaining quantity is zero |
@@ -84,7 +85,18 @@ P024 implementation evidence must be a machine-readable JSON file with:
 | PFN-07 | UI uses screenshot, row text or latest path as cancel authority | reject; requires readback identity and command audit |
 | PFN-08 | raw password/front/auth/token appears in evidence | redaction failure |
 
-## Current Predecessor Evidence
+## Current P024 Evidence
+
+P024 has proposal-scoped browser display-contract evidence:
+
+1. Browser test: `frontend\tests\e2e\p024-partial-fill-cancel-order-display.spec.ts`.
+2. Evidence JSON: `docs\acceptance\browser-evidence\p024-account-console-paper-command-controls\partial-fill-cancel-order-display.json`.
+3. Validator: `python scripts\validate_p024_partial_fill_cancel_browser_evidence.py`.
+4. Pass signal: `P024_PARTIAL_FILL_CANCEL_BROWSER_EVIDENCE_OK`.
+
+This evidence verifies Web UI display correctness only. It preserves `typed_blocker_until_real_or_owner_approved_partial_fill_state` and does not claim real partial-fill runtime, live readiness or broker truth.
+
+## Predecessor Evidence
 
 P023 has display-contract evidence for this shape:
 
@@ -93,4 +105,4 @@ P023 has display-contract evidence for this shape:
 3. Validator: `python scripts\validate_p023_partial_fill_browser_evidence.py`.
 4. Pass signal: `P023_PARTIAL_FILL_BROWSER_EVIDENCE_OK`.
 
-This predecessor evidence is not P024 runtime closeout. P024 must regenerate P024-scoped evidence after guarded Web UI command controls and command artifacts are implemented.
+This predecessor evidence is not P024 runtime closeout. It remains useful only as historical display-contract input.

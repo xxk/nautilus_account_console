@@ -21,6 +21,14 @@ P023_PARTIAL_EVIDENCE = (
     / "p023-openctp-19053-command"
     / "partial-fill-order-display.json"
 )
+P024_PARTIAL_EVIDENCE = (
+    ROOT
+    / "docs"
+    / "acceptance"
+    / "browser-evidence"
+    / "p024-account-console-paper-command-controls"
+    / "partial-fill-cancel-order-display.json"
+)
 
 REQUIRED_DOCS = [
     "README.md",
@@ -76,7 +84,7 @@ def validate_readme() -> None:
     text = read(PROPOSAL / "README.md")
     for phrase in [
         "Proposal ID: `p024-account-console-paper-command-controls`",
-        "Status: phase1_backend_contract_gate_passed",
+        "Status: phase3b_partial_fill_cancel_ui_display_passed",
         "ADR carrier: yes",
         "Primary ADR: ADR-0007",
         "Predecessor: [P023 OpenCTP 19053 Paper Command Capability]",
@@ -86,6 +94,8 @@ def validate_readme() -> None:
         "partial-fill then cancel order-display correctness scenario",
         "validate_p024_paper_command_controls_design.py",
         "validate_p024_paper_command_api.py",
+        "validate_p024_ui_command_controls_browser_evidence.py",
+        "validate_p024_partial_fill_cancel_browser_evidence.py",
     ]:
         require(phrase in text, f"P024 README missing phrase: {phrase}")
 
@@ -97,13 +107,16 @@ def validate_phase_plan() -> None:
         "output/account_command/ctp-paper-19053/",
         "phase_1_backend_command_api",
         "phase_2_frontend_guarded_controls",
+        "completed_browser_contract_gate",
         "phase_3_browser_paper_submit_cancel",
         "phase_3b_partial_fill_cancel_ui_display",
+        "completed_browser_display_gate",
         "Partial-fill cancel display",
         "Phase 1 Backend command API",
         "completed_contract_gate",
         "validate_p024_paper_command_api.py",
-        "Frontend submit/cancel controls are not implemented.",
+        "validate_p024_partial_fill_cancel_browser_evidence.py",
+        "Browser controls are implemented only for `paper_armed` projection",
         "Real partial-fill runtime remains blocked",
     ]:
         require(phrase in text, f"P024 phase plan missing phrase: {phrase}")
@@ -114,6 +127,8 @@ def validate_acceptance() -> None:
     for phrase in [
         "P024_PAPER_COMMAND_CONTROLS_DESIGN_OK",
         "P024_PAPER_COMMAND_API_OK",
+        "P024_UI_COMMAND_CONTROLS_BROWSER_EVIDENCE_OK",
+        "P024_PARTIAL_FILL_CANCEL_BROWSER_EVIDENCE_OK",
         "Implementation/browser evidence is required before implementation closeout",
         "UI Anti-Drift Acceptance",
         "forbidden_actions",
@@ -131,11 +146,13 @@ def validate_acceptance() -> None:
         "filled_quantity + cancelled_quantity == submitted_quantity",
         "account-order-identity",
         "account-cancel-pending-ref",
-        "validate_p023_partial_fill_browser_evidence.py",
-        "P024 implementation must regenerate P024-scoped browser evidence",
+        "validate_p024_partial_fill_cancel_browser_evidence.py",
+        "does not claim real partial-fill runtime",
         "Phase 1 Backend Command API Acceptance",
         "gateway_send_attempted=false",
         "accepted_for_risk",
+        "Phase 2 Frontend Guarded Controls Acceptance",
+        "paper_armed_controls_visible",
     ]:
         require(phrase in text, f"P024 acceptance missing phrase: {phrase}")
 
@@ -170,6 +187,7 @@ def validate_ui_docs() -> None:
         "S4 cancelled quantity equals S2 remaining quantity",
         "Screenshots alone are not sufficient",
         "NUI-09",
+        "phase3b_partial_fill_cancel_ui_display_passed",
     ]:
         require(phrase in ui_acceptance, f"P024 UI acceptance missing phrase: {phrase}")
 
@@ -178,7 +196,7 @@ def validate_partial_fill_cancel_doc() -> None:
     text = read(PROPOSAL / "partial-fill-cancel-ui-acceptance.md")
     for phrase in [
         "Proposal ID: `p024-account-console-paper-command-controls`",
-        "Status: phase1_backend_contract_gate_passed",
+        "Status: phase3b_partial_fill_cancel_ui_display_passed",
         "acct.ctp.paper.19053",
         "not turn screenshots, browser text or TickTrader UI state into order truth",
         "account-console.p024.partial-fill-cancel-ui-acceptance.v1",
@@ -186,6 +204,7 @@ def validate_partial_fill_cancel_doc() -> None:
         "s2_browser_fill_sum_equals_order_filled_quantity",
         "s2_cancel_target_equals_s2_remaining_quantity",
         "s3_quantities_unchanged_until_cancel_readback",
+        "s3_cancel_pending_is_not_terminal",
         "s4_cancelled_quantity_equals_s2_remaining_quantity",
         "s4_remaining_quantity_zero",
         "fill_trade_identities_stable_after_cancel",
@@ -195,9 +214,54 @@ def validate_partial_fill_cancel_doc() -> None:
         "gateway_ack_is_not_final_state",
         "raw_secret_values_recorded=false",
         "P023_PARTIAL_FILL_BROWSER_EVIDENCE_OK",
-        "P024 must regenerate P024-scoped evidence",
+        "P024_PARTIAL_FILL_CANCEL_BROWSER_EVIDENCE_OK",
+        "typed_blocker_until_real_or_owner_approved_partial_fill_state",
     ]:
         require(phrase in text, f"P024 partial-fill cancel acceptance missing phrase: {phrase}")
+
+
+def validate_p024_partial_fill_evidence() -> None:
+    payload = load_json(P024_PARTIAL_EVIDENCE)
+    require(
+        payload["schema"] == "account-console.p024.partial-fill-cancel-ui-acceptance.v1",
+        "P024 partial-fill schema mismatch",
+    )
+    require(payload["proposal_id"] == "p024-account-console-paper-command-controls", "P024 partial proposal mismatch")
+    require(payload["partial_cancel_display_verdict"] == "pass", "P024 partial display verdict mismatch")
+    require(
+        payload["runtime_partial_fill_verdict"]
+        == "typed_blocker_until_real_or_owner_approved_partial_fill_state",
+        "P024 runtime partial-fill blocker missing",
+    )
+    checks = payload.get("partial_cancel_display_checks") or {}
+    for check in [
+        "same_order_identity_across_stages",
+        "s2_browser_fill_sum_equals_order_filled_quantity",
+        "s2_trade_refs_match_api_projection",
+        "s2_cancel_target_equals_s2_remaining_quantity",
+        "s3_quantities_unchanged_until_cancel_readback",
+        "s3_no_remaining_cancel_quantity_visible",
+        "s3_cancel_pending_is_not_terminal",
+        "s4_filled_quantity_preserved_after_cancel",
+        "s4_cancelled_quantity_equals_s2_remaining_quantity",
+        "s4_remaining_quantity_zero",
+        "s4_no_remaining_cancel_quantity_visible",
+        "fill_trade_identities_stable_after_cancel",
+    ]:
+        require(checks.get(check) is True, f"P024 partial display check missing: {check}")
+    cancel = payload.get("cancel_request") or {}
+    require(cancel.get("mode") == "paper_armed", "P024 partial cancel mode mismatch")
+    require(cancel.get("venue_order_id") == "ctp19053-p024-partial-order-001", "P024 partial cancel identity mismatch")
+    artifacts = payload.get("command_artifacts") or {}
+    require(artifacts.get("gateway_ack_is_final_state") is False, "P024 partial gateway final flag mismatch")
+    non_claims = set(payload.get("explicit_non_claims") or [])
+    for claim in [
+        "does_not_prove_real_openctp_partial_fill_runtime",
+        "does_not_use_screenshot_as_order_truth",
+        "does_not_claim_live_readiness",
+        "gateway_ack_is_not_final_state",
+    ]:
+        require(claim in non_claims, f"P024 partial non-claim missing: {claim}")
 
 
 def validate_p023_predecessor_evidence() -> None:
@@ -283,12 +347,13 @@ def main() -> None:
     validate_acceptance()
     validate_ui_docs()
     validate_partial_fill_cancel_doc()
+    validate_p024_partial_fill_evidence()
     validate_p023_predecessor_evidence()
     validate_existing_command_boundary_still_closed()
     validate_backend_command_routes_are_p024_only()
     print(
         "P024_PAPER_COMMAND_CONTROLS_DESIGN_OK: "
-        "status=phase1_backend_contract_gate_passed current_ui_command=disabled partial_fill_cancel_ui=designed"
+        "status=phase3b_partial_fill_cancel_ui_display_passed current_ui_command=guarded partial_fill_cancel_ui=browser_contract_passed"
     )
 
 

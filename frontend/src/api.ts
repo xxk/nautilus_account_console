@@ -1,9 +1,12 @@
 import type {
   AccountSnapshot,
+  CancelIntentRequest,
+  CommandApiResult,
   MirrorAccountProjection,
   MirrorEvidenceResponse,
   MirrorListResponse,
   MirrorSourceHealthResponse,
+  OrderIntentRequest,
   OrderEvent,
   OrderExecutionReports
 } from "./types";
@@ -67,6 +70,36 @@ export async function fetchMirrorEvidence(accountId: string): Promise<MirrorEvid
   const response = await fetch(`${API_BASE}/api/mirror/accounts/${encodeURIComponent(accountId)}/evidence`);
   if (!response.ok) {
     throw new Error(`mirror evidence request failed: ${response.status}`);
+  }
+  return response.json();
+}
+
+export async function submitPaperOrderIntent(
+  accountId: string,
+  intent: OrderIntentRequest
+): Promise<CommandApiResult> {
+  const response = await fetch(`${API_BASE}/api/commands/accounts/${encodeURIComponent(accountId)}/submit-intents`, {
+    body: JSON.stringify(intent),
+    headers: { "Content-Type": "application/json" },
+    method: "POST"
+  });
+  if (!response.ok) {
+    throw new Error(`submit intent request failed: ${response.status}`);
+  }
+  return response.json();
+}
+
+export async function cancelPaperOrderIntent(
+  accountId: string,
+  intent: CancelIntentRequest
+): Promise<CommandApiResult> {
+  const response = await fetch(`${API_BASE}/api/commands/accounts/${encodeURIComponent(accountId)}/cancel-intents`, {
+    body: JSON.stringify(intent),
+    headers: { "Content-Type": "application/json" },
+    method: "POST"
+  });
+  if (!response.ok) {
+    throw new Error(`cancel intent request failed: ${response.status}`);
   }
   return response.json();
 }

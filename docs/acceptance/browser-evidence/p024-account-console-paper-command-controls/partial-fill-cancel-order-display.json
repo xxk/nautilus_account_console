@@ -1,0 +1,350 @@
+{
+  "schema": "account-console.p024.partial-fill-cancel-ui-acceptance.v1",
+  "proposal_id": "p024-account-console-paper-command-controls",
+  "account_id": "acct.ctp.paper.19053",
+  "route": "/accounts/acct.ctp.paper.19053",
+  "source_ref": "owner-approved-fixture://p024/openctp19053/partial-fill-cancel-ui-contract",
+  "source_checksum": "sha256:2424242424242424242424242424242424242424242424242424242424242424",
+  "projection_checksum": "sha256:4646464646464646464646464646464646464646464646464646464646464646",
+  "verdict": "browser_order_display_contract_pass_runtime_partial_fill_blocked",
+  "ui_order_display_verdict": "pass",
+  "partial_cancel_display_verdict": "pass",
+  "ui_command_control_verdict": "paper_armed_cancel_intent_accepted_for_risk",
+  "runtime_partial_fill_verdict": "typed_blocker_until_real_or_owner_approved_partial_fill_state",
+  "stages": [
+    {
+      "stage": "S1",
+      "label": "submitted/working",
+      "browser": {
+        "identity": "ctp19053-p024-partial-order-001",
+        "status": "working",
+        "submitted_quantity": "10",
+        "filled_quantity": "0",
+        "remaining_quantity": "10",
+        "cancelled_quantity": "missing",
+        "remaining_cancel_quantity": "10",
+        "cancel_pending_ref": null
+      },
+      "browser_fill_rows": [],
+      "browser_fill_total": 0,
+      "api": {
+        "identity": "ctp19053-p024-partial-order-001",
+        "status": "working",
+        "submitted_quantity": 10,
+        "filled_quantity": 0,
+        "remaining_quantity": 10,
+        "cancelled_quantity": null
+      },
+      "api_fill_rows": [],
+      "api_fill_total": 0,
+      "order_artifact_ref": "readback://p024/openctp19053/partial-fill-cancel/s1/order",
+      "fill_artifact_refs": [],
+      "command_status_refs": {
+        "audit": null,
+        "risk": [],
+        "approval": [],
+        "gateway": [],
+        "readback": [],
+        "reconciliation": null,
+        "gateway_ack_is_final_state": false
+      },
+      "formula": "filled_quantity + remaining_quantity == submitted_quantity",
+      "verdict": "pass"
+    },
+    {
+      "stage": "S2",
+      "label": "partially filled",
+      "browser": {
+        "identity": "ctp19053-p024-partial-order-001",
+        "status": "partial",
+        "submitted_quantity": "10",
+        "filled_quantity": "4",
+        "remaining_quantity": "6",
+        "cancelled_quantity": "missing",
+        "remaining_cancel_quantity": "6",
+        "cancel_pending_ref": null
+      },
+      "browser_fill_rows": [
+        {
+          "trade_id": "ctp19053-p024-partial-trade-001",
+          "filled_quantity": 2,
+          "price": 3299,
+          "source_ref": "ReqQryTrade://p024/openctp19053/partial-fill-cancel/s2/trade-001"
+        },
+        {
+          "trade_id": "ctp19053-p024-partial-trade-002",
+          "filled_quantity": 2,
+          "price": 3298,
+          "source_ref": "ReqQryTrade://p024/openctp19053/partial-fill-cancel/s2/trade-002"
+        }
+      ],
+      "browser_fill_total": 4,
+      "api": {
+        "identity": "ctp19053-p024-partial-order-001",
+        "status": "partial",
+        "submitted_quantity": 10,
+        "filled_quantity": 4,
+        "remaining_quantity": 6,
+        "cancelled_quantity": null
+      },
+      "api_fill_rows": [
+        {
+          "trade_id": "ctp19053-p024-partial-trade-001",
+          "filled_quantity": 2,
+          "price": 3299,
+          "source_ref": "ReqQryTrade://p024/openctp19053/partial-fill-cancel/s2/trade-001"
+        },
+        {
+          "trade_id": "ctp19053-p024-partial-trade-002",
+          "filled_quantity": 2,
+          "price": 3298,
+          "source_ref": "ReqQryTrade://p024/openctp19053/partial-fill-cancel/s2/trade-002"
+        }
+      ],
+      "api_fill_total": 4,
+      "order_artifact_ref": "readback://p024/openctp19053/partial-fill-cancel/s2/order",
+      "fill_artifact_refs": [
+        "ReqQryTrade://p024/openctp19053/partial-fill-cancel/s2/trade-001",
+        "ReqQryTrade://p024/openctp19053/partial-fill-cancel/s2/trade-002"
+      ],
+      "command_status_refs": {
+        "audit": null,
+        "risk": [],
+        "approval": [],
+        "gateway": [],
+        "readback": [],
+        "reconciliation": null,
+        "gateway_ack_is_final_state": false
+      },
+      "formula": "filled_quantity + remaining_quantity == submitted_quantity",
+      "verdict": "pass"
+    },
+    {
+      "stage": "S3",
+      "label": "cancel pending",
+      "browser": {
+        "identity": "ctp19053-p024-partial-order-001",
+        "status": "cancel pending",
+        "submitted_quantity": "10",
+        "filled_quantity": "4",
+        "remaining_quantity": "6",
+        "cancelled_quantity": "missing",
+        "remaining_cancel_quantity": null,
+        "cancel_pending_ref": "command-audit://p024/openctp19053/partial-fill-cancel/cancel-pending"
+      },
+      "browser_fill_rows": [
+        {
+          "trade_id": "ctp19053-p024-partial-trade-001",
+          "filled_quantity": 2,
+          "price": 3299,
+          "source_ref": "ReqQryTrade://p024/openctp19053/partial-fill-cancel/s2/trade-001"
+        },
+        {
+          "trade_id": "ctp19053-p024-partial-trade-002",
+          "filled_quantity": 2,
+          "price": 3298,
+          "source_ref": "ReqQryTrade://p024/openctp19053/partial-fill-cancel/s2/trade-002"
+        }
+      ],
+      "browser_fill_total": 4,
+      "api": {
+        "identity": "ctp19053-p024-partial-order-001",
+        "status": "cancel_pending",
+        "submitted_quantity": 10,
+        "filled_quantity": 4,
+        "remaining_quantity": 6,
+        "cancelled_quantity": null
+      },
+      "api_fill_rows": [
+        {
+          "trade_id": "ctp19053-p024-partial-trade-001",
+          "filled_quantity": 2,
+          "price": 3299,
+          "source_ref": "ReqQryTrade://p024/openctp19053/partial-fill-cancel/s2/trade-001"
+        },
+        {
+          "trade_id": "ctp19053-p024-partial-trade-002",
+          "filled_quantity": 2,
+          "price": 3298,
+          "source_ref": "ReqQryTrade://p024/openctp19053/partial-fill-cancel/s2/trade-002"
+        }
+      ],
+      "api_fill_total": 4,
+      "order_artifact_ref": "readback://p024/openctp19053/partial-fill-cancel/s2/order",
+      "fill_artifact_refs": [
+        "ReqQryTrade://p024/openctp19053/partial-fill-cancel/s2/trade-001",
+        "ReqQryTrade://p024/openctp19053/partial-fill-cancel/s2/trade-002"
+      ],
+      "command_status_refs": {
+        "audit": "command-audit://p024/openctp19053/partial-fill-cancel/cancel-intent",
+        "risk": [
+          "risk://p024/openctp19053/partial-fill-cancel/cancel-risk-pass"
+        ],
+        "approval": [
+          "approval://p024/openctp19053/partial-fill-cancel/cancel-paper-approval"
+        ],
+        "gateway": [
+          "gateway://p024/openctp19053/partial-fill-cancel/cancel-requested"
+        ],
+        "readback": [],
+        "reconciliation": null,
+        "gateway_ack_is_final_state": false
+      },
+      "formula": "filled_quantity + remaining_quantity == submitted_quantity",
+      "verdict": "pass"
+    },
+    {
+      "stage": "S4",
+      "label": "remaining cancelled",
+      "browser": {
+        "identity": "ctp19053-p024-partial-order-001",
+        "status": "canceled",
+        "submitted_quantity": "10",
+        "filled_quantity": "4",
+        "remaining_quantity": "0",
+        "cancelled_quantity": "6",
+        "remaining_cancel_quantity": null,
+        "cancel_pending_ref": null
+      },
+      "browser_fill_rows": [
+        {
+          "trade_id": "ctp19053-p024-partial-trade-001",
+          "filled_quantity": 2,
+          "price": 3299,
+          "source_ref": "ReqQryTrade://p024/openctp19053/partial-fill-cancel/s2/trade-001"
+        },
+        {
+          "trade_id": "ctp19053-p024-partial-trade-002",
+          "filled_quantity": 2,
+          "price": 3298,
+          "source_ref": "ReqQryTrade://p024/openctp19053/partial-fill-cancel/s2/trade-002"
+        }
+      ],
+      "browser_fill_total": 4,
+      "api": {
+        "identity": "ctp19053-p024-partial-order-001",
+        "status": "canceled",
+        "submitted_quantity": 10,
+        "filled_quantity": 4,
+        "remaining_quantity": 0,
+        "cancelled_quantity": 6
+      },
+      "api_fill_rows": [
+        {
+          "trade_id": "ctp19053-p024-partial-trade-001",
+          "filled_quantity": 2,
+          "price": 3299,
+          "source_ref": "ReqQryTrade://p024/openctp19053/partial-fill-cancel/s2/trade-001"
+        },
+        {
+          "trade_id": "ctp19053-p024-partial-trade-002",
+          "filled_quantity": 2,
+          "price": 3298,
+          "source_ref": "ReqQryTrade://p024/openctp19053/partial-fill-cancel/s2/trade-002"
+        }
+      ],
+      "api_fill_total": 4,
+      "order_artifact_ref": "readback://p024/openctp19053/partial-fill-cancel/s4/cancel-readback/order",
+      "fill_artifact_refs": [
+        "ReqQryTrade://p024/openctp19053/partial-fill-cancel/s2/trade-001",
+        "ReqQryTrade://p024/openctp19053/partial-fill-cancel/s2/trade-002"
+      ],
+      "command_status_refs": {
+        "audit": "command-audit://p024/openctp19053/partial-fill-cancel/cancel-intent",
+        "risk": [
+          "risk://p024/openctp19053/partial-fill-cancel/cancel-risk-pass"
+        ],
+        "approval": [
+          "approval://p024/openctp19053/partial-fill-cancel/cancel-paper-approval"
+        ],
+        "gateway": [
+          "gateway://p024/openctp19053/partial-fill-cancel/cancel-requested"
+        ],
+        "readback": [
+          "readback://p024/openctp19053/partial-fill-cancel/s4/cancel-readback/order"
+        ],
+        "reconciliation": "reconcile://p024/openctp19053/partial-fill-cancel/s4-cancelled",
+        "gateway_ack_is_final_state": false
+      },
+      "formula": "filled_quantity + cancelled_quantity == submitted_quantity",
+      "verdict": "pass"
+    }
+  ],
+  "partial_cancel_display_checks": {
+    "same_order_identity_across_stages": true,
+    "s2_browser_fill_sum_equals_order_filled_quantity": true,
+    "s2_trade_refs_match_api_projection": true,
+    "s2_cancel_target_equals_s2_remaining_quantity": true,
+    "s3_quantities_unchanged_until_cancel_readback": true,
+    "s3_no_remaining_cancel_quantity_visible": true,
+    "s3_cancel_pending_is_not_terminal": true,
+    "s4_filled_quantity_preserved_after_cancel": true,
+    "s4_cancelled_quantity_equals_s2_remaining_quantity": true,
+    "s4_remaining_quantity_zero": true,
+    "s4_no_remaining_cancel_quantity_visible": true,
+    "fill_trade_identities_stable_after_cancel": true
+  },
+  "cancel_request": {
+    "schema_version": "account_command.cancel_intent.v1",
+    "intent_id": "intent.p024.ui.cancel.mirror.p024.openctp19053.partial",
+    "account_id": "acct.ctp.paper.19053",
+    "mode": "paper_armed",
+    "action": "cancel",
+    "instrument": "rb2610",
+    "exchange": "SHFE",
+    "client_order_id": "p024-partial-rb2610-001",
+    "venue_order_id": "ctp19053-p024-partial-order-001",
+    "order_ref": "37",
+    "front_id": 1,
+    "session_id": 1,
+    "idempotency_key": "p024-ui-cancel-mirror.p024.openctp19053.partial-fill-cancel.s2-p024-partial-rb26",
+    "operator_ref": "operator://account-console-web-ui/p024",
+    "readback_ref": "readback://p024/openctp19053/partial-fill-cancel/s2/order",
+    "raw_secret_values_recorded": false,
+    "raw_broker_endpoint_recorded": false
+  },
+  "command_artifacts": {
+    "cancel_intent_ref": "api://p024/acct-ctp-paper-19053/cancel/partial-fill-cancel-ui-test/intent",
+    "risk_decision_ref": "risk://p024/openctp19053/partial-fill-cancel/cancel-risk-pass",
+    "approval_decision_ref": "approval://p024/openctp19053/partial-fill-cancel/cancel-paper-approval",
+    "gateway_event_ref": "gateway://p024/openctp19053/partial-fill-cancel/cancel-requested",
+    "s3_cancel_pending_ref": "command-audit://p024/openctp19053/partial-fill-cancel/cancel-pending",
+    "s4_readback_ref": "readback://p024/openctp19053/partial-fill-cancel/s4/cancel-readback/order",
+    "s4_reconciliation_ref": "reconcile://p024/openctp19053/partial-fill-cancel/s4-cancelled",
+    "gateway_ack_is_final_state": false,
+    "gateway_send_attempted_from_browser_test": false,
+    "broker_order_created_from_browser_test": false
+  },
+  "raw_secret_values_recorded": false,
+  "raw_broker_endpoint_recorded": false,
+  "explicit_non_claims": [
+    "does_not_prove_real_openctp_partial_fill_runtime",
+    "does_not_use_screenshot_as_order_truth",
+    "does_not_claim_live_readiness",
+    "gateway_ack_is_not_final_state",
+    "browser_test_does_not_send_broker_cancel",
+    "typed_owner_approved_fixture_is_not_broker_truth"
+  ],
+  "browser_evidence": [
+    {
+      "stage": "S1",
+      "screenshot": "docs/acceptance/browser-evidence/p024-account-console-paper-command-controls/p024-working-order-display.png"
+    },
+    {
+      "stage": "S2",
+      "screenshot": "docs/acceptance/browser-evidence/p024-account-console-paper-command-controls/p024-partial-fill-display.png"
+    },
+    {
+      "stage": "S3",
+      "screenshot": "docs/acceptance/browser-evidence/p024-account-console-paper-command-controls/p024-cancel-pending-display.png"
+    },
+    {
+      "stage": "S4",
+      "screenshot": "docs/acceptance/browser-evidence/p024-account-console-paper-command-controls/p024-cancelled-display.png"
+    },
+    {
+      "stage": "S2_CANCEL_INTENT",
+      "screenshot": "docs/acceptance/browser-evidence/p024-account-console-paper-command-controls/p024-cancel-intent-accepted.png"
+    }
+  ]
+}

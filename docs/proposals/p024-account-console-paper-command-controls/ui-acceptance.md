@@ -1,21 +1,21 @@
 # P024 UI Acceptance / Paper Command Controls
 
 - Proposal ID: `p024-account-console-paper-command-controls`
-- Status: phase1_backend_contract_gate_passed
+- Status: phase3b_partial_fill_cancel_ui_display_passed
 
 ## Browser Acceptance
 
 | ID | Scenario | Browser assertion | Status |
 | --- | --- | --- | --- |
 | UI-01 | disabled default | no submit/cancel/replace controls; `account-command-mode=disabled` | planned |
-| UI-02 | paper armed controls | submit form and paper banner visible only with `paper_armed` evidence | planned |
-| UI-03 | submit pending | submit creates pending command status with intent/risk/approval refs | planned |
+| UI-02 | paper armed controls | submit form and paper banner visible only with `paper_armed` evidence | phase2_frontend_guarded_controls_passed |
+| UI-03 | submit pending | submit creates pending command status with intent/risk/approval refs | phase2_frontend_guarded_controls_passed |
 | UI-04 | submit reconciled | final status requires readback and reconciliation refs | planned |
-| UI-05 | cancel eligible row | cancel button uses `account-cancel-order-identity` | planned |
+| UI-05 | cancel eligible row | cancel button uses `account-cancel-order-identity` | phase2_frontend_guarded_controls_passed |
 | UI-06 | cancel pending/reconciled | cancel status cites cancel intent, gateway, readback and reconciliation refs | planned |
 | UI-07 | duplicate click | duplicate click keeps one idempotency key and one command result | planned |
 | UI-08 | gateway ack only | status is blocked, not final | planned |
-| UI-09 | partial fill then cancel display correctness | S1/S2/S3/S4 order row keeps identity, stable fill rows, correct formulas and P024 evidence refs | design_gate_ready |
+| UI-09 | partial fill then cancel display correctness | S1/S2/S3/S4 order row keeps identity, stable fill rows, correct formulas and P024 evidence refs | phase3b_partial_fill_cancel_ui_display_passed |
 
 ## UI-09 Partial Fill Then Cancel Display
 
@@ -38,6 +38,8 @@ Pass requires:
 6. S4 filled quantity and trade identities remain stable after cancel.
 7. S4 cancelled quantity equals S2 remaining quantity and remaining quantity is zero.
 8. Screenshots alone are not sufficient; evidence JSON must carry source refs and explicit non-claims.
+
+Accepted evidence: `python scripts\validate_p024_partial_fill_cancel_browser_evidence.py` returns `P024_PARTIAL_FILL_CANCEL_BROWSER_EVIDENCE_OK`.
 
 ## Negative UI Acceptance
 

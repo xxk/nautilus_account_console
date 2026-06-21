@@ -65,6 +65,7 @@ export interface MirrorCapabilityState {
   enabled: boolean;
   mirror_state?: string | null;
   mode?: string | null;
+  allowed_actions?: string[];
 }
 
 export interface MirrorCapabilities {
@@ -168,6 +169,83 @@ export interface MirrorEvidenceResponse {
   evidence: MirrorEvidenceItem[];
   blockers: Record<string, unknown>[];
   boundaries: Record<string, unknown>;
+}
+
+export interface OrderIntentRequest {
+  schema_version: "account_command.order_intent.v1";
+  intent_id: string;
+  account_id: "acct.ctp.paper.19053";
+  mode: "paper_armed";
+  action: "submit";
+  instrument: string;
+  exchange: string;
+  side: "BUY" | "SELL";
+  quantity: number;
+  order_type: "LIMIT";
+  limit_price: number;
+  time_in_force: "GFD" | "IOC" | "FAK" | "FOK";
+  offset: "OPEN" | "CLOSE" | "CLOSETODAY" | "CLOSEYESTERDAY";
+  idempotency_key: string;
+  operator_ref: string;
+  preflight_ref: string;
+  raw_secret_values_recorded: false;
+  raw_broker_endpoint_recorded: false;
+}
+
+export interface CancelIntentRequest {
+  schema_version: "account_command.cancel_intent.v1";
+  intent_id: string;
+  account_id: "acct.ctp.paper.19053";
+  mode: "paper_armed";
+  action: "cancel";
+  instrument: string;
+  exchange: string;
+  client_order_id: string;
+  venue_order_id: string;
+  order_ref: string;
+  front_id: number;
+  session_id: number;
+  idempotency_key: string;
+  operator_ref: string;
+  readback_ref: string;
+  raw_secret_values_recorded: false;
+  raw_broker_endpoint_recorded: false;
+}
+
+export interface CommandApiBlocker {
+  blocker_id: string;
+  type: string;
+  stage: string;
+  reason: string;
+  source_ref: string;
+  next_action: string;
+}
+
+export interface CommandApiResult {
+  schema_version: "account_command.command_api_result.v1";
+  proposal_id: "p024-account-console-paper-command-controls";
+  account_id: string;
+  action: "submit" | "cancel";
+  mode: string;
+  status: "accepted_for_risk" | "blocked";
+  command_id: string;
+  intent_id: string;
+  intent_ref: string;
+  idempotency_key: string;
+  idempotency_enforced: boolean;
+  next_required_stage: string;
+  blockers: CommandApiBlocker[];
+  risk_decision_ref?: string | null;
+  approval_decision_ref?: string | null;
+  gateway_event_refs: string[];
+  readback_refs: string[];
+  reconciliation_ref?: string | null;
+  gateway_ack_is_final_state: false;
+  gateway_send_attempted: false;
+  broker_order_created: false;
+  runtime_duplicate_send_attempted: false;
+  raw_secret_values_recorded: false;
+  raw_broker_endpoint_recorded: false;
 }
 
 export type AccountHealthPanelFixtureState =
