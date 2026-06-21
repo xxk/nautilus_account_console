@@ -38,12 +38,12 @@ Out of scope: live trading, replace order, Account Mirror write authority, direc
 | A1 | positive | Backend command API accepts paper submit intent | API contract + command artifact validator | endpoint bypasses risk/approval | phase1_backend_contract_gate_passed |
 | A2 | positive | Account Mirror remains read-only | route audit | `/api/mirror` exposes POST/PUT/DELETE | design_gate_ready |
 | A3 | positive | Command controls render only in `paper_armed` mode | Playwright + API projection | controls appear while disabled | phase2_frontend_guarded_controls_passed |
-| A4 | positive | Submit writes intent/risk/approval/gateway/readback/reconcile refs | integration + artifact validator | gateway ack alone is final | planned |
+| A4 | positive | Submit writes intent/risk/approval/gateway/readback/reconcile refs | integration + artifact validator | gateway ack alone is final | blocked_pending_owner_runtime_execution |
 | A5 | positive | Submit idempotency prevents duplicate order | retry/duplicate-click test | duplicate broker order identity appears | phase2_frontend_guarded_controls_passed |
-| A6 | positive | Risk/approval fail closed | negative API tests | missing risk/approval reaches gateway | planned |
+| A6 | positive | Risk/approval fail closed | negative API tests | missing risk/approval reaches gateway | passed_pre_gateway_contract_gate |
 | A7 | positive | Cancel uses latest readback identity | API/browser + readback artifact | cancel uses UI row text or screenshot | phase1_backend_contract_gate_passed |
-| A8 | positive | UI status waits for readback/reconcile | browser evidence | final state shown without readback/reconcile | planned |
-| A9 | positive | Secret redaction | artifact redaction gate | raw password/front/auth/token recorded | planned |
+| A8 | positive | UI status waits for readback/reconcile | browser evidence | final state shown without readback/reconcile | passed_display_contract_real_runtime_blocked |
+| A9 | positive | Secret redaction | artifact redaction gate | raw password/front/auth/token recorded | passed |
 | A10 | positive | Partial fill then cancel Web UI order display correctness | Playwright + `partial-fill-cancel-ui-acceptance.md` + browser evidence JSON | identity changes, fill rows drift, or quantity formulas fail | phase3b_partial_fill_cancel_ui_display_passed |
 | A11 | positive | Runtime closeout evidence appears in Web UI without browser-trigger claim | Playwright + API route audit + browser evidence JSON | UI hides refs/checksums, shows gateway ack final, or claims browser submitted broker order | phase3a_runtime_closeout_projection_passed |
 | A12 | positive | Web UI prepares owner-runtime submit/cancel handoff without invoking broker runtime | Playwright + API route audit + browser evidence JSON | runtime invocation, gateway send or broker order creation is claimed from the browser | phase3c_runtime_handoff_request_passed |
@@ -266,4 +266,4 @@ This remains browser/control contract evidence. It does not claim real Web UI Op
 
 ## Evidence Boundary
 
-Implementation/browser evidence is required before implementation closeout. Phase 1, Phase 2, Phase 3a, Phase 3b, Phase 3c, Phase 3d readiness, Phase 3e readiness UI projection, Phase 4 residual blocker audit, Phase 4a owner-runtime execution approval packet, Phase 4b runtime approval packet UI projection, Phase 4c owner-runtime execution handoff bundle and Phase 4d runtime handoff bundle UI projection gates are accepted; real Web UI submit/cancel runtime execution remains blocked pending external owner-runtime approval and artifacts.
+Implementation/browser evidence is required before implementation closeout. Phase 1, Phase 2, Phase 3a, Phase 3b, Phase 3c, Phase 3d readiness, Phase 3e readiness UI projection, Phase 4 residual blocker audit, Phase 4a owner-runtime execution approval packet, Phase 4b runtime approval packet UI projection, Phase 4c owner-runtime execution handoff bundle, Phase 4d runtime handoff bundle UI projection and Phase 4e runtime execution gap audit gates are accepted; real Web UI submit/cancel runtime execution remains blocked pending external owner-runtime approval and artifacts.
