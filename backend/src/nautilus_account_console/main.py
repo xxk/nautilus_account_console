@@ -8,7 +8,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 
 from . import __version__
-from .command_api import accept_cancel_intent, accept_submit_intent, load_runtime_closeout
+from .command_api import (
+    accept_cancel_intent,
+    accept_submit_intent,
+    load_runtime_closeout,
+    prepare_cancel_runtime_run_request,
+    prepare_submit_runtime_run_request,
+)
 from .ledger import (
     get_account_snapshot,
     list_account_snapshots,
@@ -22,6 +28,7 @@ from .schemas import (
     CancelIntentRequest,
     CommandApiResult,
     CommandRuntimeCloseout,
+    CommandRuntimeRunRequest,
     Health,
     MirrorAccountProjection,
     MirrorEvidenceResponse,
@@ -211,6 +218,26 @@ def command_submit_intent(account_id: str, intent: OrderIntentRequest) -> Comman
 )
 def command_cancel_intent(account_id: str, intent: CancelIntentRequest) -> CommandApiResult:
     return accept_cancel_intent(account_id, intent)
+
+
+@app.post(
+    "/api/commands/accounts/{account_id}/runtime-run-requests/submit",
+    response_model=CommandRuntimeRunRequest,
+    response_model_exclude_none=True,
+    status_code=202,
+)
+def command_submit_runtime_run_request(account_id: str, intent: OrderIntentRequest) -> CommandRuntimeRunRequest:
+    return prepare_submit_runtime_run_request(account_id, intent)
+
+
+@app.post(
+    "/api/commands/accounts/{account_id}/runtime-run-requests/cancel",
+    response_model=CommandRuntimeRunRequest,
+    response_model_exclude_none=True,
+    status_code=202,
+)
+def command_cancel_runtime_run_request(account_id: str, intent: CancelIntentRequest) -> CommandRuntimeRunRequest:
+    return prepare_cancel_runtime_run_request(account_id, intent)
 
 
 @app.get(

@@ -1,0 +1,145 @@
+{
+  "schema": "account-console.p024.runtime-handoff-ui.v1",
+  "proposal_id": "p024-account-console-paper-command-controls",
+  "account_id": "acct.ctp.paper.19053",
+  "route": "/accounts/acct.ctp.paper.19053",
+  "verdict": "pass",
+  "submit_handoff": {
+    "schema_version": "account_command.owner_runtime_run_request.v1",
+    "proposal_id": "p024-account-console-paper-command-controls",
+    "account_id": "acct.ctp.paper.19053",
+    "action": "submit",
+    "mode": "paper_armed",
+    "status": "blocked_until_owner_runtime_invocation",
+    "command_id": "command.p024.submit.30597a1e73a9b10daf8cfcf9",
+    "intent_id": "intent.p024.ui.submit.mirror.p024.runtime-handoff.001",
+    "intent_ref": "api://p024/acct-ctp-paper-19053/submit/command.p024.submit.30597a1e73a9b10daf8cfcf9/intent",
+    "idempotency_key": "p024-ui-submit-mirror.p024.runtime-handoff.001",
+    "owner_runtime_owner_ref": "owner://nautilus_ctp_adapter",
+    "owner_runtime_repo_ref": "owner-repo://nautilus_ctp_adapter",
+    "owner_runtime_entrypoint_ref": "scripts/ctp_guarded_paper_order_loop.py",
+    "owner_runtime_config_ref": "cfgs/local/ctp.openctp.tts.7x24.local.json",
+    "source_preflight_ref": "owner-approved-fixture://p024/openctp19053/runtime-handoff",
+    "expected_output_root_ref": "output/account_command/ctp-paper-19053/p024-ui-submit-command.p024.submit.30597a1e73a9b10daf8cfcf9",
+    "runtime_invocation_attempted": false,
+    "browser_triggered_broker_order": false,
+    "gateway_send_attempted": false,
+    "broker_order_created": false,
+    "raw_secret_values_recorded": false,
+    "raw_broker_endpoint_recorded": false,
+    "external_write_approval_required": true,
+    "blockers": [
+      {
+        "blocker_id": "p024_submit_owner_runtime_invocation_required",
+        "type": "owner_runtime_invocation_required",
+        "stage": "owner_runtime",
+        "reason": "Web UI prepared a typed owner-runtime run request; Account Console does not invoke the broker runner.",
+        "source_ref": "api://p024/acct-ctp-paper-19053/submit/command.p024.submit.30597a1e73a9b10daf8cfcf9/intent",
+        "next_action": "invoke owner://nautilus_ctp_adapter scripts/ctp_guarded_paper_order_loop.py with explicit operator approval"
+      },
+      {
+        "blocker_id": "p024_submit_external_write_approval_required",
+        "type": "external_write_approval_required",
+        "stage": "owner_runtime",
+        "reason": "The guarded OpenCTP runner may write owner-runtime artifacts outside this worktree.",
+        "source_ref": "api://p024/acct-ctp-paper-19053/submit/command.p024.submit.30597a1e73a9b10daf8cfcf9/intent",
+        "next_action": "approve owner-repo runtime writes before running the guarded paper command loop"
+      },
+      {
+        "blocker_id": "p024_submit_post_run_ingest_required",
+        "type": "post_run_ingest_required",
+        "stage": "readback",
+        "reason": "A real owner-runtime run must be ingested and reconciled before UI can claim broker execution.",
+        "source_ref": "api://p024/acct-ctp-paper-19053/submit/command.p024.submit.30597a1e73a9b10daf8cfcf9/intent",
+        "next_action": "ingest owner runtime artifacts with refs, checksums, redaction report and reconciliation result"
+      }
+    ],
+    "explicit_non_claims": [
+      "does_not_invoke_owner_runtime",
+      "does_not_send_broker_order_from_browser",
+      "does_not_store_raw_ctp_secret_or_endpoint",
+      "does_not_claim_live_readiness",
+      "does_not_make_gateway_ack_final_state"
+    ],
+    "run_request_checksum": "sha256:b8698f43df7d8ebb29b5a8849eff116ca2ba35e38ee882bf27a3e882368dacd3"
+  },
+  "cancel_handoff": {
+    "schema_version": "account_command.owner_runtime_run_request.v1",
+    "proposal_id": "p024-account-console-paper-command-controls",
+    "account_id": "acct.ctp.paper.19053",
+    "action": "cancel",
+    "mode": "paper_armed",
+    "status": "blocked_until_owner_runtime_invocation",
+    "command_id": "command.p024.cancel.6d4aaa077ca068d0f3e28121",
+    "intent_id": "intent.p024.ui.cancel.mirror.p024.runtime-handoff.001-",
+    "intent_ref": "api://p024/acct-ctp-paper-19053/cancel/command.p024.cancel.6d4aaa077ca068d0f3e28121/intent",
+    "idempotency_key": "p024-ui-cancel-mirror.p024.runtime-handoff.001-p024-runtime-handoff-rb2610-001",
+    "owner_runtime_owner_ref": "owner://nautilus_ctp_adapter",
+    "owner_runtime_repo_ref": "owner-repo://nautilus_ctp_adapter",
+    "owner_runtime_entrypoint_ref": "scripts/ctp_guarded_paper_cancel_loop.py",
+    "owner_runtime_config_ref": "cfgs/local/ctp.openctp.tts.7x24.local.json",
+    "source_preflight_ref": "output/account_command/ctp-paper-19053/p023-armed-20260621t0748z/post_submit_readback.json",
+    "readback_ref": "output/account_command/ctp-paper-19053/p023-armed-20260621t0748z/post_submit_readback.json",
+    "expected_output_root_ref": "output/account_command/ctp-paper-19053/p024-ui-cancel-command.p024.cancel.6d4aaa077ca068d0f3e28121",
+    "runtime_invocation_attempted": false,
+    "browser_triggered_broker_order": false,
+    "gateway_send_attempted": false,
+    "broker_order_created": false,
+    "raw_secret_values_recorded": false,
+    "raw_broker_endpoint_recorded": false,
+    "external_write_approval_required": true,
+    "blockers": [
+      {
+        "blocker_id": "p024_cancel_owner_runtime_invocation_required",
+        "type": "owner_runtime_invocation_required",
+        "stage": "owner_runtime",
+        "reason": "Web UI prepared a typed owner-runtime run request; Account Console does not invoke the broker runner.",
+        "source_ref": "api://p024/acct-ctp-paper-19053/cancel/command.p024.cancel.6d4aaa077ca068d0f3e28121/intent",
+        "next_action": "invoke owner://nautilus_ctp_adapter scripts/ctp_guarded_paper_cancel_loop.py with explicit operator approval"
+      },
+      {
+        "blocker_id": "p024_cancel_external_write_approval_required",
+        "type": "external_write_approval_required",
+        "stage": "owner_runtime",
+        "reason": "The guarded OpenCTP runner may write owner-runtime artifacts outside this worktree.",
+        "source_ref": "api://p024/acct-ctp-paper-19053/cancel/command.p024.cancel.6d4aaa077ca068d0f3e28121/intent",
+        "next_action": "approve owner-repo runtime writes before running the guarded paper command loop"
+      },
+      {
+        "blocker_id": "p024_cancel_post_run_ingest_required",
+        "type": "post_run_ingest_required",
+        "stage": "readback",
+        "reason": "A real owner-runtime run must be ingested and reconciled before UI can claim broker execution.",
+        "source_ref": "api://p024/acct-ctp-paper-19053/cancel/command.p024.cancel.6d4aaa077ca068d0f3e28121/intent",
+        "next_action": "ingest owner runtime artifacts with refs, checksums, redaction report and reconciliation result"
+      }
+    ],
+    "explicit_non_claims": [
+      "does_not_invoke_owner_runtime",
+      "does_not_send_broker_order_from_browser",
+      "does_not_store_raw_ctp_secret_or_endpoint",
+      "does_not_claim_live_readiness",
+      "does_not_make_gateway_ack_final_state"
+    ],
+    "run_request_checksum": "sha256:c4b83bee29163ef1973100401d094e046f476961f3703082f915055a8b5db9d4"
+  },
+  "browser_checks": {
+    "handoff_panel_visible": true,
+    "submit_handoff_displayed": true,
+    "cancel_handoff_displayed": true,
+    "runtime_invocation_displayed_false": true,
+    "browser_trigger_displayed_false": true,
+    "live_ready_wording_absent": true
+  },
+  "explicit_non_claims": [
+    "does_not_invoke_owner_runtime",
+    "does_not_send_broker_order_from_browser",
+    "does_not_claim_live_readiness",
+    "does_not_use_screenshot_as_command_truth"
+  ],
+  "browser_evidence": [
+    {
+      "screenshot": "docs/acceptance/browser-evidence/p024-account-console-paper-command-controls/p024-runtime-handoff-ui.png"
+    }
+  ]
+}

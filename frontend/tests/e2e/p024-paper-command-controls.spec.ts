@@ -53,6 +53,72 @@ function commandResult(action: "submit" | "cancel", request: Record<string, unkn
   };
 }
 
+function runtimeRunRequest(action: "submit" | "cancel", request: Record<string, unknown>) {
+  const commandId = `command.p024.${action}.ui-test-001`;
+  const intentRef = `api://p024/acct-ctp-paper-19053/${action}/${commandId}/intent`;
+  return {
+    schema_version: "account_command.owner_runtime_run_request.v1",
+    proposal_id: "p024-account-console-paper-command-controls",
+    account_id: accountId,
+    action,
+    mode: "paper_armed",
+    status: "blocked_until_owner_runtime_invocation",
+    command_id: commandId,
+    intent_id: request.intent_id,
+    intent_ref: intentRef,
+    idempotency_key: request.idempotency_key,
+    owner_runtime_owner_ref: "owner://nautilus_ctp_adapter",
+    owner_runtime_repo_ref: "owner-repo://nautilus_ctp_adapter",
+    owner_runtime_entrypoint_ref:
+      action === "cancel" ? "scripts/ctp_guarded_paper_cancel_loop.py" : "scripts/ctp_guarded_paper_order_loop.py",
+    owner_runtime_config_ref: "cfgs/local/ctp.openctp.tts.7x24.local.json",
+    source_preflight_ref: action === "cancel" ? request.readback_ref : request.preflight_ref,
+    readback_ref: action === "cancel" ? request.readback_ref : null,
+    expected_output_root_ref: `output/account_command/ctp-paper-19053/p024-ui-${action}-${commandId}`,
+    runtime_invocation_attempted: false,
+    browser_triggered_broker_order: false,
+    gateway_send_attempted: false,
+    broker_order_created: false,
+    raw_secret_values_recorded: false,
+    raw_broker_endpoint_recorded: false,
+    external_write_approval_required: true,
+    blockers: [
+      {
+        blocker_id: `p024_${action}_owner_runtime_invocation_required`,
+        type: "owner_runtime_invocation_required",
+        stage: "owner_runtime",
+        reason: "handoff test fixture",
+        source_ref: intentRef,
+        next_action: "invoke owner runtime"
+      },
+      {
+        blocker_id: `p024_${action}_external_write_approval_required`,
+        type: "external_write_approval_required",
+        stage: "owner_runtime",
+        reason: "handoff test fixture",
+        source_ref: intentRef,
+        next_action: "approve owner writes"
+      },
+      {
+        blocker_id: `p024_${action}_post_run_ingest_required`,
+        type: "post_run_ingest_required",
+        stage: "readback",
+        reason: "handoff test fixture",
+        source_ref: intentRef,
+        next_action: "ingest owner artifacts"
+      }
+    ],
+    explicit_non_claims: [
+      "does_not_invoke_owner_runtime",
+      "does_not_send_broker_order_from_browser",
+      "does_not_store_raw_ctp_secret_or_endpoint",
+      "does_not_claim_live_readiness",
+      "does_not_make_gateway_ack_final_state"
+    ],
+    run_request_checksum: "sha256:2424242424242424242424242424242424242424242424242424242424242424"
+  };
+}
+
 function projection(commandEnabled: boolean) {
   return {
     schema_version: "account_mirror_projection.v1",
@@ -254,6 +320,11 @@ test("P024 Web UI gates paper submit and cancel controls on command capability",
       return;
     }
     const payload = request.postDataJSON() as Record<string, unknown>;
+    if (request.url().includes("runtime-run-requests")) {
+      const action = request.url().includes("/cancel") ? "cancel" : "submit";
+      await route.fulfill({ json: runtimeRunRequest(action, payload), status: 202 });
+      return;
+    }
     commandRequests.push(payload);
     const action = request.url().includes("cancel-intents") ? "cancel" : "submit";
     await route.fulfill({ json: commandResult(action, payload), status: 202 });

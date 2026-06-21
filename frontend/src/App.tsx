@@ -90,6 +90,7 @@ import type {
   CancelIntentRequest,
   CommandApiResult,
   CommandRuntimeCloseout,
+  CommandRuntimeRunRequest,
   AccountOrderDetailFixtureState,
   AccountOrderDetailPanelReadModel,
   AccountExecutionReportRow,
@@ -125,6 +126,8 @@ import {
   fetchMirrorAccounts,
   fetchMirrorEvidence,
   fetchMirrorSourceHealth,
+  prepareCancelRuntimeRunRequest,
+  prepareSubmitRuntimeRunRequest,
   submitPaperOrderIntent
 } from "./api";
 
@@ -830,9 +833,14 @@ function defaultSubmitIntent(readback: MirrorWorkbenchReadback): OrderIntentRequ
 }
 
 function cancelIntentForOrder(readback: MirrorWorkbenchReadback, order: AccountOrderRow): CancelIntentRequest {
+  const stableOrderId = order.client_order_id || order.lifecycle_ref || order.source_ref;
   const sourceOrder =
-    readback.selected.orders.find((item) => asText(item.client_order_id) === order.client_order_id) ?? {};
-  const keySeed = `${readback.selected.projection_checkpoint_id}-${order.client_order_id}`
+    readback.selected.orders.find(
+      (item) =>
+        asText(item.client_order_id) === order.client_order_id ||
+        asText(item.venue_order_id) === order.lifecycle_ref
+    ) ?? {};
+  const keySeed = `${readback.selected.projection_checkpoint_id}-${stableOrderId}`
     .replaceAll(":", "-")
     .replaceAll("/", "-");
   return {
@@ -843,9 +851,9 @@ function cancelIntentForOrder(readback: MirrorWorkbenchReadback, order: AccountO
     action: "cancel",
     instrument: order.instrument,
     exchange: order.destination && order.destination !== "missing" ? order.destination : asText(sourceOrder.exchange, "SHFE"),
-    client_order_id: order.client_order_id,
-    venue_order_id: asText(sourceOrder.venue_order_id, order.lifecycle_ref ?? order.client_order_id),
-    order_ref: asText(sourceOrder.order_ref, order.lifecycle_ref ?? order.client_order_id),
+    client_order_id: asText(sourceOrder.client_order_id, order.client_order_id || stableOrderId),
+    venue_order_id: asText(sourceOrder.venue_order_id, order.lifecycle_ref ?? stableOrderId),
+    order_ref: asText(sourceOrder.order_ref, order.lifecycle_ref ?? stableOrderId),
     front_id: asNumber(sourceOrder.front_id) ?? 0,
     session_id: asNumber(sourceOrder.session_id) ?? 0,
     idempotency_key: `p024-ui-cancel-${keySeed}`.slice(0, 80),
@@ -1473,6 +1481,8 @@ function AccountWorkbenchTerminalPanel({
   const visibleOrders = orders.orders.filter((order) => order.account_id === summary.account.account_id);
   const [commandResult, setCommandResult] = useState<CommandApiResult | null>(null);
   const [commandError, setCommandError] = useState<string | null>(null);
+  const [runtimeRunRequest, setRuntimeRunRequest] = useState<CommandRuntimeRunRequest | null>(null);
+  const [runtimeRunRequestError, setRuntimeRunRequestError] = useState<string | null>(null);
   const [runtimeCloseout, setRuntimeCloseout] = useState<CommandRuntimeCloseout | null>(null);
   const [runtimeCloseoutError, setRuntimeCloseoutError] = useState<string | null>(null);
   const paperArmed = isP024PaperArmed(mirrorReadback);
@@ -1586,10 +1596,14 @@ function AccountWorkbenchTerminalPanel({
     }
     try {
       setCommandError(null);
+      setRuntimeRunRequestError(null);
       const result = await submitPaperOrderIntent(mirrorReadback.selected.account_id, submitIntent);
       setCommandResult(result);
+      const handoff = await prepareSubmitRuntimeRunRequest(mirrorReadback.selected.account_id, submitIntent);
+      setRuntimeRunRequest(handoff);
     } catch (error) {
       setCommandError(error instanceof Error ? error.message : "submit intent request failed");
+      setRuntimeRunRequestError(error instanceof Error ? error.message : "submit runtime handoff unavailable");
     }
   }
 
@@ -1599,13 +1613,15 @@ function AccountWorkbenchTerminalPanel({
     }
     try {
       setCommandError(null);
-      const result = await cancelPaperOrderIntent(
-        mirrorReadback.selected.account_id,
-        cancelIntentForOrder(mirrorReadback, order)
-      );
+      setRuntimeRunRequestError(null);
+      const cancelIntent = cancelIntentForOrder(mirrorReadback, order);
+      const result = await cancelPaperOrderIntent(mirrorReadback.selected.account_id, cancelIntent);
       setCommandResult(result);
+      const handoff = await prepareCancelRuntimeRunRequest(mirrorReadback.selected.account_id, cancelIntent);
+      setRuntimeRunRequest(handoff);
     } catch (error) {
       setCommandError(error instanceof Error ? error.message : "cancel intent request failed");
+      setRuntimeRunRequestError(error instanceof Error ? error.message : "cancel runtime handoff unavailable");
     }
   }
 
@@ -2397,6 +2413,8 @@ function AccountWorkbenchTerminalPanel({
               </div>
             ) : null}
           </section>
+
+          <CommandRuntimeRunRequestPanel request={runtimeRunRequest} error={runtimeRunRequestError} />
 
           <CommandRuntimeCloseoutPanel closeout={runtimeCloseout} error={runtimeCloseoutError} />
 
@@ -4316,6 +4334,93 @@ function SelectFilter({
         ))}
       </select>
     </label>
+  );
+}
+
+function CommandRuntimeRunRequestPanel({
+  request,
+  error
+}: {
+  request: CommandRuntimeRunRequest | null;
+  error: string | null;
+}) {
+  return (
+    <section className="terminal-panel" data-testid="account-runtime-handoff-panel">
+      <div className="terminal-panel-header">
+        <h3>Runtime Handoff</h3>
+        <StateBadge value={request ? "blocked" : error ? "blocked" : "empty"} />
+      </div>
+      {request ? (
+        <div className="evidence-stack compact-evidence-stack">
+          <div className="evidence-item">
+            <strong>Action</strong>
+            <span data-testid="account-runtime-handoff-action">{request.action}</span>
+          </div>
+          <div className="evidence-item">
+            <strong>Status</strong>
+            <span data-testid="account-runtime-handoff-status">{request.status}</span>
+          </div>
+          <div className="evidence-item">
+            <strong>Entrypoint</strong>
+            <span data-testid="account-runtime-handoff-entrypoint">{request.owner_runtime_entrypoint_ref}</span>
+          </div>
+          <div className="evidence-item">
+            <strong>Config</strong>
+            <span data-testid="account-runtime-handoff-config-ref">{request.owner_runtime_config_ref}</span>
+          </div>
+          <div className="evidence-item">
+            <strong>Preflight</strong>
+            <CopyableCode label="runtime handoff preflight" value={request.source_preflight_ref} />
+          </div>
+          {request.readback_ref ? (
+            <div className="evidence-item">
+              <strong>Readback</strong>
+              <span data-testid="account-runtime-handoff-readback-ref">{request.readback_ref}</span>
+            </div>
+          ) : null}
+          <div className="evidence-item">
+            <strong>Checksum</strong>
+            <span data-testid="account-runtime-handoff-checksum">{request.run_request_checksum}</span>
+          </div>
+          <div className="evidence-item">
+            <strong>Runtime invoked</strong>
+            <span data-testid="account-runtime-handoff-invoked">
+              {String(request.runtime_invocation_attempted)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Browser trigger</strong>
+            <span data-testid="account-runtime-handoff-web-trigger">
+              {String(request.browser_triggered_broker_order)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Raw secrets</strong>
+            <span data-testid="account-runtime-handoff-raw-secret">
+              {String(request.raw_secret_values_recorded)}
+            </span>
+          </div>
+          {request.blockers.map((blocker) => (
+            <div className="evidence-item" data-testid="account-runtime-handoff-blocker" key={blocker.blocker_id}>
+              <strong>{blocker.type}</strong>
+              <span>{blocker.next_action}</span>
+            </div>
+          ))}
+          {request.explicit_non_claims.map((claim) => (
+            <div className="evidence-item" data-testid="account-runtime-handoff-non-claim" key={claim}>
+              <strong>Non-claim</strong>
+              <span>{claim}</span>
+            </div>
+          ))}
+        </div>
+      ) : error ? (
+        <div className="state-callout blocked" data-testid="account-runtime-handoff-error">
+          {error}
+        </div>
+      ) : (
+        <p className="muted">No owner-runtime handoff request has been prepared from this browser session.</p>
+      )}
+    </section>
   );
 }
 

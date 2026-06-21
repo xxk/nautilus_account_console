@@ -7,7 +7,14 @@ from pathlib import Path
 
 from fastapi import HTTPException
 
-from .schemas import CancelIntentRequest, CommandApiResult, CommandBlocker, CommandRuntimeCloseout, OrderIntentRequest
+from .schemas import (
+    CancelIntentRequest,
+    CommandApiResult,
+    CommandBlocker,
+    CommandRuntimeCloseout,
+    CommandRuntimeRunRequest,
+    OrderIntentRequest,
+)
 
 
 PAPER_ACCOUNT_ID = "acct.ctp.paper.19053"
@@ -53,6 +60,11 @@ def _intent_ref(account_id: str, action: str, command_id: str) -> str:
     return f"api://p024/{safe_account}/{action}/{command_id}/intent"
 
 
+def _canonical_checksum(payload: dict) -> str:
+    data = json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    return "sha256:" + sha256(data).hexdigest()
+
+
 def _pre_gateway_blockers(action: str, source_ref: str) -> list[CommandBlocker]:
     return [
         CommandBlocker(
@@ -72,6 +84,91 @@ def _pre_gateway_blockers(action: str, source_ref: str) -> list[CommandBlocker]:
             next_action="produce ApprovalDecision evidence before gateway send",
         ),
     ]
+
+
+def _owner_runtime_blockers(action: str, source_ref: str, entrypoint_ref: str) -> list[CommandBlocker]:
+    return [
+        CommandBlocker(
+            blocker_id=f"p024_{action}_owner_runtime_invocation_required",
+            type="owner_runtime_invocation_required",
+            stage="owner_runtime",
+            reason="Web UI prepared a typed owner-runtime run request; Account Console does not invoke the broker runner.",
+            source_ref=source_ref,
+            next_action=f"invoke owner://nautilus_ctp_adapter {entrypoint_ref} with explicit operator approval",
+        ),
+        CommandBlocker(
+            blocker_id=f"p024_{action}_external_write_approval_required",
+            type="external_write_approval_required",
+            stage="owner_runtime",
+            reason="The guarded OpenCTP runner may write owner-runtime artifacts outside this worktree.",
+            source_ref=source_ref,
+            next_action="approve owner-repo runtime writes before running the guarded paper command loop",
+        ),
+        CommandBlocker(
+            blocker_id=f"p024_{action}_post_run_ingest_required",
+            type="post_run_ingest_required",
+            stage="readback",
+            reason="A real owner-runtime run must be ingested and reconciled before UI can claim broker execution.",
+            source_ref=source_ref,
+            next_action="ingest owner runtime artifacts with refs, checksums, redaction report and reconciliation result",
+        ),
+    ]
+
+
+def _runtime_handoff_entrypoint(action: str) -> str:
+    if action == "cancel":
+        return "scripts/ctp_guarded_paper_cancel_loop.py"
+    return "scripts/ctp_guarded_paper_order_loop.py"
+
+
+def _runtime_run_request(
+    *,
+    account_id: str,
+    action: str,
+    command_id: str,
+    intent_id: str,
+    intent_ref: str,
+    idempotency_key: str,
+    source_preflight_ref: str,
+    readback_ref: str | None,
+) -> CommandRuntimeRunRequest:
+    entrypoint_ref = _runtime_handoff_entrypoint(action)
+    payload = {
+        "schema_version": "account_command.owner_runtime_run_request.v1",
+        "proposal_id": PROPOSAL_ID,
+        "account_id": account_id,
+        "action": action,
+        "mode": "paper_armed",
+        "status": "blocked_until_owner_runtime_invocation",
+        "command_id": command_id,
+        "intent_id": intent_id,
+        "intent_ref": intent_ref,
+        "idempotency_key": idempotency_key,
+        "owner_runtime_owner_ref": "owner://nautilus_ctp_adapter",
+        "owner_runtime_repo_ref": "owner-repo://nautilus_ctp_adapter",
+        "owner_runtime_entrypoint_ref": entrypoint_ref,
+        "owner_runtime_config_ref": "cfgs/local/ctp.openctp.tts.7x24.local.json",
+        "source_preflight_ref": source_preflight_ref,
+        "readback_ref": readback_ref,
+        "expected_output_root_ref": f"output/account_command/ctp-paper-19053/p024-ui-{action}-{command_id}",
+        "runtime_invocation_attempted": False,
+        "browser_triggered_broker_order": False,
+        "gateway_send_attempted": False,
+        "broker_order_created": False,
+        "raw_secret_values_recorded": False,
+        "raw_broker_endpoint_recorded": False,
+        "external_write_approval_required": True,
+        "blockers": [blocker.model_dump() for blocker in _owner_runtime_blockers(action, intent_ref, entrypoint_ref)],
+        "explicit_non_claims": [
+            "does_not_invoke_owner_runtime",
+            "does_not_send_broker_order_from_browser",
+            "does_not_store_raw_ctp_secret_or_endpoint",
+            "does_not_claim_live_readiness",
+            "does_not_make_gateway_ack_final_state",
+        ],
+    }
+    payload["run_request_checksum"] = _canonical_checksum(payload)
+    return CommandRuntimeRunRequest(**payload)
 
 
 def _file_checksum(path: Path) -> str:
@@ -247,4 +344,36 @@ def accept_cancel_intent(account_id: str, intent: CancelIntentRequest) -> Comman
         runtime_duplicate_send_attempted=False,
         raw_secret_values_recorded=False,
         raw_broker_endpoint_recorded=False,
+    )
+
+
+def prepare_submit_runtime_run_request(account_id: str, intent: OrderIntentRequest) -> CommandRuntimeRunRequest:
+    _require_paper_scope(account_id, intent.account_id, intent.mode)
+    command_id = _command_id(account_id, intent.action, intent.idempotency_key)
+    intent_ref = _intent_ref(account_id, intent.action, command_id)
+    return _runtime_run_request(
+        account_id=account_id,
+        action="submit",
+        command_id=command_id,
+        intent_id=intent.intent_id,
+        intent_ref=intent_ref,
+        idempotency_key=intent.idempotency_key,
+        source_preflight_ref=intent.preflight_ref,
+        readback_ref=None,
+    )
+
+
+def prepare_cancel_runtime_run_request(account_id: str, intent: CancelIntentRequest) -> CommandRuntimeRunRequest:
+    _require_paper_scope(account_id, intent.account_id, intent.mode)
+    command_id = _command_id(account_id, intent.action, intent.idempotency_key)
+    intent_ref = _intent_ref(account_id, intent.action, command_id)
+    return _runtime_run_request(
+        account_id=account_id,
+        action="cancel",
+        command_id=command_id,
+        intent_id=intent.intent_id,
+        intent_ref=intent_ref,
+        idempotency_key=intent.idempotency_key,
+        source_preflight_ref=intent.readback_ref,
+        readback_ref=intent.readback_ref,
     )

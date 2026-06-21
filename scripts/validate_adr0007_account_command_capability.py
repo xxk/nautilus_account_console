@@ -29,6 +29,8 @@ FORBIDDEN_ROUTE_TOKENS = [
 ALLOWED_COMMAND_ROUTES = {
     "/api/commands/accounts/{account_id}/submit-intents": {"POST"},
     "/api/commands/accounts/{account_id}/cancel-intents": {"POST"},
+    "/api/commands/accounts/{account_id}/runtime-run-requests/submit": {"POST"},
+    "/api/commands/accounts/{account_id}/runtime-run-requests/cancel": {"POST"},
     "/api/commands/accounts/{account_id}/runtime-closeouts/{run_id}": {"GET"},
 }
 
@@ -51,7 +53,7 @@ def validate_adr() -> None:
     for phrase in [
         'adr_id: "0007"',
         "decision_status: proposed",
-        "landing_status: p024_phase3a_runtime_closeout_and_phase3b_display_gate",
+        "landing_status: p024_phase3c_runtime_handoff_request_gate",
         "Governed Account Command Capability",
         "Account Mirror never sends commands",
         "Gateway acknowledgement 不是最终账户状态",
@@ -62,8 +64,10 @@ def validate_adr() -> None:
         "P024 Phase 2 frontend guarded controls are accepted as browser contract evidence only",
         "P024 Phase 3a runtime closeout projection is accepted as read-only Web UI evidence",
         "P024 Phase 3b partial-fill cancel UI display is accepted as browser display-contract evidence only",
+        "P024 Phase 3c owner-runtime handoff request is accepted as browser handoff evidence only",
         "browser_triggered_broker_order=false",
         "gateway_send_attempted=false",
+        "runtime_invocation_attempted=false",
     ]:
         require(phrase in text, f"ADR-0007 missing phrase: {phrase}")
     for phrase in REQUIRED_FLOW:
@@ -127,7 +131,7 @@ def main() -> None:
     validate_existing_design_gate_still_closed()
     validate_capability_fixtures_still_disabled()
     validate_backend_has_only_p024_command_routes()
-    print("ADR0007_ACCOUNT_COMMAND_CAPABILITY_OK: status=proposed landing=p024_phase3a_runtime_closeout_and_phase3b_display_gate")
+    print("ADR0007_ACCOUNT_COMMAND_CAPABILITY_OK: status=proposed landing=p024_phase3c_runtime_handoff_request_gate")
 
 
 if __name__ == "__main__":

@@ -1,7 +1,7 @@
 # P024 UI Design / Paper Command Controls
 
 - Proposal ID: `p024-account-console-paper-command-controls`
-- Status: phase3a_runtime_closeout_and_phase3b_display_passed
+- Status: phase3c_runtime_handoff_request_passed
 
 ## Design Intent
 
@@ -50,6 +50,17 @@ No controls are reserved or visible in disabled mode.
 | `account-runtime-closeout-gateway-final` | gateway ack final-state flag; must remain false |
 | `account-runtime-closeout-artifact-count` | count of checksum-backed runtime artifacts |
 | `account-runtime-closeout-non-claim` | explicit non-claims shown in UI |
+| `account-runtime-handoff-panel` | blocked owner-runtime handoff request panel |
+| `account-runtime-handoff-action` | submit or cancel handoff action |
+| `account-runtime-handoff-status` | handoff status; must be `blocked_until_owner_runtime_invocation` |
+| `account-runtime-handoff-entrypoint` | owner runtime script ref |
+| `account-runtime-handoff-config-ref` | owner runtime config ref without raw endpoint values |
+| `account-runtime-handoff-readback-ref` | cancel readback ref used for owner-runtime handoff |
+| `account-runtime-handoff-invoked` | owner runtime invocation flag; must remain false |
+| `account-runtime-handoff-web-trigger` | browser-triggered broker order flag; must remain false |
+| `account-runtime-handoff-raw-secret` | raw secret evidence flag; must remain false |
+| `account-runtime-handoff-blocker` | typed blocker for owner invocation, external write approval and post-run ingest |
+| `account-runtime-handoff-non-claim` | explicit non-claims shown in UI |
 
 ## Layout Rules
 
@@ -61,6 +72,7 @@ No controls are reserved or visible in disabled mode.
 6. Partial-fill then cancel display keeps one row identity through working, partial, cancel pending and canceled stages.
 7. After terminal cancel, the order row must preserve filled quantity, set remaining quantity to zero and show cancelled quantity equal to the cancelled remainder.
 8. Runtime closeout projection is read-only and must show `browser_triggered_broker_order=false` beside predecessor runtime refs.
+9. Runtime handoff requests are displayed as blocked owner-runtime preparation, not as browser-triggered broker execution.
 
 ## Disabled Mode
 

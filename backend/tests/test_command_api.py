@@ -154,6 +154,65 @@ def test_runtime_closeout_rejects_scope_and_unsafe_run_id() -> None:
     assert unsafe.status_code == 400
 
 
+def assert_runtime_run_request(payload: dict, action: str) -> None:
+    assert payload["schema_version"] == "account_command.owner_runtime_run_request.v1"
+    assert payload["proposal_id"] == "p024-account-console-paper-command-controls"
+    assert payload["account_id"] == "acct.ctp.paper.19053"
+    assert payload["action"] == action
+    assert payload["mode"] == "paper_armed"
+    assert payload["status"] == "blocked_until_owner_runtime_invocation"
+    assert payload["command_id"].startswith(f"command.p024.{action}.")
+    assert payload["intent_ref"].startswith("api://p024/acct-ctp-paper-19053/")
+    assert payload["owner_runtime_owner_ref"] == "owner://nautilus_ctp_adapter"
+    assert payload["owner_runtime_repo_ref"] == "owner-repo://nautilus_ctp_adapter"
+    assert payload["owner_runtime_config_ref"] == "cfgs/local/ctp.openctp.tts.7x24.local.json"
+    assert payload["runtime_invocation_attempted"] is False
+    assert payload["browser_triggered_broker_order"] is False
+    assert payload["gateway_send_attempted"] is False
+    assert payload["broker_order_created"] is False
+    assert payload["raw_secret_values_recorded"] is False
+    assert payload["raw_broker_endpoint_recorded"] is False
+    assert payload["external_write_approval_required"] is True
+    assert payload["run_request_checksum"].startswith("sha256:")
+    assert {blocker["type"] for blocker in payload["blockers"]} == {
+        "owner_runtime_invocation_required",
+        "external_write_approval_required",
+        "post_run_ingest_required",
+    }
+    assert "does_not_invoke_owner_runtime" in payload["explicit_non_claims"]
+    assert "does_not_send_broker_order_from_browser" in payload["explicit_non_claims"]
+
+
+def test_submit_runtime_run_request_prepares_owner_handoff_without_invocation() -> None:
+    client = TestClient(app)
+    response = client.post(
+        "/api/commands/accounts/acct.ctp.paper.19053/runtime-run-requests/submit",
+        json=submit_intent(),
+    )
+
+    assert response.status_code == 202
+    payload = response.json()
+    assert_runtime_run_request(payload, "submit")
+    assert payload["owner_runtime_entrypoint_ref"] == "scripts/ctp_guarded_paper_order_loop.py"
+    assert payload["source_preflight_ref"] == submit_intent()["preflight_ref"]
+    assert "readback_ref" not in payload
+
+
+def test_cancel_runtime_run_request_prepares_owner_handoff_without_invocation() -> None:
+    client = TestClient(app)
+    response = client.post(
+        "/api/commands/accounts/acct.ctp.paper.19053/runtime-run-requests/cancel",
+        json=cancel_intent(),
+    )
+
+    assert response.status_code == 202
+    payload = response.json()
+    assert_runtime_run_request(payload, "cancel")
+    assert payload["owner_runtime_entrypoint_ref"] == "scripts/ctp_guarded_paper_cancel_loop.py"
+    assert payload["source_preflight_ref"] == cancel_intent()["readback_ref"]
+    assert payload["readback_ref"] == cancel_intent()["readback_ref"]
+
+
 def test_command_api_rejects_live_mode_and_account_mismatch() -> None:
     client = TestClient(app)
     live = deepcopy(submit_intent())

@@ -3,6 +3,7 @@ import type {
   CancelIntentRequest,
   CommandApiResult,
   CommandRuntimeCloseout,
+  CommandRuntimeRunRequest,
   MirrorAccountProjection,
   MirrorEvidenceResponse,
   MirrorListResponse,
@@ -101,6 +102,42 @@ export async function cancelPaperOrderIntent(
   });
   if (!response.ok) {
     throw new Error(`cancel intent request failed: ${response.status}`);
+  }
+  return response.json();
+}
+
+export async function prepareSubmitRuntimeRunRequest(
+  accountId: string,
+  intent: OrderIntentRequest
+): Promise<CommandRuntimeRunRequest> {
+  const response = await fetch(
+    `${API_BASE}/api/commands/accounts/${encodeURIComponent(accountId)}/runtime-run-requests/submit`,
+    {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(intent)
+    }
+  );
+  if (!response.ok) {
+    throw new Error(`submit runtime handoff request failed: ${response.status}`);
+  }
+  return response.json();
+}
+
+export async function prepareCancelRuntimeRunRequest(
+  accountId: string,
+  intent: CancelIntentRequest
+): Promise<CommandRuntimeRunRequest> {
+  const response = await fetch(
+    `${API_BASE}/api/commands/accounts/${encodeURIComponent(accountId)}/runtime-run-requests/cancel`,
+    {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(intent)
+    }
+  );
+  if (!response.ok) {
+    throw new Error(`cancel runtime handoff request failed: ${response.status}`);
   }
   return response.json();
 }

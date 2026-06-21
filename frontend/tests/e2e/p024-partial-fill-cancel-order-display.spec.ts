@@ -376,6 +376,71 @@ function commandResult(request: Record<string, unknown>) {
   };
 }
 
+function runtimeRunRequest(request: Record<string, unknown>) {
+  const intentRef = "api://p024/acct-ctp-paper-19053/cancel/partial-fill-cancel-ui-test/intent";
+  return {
+    schema_version: "account_command.owner_runtime_run_request.v1",
+    proposal_id: "p024-account-console-paper-command-controls",
+    account_id: accountId,
+    action: "cancel",
+    mode: "paper_armed",
+    status: "blocked_until_owner_runtime_invocation",
+    command_id: "command.p024.partial-fill-cancel.ui-test-001",
+    intent_id: request.intent_id,
+    intent_ref: intentRef,
+    idempotency_key: request.idempotency_key,
+    owner_runtime_owner_ref: "owner://nautilus_ctp_adapter",
+    owner_runtime_repo_ref: "owner-repo://nautilus_ctp_adapter",
+    owner_runtime_entrypoint_ref: "scripts/ctp_guarded_paper_cancel_loop.py",
+    owner_runtime_config_ref: "cfgs/local/ctp.openctp.tts.7x24.local.json",
+    source_preflight_ref: request.readback_ref,
+    readback_ref: request.readback_ref,
+    expected_output_root_ref:
+      "output/account_command/ctp-paper-19053/p024-ui-cancel-command.p024.partial-fill-cancel.ui-test-001",
+    runtime_invocation_attempted: false,
+    browser_triggered_broker_order: false,
+    gateway_send_attempted: false,
+    broker_order_created: false,
+    raw_secret_values_recorded: false,
+    raw_broker_endpoint_recorded: false,
+    external_write_approval_required: true,
+    blockers: [
+      {
+        blocker_id: "p024_cancel_owner_runtime_invocation_required",
+        type: "owner_runtime_invocation_required",
+        stage: "owner_runtime",
+        reason: "handoff test fixture",
+        source_ref: intentRef,
+        next_action: "invoke owner runtime"
+      },
+      {
+        blocker_id: "p024_cancel_external_write_approval_required",
+        type: "external_write_approval_required",
+        stage: "owner_runtime",
+        reason: "handoff test fixture",
+        source_ref: intentRef,
+        next_action: "approve owner writes"
+      },
+      {
+        blocker_id: "p024_cancel_post_run_ingest_required",
+        type: "post_run_ingest_required",
+        stage: "readback",
+        reason: "handoff test fixture",
+        source_ref: intentRef,
+        next_action: "ingest owner artifacts"
+      }
+    ],
+    explicit_non_claims: [
+      "does_not_invoke_owner_runtime",
+      "does_not_send_broker_order_from_browser",
+      "does_not_store_raw_ctp_secret_or_endpoint",
+      "does_not_claim_live_readiness",
+      "does_not_make_gateway_ack_final_state"
+    ],
+    run_request_checksum: "sha256:2424242424242424242424242424242424242424242424242424242424242424"
+  };
+}
+
 function listForProjection(projection: Record<string, unknown>) {
   const capabilities = projection.capabilities as Record<string, Record<string, unknown>>;
   return {
@@ -482,6 +547,10 @@ test("P024 Web UI displays partial-fill then cancel order lifecycle correctly", 
       return;
     }
     const payload = request.postDataJSON() as Record<string, unknown>;
+    if (request.url().includes("runtime-run-requests")) {
+      await route.fulfill({ json: runtimeRunRequest(payload), status: 202 });
+      return;
+    }
     cancelRequests.push(payload);
     await route.fulfill({ json: commandResult(payload), status: 202 });
   });

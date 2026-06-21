@@ -37,6 +37,14 @@ P024_RUNTIME_CLOSEOUT_EVIDENCE = (
     / "p024-account-console-paper-command-controls"
     / "runtime-closeout-ui.json"
 )
+P024_RUNTIME_HANDOFF_EVIDENCE = (
+    ROOT
+    / "docs"
+    / "acceptance"
+    / "browser-evidence"
+    / "p024-account-console-paper-command-controls"
+    / "runtime-handoff-ui.json"
+)
 
 REQUIRED_DOCS = [
     "README.md",
@@ -50,6 +58,8 @@ REQUIRED_DOCS = [
 ALLOWED_COMMAND_ROUTES = {
     "/api/commands/accounts/{account_id}/submit-intents": {"POST"},
     "/api/commands/accounts/{account_id}/cancel-intents": {"POST"},
+    "/api/commands/accounts/{account_id}/runtime-run-requests/submit": {"POST"},
+    "/api/commands/accounts/{account_id}/runtime-run-requests/cancel": {"POST"},
     "/api/commands/accounts/{account_id}/runtime-closeouts/{run_id}": {"GET"},
 }
 
@@ -83,6 +93,7 @@ def validate_proposal_index_and_adr() -> None:
     require("P024 Account Console Paper Command Controls" in index, "proposal index missing P024")
     require("partial-fill then cancel Web UI display correctness" in index, "proposal index missing P024 partial-fill scope")
     require("owner-backed runtime closeout projection" in index, "proposal index missing P024 runtime closeout scope")
+    require("owner-runtime handoff request evidence" in index, "proposal index missing P024 runtime handoff scope")
 
     adr = read(ADR)
     require("ADR-0007" in adr, "ADR-0007 missing")
@@ -92,13 +103,17 @@ def validate_proposal_index_and_adr() -> None:
         "P024 Phase 3a runtime closeout projection is accepted as read-only Web UI evidence" in adr,
         "ADR missing P024 runtime closeout landing",
     )
+    require(
+        "P024 Phase 3c owner-runtime handoff request is accepted as browser handoff evidence only" in adr,
+        "ADR missing P024 runtime handoff landing",
+    )
 
 
 def validate_readme() -> None:
     text = read(PROPOSAL / "README.md")
     for phrase in [
         "Proposal ID: `p024-account-console-paper-command-controls`",
-        "Status: phase3a_runtime_closeout_and_phase3b_display_passed",
+        "Status: phase3c_runtime_handoff_request_passed",
         "ADR carrier: yes",
         "Primary ADR: ADR-0007",
         "Predecessor: [P023 OpenCTP 19053 Paper Command Capability]",
@@ -111,7 +126,9 @@ def validate_readme() -> None:
         "validate_p024_ui_command_controls_browser_evidence.py",
         "validate_p024_runtime_closeout_browser_evidence.py",
         "validate_p024_partial_fill_cancel_browser_evidence.py",
+        "validate_p024_runtime_handoff_browser_evidence.py",
         "browser_triggered_broker_order=false",
+        "runtime_invocation_attempted=false",
     ]:
         require(phrase in text, f"P024 README missing phrase: {phrase}")
 
@@ -129,16 +146,21 @@ def validate_phase_plan() -> None:
         "completed_browser_runtime_projection_gate",
         "phase_3b_partial_fill_cancel_ui_display",
         "completed_browser_display_gate",
+        "phase_3c_owner_runtime_handoff_request",
+        "completed_browser_handoff_gate",
         "Runtime closeout projection",
         "Partial-fill cancel display",
+        "Owner-runtime handoff request",
         "Phase 1 Backend command API",
         "completed_contract_gate",
         "validate_p024_paper_command_api.py",
         "validate_p024_runtime_closeout_browser_evidence.py",
         "validate_p024_partial_fill_cancel_browser_evidence.py",
+        "validate_p024_runtime_handoff_browser_evidence.py",
         "Browser controls are implemented only for `paper_armed` projection",
         "browser_triggered_broker_order=false",
         "Real partial-fill runtime remains blocked",
+        "Web UI owner-runtime handoff requests are accepted only as typed requests",
     ]:
         require(phrase in text, f"P024 phase plan missing phrase: {phrase}")
 
@@ -151,6 +173,7 @@ def validate_acceptance() -> None:
         "P024_UI_COMMAND_CONTROLS_BROWSER_EVIDENCE_OK",
         "P024_RUNTIME_CLOSEOUT_BROWSER_EVIDENCE_OK",
         "P024_PARTIAL_FILL_CANCEL_BROWSER_EVIDENCE_OK",
+        "P024_RUNTIME_HANDOFF_BROWSER_EVIDENCE_OK",
         "Implementation/browser evidence is required before implementation closeout",
         "UI Anti-Drift Acceptance",
         "forbidden_actions",
@@ -161,6 +184,7 @@ def validate_acceptance() -> None:
         "A10",
         "Partial fill then cancel Web UI order display correctness",
         "Runtime closeout evidence appears in Web UI without browser-trigger claim",
+        "Web UI prepares owner-runtime submit/cancel handoff without invoking broker runtime",
         "S1 submitted/working",
         "S2 partially filled",
         "S3 cancel pending",
@@ -173,6 +197,8 @@ def validate_acceptance() -> None:
         "validate_p024_runtime_closeout_browser_evidence.py",
         "does not claim real partial-fill runtime",
         "browser_triggered_broker_order=false",
+        "runtime_invocation_attempted=false",
+        "blocked_until_owner_runtime_invocation",
         "Phase 1 Backend Command API Acceptance",
         "gateway_send_attempted=false",
         "accepted_for_risk",
@@ -200,6 +226,10 @@ def validate_ui_docs() -> None:
         "account-runtime-closeout-panel",
         "account-runtime-closeout-web-trigger",
         "account-runtime-closeout-non-claim",
+        "account-runtime-handoff-panel",
+        "account-runtime-handoff-entrypoint",
+        "account-runtime-handoff-invoked",
+        "account-runtime-handoff-web-trigger",
         "After terminal cancel",
     ]:
         require(phrase in design, f"P024 UI design missing phrase: {phrase}")
@@ -220,7 +250,11 @@ def validate_ui_docs() -> None:
         "account-runtime-closeout-panel",
         "account-runtime-closeout-web-trigger",
         "P024_RUNTIME_CLOSEOUT_BROWSER_EVIDENCE_OK",
-        "phase3a_runtime_closeout_and_phase3b_display_passed",
+        "phase3c_runtime_handoff_request_passed",
+        "UI-11",
+        "owner-runtime handoff request",
+        "account-runtime-handoff-panel",
+        "P024_RUNTIME_HANDOFF_BROWSER_EVIDENCE_OK",
     ]:
         require(phrase in ui_acceptance, f"P024 UI acceptance missing phrase: {phrase}")
 
@@ -334,6 +368,49 @@ def validate_p024_runtime_closeout_evidence() -> None:
         require(claim in non_claims, f"P024 runtime non-claim missing: {claim}")
 
 
+def validate_p024_runtime_handoff_evidence() -> None:
+    payload = load_json(P024_RUNTIME_HANDOFF_EVIDENCE)
+    require(payload["schema"] == "account-console.p024.runtime-handoff-ui.v1", "P024 handoff schema mismatch")
+    require(payload["proposal_id"] == "p024-account-console-paper-command-controls", "P024 handoff proposal mismatch")
+    require(payload["account_id"] == "acct.ctp.paper.19053", "P024 handoff account mismatch")
+    require(payload["verdict"] == "pass", "P024 handoff verdict mismatch")
+    checks = payload.get("browser_checks") or {}
+    for check in [
+        "handoff_panel_visible",
+        "submit_handoff_displayed",
+        "cancel_handoff_displayed",
+        "runtime_invocation_displayed_false",
+        "browser_trigger_displayed_false",
+        "live_ready_wording_absent",
+    ]:
+        require(checks.get(check) is True, f"P024 handoff browser check missing: {check}")
+    for key, action, entrypoint in [
+        ("submit_handoff", "submit", "ctp_guarded_paper_order_loop.py"),
+        ("cancel_handoff", "cancel", "ctp_guarded_paper_cancel_loop.py"),
+    ]:
+        handoff = payload.get(key) or {}
+        require(handoff.get("schema_version") == "account_command.owner_runtime_run_request.v1", f"{key}: schema mismatch")
+        require(handoff.get("action") == action, f"{key}: action mismatch")
+        require(handoff.get("status") == "blocked_until_owner_runtime_invocation", f"{key}: status mismatch")
+        require(str(handoff.get("owner_runtime_entrypoint_ref")).endswith(entrypoint), f"{key}: entrypoint mismatch")
+        require(handoff.get("runtime_invocation_attempted") is False, f"{key}: runtime invocation flag mismatch")
+        require(handoff.get("browser_triggered_broker_order") is False, f"{key}: browser trigger flag mismatch")
+        require(handoff.get("gateway_send_attempted") is False, f"{key}: gateway send flag mismatch")
+        require(handoff.get("broker_order_created") is False, f"{key}: broker order flag mismatch")
+        require(handoff.get("raw_secret_values_recorded") is False, f"{key}: raw secret flag mismatch")
+        require(handoff.get("raw_broker_endpoint_recorded") is False, f"{key}: raw endpoint flag mismatch")
+        require(len(handoff.get("blockers") or []) == 3, f"{key}: blocker count mismatch")
+        non_claims = set(handoff.get("explicit_non_claims") or [])
+        for claim in [
+            "does_not_invoke_owner_runtime",
+            "does_not_send_broker_order_from_browser",
+            "does_not_store_raw_ctp_secret_or_endpoint",
+            "does_not_claim_live_readiness",
+            "does_not_make_gateway_ack_final_state",
+        ]:
+            require(claim in non_claims, f"{key}: missing non-claim {claim}")
+
+
 def validate_p023_predecessor_evidence() -> None:
     payload = load_json(P023_PARTIAL_EVIDENCE)
     require(payload["schema"] == "account-console.p023.partial-fill-order-display.v1", "P023 evidence schema mismatch")
@@ -419,12 +496,13 @@ def main() -> None:
     validate_partial_fill_cancel_doc()
     validate_p024_partial_fill_evidence()
     validate_p024_runtime_closeout_evidence()
+    validate_p024_runtime_handoff_evidence()
     validate_p023_predecessor_evidence()
     validate_existing_command_boundary_still_closed()
     validate_backend_command_routes_are_p024_only()
     print(
         "P024_PAPER_COMMAND_CONTROLS_DESIGN_OK: "
-        "status=phase3a_runtime_closeout_and_phase3b_display_passed current_ui_command=guarded runtime_closeout=browser_projection_passed partial_fill_cancel_ui=browser_contract_passed"
+        "status=phase3c_runtime_handoff_request_passed current_ui_command=guarded runtime_closeout=browser_projection_passed partial_fill_cancel_ui=browser_contract_passed runtime_handoff=browser_handoff_passed"
     )
 
 

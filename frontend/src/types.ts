@@ -277,6 +277,36 @@ export interface CommandRuntimeCloseout {
   explicit_non_claims: string[];
 }
 
+export interface CommandRuntimeRunRequest {
+  schema_version: "account_command.owner_runtime_run_request.v1";
+  proposal_id: "p024-account-console-paper-command-controls";
+  account_id: "acct.ctp.paper.19053";
+  action: "submit" | "cancel";
+  mode: "paper_armed";
+  status: "blocked_until_owner_runtime_invocation";
+  command_id: string;
+  intent_id: string;
+  intent_ref: string;
+  idempotency_key: string;
+  owner_runtime_owner_ref: "owner://nautilus_ctp_adapter";
+  owner_runtime_repo_ref: "owner-repo://nautilus_ctp_adapter";
+  owner_runtime_entrypoint_ref: string;
+  owner_runtime_config_ref: string;
+  source_preflight_ref: string;
+  readback_ref?: string | null;
+  expected_output_root_ref: string;
+  runtime_invocation_attempted: false;
+  browser_triggered_broker_order: false;
+  gateway_send_attempted: false;
+  broker_order_created: false;
+  raw_secret_values_recorded: false;
+  raw_broker_endpoint_recorded: false;
+  external_write_approval_required: true;
+  blockers: CommandApiBlocker[];
+  explicit_non_claims: string[];
+  run_request_checksum: string;
+}
+
 export type AccountHealthPanelFixtureState =
   | "happy_path"
   | "empty"

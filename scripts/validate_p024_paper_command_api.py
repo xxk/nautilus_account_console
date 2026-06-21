@@ -18,6 +18,8 @@ ACCOUNT_ID = "acct.ctp.paper.19053"
 ALLOWED_COMMAND_ROUTES = {
     "/api/commands/accounts/{account_id}/submit-intents": {"POST"},
     "/api/commands/accounts/{account_id}/cancel-intents": {"POST"},
+    "/api/commands/accounts/{account_id}/runtime-run-requests/submit": {"POST"},
+    "/api/commands/accounts/{account_id}/runtime-run-requests/cancel": {"POST"},
     "/api/commands/accounts/{account_id}/runtime-closeouts/{run_id}": {"GET"},
 }
 
@@ -116,6 +118,35 @@ def validate_api_behavior() -> None:
     require(cancel_payload["gateway_send_attempted"] is False, "cancel must not send gateway in Phase 1")
     require(cancel_payload["readback_refs"], "cancel must carry readback identity ref")
 
+    submit_handoff_response = client.post(
+        f"/api/commands/accounts/{ACCOUNT_ID}/runtime-run-requests/submit",
+        json=submit_intent(),
+    )
+    require(submit_handoff_response.status_code == 202, "submit runtime handoff status mismatch")
+    submit_handoff = submit_handoff_response.json()
+    require(
+        submit_handoff["schema_version"] == "account_command.owner_runtime_run_request.v1",
+        "submit runtime handoff schema mismatch",
+    )
+    require(submit_handoff["status"] == "blocked_until_owner_runtime_invocation", "submit handoff status mismatch")
+    require(submit_handoff["owner_runtime_entrypoint_ref"].endswith("ctp_guarded_paper_order_loop.py"), "submit handoff entrypoint mismatch")
+    require(submit_handoff["runtime_invocation_attempted"] is False, "submit handoff must not invoke runtime")
+    require(submit_handoff["browser_triggered_broker_order"] is False, "submit handoff browser trigger mismatch")
+    require(submit_handoff["gateway_send_attempted"] is False, "submit handoff gateway flag mismatch")
+    require(submit_handoff["run_request_checksum"].startswith("sha256:"), "submit handoff checksum missing")
+
+    cancel_handoff_response = client.post(
+        f"/api/commands/accounts/{ACCOUNT_ID}/runtime-run-requests/cancel",
+        json=cancel_intent(),
+    )
+    require(cancel_handoff_response.status_code == 202, "cancel runtime handoff status mismatch")
+    cancel_handoff = cancel_handoff_response.json()
+    require(cancel_handoff["status"] == "blocked_until_owner_runtime_invocation", "cancel handoff status mismatch")
+    require(cancel_handoff["owner_runtime_entrypoint_ref"].endswith("ctp_guarded_paper_cancel_loop.py"), "cancel handoff entrypoint mismatch")
+    require(cancel_handoff["readback_ref"] == cancel_intent()["readback_ref"], "cancel handoff readback mismatch")
+    require(cancel_handoff["runtime_invocation_attempted"] is False, "cancel handoff must not invoke runtime")
+    require(cancel_handoff["browser_triggered_broker_order"] is False, "cancel handoff browser trigger mismatch")
+
     closeout_response = client.get(
         f"/api/commands/accounts/{ACCOUNT_ID}/runtime-closeouts/p023-armed-20260621t0748z"
     )
@@ -150,7 +181,7 @@ def main() -> None:
     validate_api_behavior()
     print(
         "P024_PAPER_COMMAND_API_OK: "
-        "phase=1 routes=3 status=accepted_for_risk runtime_closeout=reconciled mirror_read_only=true"
+        "phase=1 routes=5 status=accepted_for_risk runtime_handoff=blocked runtime_closeout=reconciled mirror_read_only=true"
     )
 
 

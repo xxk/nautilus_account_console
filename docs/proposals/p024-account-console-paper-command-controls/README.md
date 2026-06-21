@@ -1,7 +1,7 @@
 # P024 Account Console Paper Command Controls
 
 - Proposal ID: `p024-account-console-paper-command-controls`
-- Status: phase3a_runtime_closeout_and_phase3b_display_passed
+- Status: phase3c_runtime_handoff_request_passed
 - ADR carrier: yes
 - Primary ADR: ADR-0007
 - Predecessor: [P023 OpenCTP 19053 Paper Command Capability](../p023-openctp-19053-paper-command-capability/README.md)
@@ -22,6 +22,7 @@ P024 does not enable `live_armed`, production admission, capital approval, or Ac
 5. Keep Account Mirror read-only.
 6. Preserve correct Web UI order display across partial-fill then cancel lifecycle: same order identity, stable fill rows, correct remaining/cancelled quantities and explicit readback provenance.
 7. Render owner-backed OpenCTP 19053 paper runtime closeout artifacts in the Web UI without claiming a browser-triggered broker order.
+8. Prepare typed Web UI owner-runtime submit/cancel handoff requests while preserving `runtime_invocation_attempted=false` and `browser_triggered_broker_order=false`.
 
 ## Non-Goals
 
@@ -44,6 +45,7 @@ P024 does not enable `live_armed`, production admission, capital approval, or Ac
 | Phase 2 frontend controls | Web UI hides controls while disabled, mounts submit/cancel only for `paper_armed` projection, calls P024 API and keeps gateway send false | `python scripts\validate_p024_ui_command_controls_browser_evidence.py` |
 | Phase 3a runtime closeout projection | Web UI renders P023 owner-backed runtime closeout refs/checksums/non-claims and keeps `browser_triggered_broker_order=false` | `python scripts\validate_p024_runtime_closeout_browser_evidence.py` |
 | Phase 3b partial-fill display | Web UI order display contract passes S1 working, S2 partial, S3 cancel pending and S4 remaining cancelled with stable fill/order identities | `python scripts\validate_p024_partial_fill_cancel_browser_evidence.py` |
+| Phase 3c runtime handoff request | Web UI prepares owner-runtime submit/cancel handoff requests with blocked owner invocation and no browser-triggered broker order claim | `python scripts\validate_p024_runtime_handoff_browser_evidence.py` |
 
 ## Document Map
 
@@ -64,7 +66,8 @@ P024 does not enable `live_armed`, production admission, capital approval, or Ac
 | Frontend guarded controls | archive_only | Browser evidence proves disabled controls absent and `paper_armed` controls route to Phase 1 API with no gateway send | phase2_frontend_guarded_controls_passed |
 | Runtime closeout projection | archive_only | Browser evidence proves owner-backed P023 runtime closeout is displayed with refs/checksums/non-claims and no browser-trigger claim | phase3a_runtime_closeout_projection_passed |
 | Partial-fill cancel display | archive_only | Browser evidence proves S1-S4 order/fill display correctness and typed runtime blocker | phase3b_partial_fill_cancel_ui_display_passed |
+| Runtime handoff request | archive_only | Browser evidence proves submit/cancel prepare owner-runtime run requests while owner runtime invocation, gateway send and broker order creation remain false | phase3c_runtime_handoff_request_passed |
 | Architecture / ownership backfill | required before implementation closeout | command gateway owner map | not_started |
-| Proposal-local evidence | archive_only | `acceptance.md`, browser command-controls evidence, runtime closeout projection evidence and P024 partial-fill display evidence; runtime Web UI broker command evidence remains future | phase3a_runtime_closeout_and_phase3b_display_passed |
+| Proposal-local evidence | archive_only | `acceptance.md`, browser command-controls evidence, runtime closeout projection evidence, P024 partial-fill display evidence and runtime handoff request evidence; runtime Web UI broker command execution remains future | phase3c_runtime_handoff_request_passed |
 
 No stable rule graduation: proposal-local evidence only until implementation and runtime gates pass.

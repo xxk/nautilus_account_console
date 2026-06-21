@@ -1,7 +1,7 @@
 # P024 UI Acceptance / Paper Command Controls
 
 - Proposal ID: `p024-account-console-paper-command-controls`
-- Status: phase3a_runtime_closeout_and_phase3b_display_passed
+- Status: phase3c_runtime_handoff_request_passed
 
 ## Browser Acceptance
 
@@ -17,6 +17,20 @@
 | UI-08 | gateway ack only | status is blocked, not final | planned |
 | UI-09 | partial fill then cancel display correctness | S1/S2/S3/S4 order row keeps identity, stable fill rows, correct formulas and P024 evidence refs | phase3b_partial_fill_cancel_ui_display_passed |
 | UI-10 | runtime closeout projection | owner-backed P023 runtime closeout refs/checksums/non-claims render in UI with browser trigger false | phase3a_runtime_closeout_projection_passed |
+| UI-11 | owner-runtime handoff request | submit/cancel controls prepare blocked owner-runtime handoff requests with no browser-triggered broker order | phase3c_runtime_handoff_request_passed |
+
+## UI-11 Owner Runtime Handoff Request
+
+The browser test must click submit and cancel from `/accounts/acct.ctp.paper.19053`, then verify:
+
+1. `account-runtime-handoff-panel` is visible after each action.
+2. Submit handoff shows `account-runtime-handoff-entrypoint` ending in `ctp_guarded_paper_order_loop.py`.
+3. Cancel handoff shows `account-runtime-handoff-entrypoint` ending in `ctp_guarded_paper_cancel_loop.py` and carries the order readback ref.
+4. `account-runtime-handoff-status` is `blocked_until_owner_runtime_invocation`.
+5. `account-runtime-handoff-invoked`, `account-runtime-handoff-web-trigger` and `account-runtime-handoff-raw-secret` are all `false`.
+6. Blockers include owner runtime invocation, external write approval and post-run ingest.
+
+Accepted evidence: `python scripts\validate_p024_runtime_handoff_browser_evidence.py` returns `P024_RUNTIME_HANDOFF_BROWSER_EVIDENCE_OK`.
 
 ## UI-10 Runtime Closeout Projection
 
@@ -71,6 +85,7 @@ Accepted evidence: `python scripts\validate_p024_partial_fill_cancel_browser_evi
 | NUI-09 | final canceled row has `remaining_quantity > 0` or `cancelled_quantity != S2 remaining_quantity` | test failure |
 | NUI-10 | cancel pending hides the blocker and claims final canceled state | blocked |
 | NUI-11 | runtime closeout panel claims browser-triggered broker order or gateway ack final state | test failure |
+| NUI-12 | runtime handoff panel claims owner runtime invocation, gateway send or broker order creation from browser | test failure |
 
 ## Blocker
 

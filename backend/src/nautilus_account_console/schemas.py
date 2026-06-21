@@ -276,6 +276,36 @@ class CommandRuntimeCloseout(BaseModel):
     explicit_non_claims: list[str]
 
 
+class CommandRuntimeRunRequest(BaseModel):
+    schema_version: Literal["account_command.owner_runtime_run_request.v1"]
+    proposal_id: Literal["p024-account-console-paper-command-controls"]
+    account_id: Literal["acct.ctp.paper.19053"]
+    action: Literal["submit", "cancel"]
+    mode: Literal["paper_armed"]
+    status: Literal["blocked_until_owner_runtime_invocation"]
+    command_id: str
+    intent_id: str
+    intent_ref: str
+    idempotency_key: str
+    owner_runtime_owner_ref: Literal["owner://nautilus_ctp_adapter"]
+    owner_runtime_repo_ref: Literal["owner-repo://nautilus_ctp_adapter"]
+    owner_runtime_entrypoint_ref: str
+    owner_runtime_config_ref: str
+    source_preflight_ref: str
+    readback_ref: str | None = None
+    expected_output_root_ref: str
+    runtime_invocation_attempted: Literal[False]
+    browser_triggered_broker_order: Literal[False]
+    gateway_send_attempted: Literal[False]
+    broker_order_created: Literal[False]
+    raw_secret_values_recorded: Literal[False]
+    raw_broker_endpoint_recorded: Literal[False]
+    external_write_approval_required: Literal[True]
+    blockers: list[CommandBlocker]
+    explicit_non_claims: list[str]
+    run_request_checksum: str
+
+
 class Health(BaseModel):
     ok: bool
     service: str
