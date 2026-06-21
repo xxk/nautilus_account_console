@@ -18,6 +18,7 @@ landing_status: not_started
 - 最终决策：pending；在 successor proposal 完成 contracts、owner map、runtime gateway、negative gates 和真实 paper/live evidence 前，现有 UI/API 仍保持 `command.enabled=false`。
 - Required predecessor: ADR-0004 command boundary and ADR-0005 read-only broker observation boundary.
 - First successor proposal: [P023 OpenCTP 19053 Paper Command Capability Acceptance Design](../proposals/p023-openctp-19053-paper-command-capability/README.md)
+- Second successor proposal: [P024 Account Console Paper Command Controls](../proposals/p024-account-console-paper-command-controls/README.md)
 - Executable design gate: `python scripts\validate_adr0007_account_command_capability.py`
 - Required document order: ADR-0007 -> successor proposal -> command contracts -> gateway implementation -> paper acceptance -> live guarded acceptance
 
@@ -207,4 +208,5 @@ ADR-0007 is proposed only. Current repository behavior remains observation-only:
 1. Account Mirror command capability stays disabled.
 2. Existing OpenCTP 19053 UI shows orders/fills by read-only query only.
 3. No submit/cancel/replace UI or API is accepted by this ADR draft.
-4. Next required work is a successor proposal that maps every acceptance row above to contracts, implementation phases and executable evidence.
+4. P024 is the current successor proposal for guarded Web/API paper controls and partial-fill then cancel Web UI display correctness.
+5. Next implementation work is P024 Phase 1 backend command API, then guarded frontend controls and P024-scoped browser evidence.

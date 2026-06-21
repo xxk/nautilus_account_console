@@ -25,6 +25,7 @@
 | [P021 Account Console Owner/Fork Governance](./p021-account-console-owner-fork-governance/README.md) | implementation_gate_passed | Governance proposal for owner ambiguity, fork risk and second-implementation risk found in Account Console route-context, source-package, synthetic-test and frontend-registry lanes. |
 | [P022 OpenCTP 19053 Account Console Readback](./p022-openctp-19053-account-console-readback/README.md) | implementation_gate_passed | ADR-0005 child proposal for OpenCTP 7x24 simulation account `acct.ctp.paper.19053`: read-only funds, positions and open-order empty/table display through owner artifacts, source package, Account Mirror and browser evidence. |
 | [P023 OpenCTP 19053 Paper Command Capability](./p023-openctp-19053-paper-command-capability/README.md) | paper_runtime_accepted | ADR-0007 successor proposal for OpenCTP 19053 7x24 paper submit/cancel acceptance: intent, risk/approval, command gateway, real readback reconciliation, UI command status and negative gates. |
+| [P024 Account Console Paper Command Controls](./p024-account-console-paper-command-controls/README.md) | design_gate_ready | ADR-0007 successor proposal for guarded Web/API paper submit/cancel controls on `acct.ctp.paper.19053`, including partial-fill then cancel Web UI display correctness; no `live_armed` and no Account Mirror writer. |
 
 ## Usage Rules
 
