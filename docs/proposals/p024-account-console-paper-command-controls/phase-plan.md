@@ -1,7 +1,7 @@
 # P024 Phase Plan / Account Console Paper Command Controls
 
 - Proposal ID: `p024-account-console-paper-command-controls`
-- Status: phase4c_owner_runtime_execution_handoff_bundle_ready
+- Status: phase4d_runtime_handoff_bundle_ui_projection_passed
 - Primary ADR: ADR-0007
 
 ## Artifact Trust Boundary
@@ -40,7 +40,7 @@ Primary ADR: ADR-0007
 <!-- AI-PHASE-STATUS-BEGIN
 reviewed_at: 2026-06-21
 reviewer: codex
-overall_status: phase4c_owner_runtime_execution_handoff_bundle_ready
+overall_status: phase4d_runtime_handoff_bundle_ui_projection_passed
 phases:
   - id: phase_0_design_gate
     status: completed
@@ -94,6 +94,10 @@ phases:
     status: completed_handoff_bundle_gate_runtime_not_invoked
     ai_progress: 100
     evidence: "python scripts\\validate_p024_owner_runtime_execution_handoff_bundle.py"
+  - id: phase_4d_runtime_handoff_bundle_ui_projection
+    status: completed_browser_handoff_bundle_projection_gate
+    ai_progress: 100
+    evidence: "npx playwright test tests/e2e/p024-runtime-execution-handoff-bundle.spec.ts --project=desktop; python scripts\\validate_p024_runtime_handoff_bundle_browser_evidence.py"
 AI-PHASE-STATUS-END -->
 
 ## Phase Status Board
@@ -113,6 +117,7 @@ AI-PHASE-STATUS-END -->
 | Phase 4a Owner-runtime execution approval packet | Freeze exact approval text, owner path, expected impact, guarded command templates and post-run artifact set | completed_approval_packet_gate_runtime_not_invoked | `python scripts\validate_p024_owner_runtime_execution_approval_packet.py` | Wait for operator to provide the exact approval text before any owner repo write or broker paper order attempt |
 | Phase 4b Runtime approval packet UI projection | Render exact approval packet in Web UI with no owner runtime invocation or broker order claim | completed_browser_approval_packet_projection_gate | `npx playwright test tests/e2e/p024-runtime-execution-approval-packet.spec.ts --project=desktop`; `python scripts\validate_p024_runtime_approval_packet_browser_evidence.py` | Wait for operator to provide the exact approval text before invoking owner runtime |
 | Phase 4c Owner-runtime execution handoff bundle | Freeze post-approval operator sequence, runtime input requirements, owner artifact list and post-handoff gates | completed_handoff_bundle_gate_runtime_not_invoked | `python scripts\validate_p024_owner_runtime_execution_handoff_bundle.py` | Wait for explicit approval and runtime inputs before invoking owner runtime |
+| Phase 4d Runtime handoff bundle UI projection | Render execution handoff bundle in Web UI with no execution allowed or broker order claim | completed_browser_handoff_bundle_projection_gate | `npx playwright test tests/e2e/p024-runtime-execution-handoff-bundle.spec.ts --project=desktop`; `python scripts\validate_p024_runtime_handoff_bundle_browser_evidence.py` | Wait for explicit approval and runtime inputs before invoking owner runtime |
 
 ## Runtime / Command Freeze
 
@@ -128,7 +133,8 @@ Phase 0 does not run broker mutation. Phase 1 may add API contracts but must not
 6. Web UI owner-runtime handoff requests are accepted only as typed requests; `runtime_invocation_attempted=false` and `browser_triggered_broker_order=false` remain required until owner runtime execution is approved and ingested.
 7. Phase 3d readiness is complete but real owner-runtime execution remains blocked because external write approval for `D:/Nautilus/nautilus_ctp_adapter` has not been granted in this thread.
 8. Phase 3e readiness UI projection is complete; it displays the blocker and owner refs in Web UI but does not invoke owner runtime, write the owner repo or create broker orders.
-9. Phase 4 residual blocker audit is complete; A1-A14 and all required gates are mapped, while new browser-triggered owner-runtime execution remains explicitly not accepted.
+9. Phase 4 residual blocker audit is complete; A1-A15 and all required gates are mapped, while new browser-triggered owner-runtime execution remains explicitly not accepted.
 10. Phase 4a owner-runtime execution approval packet is complete; `owner-runtime-execution-approval-packet.json` and `P024_OWNER_RUNTIME_EXECUTION_APPROVAL_PACKET_OK` freeze the exact approval text, while approval is still not obtained and `runtime_invocation_attempted=false`.
 11. Phase 4b runtime approval packet UI projection is complete; `P024_RUNTIME_APPROVAL_PACKET_BROWSER_EVIDENCE_OK` proves the exact approval packet is visible in Web UI while `approval_obtained=false`, `owner_repo_write_attempted=false` and `broker_order_created=false`.
 12. Phase 4c owner-runtime execution handoff bundle is complete; `P024_OWNER_RUNTIME_EXECUTION_HANDOFF_BUNDLE_OK` proves the post-approval sequence and runtime input requirements are frozen while `execution_allowed=false` and `runtime_invocation_attempted=false`.
+13. Phase 4d runtime handoff bundle UI projection is complete; `P024_RUNTIME_HANDOFF_BUNDLE_BROWSER_EVIDENCE_OK` proves the handoff bundle is visible in Web UI while `execution_allowed=false`, `owner_repo_write_attempted=false` and `broker_order_created=false`.

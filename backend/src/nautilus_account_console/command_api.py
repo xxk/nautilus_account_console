@@ -11,6 +11,7 @@ from .schemas import (
     CancelIntentRequest,
     CommandApiResult,
     CommandRuntimeExecutionApprovalPacket,
+    CommandRuntimeExecutionHandoffBundle,
     CommandRuntimeInvocationReadiness,
     CommandBlocker,
     CommandRuntimeCloseout,
@@ -36,6 +37,13 @@ RUNTIME_EXECUTION_APPROVAL_PACKET = (
     / "acceptance"
     / "p024-account-console-paper-command-controls"
     / "owner-runtime-execution-approval-packet.json"
+)
+RUNTIME_EXECUTION_HANDOFF_BUNDLE = (
+    ROOT
+    / "docs"
+    / "acceptance"
+    / "p024-account-console-paper-command-controls"
+    / "owner-runtime-execution-handoff-bundle.json"
 )
 DEFAULT_RUNTIME_RUN_ID = "p023-armed-20260621t0748z"
 REQUIRED_RUNTIME_FILES = [
@@ -378,6 +386,42 @@ def load_runtime_execution_approval_packet(account_id: str) -> CommandRuntimeExe
         if negative.get(key) is not False:
             raise HTTPException(status_code=409, detail=f"runtime execution approval packet negative assertion failed: {key}")
     return CommandRuntimeExecutionApprovalPacket(**payload)
+
+
+def load_runtime_execution_handoff_bundle(account_id: str) -> CommandRuntimeExecutionHandoffBundle:
+    if account_id != PAPER_ACCOUNT_ID:
+        raise HTTPException(status_code=403, detail="P024 runtime handoff bundle is scoped to acct.ctp.paper.19053 only")
+    if not RUNTIME_EXECUTION_HANDOFF_BUNDLE.exists():
+        raise HTTPException(status_code=404, detail="runtime execution handoff bundle evidence not found")
+    text = RUNTIME_EXECUTION_HANDOFF_BUNDLE.read_text(encoding="utf-8")
+    if any(fragment.lower() in text.lower() for fragment in SENSITIVE_RUNTIME_FRAGMENTS):
+        raise HTTPException(status_code=409, detail="runtime execution handoff bundle contains forbidden sensitive fragments")
+    payload = json.loads(text)
+    if payload.get("account_id") != PAPER_ACCOUNT_ID:
+        raise HTTPException(status_code=409, detail="runtime execution handoff bundle account_id mismatch")
+    guard = payload.get("execution_guard") or {}
+    if guard.get("execution_allowed") is not False:
+        raise HTTPException(status_code=409, detail="runtime execution handoff bundle allowed execution before approval")
+    if guard.get("approval_required") is not True or guard.get("approval_obtained") is not False:
+        raise HTTPException(status_code=409, detail="runtime execution handoff bundle approval boundary drifted")
+    negative = payload.get("negative_assertions") or {}
+    for key in [
+        "execution_allowed",
+        "runtime_invocation_attempted",
+        "owner_repo_write_attempted",
+        "browser_triggered_broker_order",
+        "gateway_send_attempted",
+        "broker_order_created",
+        "live_armed",
+        "account_mirror_write_authority",
+        "raw_secret_values_recorded",
+        "raw_broker_endpoint_recorded",
+        "config_raw_content_read",
+        "full_runtime_acceptance_claimed",
+    ]:
+        if negative.get(key) is not False:
+            raise HTTPException(status_code=409, detail=f"runtime execution handoff bundle negative assertion failed: {key}")
+    return CommandRuntimeExecutionHandoffBundle(**payload)
 
 
 def accept_submit_intent(account_id: str, intent: OrderIntentRequest) -> CommandApiResult:

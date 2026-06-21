@@ -435,6 +435,57 @@ export interface CommandRuntimeExecutionApprovalPacket {
   explicit_non_claims: string[];
 }
 
+export interface CommandRuntimeExecutionHandoffBundle {
+  schema: "account-console.p024.owner-runtime-execution-handoff-bundle.v1";
+  proposal_id: "p024-account-console-paper-command-controls";
+  account_id: "acct.ctp.paper.19053";
+  reviewed_at: string;
+  status: "phase4c_owner_runtime_execution_handoff_bundle_ready";
+  verdict: "handoff_bundle_ready_runtime_not_invoked";
+  depends_on: Record<string, unknown>;
+  execution_guard: {
+    execution_allowed: false;
+    approval_required: true;
+    approval_obtained: false;
+    exact_approval_text_required: string;
+    owner_repo_path: string;
+    raw_secret_values_recorded: false;
+    raw_broker_endpoint_recorded: false;
+    config_raw_content_read: false;
+  };
+  runtime_input_requirements: Array<{
+    field: string;
+    required: boolean;
+    source: string;
+    reason: string;
+  }>;
+  operator_sequence: Array<{
+    step: string;
+    action: string;
+    entrypoint_ref?: string;
+    armed_flag?: string;
+    must_pass_before_next: boolean;
+  }>;
+  required_owner_artifacts: string[];
+  post_handoff_gates: string[];
+  blockers: CommandApiBlocker[];
+  negative_assertions: {
+    execution_allowed: false;
+    runtime_invocation_attempted: false;
+    owner_repo_write_attempted: false;
+    browser_triggered_broker_order: false;
+    gateway_send_attempted: false;
+    broker_order_created: false;
+    live_armed: false;
+    account_mirror_write_authority: false;
+    raw_secret_values_recorded: false;
+    raw_broker_endpoint_recorded: false;
+    config_raw_content_read: false;
+    full_runtime_acceptance_claimed: false;
+  };
+  explicit_non_claims: string[];
+}
+
 export type AccountHealthPanelFixtureState =
   | "happy_path"
   | "empty"

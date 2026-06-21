@@ -1,7 +1,7 @@
 # P024 UI Acceptance / Paper Command Controls
 
 - Proposal ID: `p024-account-console-paper-command-controls`
-- Status: phase4b_runtime_approval_packet_ui_projection_passed
+- Status: phase4d_runtime_handoff_bundle_ui_projection_passed
 
 ## Browser Acceptance
 
@@ -20,6 +20,22 @@
 | UI-11 | owner-runtime handoff request | submit/cancel controls prepare blocked owner-runtime handoff requests with no browser-triggered broker order | phase3c_runtime_handoff_request_passed |
 | UI-12 | runtime readiness blocker projection | readiness package owner refs, entrypoints, approval state, blockers and non-claims render in UI while runtime invocation remains false | phase3e_runtime_readiness_ui_projection_passed |
 | UI-13 | runtime approval packet projection | exact approval text, owner path, entrypoints, blockers and false execution flags render in UI while approval remains unobtained | phase4b_runtime_approval_packet_ui_projection_passed |
+| UI-14 | runtime handoff bundle projection | execution guard, runtime inputs, operator sequence, artifact counts and blockers render in UI while execution remains disallowed | phase4d_runtime_handoff_bundle_ui_projection_passed |
+
+## UI-14 Runtime Handoff Bundle Projection
+
+The browser test must load `/accounts/acct.ctp.paper.19053`, call the read-only handoff bundle endpoint, and verify:
+
+1. `account-runtime-handoff-bundle-panel` is visible.
+2. `account-runtime-handoff-bundle-status` is `phase4c_owner_runtime_execution_handoff_bundle_ready`.
+3. `account-runtime-handoff-bundle-execution-allowed` is `false`.
+4. `account-runtime-handoff-bundle-approval-obtained` is `false`.
+5. `account-runtime-handoff-bundle-invoked`, `account-runtime-handoff-bundle-owner-write` and `account-runtime-handoff-bundle-broker-order` are all `false`.
+6. `account-runtime-handoff-bundle-input` shows runtime input requirements including owner pre-snapshot and readback order identity.
+7. `account-runtime-handoff-bundle-step` shows the gated operator sequence including submit and cancel runtime steps.
+8. `account-runtime-handoff-bundle-blocker` includes external write approval, runtime input and owner artifact blockers.
+
+Accepted evidence: `python scripts\validate_p024_runtime_handoff_bundle_browser_evidence.py` returns `P024_RUNTIME_HANDOFF_BUNDLE_BROWSER_EVIDENCE_OK`.
 
 ## UI-13 Runtime Approval Packet Projection
 
@@ -120,6 +136,7 @@ Accepted evidence: `python scripts\validate_p024_partial_fill_cancel_browser_evi
 | NUI-12 | runtime handoff panel claims owner runtime invocation, gateway send or broker order creation from browser | test failure |
 | NUI-13 | runtime readiness panel hides approval blocker, shows raw endpoint/secret material, or claims owner runtime invocation | test failure |
 | NUI-14 | runtime approval packet panel hides exact approval text, claims approval obtained, owner runtime invoked, owner repo written, broker order created or raw endpoint/secret material | test failure |
+| NUI-15 | runtime handoff bundle panel claims execution allowed, approval obtained, owner runtime invoked, owner repo written, broker order created or raw endpoint/secret material | test failure |
 
 ## Blocker
 

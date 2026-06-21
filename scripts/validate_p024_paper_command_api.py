@@ -23,6 +23,7 @@ ALLOWED_COMMAND_ROUTES = {
     "/api/commands/accounts/{account_id}/runtime-closeouts/{run_id}": {"GET"},
     "/api/commands/accounts/{account_id}/runtime-invocation-readiness": {"GET"},
     "/api/commands/accounts/{account_id}/runtime-execution-approval-packet": {"GET"},
+    "/api/commands/accounts/{account_id}/runtime-execution-handoff-bundle": {"GET"},
 }
 
 
@@ -216,6 +217,28 @@ def validate_api_behavior() -> None:
         "runtime approval broker order flag mismatch",
     )
 
+    bundle_response = client.get(f"/api/commands/accounts/{ACCOUNT_ID}/runtime-execution-handoff-bundle")
+    require(bundle_response.status_code == 200, f"runtime handoff bundle status mismatch: {bundle_response.status_code}")
+    bundle_payload = bundle_response.json()
+    require(
+        bundle_payload["schema"] == "account-console.p024.owner-runtime-execution-handoff-bundle.v1",
+        "runtime handoff bundle schema mismatch",
+    )
+    require(
+        bundle_payload["status"] == "phase4c_owner_runtime_execution_handoff_bundle_ready",
+        "runtime handoff bundle status mismatch",
+    )
+    require(bundle_payload["execution_guard"]["execution_allowed"] is False, "runtime handoff execution allowed mismatch")
+    require(bundle_payload["execution_guard"]["approval_obtained"] is False, "runtime handoff approval mismatch")
+    require(
+        bundle_payload["negative_assertions"]["runtime_invocation_attempted"] is False,
+        "runtime handoff invocation flag mismatch",
+    )
+    require(
+        bundle_payload["negative_assertions"]["broker_order_created"] is False,
+        "runtime handoff broker order flag mismatch",
+    )
+
     live_intent = submit_intent()
     live_intent["mode"] = "live_armed"
     live_response = client.post(f"/api/commands/accounts/{ACCOUNT_ID}/submit-intents", json=live_intent)
@@ -230,7 +253,7 @@ def main() -> None:
     validate_api_behavior()
     print(
         "P024_PAPER_COMMAND_API_OK: "
-        "phase=1 routes=7 status=accepted_for_risk runtime_handoff=blocked runtime_closeout=reconciled runtime_readiness=blocked runtime_approval_packet=ready mirror_read_only=true"
+        "phase=1 routes=8 status=accepted_for_risk runtime_handoff=blocked runtime_closeout=reconciled runtime_readiness=blocked runtime_approval_packet=ready runtime_handoff_bundle=ready mirror_read_only=true"
     )
 
 

@@ -1,7 +1,7 @@
 # P024 Runtime Invocation Readiness / Owner Runtime Approval Gate
 
 - Proposal ID: `p024-account-console-paper-command-controls`
-- Status: phase4c_owner_runtime_execution_handoff_bundle_ready
+- Status: phase4d_runtime_handoff_bundle_ui_projection_passed
 - Previous readiness UI status: phase3e_runtime_readiness_ui_projection_passed
 - Previous approval packet status: phase4a_owner_runtime_execution_approval_packet_ready
 
@@ -16,6 +16,8 @@ Phase 4a adds an owner-runtime execution approval packet on top of this readines
 Phase 4b renders that approval packet in the Web UI as a browser blocker projection. This is still not owner-runtime invocation and still requires `approval_obtained=false`, `runtime_invocation_attempted=false`, `owner_repo_write_attempted=false` and `broker_order_created=false`.
 
 Phase 4c freezes the owner-runtime execution handoff bundle. The bundle records the post-approval sequence, runtime input requirements, required owner artifacts and post-handoff gates while `execution_allowed=false`.
+
+Phase 4d renders the handoff bundle in the Web UI as another browser blocker projection while `execution_allowed=false`, `approval_obtained=false`, `runtime_invocation_attempted=false`, `owner_repo_write_attempted=false` and `broker_order_created=false`.
 
 ## Required Artifact
 
@@ -131,4 +133,19 @@ Pass signal:
 
 ```text
 P024_OWNER_RUNTIME_EXECUTION_HANDOFF_BUNDLE_OK: status=phase4c_owner_runtime_execution_handoff_bundle_ready execution_allowed=false runtime_invocation_attempted=false
+```
+
+## Runtime Handoff Bundle UI Gate
+
+Run:
+
+```powershell
+npx playwright test tests/e2e/p024-runtime-execution-handoff-bundle.spec.ts --project=desktop
+python scripts\validate_p024_runtime_handoff_bundle_browser_evidence.py
+```
+
+Pass signal:
+
+```text
+P024_RUNTIME_HANDOFF_BUNDLE_BROWSER_EVIDENCE_OK: runtime_handoff_bundle_ui=pass execution_allowed=false runtime_invocation_attempted=false
 ```

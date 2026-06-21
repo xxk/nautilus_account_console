@@ -91,6 +91,7 @@ import type {
   CommandApiResult,
   CommandRuntimeCloseout,
   CommandRuntimeExecutionApprovalPacket,
+  CommandRuntimeExecutionHandoffBundle,
   CommandRuntimeInvocationReadiness,
   CommandRuntimeRunRequest,
   AccountOrderDetailFixtureState,
@@ -124,6 +125,7 @@ import type {
 import {
   cancelPaperOrderIntent,
   fetchCommandRuntimeExecutionApprovalPacket,
+  fetchCommandRuntimeExecutionHandoffBundle,
   fetchCommandRuntimeInvocationReadiness,
   fetchCommandRuntimeCloseout,
   fetchMirrorAccount,
@@ -1492,6 +1494,9 @@ function AccountWorkbenchTerminalPanel({
   const [runtimeApprovalPacket, setRuntimeApprovalPacket] =
     useState<CommandRuntimeExecutionApprovalPacket | null>(null);
   const [runtimeApprovalPacketError, setRuntimeApprovalPacketError] = useState<string | null>(null);
+  const [runtimeHandoffBundle, setRuntimeHandoffBundle] =
+    useState<CommandRuntimeExecutionHandoffBundle | null>(null);
+  const [runtimeHandoffBundleError, setRuntimeHandoffBundleError] = useState<string | null>(null);
   const [runtimeCloseout, setRuntimeCloseout] = useState<CommandRuntimeCloseout | null>(null);
   const [runtimeCloseoutError, setRuntimeCloseoutError] = useState<string | null>(null);
   const paperArmed = isP024PaperArmed(mirrorReadback);
@@ -1580,14 +1585,17 @@ function AccountWorkbenchTerminalPanel({
       setRuntimeReadinessError(null);
       setRuntimeApprovalPacket(null);
       setRuntimeApprovalPacketError(null);
+      setRuntimeHandoffBundle(null);
+      setRuntimeHandoffBundleError(null);
       return;
     }
     let active = true;
     async function loadRuntimeEvidence() {
-      const [closeoutResult, readinessResult, approvalPacketResult] = await Promise.allSettled([
+      const [closeoutResult, readinessResult, approvalPacketResult, handoffBundleResult] = await Promise.allSettled([
         fetchCommandRuntimeCloseout(summary.account.account_id),
         fetchCommandRuntimeInvocationReadiness(summary.account.account_id),
-        fetchCommandRuntimeExecutionApprovalPacket(summary.account.account_id)
+        fetchCommandRuntimeExecutionApprovalPacket(summary.account.account_id),
+        fetchCommandRuntimeExecutionHandoffBundle(summary.account.account_id)
       ]);
       if (!active) {
         return;
@@ -1620,6 +1628,17 @@ function AccountWorkbenchTerminalPanel({
             : "runtime approval packet unavailable";
         setRuntimeApprovalPacket(null);
         setRuntimeApprovalPacketError(message);
+      }
+      if (handoffBundleResult.status === "fulfilled") {
+        setRuntimeHandoffBundle(handoffBundleResult.value);
+        setRuntimeHandoffBundleError(null);
+      } else {
+        const message =
+          handoffBundleResult.reason instanceof Error
+            ? handoffBundleResult.reason.message
+            : "runtime handoff bundle unavailable";
+        setRuntimeHandoffBundle(null);
+        setRuntimeHandoffBundleError(message);
       }
     }
     void loadRuntimeEvidence();
@@ -2459,6 +2478,11 @@ function AccountWorkbenchTerminalPanel({
           <CommandRuntimeExecutionApprovalPacketPanel
             error={runtimeApprovalPacketError}
             packet={runtimeApprovalPacket}
+          />
+
+          <CommandRuntimeExecutionHandoffBundlePanel
+            bundle={runtimeHandoffBundle}
+            error={runtimeHandoffBundleError}
           />
 
           <CommandRuntimeCloseoutPanel closeout={runtimeCloseout} error={runtimeCloseoutError} />
@@ -4668,6 +4692,116 @@ function CommandRuntimeExecutionApprovalPacketPanel({
         </div>
       ) : (
         <p className="muted">No owner-runtime execution approval packet is mounted for this account.</p>
+      )}
+    </section>
+  );
+}
+
+function CommandRuntimeExecutionHandoffBundlePanel({
+  bundle,
+  error
+}: {
+  bundle: CommandRuntimeExecutionHandoffBundle | null;
+  error: string | null;
+}) {
+  return (
+    <section className="terminal-panel" data-testid="account-runtime-handoff-bundle-panel">
+      <div className="terminal-panel-header">
+        <h3>Runtime Bundle</h3>
+        <StateBadge value={bundle ? "blocked" : error ? "blocked" : "empty"} />
+      </div>
+      {bundle ? (
+        <div className="evidence-stack compact-evidence-stack">
+          <div className="evidence-item">
+            <strong>Status</strong>
+            <span data-testid="account-runtime-handoff-bundle-status">{bundle.status}</span>
+          </div>
+          <div className="evidence-item">
+            <strong>Verdict</strong>
+            <span data-testid="account-runtime-handoff-bundle-verdict">{bundle.verdict}</span>
+          </div>
+          <div className="evidence-item">
+            <strong>Execution allowed</strong>
+            <span data-testid="account-runtime-handoff-bundle-execution-allowed">
+              {String(bundle.execution_guard.execution_allowed)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Approval obtained</strong>
+            <span data-testid="account-runtime-handoff-bundle-approval-obtained">
+              {String(bundle.execution_guard.approval_obtained)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Runtime invoked</strong>
+            <span data-testid="account-runtime-handoff-bundle-invoked">
+              {String(bundle.negative_assertions.runtime_invocation_attempted)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Owner write</strong>
+            <span data-testid="account-runtime-handoff-bundle-owner-write">
+              {String(bundle.negative_assertions.owner_repo_write_attempted)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Broker order</strong>
+            <span data-testid="account-runtime-handoff-bundle-broker-order">
+              {String(bundle.negative_assertions.broker_order_created)}
+            </span>
+          </div>
+          {bundle.runtime_input_requirements.map((item) => (
+            <div
+              className="evidence-item"
+              data-testid="account-runtime-handoff-bundle-input"
+              key={item.field}
+            >
+              <strong>{item.field}</strong>
+              <span>{item.reason}</span>
+            </div>
+          ))}
+          {bundle.operator_sequence.map((item) => (
+            <div
+              className="evidence-item"
+              data-testid="account-runtime-handoff-bundle-step"
+              key={item.step}
+            >
+              <strong>{item.step}</strong>
+              <span>
+                {item.action}
+                {item.armed_flag ? ` / ${item.armed_flag}` : ""}
+              </span>
+            </div>
+          ))}
+          <div className="evidence-item">
+            <strong>Artifacts</strong>
+            <span data-testid="account-runtime-handoff-bundle-artifact-count">
+              {bundle.required_owner_artifacts.length}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Gates</strong>
+            <span data-testid="account-runtime-handoff-bundle-gate-count">
+              {bundle.post_handoff_gates.length}
+            </span>
+          </div>
+          {bundle.blockers.map((blocker) => (
+            <div
+              className="evidence-item"
+              data-testid="account-runtime-handoff-bundle-blocker"
+              key={blocker.blocker_id}
+            >
+              <strong>{blocker.type}</strong>
+              <span>{blocker.next_action}</span>
+            </div>
+          ))}
+        </div>
+      ) : error ? (
+        <div className="state-callout blocked" data-testid="account-runtime-handoff-bundle-error">
+          {error}
+        </div>
+      ) : (
+        <p className="muted">No owner-runtime execution handoff bundle is mounted for this account.</p>
       )}
     </section>
   );

@@ -4,6 +4,7 @@ import type {
   CommandApiResult,
   CommandRuntimeCloseout,
   CommandRuntimeExecutionApprovalPacket,
+  CommandRuntimeExecutionHandoffBundle,
   CommandRuntimeInvocationReadiness,
   CommandRuntimeRunRequest,
   MirrorAccountProjection,
@@ -177,6 +178,18 @@ export async function fetchCommandRuntimeExecutionApprovalPacket(
   );
   if (!response.ok) {
     throw new Error(`runtime execution approval packet failed: ${response.status}`);
+  }
+  return response.json();
+}
+
+export async function fetchCommandRuntimeExecutionHandoffBundle(
+  accountId: string
+): Promise<CommandRuntimeExecutionHandoffBundle> {
+  const response = await fetch(
+    `${API_BASE}/api/commands/accounts/${encodeURIComponent(accountId)}/runtime-execution-handoff-bundle`
+  );
+  if (!response.ok) {
+    throw new Error(`runtime execution handoff bundle failed: ${response.status}`);
   }
   return response.json();
 }

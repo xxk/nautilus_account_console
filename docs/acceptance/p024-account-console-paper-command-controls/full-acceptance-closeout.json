@@ -16,6 +16,7 @@
     "owner_runtime_execution_approval_packet",
     "runtime_approval_packet_ui_projection",
     "owner_runtime_execution_handoff_bundle",
+    "runtime_handoff_bundle_ui_projection",
     "proposal_docs_and_adr_boundary"
   ],
   "not_accepted_scope": [
@@ -86,6 +87,12 @@
       "id": "p024_owner_runtime_execution_handoff_bundle",
       "command": "python scripts\\validate_p024_owner_runtime_execution_handoff_bundle.py",
       "pass_signal": "P024_OWNER_RUNTIME_EXECUTION_HANDOFF_BUNDLE_OK",
+      "status": "passed"
+    },
+    {
+      "id": "p024_runtime_handoff_bundle_ui_projection",
+      "command": "npx playwright test tests/e2e/p024-runtime-execution-handoff-bundle.spec.ts --project=desktop && python scripts\\validate_p024_runtime_handoff_bundle_browser_evidence.py",
+      "pass_signal": "P024_RUNTIME_HANDOFF_BUNDLE_BROWSER_EVIDENCE_OK",
       "status": "passed"
     },
     {
@@ -247,6 +254,16 @@
       "evidence_refs": [
         "frontend/tests/e2e/p024-runtime-invocation-readiness.spec.ts",
         "scripts/validate_p024_runtime_readiness_browser_evidence.py"
+      ]
+    },
+    {
+      "id": "A15",
+      "scenario": "Runtime handoff bundle appears in Web UI without execution permission",
+      "verification_shape": "Playwright + API route audit + browser evidence JSON",
+      "status": "passed",
+      "evidence_refs": [
+        "frontend/tests/e2e/p024-runtime-execution-handoff-bundle.spec.ts",
+        "scripts/validate_p024_runtime_handoff_bundle_browser_evidence.py"
       ]
     }
   ],

@@ -82,6 +82,7 @@ ALLOWED_GOVERNED_COMMAND_ROUTES = {
     "/api/commands/accounts/{account_id}/runtime-closeouts/{run_id}": {"GET"},
     "/api/commands/accounts/{account_id}/runtime-invocation-readiness": {"GET"},
     "/api/commands/accounts/{account_id}/runtime-execution-approval-packet": {"GET"},
+    "/api/commands/accounts/{account_id}/runtime-execution-handoff-bundle": {"GET"},
 }
 PASS_SIGNAL = "P019_API_BOUNDARY_OK: mirror_only=true governed_command_routes=p024_only direct_broker_routes=absent"
 

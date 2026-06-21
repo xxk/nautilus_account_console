@@ -261,6 +261,42 @@ def test_runtime_execution_approval_packet_projects_exact_operator_gate() -> Non
     }
 
 
+def test_runtime_execution_handoff_bundle_projects_blocked_operator_sequence() -> None:
+    client = TestClient(app)
+    response = client.get("/api/commands/accounts/acct.ctp.paper.19053/runtime-execution-handoff-bundle")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["schema"] == "account-console.p024.owner-runtime-execution-handoff-bundle.v1"
+    assert payload["status"] == "phase4c_owner_runtime_execution_handoff_bundle_ready"
+    assert payload["verdict"] == "handoff_bundle_ready_runtime_not_invoked"
+    assert payload["execution_guard"]["execution_allowed"] is False
+    assert payload["execution_guard"]["approval_required"] is True
+    assert payload["execution_guard"]["approval_obtained"] is False
+    assert payload["negative_assertions"]["runtime_invocation_attempted"] is False
+    assert payload["negative_assertions"]["owner_repo_write_attempted"] is False
+    assert payload["negative_assertions"]["broker_order_created"] is False
+    assert {item["field"] for item in payload["runtime_input_requirements"]} >= {
+        "owner_pre_snapshot_ref",
+        "owner_post_snapshot_ref",
+        "instrument",
+        "side",
+        "qty",
+        "price",
+        "readback_order_identity",
+    }
+    assert [item["step"] for item in payload["operator_sequence"]][:3] == [
+        "pre_approval_gate",
+        "owner_repo_context",
+        "submit_runtime",
+    ]
+    assert {blocker["type"] for blocker in payload["blockers"]} == {
+        "external_write_approval_required",
+        "runtime_inputs_required",
+        "owner_runtime_artifacts_missing",
+    }
+
+
 def test_command_api_rejects_live_mode_and_account_mismatch() -> None:
     client = TestClient(app)
     live = deepcopy(submit_intent())

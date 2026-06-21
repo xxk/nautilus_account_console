@@ -25,6 +25,7 @@ OWNER_HANDOFF_BUNDLE = (
     / "owner-runtime-execution-handoff-bundle.json"
 )
 P024_EVIDENCE_DIR = ROOT / "docs" / "acceptance" / "browser-evidence" / "p024-account-console-paper-command-controls"
+RUNTIME_HANDOFF_BUNDLE_UI_EVIDENCE = P024_EVIDENCE_DIR / "runtime-handoff-bundle-ui.json"
 PROPOSAL = ROOT / "docs" / "proposals" / "p024-account-console-paper-command-controls"
 PROPOSAL_INDEX = ROOT / "docs" / "proposals" / "README.md"
 ADR = ROOT / "docs" / "adr" / "0007-adopt-governed-account-command-capability.md"
@@ -73,6 +74,7 @@ def validate_required_gates(payload: dict[str, Any]) -> None:
         "p024_owner_runtime_execution_approval_packet": "P024_OWNER_RUNTIME_EXECUTION_APPROVAL_PACKET_OK",
         "p024_runtime_approval_packet_ui_projection": "P024_RUNTIME_APPROVAL_PACKET_BROWSER_EVIDENCE_OK",
         "p024_owner_runtime_execution_handoff_bundle": "P024_OWNER_RUNTIME_EXECUTION_HANDOFF_BUNDLE_OK",
+        "p024_runtime_handoff_bundle_ui_projection": "P024_RUNTIME_HANDOFF_BUNDLE_BROWSER_EVIDENCE_OK",
         "p024_design_and_adr": "P024_PAPER_COMMAND_CONTROLS_DESIGN_OK",
         "p019_boundary": "P019_API_BOUNDARY_OK",
         "proposal_docs": "PROPOSAL_DOCS_OK",
@@ -87,8 +89,8 @@ def validate_required_gates(payload: dict[str, Any]) -> None:
 
 def validate_scenarios(payload: dict[str, Any]) -> None:
     scenarios = {item["id"]: item for item in payload["scenario_matrix"]}
-    require(set(scenarios) == {f"A{index}" for index in range(1, 15)}, "scenario matrix must contain A1-A14 only")
-    passed = {"A1", "A2", "A3", "A5", "A7", "A9", "A10", "A11", "A12", "A14"}
+    require(set(scenarios) == {f"A{index}" for index in range(1, 16)}, "scenario matrix must contain A1-A15 only")
+    passed = {"A1", "A2", "A3", "A5", "A7", "A9", "A10", "A11", "A12", "A14", "A15"}
     for scenario_id in passed:
         require(scenarios[scenario_id]["status"] == "passed", f"{scenario_id}: expected passed")
         require(scenarios[scenario_id].get("evidence_refs"), f"{scenario_id}: evidence refs missing")
@@ -176,13 +178,16 @@ def validate_evidence_files() -> None:
         P024_EVIDENCE_DIR / "runtime-handoff-ui.json",
         P024_EVIDENCE_DIR / "runtime-readiness-ui.json",
         P024_EVIDENCE_DIR / "runtime-approval-packet-ui.json",
+        RUNTIME_HANDOFF_BUNDLE_UI_EVIDENCE,
         OWNER_APPROVAL_PACKET,
         OWNER_HANDOFF_BUNDLE,
         ROOT / "frontend" / "tests" / "e2e" / "p024-runtime-invocation-readiness.spec.ts",
         ROOT / "frontend" / "tests" / "e2e" / "p024-runtime-execution-approval-packet.spec.ts",
+        ROOT / "frontend" / "tests" / "e2e" / "p024-runtime-execution-handoff-bundle.spec.ts",
         ROOT / "scripts" / "validate_p024_runtime_readiness_browser_evidence.py",
         ROOT / "scripts" / "validate_p024_runtime_approval_packet_browser_evidence.py",
         ROOT / "scripts" / "validate_p024_owner_runtime_execution_handoff_bundle.py",
+        ROOT / "scripts" / "validate_p024_runtime_handoff_bundle_browser_evidence.py",
     ]:
         require(path.exists(), f"missing referenced evidence path: {path}")
 
@@ -203,7 +208,9 @@ def validate_docs() -> None:
     require("Phase 4 Closeout" in phase_plan, "phase plan missing Phase 4")
     require("Full P024 gate set and residual blocker mapping" in phase_plan, "phase plan missing closeout scope")
     require("runtime readiness UI projection" in index, "proposal index missing P024 runtime readiness UI text")
+    require("runtime handoff bundle UI projection" in index, "proposal index missing P024 runtime handoff bundle UI text")
     require("P024 Phase 3e runtime readiness UI projection" in adr, "ADR missing Phase 3e status")
+    require("P024 Phase 4d runtime handoff bundle UI projection" in adr, "ADR missing Phase 4d status")
     require("P024 paper command controls" in owner_map, "owner map missing P024 command owner boundary")
     require("owner://nautilus_ctp_adapter" in owner_map, "owner map missing P024 external runtime owner")
     require("Account Mirror a command writer" in owner_map, "owner map missing P024 mirror writer rejection")
@@ -228,6 +235,7 @@ def validate_payload(payload: dict[str, Any]) -> None:
         "owner_runtime_execution_approval_packet",
         "runtime_approval_packet_ui_projection",
         "owner_runtime_execution_handoff_bundle",
+        "runtime_handoff_bundle_ui_projection",
         "proposal_docs_and_adr_boundary",
     ]:
         require(item in accepted, f"accepted scope missing: {item}")

@@ -3,7 +3,7 @@ status: proposed
 owner: architecture
 adr_id: "0007"
 decision_status: proposed
-landing_status: p024_phase4c_owner_runtime_execution_handoff_bundle_gate
+landing_status: p024_phase4d_runtime_handoff_bundle_ui_projection_gate
 ---
 
 # ADR-0007: Governed Account Command Capability / 受治理的账户下单与撤单能力
@@ -11,11 +11,11 @@ landing_status: p024_phase4c_owner_runtime_execution_handoff_bundle_gate
 - 日期：`2026-06-21`
 - ADR 类型：standard
 - 决策状态：proposed
-- 落地状态：p024_phase4c_owner_runtime_execution_handoff_bundle_gate
+- 落地状态：p024_phase4d_runtime_handoff_bundle_ui_projection_gate
 - 适用范围：`nautilus_account_console` Account Capability Fabric, Account Workbench, future Command Gateway, CTP / IB TWS / future broker command paths
 - 决策问题：Account Console 是否可以实现账户下单、撤单能力；如果可以，命令 authority、risk/approval、broker session、readback reconciliation 与 UI 安全边界应该如何分层？
 - 当前倾向：proposed；接受一个受治理的 command capability，但不得由 Account Mirror 或 UI 直接写 broker。命令必须通过 `OrderIntent -> RiskDecision -> ApprovalDecision -> ExecutionGateway -> ExecutionEvent -> AccountMirrorReadback -> ReconciliationResult`。
-- 最终决策：pending；P024 Phase 1 backend intent API, Phase 2 frontend guarded controls, Phase 3a owner-backed runtime closeout projection, Phase 3b partial-fill cancel UI display contract, Phase 3c owner-runtime handoff request, Phase 3d owner-runtime invocation readiness, Phase 3e runtime readiness UI projection, Phase 4 residual blocker audit, Phase 4a owner-runtime execution approval packet, Phase 4b runtime approval packet UI projection and Phase 4c owner-runtime execution handoff bundle gates exist for paper submit/cancel intent/display flows, but real Web UI risk/approval/gateway runtime send/live evidence are not complete and Account Mirror remains read-only.
+- 最终决策：pending；P024 Phase 1 backend intent API, Phase 2 frontend guarded controls, Phase 3a owner-backed runtime closeout projection, Phase 3b partial-fill cancel UI display contract, Phase 3c owner-runtime handoff request, Phase 3d owner-runtime invocation readiness, Phase 3e runtime readiness UI projection, Phase 4 residual blocker audit, Phase 4a owner-runtime execution approval packet, Phase 4b runtime approval packet UI projection, Phase 4c owner-runtime execution handoff bundle and Phase 4d runtime handoff bundle UI projection gates exist for paper submit/cancel intent/display flows, but real Web UI risk/approval/gateway runtime send/live evidence are not complete and Account Mirror remains read-only.
 - Required predecessor: ADR-0004 command boundary and ADR-0005 read-only broker observation boundary.
 - First successor proposal: [P023 OpenCTP 19053 Paper Command Capability Acceptance Design](../proposals/p023-openctp-19053-paper-command-capability/README.md)
 - Second successor proposal: [P024 Account Console Paper Command Controls](../proposals/p024-account-console-paper-command-controls/README.md)
@@ -215,9 +215,10 @@ ADR-0007 is proposed only. Current repository behavior remains observation-only:
 8. P024 Phase 3c owner-runtime handoff request is accepted as browser handoff evidence only: submit/cancel controls prepare typed run requests for `ctp_guarded_paper_order_loop.py` and `ctp_guarded_paper_cancel_loop.py`, while `runtime_invocation_attempted=false`, `browser_triggered_broker_order=false` and `gateway_send_attempted=false` remain required.
 9. P024 Phase 3d owner-runtime invocation readiness is accepted as a readiness gate only: owner repo path, guarded entrypoint checksums, external write approval scope and post-run artifact requirements are frozen while real owner-runtime invocation remains blocked pending explicit approval.
 10. P024 Phase 3e runtime readiness UI projection is accepted as browser blocker evidence only: the Web UI renders owner refs, entrypoints, approval state, blockers and non-claims while `runtime_invocation_attempted=false`, `owner_repo_write_attempted=false` and `browser_triggered_broker_order=false` remain required.
-11. P024 Phase 4 residual blocker audit is accepted as closeout evidence only: A1-A14, required gates, non-accepted runtime scope and residual owner-runtime blockers are machine-checked while `full_runtime_acceptance_claimed=false`.
+11. P024 Phase 4 residual blocker audit is accepted as closeout evidence only: A1-A15, required gates, non-accepted runtime scope and residual owner-runtime blockers are machine-checked while `full_runtime_acceptance_claimed=false`.
 12. P024 Phase 4a owner-runtime execution approval packet is accepted as an approval-packet gate only: `owner-runtime-execution-approval-packet.json` freezes the exact operator approval text `I approve writes to D:/Nautilus/nautilus_ctp_adapter ...`, owner path, reason, expected impact, command templates and post-run artifact requirements while `approval_obtained=false`, `runtime_invocation_attempted=false` and `owner_repo_write_attempted=false`.
 13. P024 Phase 4b runtime approval packet UI projection is accepted as browser blocker evidence only: the Web UI renders the exact approval text, owner path, entrypoints, blockers and false execution flags while `approval_obtained=false`, `runtime_invocation_attempted=false`, `owner_repo_write_attempted=false` and `broker_order_created=false`.
 14. P024 Phase 4c owner-runtime execution handoff bundle is accepted as a handoff gate only: the post-approval sequence, runtime input requirements, required owner artifacts and post-handoff gates are machine-checked while `execution_allowed=false`, `approval_obtained=false` and `runtime_invocation_attempted=false`.
-15. P024 is the current successor proposal for guarded Web/API paper controls, runtime closeout projection, partial-fill then cancel Web UI display correctness, owner-runtime handoff request preparation, owner-runtime invocation readiness, runtime readiness UI projection, residual blocker closeout audit, owner-runtime execution approval packet, runtime approval packet UI projection and owner-runtime execution handoff bundle.
-16. Next implementation work is real Web UI submit/cancel runtime evidence through risk/approval/gateway/readback/reconciliation; broker gateway send remains blocked until external owner-runtime approval and artifacts are present.
+15. P024 Phase 4d runtime handoff bundle UI projection is accepted as browser blocker evidence only: the Web UI renders the execution guard, runtime input requirements, operator sequence, artifact counts, post-handoff gates and blockers while `execution_allowed=false`, `approval_obtained=false`, `runtime_invocation_attempted=false`, `owner_repo_write_attempted=false` and `broker_order_created=false`.
+16. P024 is the current successor proposal for guarded Web/API paper controls, runtime closeout projection, partial-fill then cancel Web UI display correctness, owner-runtime handoff request preparation, owner-runtime invocation readiness, runtime readiness UI projection, residual blocker closeout audit, owner-runtime execution approval packet, runtime approval packet UI projection, owner-runtime execution handoff bundle and runtime handoff bundle UI projection.
+17. Next implementation work is real Web UI submit/cancel runtime evidence through risk/approval/gateway/readback/reconciliation; broker gateway send remains blocked until external owner-runtime approval and artifacts are present.

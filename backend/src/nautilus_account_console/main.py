@@ -12,6 +12,7 @@ from .command_api import (
     accept_cancel_intent,
     accept_submit_intent,
     load_runtime_execution_approval_packet,
+    load_runtime_execution_handoff_bundle,
     load_runtime_invocation_readiness,
     load_runtime_closeout,
     prepare_cancel_runtime_run_request,
@@ -31,6 +32,7 @@ from .schemas import (
     CommandApiResult,
     CommandRuntimeCloseout,
     CommandRuntimeExecutionApprovalPacket,
+    CommandRuntimeExecutionHandoffBundle,
     CommandRuntimeInvocationReadiness,
     CommandRuntimeRunRequest,
     Health,
@@ -269,6 +271,15 @@ def command_runtime_invocation_readiness(account_id: str) -> CommandRuntimeInvoc
 )
 def command_runtime_execution_approval_packet(account_id: str) -> CommandRuntimeExecutionApprovalPacket:
     return load_runtime_execution_approval_packet(account_id)
+
+
+@app.get(
+    "/api/commands/accounts/{account_id}/runtime-execution-handoff-bundle",
+    response_model=CommandRuntimeExecutionHandoffBundle,
+    response_model_exclude_none=True,
+)
+def command_runtime_execution_handoff_bundle(account_id: str) -> CommandRuntimeExecutionHandoffBundle:
+    return load_runtime_execution_handoff_bundle(account_id)
 
 
 @app.get("/api/accounts/{account_id}", response_model=AccountDetail)

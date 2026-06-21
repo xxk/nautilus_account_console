@@ -87,6 +87,18 @@ No controls are reserved or visible in disabled mode.
 | `account-runtime-approval-packet-exact-text` | exact operator approval text required before owner-runtime execution |
 | `account-runtime-approval-packet-entrypoint` | guarded submit/cancel owner runtime entrypoints and arm flags from the approval packet |
 | `account-runtime-approval-packet-blocker` | typed approval and owner artifact blockers from the approval packet |
+| `account-runtime-handoff-bundle-panel` | owner-runtime execution handoff bundle projection panel |
+| `account-runtime-handoff-bundle-status` | handoff bundle status; must remain bundle-ready rather than executed |
+| `account-runtime-handoff-bundle-execution-allowed` | execution allowed flag; must remain false before approval |
+| `account-runtime-handoff-bundle-approval-obtained` | approval obtained flag; must remain false until exact approval is supplied |
+| `account-runtime-handoff-bundle-invoked` | owner runtime invocation flag; must remain false before approval |
+| `account-runtime-handoff-bundle-owner-write` | owner repo write attempted flag; must remain false before approval |
+| `account-runtime-handoff-bundle-broker-order` | broker order created flag; must remain false before approved runtime execution |
+| `account-runtime-handoff-bundle-input` | runtime input requirements that must be bound after approval |
+| `account-runtime-handoff-bundle-step` | gated operator sequence for approved owner-runtime execution |
+| `account-runtime-handoff-bundle-artifact-count` | required owner artifact count |
+| `account-runtime-handoff-bundle-gate-count` | post-handoff gate count |
+| `account-runtime-handoff-bundle-blocker` | typed approval/input/artifact blockers from the handoff bundle |
 
 ## Layout Rules
 
