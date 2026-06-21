@@ -387,8 +387,11 @@ function orderStatusLabel(value: unknown): AccountOrderRow["status"] {
   if (normalized === "rejected") {
     return "rejected";
   }
-  if (normalized === "partial") {
+  if (normalized === "partial" || normalized === "partially_filled" || normalized === "partfilled") {
     return "partial";
+  }
+  if (normalized === "cancel_pending" || normalized === "cancelpending" || normalized === "pending_cancel") {
+    return "cancel_pending";
   }
   if (normalized === "blocked" || normalized === "stale") {
     return normalized;
@@ -665,6 +668,7 @@ function mirrorOrdersReadModel(readback: MirrorWorkbenchReadback): AccountOrders
         quantity,
         filled_quantity: filledQuantity,
         remaining_quantity: remainingQuantity ?? (quantity === null ? null : quantity - filledQuantity),
+        cancelled_quantity: asNumber(order.cancelled_quantity ?? order.withdrawn_quantity),
         time_in_force: asText(order.time_in_force, "missing"),
         destination: asText(order.destination ?? order.exchange, "missing"),
         status: orderStatusLabel(order.status),
@@ -1814,6 +1818,7 @@ function AccountWorkbenchTerminalPanel({
                     <th>Qty</th>
                     <th>Filled</th>
                     <th>Remaining</th>
+                    <th>Cancelled</th>
                     <th>Evidence</th>
                   </tr>
                 </thead>
@@ -1821,25 +1826,48 @@ function AccountWorkbenchTerminalPanel({
                   {visibleOrders.length > 0 ? (
                     visibleOrders.map((order) => (
                       <tr data-testid="tws-open-order-row" key={`${order.source_ref}-${order.client_order_id}`}>
-                        <td data-label="Client order" data-testid="tws-open-order-client-order-id">{order.client_order_id}</td>
+                        <td data-label="Client order" data-testid="tws-open-order-client-order-id">
+                          <span>{order.client_order_id}</span>
+                          <span data-testid="account-order-identity">{order.lifecycle_ref ?? order.client_order_id}</span>
+                        </td>
                         <td data-label="Instrument" data-testid="tws-open-order-instrument">{order.instrument}</td>
                         <td data-label="Side" data-testid="tws-open-order-side">
                           <StateBadge value={order.side} />
                         </td>
                         <td data-label="Status" data-testid="tws-open-order-status">
-                          <StateBadge value={order.status} />
+                          <span data-testid="account-order-status">
+                            <StateBadge value={order.status} />
+                          </span>
+                          {order.status === "partial" ? (
+                            <span data-testid="account-order-partial-fill-row">partial</span>
+                          ) : null}
+                          {order.status === "cancel_pending" ? (
+                            <span data-testid="account-cancel-pending-ref">
+                              {order.report_provenance_ref ?? order.source_ref}
+                            </span>
+                          ) : null}
                         </td>
                         <td className="numeric-cell" data-label="Limit" data-testid="tws-open-order-limit-price">
                           {order.limit_price ?? "missing"}
                         </td>
                         <td className="numeric-cell" data-label="Qty" data-testid="tws-open-order-quantity">
-                          {order.quantity ?? "missing"}
+                          <span data-testid="account-order-submitted-quantity">{order.quantity ?? "missing"}</span>
                         </td>
                         <td className="numeric-cell" data-label="Filled" data-testid="tws-open-order-filled">
-                          {order.filled_quantity ?? "missing"}
+                          <span data-testid="account-order-filled-quantity">{order.filled_quantity ?? "missing"}</span>
                         </td>
                         <td className="numeric-cell" data-label="Remaining" data-testid="tws-open-order-remaining">
-                          {order.remaining_quantity ?? "missing"}
+                          <span data-testid="account-order-remaining-quantity">{order.remaining_quantity ?? "missing"}</span>
+                          {order.status === "partial" || order.status === "working" ? (
+                            <span data-testid="account-remaining-cancel-quantity">
+                              {order.remaining_quantity ?? "missing"}
+                            </span>
+                          ) : null}
+                        </td>
+                        <td className="numeric-cell" data-label="Cancelled" data-testid="tws-open-order-cancelled">
+                          <span data-testid="account-order-cancelled-quantity">
+                            {order.cancelled_quantity ?? "missing"}
+                          </span>
                         </td>
                         <td data-label="Evidence" data-testid="tws-open-order-source-ref">
                           <CopyableCode label="order source ref" value={order.source_ref} />
@@ -1848,7 +1876,7 @@ function AccountWorkbenchTerminalPanel({
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={9} data-testid="tws-open-order-empty-state">No open order rows in this mirror projection.</td>
+                      <td colSpan={10} data-testid="tws-open-order-empty-state">No open order rows in this mirror projection.</td>
                     </tr>
                   )}
                 </tbody>
@@ -1900,16 +1928,18 @@ function AccountWorkbenchTerminalPanel({
                             {report.status_or_trade}
                           </td>
                           <td className="numeric-cell" data-label="Filled" data-testid="tws-fill-filled-quantity">
-                            {report.filled_quantity ?? "missing"}
+                            <span data-testid="account-fill-quantity">{report.filled_quantity ?? "missing"}</span>
                           </td>
                           <td className="numeric-cell" data-label="Last price" data-testid="tws-fill-last-price">
-                            {report.limit_or_last_price ?? "missing"}
+                            <span data-testid="account-fill-price">{report.limit_or_last_price ?? "missing"}</span>
                           </td>
                           <td data-label="Sequence" data-testid="tws-fill-sequence">
                             {report.sequence ?? "missing"}
                           </td>
                           <td data-label="Source" data-testid="tws-fill-source-ref">
-                            <CopyableCode label="fill source ref" value={report.source_ref} />
+                            <span data-testid="account-fill-source-ref">
+                              <CopyableCode label="fill source ref" value={report.source_ref} />
+                            </span>
                           </td>
                         </tr>
                       ))

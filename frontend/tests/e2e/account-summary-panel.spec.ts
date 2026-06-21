@@ -16,6 +16,7 @@ const forbiddenVisibleText =
 test.describe("P004 Account Workbench Summary Panel", () => {
   test("renders Account Summary fixtures under Account Workbench", async ({ page }, testInfo) => {
     mkdirSync(evidenceDir, { recursive: true });
+    await page.route("**/api/mirror/**", (route) => route.abort("failed"));
 
     await page.goto("/accounts/acct.demo-19053");
     await expect(page.getByTestId("account-workbench-summary-panel")).toBeVisible();

@@ -43,7 +43,7 @@ OpenCTP 19053 是 7x24 paper lane。它可以覆盖大部分 command workflow，
 | LT-11 | Cancel open order | Cancel order by readback identity | cancel event + terminal readback | cancel uses UI text/screenshot/latest path |
 | LT-12 | Cancel idempotency | Retry same cancel intent | one cancel command, terminal state stable | repeated cancel creates inconsistent state without blocker |
 | LT-13 | Cancel after fill | Cancel request races with fill | terminal filled/cancel-rejected reconciliation | UI says cancelled when filled |
-| LT-14 | Partial fill then cancel | Observe partial fill and remaining qty cancel | fill + order status readback | remaining qty inferred without source evidence |
+| LT-14 | Partial fill then cancel | Observe partial fill from trade readback, cancel only remaining quantity, then reconcile filled + cancelled remainder | `ReqQryTrade` fill rows + `ReqQryOrder` status readback | remaining qty inferred without source evidence |
 | LT-15 | Full fill | Observe complete fill | `ReqQryTrade` / fill report evidence | filled state comes only from gateway ack |
 | LT-16 | No fill working order | Working order remains open | order readback `remaining_quantity > 0` | no-fill treated as failure without policy |
 | LT-17 | Readback timeout | Post-submit/cancel readback missing | typed timeout blocker | timeout is accepted as pass |
@@ -83,6 +83,40 @@ The first executable P023 runtime should cover:
 16. LT-30 post-session closeout
 
 Partial fill, full fill and cancel-after-fill may be accepted as typed runtime blockers if the 7x24 paper lane does not naturally produce those states during the run. They cannot be faked as pass.
+
+## LT-14 Partial Fill Acceptance Detail
+
+部分成交验收必须证明“已成交部分”和“剩余可撤部分”来自不同的 broker readback source，不能由 UI 进度条、gateway ack、截图或人工描述推断。
+
+### Required evidence
+
+| Evidence | Required fields | Verification shape |
+| --- | --- | --- |
+| Submit intent | `submitted_quantity`, side, price, instrument, idempotency key | schema validator |
+| Post-submit order readback | order identity, `order_status`, `submitted_quantity`, `filled_quantity`, `remaining_quantity`, source ref/checksum | `ReqQryOrder` artifact validator |
+| Partial fill trade readback | trade id/order ref, fill quantity, fill price, trade time, source ref/checksum | `ReqQryTrade` artifact validator |
+| Cancel intent | same order identity from readback, cancel reason, remaining quantity target | cancel schema + identity binding validator |
+| Post-cancel order readback | terminal cancelled/withdrawn state for remaining quantity, final filled quantity preserved | `ReqQryOrder` terminal validator |
+| Reconciliation result | `partial_fill=true`, `remaining_quantity_cancelled`, deduped trade ids, final verdict | reconciliation validator |
+
+### Pass conditions
+
+1. `partial_fill=true`.
+2. `filled_quantity > 0`.
+3. `remaining_quantity > 0` before cancel.
+4. `filled_quantity + remaining_quantity == submitted_quantity`.
+5. Cancel identity equals the post-submit readback identity, not a UI row label or latest-path guess.
+6. Final readback preserves the filled quantity and reports the remaining quantity as cancelled/withdrawn or writes a typed blocker.
+7. Duplicate trade rows are deduplicated by broker trade identity before quantity reconciliation.
+
+### Must fail if
+
+1. Partial fill quantity is inferred from gateway ack, UI text, screenshot or TickTrader table without `ReqQryTrade`.
+2. Remaining quantity is inferred without `ReqQryOrder`.
+3. Cancel targets the submitted quantity instead of the readback remaining quantity.
+4. Filled quantity disappears after cancel or is counted as cancelled.
+5. Duplicate trade rows are double-counted.
+6. Source refs/checksums or redaction assertions are missing.
 
 ## Live Blocked Until
 

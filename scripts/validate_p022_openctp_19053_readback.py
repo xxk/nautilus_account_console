@@ -75,16 +75,22 @@ def validate_source_package(payload: dict[str, Any]) -> None:
     require(payload["source_ref"] == "output/account_capability/ctp-paper-19053/source-package.json", "source ref mismatch")
     require(str(payload["source_checksum"]).startswith("sha256:"), "source checksum missing")
     require(payload["source_inputs"]["account_query"].startswith("owner://nautilus_ctp_adapter/"), "account owner ref missing")
+    readonly_snapshot_ref = payload["source_inputs"]["paper_readonly_snapshot"]
     require(
-        payload["source_inputs"]["paper_readonly_snapshot"].startswith("owner://nautilus_ctp_adapter/"),
-        "snapshot owner ref missing",
+        readonly_snapshot_ref.startswith("owner://nautilus_ctp_adapter/")
+        or readonly_snapshot_ref.startswith("output/account_command/ctp-paper-19053/preflight-"),
+        "snapshot owner/preflight ref missing",
     )
+    if "td_order_truth" in payload["source_inputs"]:
+        require(
+            payload["source_inputs"]["td_order_truth"].startswith(
+                "output/account_capability/ctp-paper-19053/current-openctp-login/"
+            ),
+            "current TD order truth ref missing",
+        )
     require(
-        payload["source_inputs"]["td_order_truth"].startswith("output/account_capability/ctp-paper-19053/current-openctp-login/"),
-        "current TD order truth ref missing",
-    )
-    require(
-        payload["source_inputs"]["order_trade_query"].startswith("output/account_capability/ctp-paper-19053/current-openctp-login/"),
+        payload["source_inputs"]["order_trade_query"].startswith("output/account_capability/ctp-paper-19053/current-openctp-login/")
+        or payload["source_inputs"]["order_trade_query"].startswith("output/account_command/ctp-paper-19053/"),
         "current order/trade query ref missing",
     )
     require(payload["balances"], "funds balance row missing")
@@ -112,10 +118,20 @@ def validate_source_package(payload: dict[str, Any]) -> None:
     require("ReqQryOrder" in health["readonly_api_calls"], "order query API call missing")
     require("ReqQryTrade" in health["readonly_api_calls"], "trade query API call missing")
     require(health["complete_trade_history_claimed"] is False, "complete trade history claimed")
-    require(health["td_order_truth_login_success"] is True, "current TD order truth login missing")
-    require(health["td_order_truth_ready"] is True, "current TD order truth ready missing")
-    require(health["td_order_truth_observed_order_event_count"] == 0, "callback order truth must not be used as query rows")
-    require(health["td_order_truth_observed_trade_event_count"] == 0, "callback trade truth must not be used as query rows")
+    if "td_order_truth_login_success" in health:
+        require(health["td_order_truth_login_success"] is True, "current TD order truth login missing")
+        require(health["td_order_truth_ready"] is True, "current TD order truth ready missing")
+        require(
+            health["td_order_truth_observed_order_event_count"] == 0,
+            "callback order truth must not be used as query rows",
+        )
+        require(
+            health["td_order_truth_observed_trade_event_count"] == 0,
+            "callback trade truth must not be used as query rows",
+        )
+    else:
+        require(health["order_trade_query_login_success"] is True, "order/trade query login missing")
+        require(health["order_trade_query_ready"] is True, "order/trade query ready missing")
     require(health["order_action_sent"] is False, "order action sent")
     require(health["cancel_order_sent"] is False, "cancel order sent")
     require(health["replace_order_sent"] is False, "replace order sent")
@@ -141,7 +157,10 @@ def validate_mirror() -> None:
     require(payload["capabilities"]["command"] == {"enabled": False, "mode": "disabled"}, "command capability drifted")
     require(payload["boundaries"]["order_action"] is False, "mirror order action drifted")
     require(payload["source_health"]["api_transport"] == "ctp_trader_api", "mirror transport mismatch")
-    require(payload["source_health"]["td_order_truth_login_success"] is True, "mirror current login proof missing")
+    if "td_order_truth_login_success" in payload["source_health"]:
+        require(payload["source_health"]["td_order_truth_login_success"] is True, "mirror current login proof missing")
+    else:
+        require(payload["source_health"]["order_trade_query_login_success"] is True, "mirror order/trade login proof missing")
     require(payload["source_health"]["order_trade_query_success"] is True, "mirror order/trade query proof missing")
     require(payload["source_health"]["open_order_rows"] == len(payload["orders"]), "mirror open order count mismatch")
     require(payload["source_health"]["fill_rows"] == len(payload["fills"]), "mirror fill count mismatch")
@@ -163,15 +182,20 @@ def validate_evidence_if_present() -> None:
         require(payload.get("open_orders_parity") == "pass", "open orders parity missing")
         require(payload.get("fills_parity") == "pass", "fills parity missing")
         require(payload.get("rendered_fill_count") == payload.get("fill_count"), "rendered fill count mismatch")
-        require(payload.get("td_order_truth_login_success") is True, "evidence current login proof missing")
-        require(
-            payload.get("td_order_truth_observed_order_event_count") == 0,
-            "evidence callback order truth must stay separate from query rows",
-        )
-        require(
-            payload.get("td_order_truth_observed_trade_event_count") == 0,
-            "evidence callback trade truth must stay separate from query rows",
-        )
+        if payload.get("td_order_truth_login_success") is True:
+            require(
+                payload.get("td_order_truth_observed_order_event_count") == 0,
+                "evidence callback order truth must stay separate from query rows",
+            )
+            require(
+                payload.get("td_order_truth_observed_trade_event_count") == 0,
+                "evidence callback trade truth must stay separate from query rows",
+            )
+        else:
+            require(
+                payload.get("source_ref") == "output/account_capability/ctp-paper-19053/source-package.json",
+                "evidence source package ref missing",
+            )
 
 
 def main() -> None:

@@ -500,6 +500,16 @@ select {
   background: #f7fbfa;
 }
 
+.terminal-data-table [data-testid="account-order-identity"],
+.terminal-data-table [data-testid="account-cancel-pending-ref"],
+.terminal-data-table [data-testid="account-order-partial-fill-row"],
+.terminal-data-table [data-testid="account-remaining-cancel-quantity"] {
+  color: #60717d;
+  display: block;
+  font-size: 11px;
+  margin-top: 2px;
+}
+
 .numeric-cell {
   font-variant-numeric: tabular-nums;
   text-align: right;

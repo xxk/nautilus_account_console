@@ -27,6 +27,8 @@ output/account_command/ctp-paper-19053/<run-id>/
   cancel_gateway_event.json
   post_cancel_readback.json
   reconciliation_result.json
+  partial_fill_readback.json
+  partial_fill_reconciliation_result.json
   command_audit.json
   redaction_report.json
   closeout_manifest.json
@@ -65,6 +67,21 @@ output/account_command/ctp-paper-19053/<run-id>/
 | NU-12 | G9 | command audit chain reconstructs lifecycle | `validate_command_audit_chain` |
 | NU-13 | G9 | redaction report proves no raw secrets/endpoints | `validate_command_redaction` |
 | NU-14 | G10 | command API projection remains disabled by default | `validate_command_projection_default` |
+| NU-15 | G4 | partial fill then cancel reconciles filled and remaining quantities | `validate_partial_fill_then_cancel_reconciliation` |
+
+## Partial Fill Non-UI Acceptance
+
+NU-15 is a conditional runtime acceptance: it may pass only when the OpenCTP 19053 paper lane naturally produces or an owner-approved fixture produces a real partial-fill state. If the run cannot produce that state, the result must be a typed runtime blocker, not a pass.
+
+Required NU-15 verification:
+
+1. `partial_fill_readback.json` records `ReqQryTrade` rows with broker trade identity, order identity, fill quantity, fill price, source refs and checksums.
+2. `post_submit_readback.json` records `ReqQryOrder` for the same order identity with `filled_quantity > 0` and `remaining_quantity > 0`.
+3. `partial_fill_reconciliation_result.json` records `partial_fill=true`.
+4. The validator proves `filled_quantity + remaining_quantity == submitted_quantity` before cancel.
+5. `cancel_intent.json` is built from the readback order identity and targets only the remaining quantity.
+6. `post_cancel_readback.json` preserves the filled quantity and shows the remaining quantity cancelled/withdrawn, or writes a typed blocker.
+7. Reconciliation deduplicates duplicate trade rows by broker trade identity before summing fill quantity.
 
 ## Non-UI Negative Acceptance
 
@@ -82,6 +99,9 @@ output/account_command/ctp-paper-19053/<run-id>/
 | NUN-10 | G8 | kill switch active | command blocked |
 | NUN-11 | G9 | artifact contains raw secret/front/auth/token | redaction failure |
 | NUN-12 | G10 | API exposes `paper_armed` without evidence refs | projection rejected |
+| NUN-13 | G4 | partial fill uses UI/screenshot/gateway ack instead of `ReqQryTrade` | reconciliation blocker |
+| NUN-14 | G4 | partial fill duplicate trade rows double-counted | reconciliation mismatch blocker |
+| NUN-15 | G4 | cancel quantity exceeds readback remaining quantity after partial fill | cancel rejected before gateway |
 
 ## Closeout Rule
 

@@ -470,9 +470,19 @@ export interface AccountOrderRow {
   quantity: number | null;
   filled_quantity: number | null;
   remaining_quantity: number | null;
+  cancelled_quantity?: number | null;
   time_in_force?: string | null;
   destination?: string | null;
-  status: "filled" | "working" | "canceled" | "rejected" | "blocked" | "stale" | "unknown" | "partial";
+  status:
+    | "filled"
+    | "working"
+    | "canceled"
+    | "rejected"
+    | "blocked"
+    | "stale"
+    | "unknown"
+    | "partial"
+    | "cancel_pending";
   lifecycle_ref: string | null;
   report_provenance_ref: string | null;
   source_ref: string;

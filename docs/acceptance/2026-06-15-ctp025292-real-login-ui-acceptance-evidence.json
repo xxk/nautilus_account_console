@@ -6,8 +6,8 @@
   "route": "/accounts/acct.ctp.live.025292",
   "source_ref": "output/account_capability/ctp-live-025292/source-package.json",
   "source_checksum": "sha256:3333333333333333333333333333333333333333333333333333333333333333",
-  "projection_checkpoint_id": "sha256:9bc4c7f6e27848bbdb7fe68481f801d2214762c952fda7fba5baa78022e4d3a6",
-  "projection_checksum": "sha256:ee9e607a01b227defc5c8a99aa38b1b1d279d789511aa48ee5c0c87b3645334f",
+  "projection_checkpoint_id": "sha256:2d38432e1c3aba4ce253a44954b3764524d039e1a0f8d2028f8abded8b09ce6d",
+  "projection_checksum": "sha256:12fe05736ffd4a066d91e2f9a82744867aa35d7d096ff606b5d14eac7c66dd5e",
   "blocker_id": "ctp025292_real_login_source_unavailable",
   "next_action": "Replace invalid 025292 account readback package. Run read-only real-login CTP 025292 account, position and order queries, then build output/account_capability/ctp-live-025292/source-package.json.",
   "browser_evidence": [
