@@ -84,7 +84,16 @@ def validate_payload(payload: dict[str, Any]) -> None:
         require(rule[key] is True, f"qualification rule mismatch: {key}")
 
     rejected = {candidate["candidate_id"]: candidate for candidate in payload["rejected_near_candidates"]}
-    require(set(rejected) == {"p023-rb2610-order-166", "p077-rb2610-order-183", "p077-rb2610-order-232"}, "near candidate set mismatch")
+    require(
+        set(rejected)
+        == {
+            "p023-rb2610-order-166",
+            "p077-rb2610-order-183",
+            "p077-rb2610-order-232",
+            "p024-rb2610-partial-attempt-20260621T174616",
+        },
+        "near candidate set mismatch",
+    )
     require(rejected["p023-rb2610-order-166"]["observed_trade_volume"] == 0, "P023 trade volume mismatch")
     require(
         rejected["p023-rb2610-order-166"]["rejection_reason"] == "cancelled_without_fill_not_partial_fill",
@@ -97,6 +106,15 @@ def validate_payload(payload: dict[str, Any]) -> None:
             rejected[candidate_id]["rejection_reason"] == "fully_filled_not_partial_fill_then_cancel",
             f"{candidate_id} rejection reason mismatch",
         )
+    require(
+        rejected["p024-rb2610-partial-attempt-20260621T174616"]["observed_trade_volume"] == 0,
+        "P024 latest attempt trade volume mismatch",
+    )
+    require(
+        rejected["p024-rb2610-partial-attempt-20260621T174616"]["rejection_reason"]
+        == "rejected_before_partial_fill_not_partial_fill",
+        "P024 latest attempt rejection reason mismatch",
+    )
 
     impact = payload["acceptance_impact"]
     require(impact["non_ui_partial_fill_runtime_acceptance"] == "blocked", "non-UI impact mismatch")

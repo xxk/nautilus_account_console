@@ -1,0 +1,115 @@
+{
+  "schema": "account-console.p024.partial-fill-runtime-execution-attempt-audit.v1",
+  "proposal_id": "p024-account-console-paper-command-controls",
+  "account_id": "acct.ctp.paper.19053",
+  "reviewed_at": "2026-06-21T17:55:00+08:00",
+  "status": "phase4n_partial_fill_runtime_attempt_rejected_blocker_recorded",
+  "verdict": "real_owner_runtime_attempt_did_not_produce_partial_fill",
+  "operator_approval_basis": {
+    "approval_path": "D:/Nautilus/nautilus_ctp_adapter",
+    "approved_external_write_scope": "owner-owned guarded OpenCTP paper submit/cancel scripts for P024",
+    "approved_expected_impact": "create owner-owned runtime/debug/readback/reconciliation artifacts outside this worktree and may submit/cancel one paper order in the 19053 simulation account",
+    "raw_secret_values_recorded": false,
+    "raw_broker_endpoint_recorded": false
+  },
+  "owner_runtime_refs": {
+    "owner_ref": "owner://nautilus_ctp_adapter",
+    "owner_repo_path": "D:/Nautilus/nautilus_ctp_adapter",
+    "run_dir_ref": "owner-repo://nautilus_ctp_adapter/output/account_command/ctp-paper-19053/p024-partial-fill-runtime-20260621T174616p0800/",
+    "config_ref": "cfgs/local/ctp.openctp.tts.7x24.local.json",
+    "config_raw_content_recorded": false,
+    "submit_entrypoint_ref": "scripts/ctp_guarded_paper_order_loop.py",
+    "cancel_entrypoint_ref": "scripts/ctp_guarded_paper_cancel_loop.py"
+  },
+  "owner_artifacts": [
+    {
+      "artifact_id": "pre_snapshot_with_reducible_position",
+      "ref": "owner-repo://nautilus_ctp_adapter/output/account_command/ctp-paper-19053/p024-partial-fill-runtime-20260621T174616p0800/pre_snapshot_with_reducible_position.json",
+      "sha256": "d7ae9edae0c5918c0d43050c5ab57a0ec5e468fd945fb11e3dd35e8f152ddd81",
+      "role": "fresh pre-snapshot proving rb2610 LONG 3 before submit"
+    },
+    {
+      "artifact_id": "submit_owner_runtime_dry_run",
+      "ref": "owner-repo://nautilus_ctp_adapter/output/account_command/ctp-paper-19053/p024-partial-fill-runtime-20260621T174616p0800/submit_owner_runtime_dry_run.json",
+      "sha256": "d75eb1e096c8a242775b5aa970afe781fb1a0c7180a7e3c4bc4dabeda0033573",
+      "role": "guarded dry-run proving close intent, tick alignment, session budget and exposure-reduction boundary"
+    },
+    {
+      "artifact_id": "submit_owner_runtime_result",
+      "ref": "owner-repo://nautilus_ctp_adapter/output/account_command/ctp-paper-19053/p024-partial-fill-runtime-20260621T174616p0800/submit_owner_runtime_result.json",
+      "sha256": "5bc122ae2051d3bd92ab5d5b8f517da7a2f070bce6b395f9fc7fe79d801ba688",
+      "role": "armed paper submit attempt result"
+    },
+    {
+      "artifact_id": "post_submit_readback",
+      "ref": "owner-repo://nautilus_ctp_adapter/output/account_command/ctp-paper-19053/p024-partial-fill-runtime-20260621T174616p0800/post_submit_readback.json",
+      "sha256": "ea6d173393650eef1f8874d95c677e7fe3b6d92818eb166e1fbda632da784ec8",
+      "role": "post-attempt read-only account/position readback"
+    },
+    {
+      "artifact_id": "md_login_tick_blocker",
+      "ref": "owner-repo://nautilus_ctp_adapter/output/account_command/ctp-paper-19053/p024-partial-fill-runtime-20260621T174616p0800/rb2610_md_login_tick.json",
+      "sha256": "c2aefc702fdf454dd84b7e5181b34f9656226b4c6b566053d46b49b8687cdabc",
+      "role": "redacted marketdata compatibility blocker; no raw endpoint or secret values recorded"
+    }
+  ],
+  "attempt": {
+    "client_order_id": "p024-partial-fill-20260621T174616-rb2610",
+    "instrument": "rb2610",
+    "exchange_id": "SHFE",
+    "side": "SELL",
+    "quantity": 3,
+    "limit_price": 3161,
+    "position_effect": "CLOSEYESTERDAY",
+    "selected_position_bucket": "yesterday",
+    "paper_send_armed": true,
+    "close_intent_accepted": true,
+    "verified_exposure_reduction": true,
+    "projected_net_position": 0,
+    "session_send_budget": 1
+  },
+  "observed_owner_runtime_result": {
+    "submit_status": "blocked",
+    "submit_success": false,
+    "matched_exec_count": 1,
+    "callback_source": "OnRspOrderInsert",
+    "response_error_id": 1009,
+    "native_status_observed": "53",
+    "lifecycle_disposition": "cancelled",
+    "broker_rejection_disposition": "source_bearing_order_insert_insufficient_position_close_rejection",
+    "broker_blocker_type": "broker-or-adapter-close-position-semantics",
+    "filled_quantity": 0,
+    "leaves_quantity": 0,
+    "partial_fill_observed": false,
+    "cancel_identity_available": false,
+    "cancel_sent": false
+  },
+  "post_attempt_readback": {
+    "rb2610_long_position_qty_before": 3,
+    "rb2610_long_position_qty_after": 3,
+    "position_changed": false,
+    "observed_order_event_count": 0,
+    "observed_trade_event_count": 0
+  },
+  "classification": {
+    "classification_id": "rejected_before_partial_fill_not_partial_fill",
+    "non_ui_partial_fill_runtime_acceptance": "blocked",
+    "web_ui_real_partial_fill_runtime_acceptance": "blocked",
+    "full_acceptance_claimed": false,
+    "reason": "The owner runtime produced an order-insert rejection before any fill and no cancelable order identity. The required formula 0 < filled_quantity < submitted_quantity is false."
+  },
+  "residual_blocker": {
+    "blocker_id": "p024_real_partial_fill_runtime_missing",
+    "type": "owner_runtime_partial_fill_state_missing",
+    "next_action": "obtain a new explicit approval before any additional owner-runtime partial-fill attempt, or provide a qualifying owner-approved partial-fill artifact set with stable order/trade/cancel/readback refs"
+  },
+  "negative_assertions": {
+    "partial_fill_claimed": false,
+    "cancel_sent": false,
+    "browser_fixture_promoted_to_runtime_truth": false,
+    "full_acceptance_claimed": false,
+    "raw_secret_values_recorded": false,
+    "raw_broker_endpoint_recorded": false,
+    "config_raw_content_recorded": false
+  }
+}

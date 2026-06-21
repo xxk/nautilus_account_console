@@ -1,7 +1,7 @@
 # P024 Acceptance / Account Console Paper Command Controls
 
 - Proposal ID: `p024-account-console-paper-command-controls`
-- Status: phase4m_partial_fill_runtime_handoff_bundle_ui_projection_ready
+- Status: phase4n_partial_fill_runtime_attempt_rejected_blocker_recorded
 - Primary ADR: ADR-0007
 
 ## Scope
@@ -35,6 +35,7 @@ Out of scope: live trading, replace order, Account Mirror write authority, direc
 | P024 partial-fill runtime approval packet UI projection | `npx playwright test tests/e2e/p024-partial-fill-runtime-execution-approval-packet.spec.ts --project=desktop` then `python scripts\validate_p024_partial_fill_runtime_approval_packet_browser_evidence.py` | `P024_PARTIAL_FILL_RUNTIME_APPROVAL_PACKET_BROWSER_EVIDENCE_OK` | Web UI renders exact partial-fill approval text, formulas, entrypoints and blockers while `new_order_submitted=false` and `cancel_sent=false` |
 | P024 partial-fill runtime execution handoff bundle | `python scripts\validate_p024_partial_fill_runtime_execution_handoff_bundle.py` | `P024_PARTIAL_FILL_RUNTIME_EXECUTION_HANDOFF_BUNDLE_OK` | Freezes post-approval runtime inputs, success formulas and fallback classifications while `execution_allowed=false` |
 | P024 partial-fill runtime handoff bundle UI projection | `npx playwright test tests/e2e/p024-partial-fill-runtime-execution-handoff-bundle.spec.ts --project=desktop` then `python scripts\validate_p024_partial_fill_runtime_handoff_bundle_browser_evidence.py` | `P024_PARTIAL_FILL_RUNTIME_HANDOFF_BUNDLE_BROWSER_EVIDENCE_OK` | Web UI renders partial-fill runtime inputs, owner sequence, success formulas and fallback classifications while `execution_allowed=false` |
+| P024 partial-fill runtime execution attempt audit | `python scripts\validate_p024_partial_fill_runtime_execution_attempt_audit.py` | `P024_PARTIAL_FILL_RUNTIME_EXECUTION_ATTEMPT_AUDIT_OK` | Owner-owned guarded paper attempt is recorded as rejected-before-partial-fill with checksum-backed refs; no cancel identity was available and full acceptance remains false |
 | P023 runtime predecessor | `python scripts\validate_p023_openctp19053_command_run.py --run-dir output\account_command\ctp-paper-19053\p023-armed-20260621t0748z --source-package output\account_capability\ctp-paper-19053\source-package.json` | `P023_OPENCTP19053_COMMAND_RUN_OK` | Predecessor paper command evidence |
 | Proposal docs | `python scripts\check_proposal_docs.py --root . --proposal-id p024-account-console-paper-command-controls` | `PROPOSAL_DOCS_OK` | Proposal structure |
 
@@ -42,6 +43,9 @@ Browser evidence files for the new partial-fill runtime UI projections are
 `docs/acceptance/browser-evidence/p024-account-console-paper-command-controls/partial-fill-runtime-approval-packet-ui.json`
 and
 `docs/acceptance/browser-evidence/p024-account-console-paper-command-controls/partial-fill-runtime-handoff-bundle-ui.json`.
+
+The latest owner-runtime attempt audit is
+`docs/acceptance/p024-account-console-paper-command-controls/partial-fill-runtime-execution-attempt-audit.json`.
 
 ## Scenario Matrix
 
@@ -65,6 +69,7 @@ and
 | A16 | blocker | Runtime execution gap is visible until owner-runtime artifacts exist | artifact validator + Playwright + API route audit + browser evidence JSON | UI or artifact claims full acceptance complete before A4 owner-runtime artifacts exist | phase4e_runtime_execution_gap_audit_passed |
 | A17 | positive | Partial-fill runtime approval packet appears in Web UI before any owner submit/cancel | Playwright + API route audit + browser evidence JSON | UI hides exact approval text/formulas or claims new order/cancel was sent | phase4l_partial_fill_runtime_approval_packet_ui_projection_passed |
 | A18 | positive | Partial-fill runtime handoff bundle appears in Web UI with success formulas and fallback classifications | Playwright + API route audit + browser evidence JSON | UI claims execution allowed, hides formulas, or promotes fixture evidence to runtime truth | phase4m_partial_fill_runtime_handoff_bundle_ui_projection_passed |
+| A19 | blocker | Real owner-runtime partial-fill attempt is classified if it fails before partial fill | owner artifact refs/checksums + validator | rejected/no-fill attempt is counted as partial-fill acceptance or retry is authorized without new approval | phase4n_partial_fill_runtime_attempt_rejected_blocker_recorded |
 
 ## Phase 4e Runtime Execution Gap Audit
 

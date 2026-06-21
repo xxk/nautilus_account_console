@@ -1,7 +1,7 @@
 # P024 UI Design / Paper Command Controls
 
 - Proposal ID: `p024-account-console-paper-command-controls`
-- Status: phase4m_partial_fill_runtime_handoff_bundle_ui_projection_ready
+- Status: phase4n_partial_fill_runtime_attempt_rejected_blocker_recorded
 
 ## Design Intent
 

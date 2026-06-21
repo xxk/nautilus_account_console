@@ -1,7 +1,7 @@
 # P024 Phase Plan / Account Console Paper Command Controls
 
 - Proposal ID: `p024-account-console-paper-command-controls`
-- Status: phase4m_partial_fill_runtime_handoff_bundle_ui_projection_ready
+- Status: phase4n_partial_fill_runtime_attempt_rejected_blocker_recorded
 - Primary ADR: ADR-0007
 
 ## Artifact Trust Boundary
@@ -40,7 +40,7 @@ Primary ADR: ADR-0007
 <!-- AI-PHASE-STATUS-BEGIN
 reviewed_at: 2026-06-21
 reviewer: codex
-overall_status: phase4m_partial_fill_runtime_handoff_bundle_ui_projection_ready
+overall_status: phase4n_partial_fill_runtime_attempt_rejected_blocker_recorded
 phases:
   - id: phase_0_design_gate
     status: completed
@@ -150,6 +150,7 @@ AI-PHASE-STATUS-END -->
 | Phase 4k Partial-fill runtime execution handoff bundle | Freeze post-approval runtime inputs, operator sequence, success formulas and fallback blocker classifications | handoff_bundle_ready_runtime_not_invoked | `python scripts\validate_p024_partial_fill_runtime_execution_handoff_bundle.py` | After approval, execute owner-owned guarded scripts or preserve typed blocker if partial fill is not produced |
 | Phase 4l Partial-fill runtime approval packet UI projection | Render exact partial-fill approval text, formulas, entrypoints, blockers and false new-order/cancel flags in Web UI | completed_browser_partial_fill_approval_projection_gate | `npx playwright test tests/e2e/p024-partial-fill-runtime-execution-approval-packet.spec.ts --project=desktop`; `python scripts\validate_p024_partial_fill_runtime_approval_packet_browser_evidence.py` | Keep owner runtime uninvoked until exact approval and runtime inputs are applied |
 | Phase 4m Partial-fill runtime handoff bundle UI projection | Render partial-fill runtime inputs, owner sequence, success formulas and fallback classifications in Web UI | completed_browser_partial_fill_handoff_projection_gate | `npx playwright test tests/e2e/p024-partial-fill-runtime-execution-handoff-bundle.spec.ts --project=desktop`; `python scripts\validate_p024_partial_fill_runtime_handoff_bundle_browser_evidence.py` | Execute owner-owned guarded scripts only after approval; preserve typed blocker if partial fill is not produced |
+| Phase 4n Partial-fill runtime execution attempt audit | Record approved owner-owned guarded paper attempt, rejected callback, zero fill and no cancel identity | completed_rejected_attempt_audit_gate_partial_fill_still_blocked | `python scripts\validate_p024_partial_fill_runtime_execution_attempt_audit.py`; `python scripts\validate_p024_partial_fill_runtime_feasibility_audit.py`; `python scripts\validate_p024_partial_fill_owner_artifact_scan.py` | Do not retry without new explicit approval or qualifying external owner partial-fill artifacts |
 
 ## Runtime / Command Freeze
 
@@ -178,3 +179,4 @@ Phase 0 does not run broker mutation. Phase 1 may add API contracts but must not
 19. Phase 4k partial-fill runtime execution handoff bundle is ready; `P024_PARTIAL_FILL_RUNTIME_EXECUTION_HANDOFF_BUNDLE_OK` freezes runtime inputs and success formulas while execution remains disallowed.
 20. Phase 4l partial-fill runtime approval packet UI projection is complete; `P024_PARTIAL_FILL_RUNTIME_APPROVAL_PACKET_BROWSER_EVIDENCE_OK` proves exact approval text and formulas render while new order and cancel flags remain false.
 21. Phase 4m partial-fill runtime handoff bundle UI projection is complete; `P024_PARTIAL_FILL_RUNTIME_HANDOFF_BUNDLE_BROWSER_EVIDENCE_OK` proves runtime inputs, success formulas and fallback classifications render while execution remains disallowed.
+22. Phase 4n partial-fill runtime execution attempt audit is complete; `P024_PARTIAL_FILL_RUNTIME_EXECUTION_ATTEMPT_AUDIT_OK` proves the owner-owned paper attempt was submitted as exposure-reduction but rejected before any fill, so real partial-fill acceptance remains blocked and no retry is authorized.

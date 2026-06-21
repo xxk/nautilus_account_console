@@ -60,6 +60,10 @@ def validate_payload(payload: dict[str, Any]) -> None:
     approval = payload["operator_approval_scope"]
     require(approval["approval_path"] == "D:/Nautilus/nautilus_ctp_adapter", "approval path mismatch")
     require(approval["approved_for_one_submit_cancel_attempt"] is True, "approval scope mismatch")
+    require(
+        approval["approval_consumed_by_attempt_id"] == "p024-partial-fill-runtime-20260621T174616p0800",
+        "approval consumed attempt mismatch",
+    )
     require(approval["additional_partial_fill_order_authorized"] is False, "partial fill approval mismatch")
 
     owner = payload["owner_runtime_refs"]
@@ -76,6 +80,30 @@ def validate_payload(payload: dict[str, Any]) -> None:
     require(evidence["observed_cancel_status"] == 5, "cancel status mismatch")
     require(evidence["observed_trade_fill"] is False, "trade fill must remain false")
     require(evidence["observed_partial_fill"] is False, "partial fill must remain false")
+
+    latest = payload["latest_partial_fill_attempt"]
+    require(
+        latest["attempt_audit_ref"]
+        == "docs/acceptance/p024-account-console-paper-command-controls/partial-fill-runtime-execution-attempt-audit.json",
+        "latest attempt audit ref mismatch",
+    )
+    require(
+        "p024-partial-fill-runtime-20260621T174616p0800" in latest["owner_run_dir_ref"],
+        "latest attempt run dir mismatch",
+    )
+    require(len(latest["submit_artifact_sha256"]) == 64, "latest submit checksum mismatch")
+    require(len(latest["post_submit_readback_sha256"]) == 64, "latest readback checksum mismatch")
+    require(latest["paper_send_armed"] is True, "latest paper send flag mismatch")
+    require(latest["verified_exposure_reduction"] is True, "latest exposure reduction mismatch")
+    require(latest["observed_order_insert_rejection"] is True, "latest rejection flag mismatch")
+    require(latest["observed_trade_fill"] is False, "latest trade fill mismatch")
+    require(latest["observed_partial_fill"] is False, "latest partial fill mismatch")
+    require(latest["cancel_identity_available"] is False, "latest cancel identity mismatch")
+    require(latest["cancel_sent"] is False, "latest cancel sent mismatch")
+    require(
+        latest["classification"] == "rejected_before_partial_fill_not_partial_fill",
+        "latest classification mismatch",
+    )
 
     scan = payload["owner_capability_scan"]
     for key in [
