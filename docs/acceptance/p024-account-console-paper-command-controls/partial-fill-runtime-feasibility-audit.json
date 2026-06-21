@@ -38,6 +38,13 @@
     "deterministic_partial_fill_generator_present": false,
     "stable_owner_partial_fill_artifact_present": false
   },
+  "owner_artifact_scan": {
+    "scan_ref": "docs/acceptance/p024-account-console-paper-command-controls/partial-fill-owner-artifact-scan.json",
+    "validator": "python scripts/validate_p024_partial_fill_owner_artifact_scan.py",
+    "order_like_record_count": 58,
+    "qualifying_partial_fill_then_cancel_count": 0,
+    "scan_verdict": "no_qualifying_partial_fill_then_cancel_owner_artifact_found"
+  },
   "risk_and_market_constraints": {
     "allowed_risk_shape": "exposure_reduction_only",
     "known_position_shape": "rb2610 long position quantity preserved at 3 after latest cancel",

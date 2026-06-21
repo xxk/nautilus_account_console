@@ -30,6 +30,7 @@ Out of scope: live trading, replace order, Account Mirror write authority, direc
 | P024 runtime execution gap audit | `python scripts\validate_p024_runtime_execution_gap_audit.py`; `npx playwright test tests/e2e/p024-runtime-execution-gap-audit.spec.ts --project=desktop` then `python scripts\validate_p024_runtime_execution_gap_browser_evidence.py` | `P024_RUNTIME_EXECUTION_GAP_AUDIT_OK`; `P024_RUNTIME_EXECUTION_GAP_BROWSER_EVIDENCE_OK` | Artifact/API/Web UI identify A4 as not accepted until owner-runtime artifacts exist and keep final acceptance claim false |
 | P024 owner-runtime submit/cancel callback closeout | `python scripts\validate_p024_owner_runtime_execution_attempt_audit.py` | `P024_OWNER_RUNTIME_EXECUTION_ATTEMPT_AUDIT_OK` | Approved owner-runtime submit/cancel attempt observed accepted/reported submit callbacks and terminal cancel status `5` for the same native identity |
 | P024 real partial-fill runtime feasibility | `python scripts\validate_p024_partial_fill_runtime_feasibility_audit.py` | `P024_PARTIAL_FILL_RUNTIME_FEASIBILITY_AUDIT_OK` | Documents the remaining real partial-fill blocker without submitting a new order or promoting UI fixture evidence to runtime truth |
+| P024 owner artifact partial-fill scan | `python scripts\validate_p024_partial_fill_owner_artifact_scan.py` | `P024_PARTIAL_FILL_OWNER_ARTIFACT_SCAN_OK` | Scans current account-console and owner runtime JSON artifacts and rejects near candidates that are cancelled-without-fill or fully filled |
 | P023 runtime predecessor | `python scripts\validate_p023_openctp19053_command_run.py --run-dir output\account_command\ctp-paper-19053\p023-armed-20260621t0748z --source-package output\account_capability\ctp-paper-19053\source-package.json` | `P023_OPENCTP19053_COMMAND_RUN_OK` | Predecessor paper command evidence |
 | Proposal docs | `python scripts\check_proposal_docs.py --root . --proposal-id p024-account-console-paper-command-controls` | `PROPOSAL_DOCS_OK` | Proposal structure |
 
@@ -176,11 +177,14 @@ This gate records why the remaining partial-fill acceptance cannot be declared f
 2. The prior approval covered one submit/cancel attempt and is recorded as consumed by `account-console-p024-runtime-20260621T090820Z`; this audit submits no new order.
 3. Owner runtime code can classify `trade_volume`, `leaves_qty` and `filled_before_cancel` if callbacks are emitted.
 4. The latest real attempt observed submit leaves quantity and terminal cancel status `5`, but observed no trade fill and no partial fill.
-5. Required non-UI acceptance remains owner artifacts plus checksums with `0 < filled_quantity < submitted_quantity` and terminal cancellation of the remainder.
-6. Required Web UI acceptance remains Playwright evidence cross-checking owner refs/checksums, stable order identity, stable fill rows and final readback/reconciliation refs.
-7. Full acceptance remains blocked by `p024_real_partial_fill_runtime_missing`.
+5. `partial-fill-owner-artifact-scan.json` scans current account-console and owner runtime JSON artifacts: 58 order-like records, zero qualifying partial-fill then cancel candidates.
+6. Near candidates are rejected explicitly: P023 order `166` was cancelled without fill; P077 orders `183` and `232` were fully filled, not partial-fill then cancel.
+7. Required non-UI acceptance remains owner artifacts plus checksums with `0 < filled_quantity < submitted_quantity` and terminal cancellation of the remainder.
+8. Required Web UI acceptance remains Playwright evidence cross-checking owner refs/checksums, stable order identity, stable fill rows and final readback/reconciliation refs.
+9. Full acceptance remains blocked by `p024_real_partial_fill_runtime_missing`.
 
 Accepted evidence: `python scripts\validate_p024_partial_fill_runtime_feasibility_audit.py` returns `P024_PARTIAL_FILL_RUNTIME_FEASIBILITY_AUDIT_OK` with `blocked_until_owner_runtime_partial_fill_state_available`. This is a typed blocker audit, not a real partial-fill pass.
+The companion scan evidence is accepted when `python scripts\validate_p024_partial_fill_owner_artifact_scan.py` returns `P024_PARTIAL_FILL_OWNER_ARTIFACT_SCAN_OK`.
 
 ## Phase 3d Owner Runtime Invocation Readiness Acceptance
 

@@ -87,6 +87,25 @@ def validate_payload(payload: dict[str, Any]) -> None:
         require(scan[key] is True, f"owner capability missing: {key}")
     require(scan["deterministic_partial_fill_generator_present"] is False, "partial-fill generator claim mismatch")
     require(scan["stable_owner_partial_fill_artifact_present"] is False, "stable partial artifact claim mismatch")
+    artifact_scan = payload["owner_artifact_scan"]
+    require(
+        artifact_scan["scan_ref"]
+        == "docs/acceptance/p024-account-console-paper-command-controls/partial-fill-owner-artifact-scan.json",
+        "artifact scan ref mismatch",
+    )
+    require(
+        artifact_scan["validator"] == "python scripts/validate_p024_partial_fill_owner_artifact_scan.py",
+        "artifact scan validator mismatch",
+    )
+    require(artifact_scan["order_like_record_count"] >= 50, "artifact scan coverage mismatch")
+    require(
+        artifact_scan["qualifying_partial_fill_then_cancel_count"] == 0,
+        "artifact scan candidate count mismatch",
+    )
+    require(
+        artifact_scan["scan_verdict"] == "no_qualifying_partial_fill_then_cancel_owner_artifact_found",
+        "artifact scan verdict mismatch",
+    )
 
     constraints = payload["risk_and_market_constraints"]
     require(constraints["allowed_risk_shape"] == "exposure_reduction_only", "risk shape mismatch")

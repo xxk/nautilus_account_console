@@ -44,6 +44,13 @@ P024_PARTIAL_FILL_RUNTIME_FEASIBILITY_AUDIT = (
     / "p024-account-console-paper-command-controls"
     / "partial-fill-runtime-feasibility-audit.json"
 )
+P024_PARTIAL_FILL_OWNER_ARTIFACT_SCAN = (
+    ROOT
+    / "docs"
+    / "acceptance"
+    / "p024-account-console-paper-command-controls"
+    / "partial-fill-owner-artifact-scan.json"
+)
 P024_RUNTIME_HANDOFF_EVIDENCE = (
     ROOT
     / "docs"
@@ -261,6 +268,7 @@ def validate_readme() -> None:
         "validate_p024_runtime_execution_gap_audit.py",
         "validate_p024_runtime_execution_gap_browser_evidence.py",
         "validate_p024_partial_fill_runtime_feasibility_audit.py",
+        "validate_p024_partial_fill_owner_artifact_scan.py",
         "browser_triggered_broker_order=false",
         "runtime_invocation_attempted=false",
         "owner-runtime invocation readiness",
@@ -272,6 +280,7 @@ def validate_readme() -> None:
         "runtime handoff bundle UI projection",
         "runtime execution gap audit",
         "real partial-fill runtime feasibility",
+        "Owner artifact partial-fill scan",
     ]:
         require(phrase in text, f"P024 README missing phrase: {phrase}")
 
@@ -309,6 +318,8 @@ def validate_phase_plan() -> None:
         "completed_final_gap_audit_gate_blocked_by_owner_runtime_execution",
         "phase_4h_real_partial_fill_runtime_feasibility",
         "blocked_until_owner_runtime_partial_fill_state_available",
+        "phase_4i_owner_artifact_partial_fill_scan",
+        "completed_no_qualifying_partial_fill_then_cancel_candidate",
         "Runtime closeout projection",
         "Partial-fill cancel display",
         "Owner-runtime handoff request",
@@ -316,6 +327,7 @@ def validate_phase_plan() -> None:
         "Runtime readiness UI projection",
         "Phase 4 Closeout",
         "Phase 4h Real partial-fill runtime feasibility",
+        "Phase 4i Owner artifact partial-fill scan",
         "Phase 1 Backend command API",
         "completed_contract_gate",
         "validate_p024_paper_command_api.py",
@@ -330,6 +342,7 @@ def validate_phase_plan() -> None:
         "validate_p024_owner_runtime_execution_handoff_bundle.py",
         "validate_p024_runtime_handoff_bundle_browser_evidence.py",
         "validate_p024_partial_fill_runtime_feasibility_audit.py",
+        "validate_p024_partial_fill_owner_artifact_scan.py",
         "validate_p024_runtime_execution_gap_audit.py",
         "validate_p024_runtime_execution_gap_browser_evidence.py",
         "Browser controls are implemented only for `paper_armed` projection",
@@ -367,6 +380,7 @@ def validate_acceptance() -> None:
         "P024_RUNTIME_EXECUTION_GAP_AUDIT_OK",
         "P024_RUNTIME_EXECUTION_GAP_BROWSER_EVIDENCE_OK",
         "P024_PARTIAL_FILL_RUNTIME_FEASIBILITY_AUDIT_OK",
+        "P024_PARTIAL_FILL_OWNER_ARTIFACT_SCAN_OK",
         "Implementation/browser evidence is required before implementation closeout",
         "UI Anti-Drift Acceptance",
         "forbidden_actions",
@@ -414,6 +428,7 @@ def validate_acceptance() -> None:
         "account-runtime-handoff-bundle-execution-allowed",
         "Phase 4e Runtime Execution Gap Audit",
         "Phase 4h Real Partial-Fill Runtime Feasibility Audit",
+        "partial-fill-owner-artifact-scan.json",
         "runtime-execution-gap-audit.json",
         "account-runtime-execution-gap-panel",
         "account-runtime-execution-gap-final-claimed",
@@ -426,6 +441,7 @@ def validate_acceptance() -> None:
         "Phase 2 Frontend Guarded Controls Acceptance",
         "paper_armed_controls_visible",
         "blocked_until_owner_runtime_partial_fill_state_available",
+        "P077 orders `183` and `232` were fully filled",
     ]:
         require(phrase in text, f"P024 acceptance missing phrase: {phrase}")
 
@@ -1125,6 +1141,54 @@ def validate_p024_partial_fill_runtime_feasibility_audit() -> None:
         require(negative[key] is False, f"P024 partial-fill negative assertion mismatch: {key}")
 
 
+def validate_p024_partial_fill_owner_artifact_scan() -> None:
+    payload = load_json(P024_PARTIAL_FILL_OWNER_ARTIFACT_SCAN)
+    require(
+        payload["schema"] == "account-console.p024.partial-fill-owner-artifact-scan.v1",
+        "P024 partial-fill artifact scan schema mismatch",
+    )
+    require(
+        payload["status"] == "phase4i_owner_artifact_partial_fill_scan_complete_no_candidate",
+        "P024 partial-fill artifact scan status mismatch",
+    )
+    require(
+        payload["verdict"] == "no_qualifying_partial_fill_then_cancel_owner_artifact_found",
+        "P024 partial-fill artifact scan verdict mismatch",
+    )
+    result = payload["scan_result"]
+    require(result["order_like_record_count"] >= 50, "P024 partial-fill artifact scan coverage mismatch")
+    require(result["partial_fill_candidate_count"] == 0, "P024 partial-fill candidate count mismatch")
+    require(
+        result["qualifying_partial_fill_then_cancel_count"] == 0,
+        "P024 qualifying partial-fill candidate count mismatch",
+    )
+    rejected = {candidate["candidate_id"]: candidate for candidate in payload["rejected_near_candidates"]}
+    require(set(rejected) == {"p023-rb2610-order-166", "p077-rb2610-order-183", "p077-rb2610-order-232"}, "P024 near candidate set mismatch")
+    require(
+        rejected["p023-rb2610-order-166"]["rejection_reason"] == "cancelled_without_fill_not_partial_fill",
+        "P024 P023 near candidate reason mismatch",
+    )
+    for candidate_id in ["p077-rb2610-order-183", "p077-rb2610-order-232"]:
+        require(
+            rejected[candidate_id]["rejection_reason"] == "fully_filled_not_partial_fill_then_cancel",
+            f"P024 {candidate_id} near candidate reason mismatch",
+        )
+    impact = payload["acceptance_impact"]
+    require(impact["non_ui_partial_fill_runtime_acceptance"] == "blocked", "P024 scan non-UI impact mismatch")
+    require(impact["web_ui_real_partial_fill_runtime_acceptance"] == "blocked", "P024 scan Web UI impact mismatch")
+    require(impact["full_acceptance_claimed"] is False, "P024 scan full acceptance claim mismatch")
+    negative = payload["negative_assertions"]
+    for key in [
+        "new_order_submitted_by_scan",
+        "cancel_sent_by_scan",
+        "browser_fixture_promoted_to_runtime_truth",
+        "final_acceptance_claimed",
+        "raw_secret_values_recorded",
+        "raw_broker_endpoint_recorded",
+    ]:
+        require(negative[key] is False, f"P024 partial-fill artifact scan negative assertion mismatch: {key}")
+
+
 def validate_p024_owner_runtime_approval_packet() -> None:
     payload = load_json(P024_OWNER_RUNTIME_APPROVAL_PACKET)
     require(
@@ -1358,6 +1422,7 @@ def main() -> None:
     validate_p024_runtime_execution_gap_ui_evidence()
     validate_p024_full_acceptance_closeout()
     validate_p024_partial_fill_runtime_feasibility_audit()
+    validate_p024_partial_fill_owner_artifact_scan()
     validate_p024_owner_runtime_approval_packet()
     validate_p024_owner_runtime_handoff_bundle()
     validate_owner_map_backfill()
@@ -1366,7 +1431,7 @@ def main() -> None:
     validate_backend_command_routes_are_p024_only()
     print(
         "P024_PAPER_COMMAND_CONTROLS_DESIGN_OK: "
-        "status=phase4h_real_partial_fill_runtime_feasibility_blocked current_ui_command=guarded runtime_closeout=browser_projection_passed partial_fill_cancel_ui=browser_contract_passed runtime_handoff=browser_handoff_passed runtime_invocation_readiness=blocked_by_external_approval runtime_readiness_ui=browser_projection_passed full_closeout=residual_blocker_audit_passed approval_packet=ready_runtime_not_invoked runtime_approval_packet_ui=browser_projection_passed handoff_bundle=ready_runtime_not_invoked runtime_handoff_bundle_ui=browser_projection_passed runtime_execution_gap=blocked_final_claim_false partial_fill_runtime=blocked_until_owner_runtime_partial_fill_state_available"
+        "status=phase4h_real_partial_fill_runtime_feasibility_blocked current_ui_command=guarded runtime_closeout=browser_projection_passed partial_fill_cancel_ui=browser_contract_passed runtime_handoff=browser_handoff_passed runtime_invocation_readiness=blocked_by_external_approval runtime_readiness_ui=browser_projection_passed full_closeout=residual_blocker_audit_passed approval_packet=ready_runtime_not_invoked runtime_approval_packet_ui=browser_projection_passed handoff_bundle=ready_runtime_not_invoked runtime_handoff_bundle_ui=browser_projection_passed runtime_execution_gap=blocked_final_claim_false partial_fill_runtime=blocked_until_owner_runtime_partial_fill_state_available partial_fill_artifact_scan=no_qualifying_candidate"
     )
 
 

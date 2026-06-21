@@ -1,0 +1,96 @@
+{
+  "schema": "account-console.p024.partial-fill-owner-artifact-scan.v1",
+  "proposal_id": "p024-account-console-paper-command-controls",
+  "account_id": "acct.ctp.paper.19053",
+  "reviewed_at": "2026-06-21T17:52:00+08:00",
+  "status": "phase4i_owner_artifact_partial_fill_scan_complete_no_candidate",
+  "verdict": "no_qualifying_partial_fill_then_cancel_owner_artifact_found",
+  "scan_scope": {
+    "account_console_root": "D:/Nautilus/_worktrees/r1-hb-contract/nautilus_account_console/output",
+    "owner_runtime_root": "D:/Nautilus/nautilus_ctp_adapter/output",
+    "file_glob": "**/*.json",
+    "excluded_path_fragments": [
+      "pytest-tmp",
+      "pytest_tmp",
+      "var",
+      "tmp"
+    ],
+    "raw_secret_values_recorded": false,
+    "raw_broker_endpoint_recorded": false
+  },
+  "scan_result": {
+    "order_like_record_count": 58,
+    "partial_fill_candidate_count": 0,
+    "cancelled_with_fill_candidate_count": 0,
+    "qualifying_partial_fill_then_cancel_count": 0
+  },
+  "qualification_rule": {
+    "same_order_identity_required": true,
+    "same_native_order_identity_required": true,
+    "requires_trade_volume_between_zero_and_submitted_quantity": true,
+    "requires_cancelled_remaining_quantity_after_fill": true,
+    "requires_stable_trade_readback_or_trade_callback": true,
+    "requires_readback_or_reconciliation_ref": true
+  },
+  "rejected_near_candidates": [
+    {
+      "candidate_id": "p023-rb2610-order-166",
+      "source_refs": [
+        "output/account_command/ctp-paper-19053/p023-armed-20260621t0748z/post_submit_readback.json",
+        "output/account_command/ctp-paper-19053/p023-armed-20260621t0748z/post_cancel_readback.json"
+      ],
+      "native_order_id": "166",
+      "symbol": "rb2610",
+      "submitted_quantity": 1,
+      "observed_trade_volume": 0,
+      "observed_cancel_leaves_qty": 1,
+      "terminal_status": 5,
+      "rejection_reason": "cancelled_without_fill_not_partial_fill"
+    },
+    {
+      "candidate_id": "p077-rb2610-order-183",
+      "source_refs": [
+        "owner://nautilus_ctp_adapter/output/reports/p077-paper-lifecycle/20260614T112841Z/armed_guarded_paper_send.json"
+      ],
+      "native_order_id": "183",
+      "symbol": "rb2610",
+      "submitted_quantity": 1,
+      "observed_trade_volume": 1,
+      "observed_leaves_qty": 0,
+      "terminal_status": 0,
+      "rejection_reason": "fully_filled_not_partial_fill_then_cancel"
+    },
+    {
+      "candidate_id": "p077-rb2610-order-232",
+      "source_refs": [
+        "owner://nautilus_ctp_adapter/output/reports/p077-paper-lifecycle/20260614T130516Z/armed_send.json"
+      ],
+      "native_order_id": "232",
+      "symbol": "rb2610",
+      "submitted_quantity": 1,
+      "observed_trade_volume": 1,
+      "observed_leaves_qty": 0,
+      "terminal_status": 0,
+      "rejection_reason": "fully_filled_not_partial_fill_then_cancel"
+    }
+  ],
+  "acceptance_impact": {
+    "non_ui_partial_fill_runtime_acceptance": "blocked",
+    "web_ui_real_partial_fill_runtime_acceptance": "blocked",
+    "browser_fixture_partial_fill_display_contract": "passed_but_not_runtime_truth",
+    "full_acceptance_claimed": false
+  },
+  "residual_blocker": {
+    "blocker_id": "p024_real_partial_fill_runtime_missing",
+    "type": "owner_runtime_partial_fill_state_missing",
+    "next_action": "fresh approval is required before any additional owner-runtime partial-fill attempt; alternatively provide a qualifying owner-approved partial-fill artifact set with stable order/trade/cancel/readback refs"
+  },
+  "negative_assertions": {
+    "new_order_submitted_by_scan": false,
+    "cancel_sent_by_scan": false,
+    "browser_fixture_promoted_to_runtime_truth": false,
+    "final_acceptance_claimed": false,
+    "raw_secret_values_recorded": false,
+    "raw_broker_endpoint_recorded": false
+  }
+}

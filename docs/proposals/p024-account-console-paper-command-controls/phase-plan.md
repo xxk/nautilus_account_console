@@ -110,6 +110,10 @@ phases:
     status: blocked_until_owner_runtime_partial_fill_state_available
     ai_progress: 100
     evidence: "python scripts\\validate_p024_partial_fill_runtime_feasibility_audit.py"
+  - id: phase_4i_owner_artifact_partial_fill_scan
+    status: completed_no_qualifying_partial_fill_then_cancel_candidate
+    ai_progress: 100
+    evidence: "python scripts\\validate_p024_partial_fill_owner_artifact_scan.py"
 AI-PHASE-STATUS-END -->
 
 ## Phase Status Board
@@ -133,6 +137,7 @@ AI-PHASE-STATUS-END -->
 | Phase 4e Runtime execution gap audit | Render final A4 gap in Web UI without claiming all acceptance complete | completed_final_gap_audit_gate_blocked_by_owner_runtime_execution | `python scripts\validate_p024_runtime_execution_gap_audit.py`; `npx playwright test tests/e2e/p024-runtime-execution-gap-audit.spec.ts --project=desktop`; `python scripts\validate_p024_runtime_execution_gap_browser_evidence.py` | Obtain explicit approval and owner-runtime artifacts before declaring all acceptance complete |
 | Phase 4g Owner-runtime submit/cancel callback closeout | Record approved owner-runtime paper submit/cancel attempt, owner cancel-loop repair and terminal cancel callback for the same native identity | completed_owner_runtime_submit_cancel_callback_closed | `python scripts\validate_p024_owner_runtime_execution_attempt_audit.py` | Keep real partial-fill runtime blocked until owner provides stable partial-fill order/trade readbacks |
 | Phase 4h Real partial-fill runtime feasibility | Record why current owner evidence cannot satisfy partial-fill runtime truth and preserve the exact non-UI/Web UI acceptance shapes | blocked_until_owner_runtime_partial_fill_state_available | `python scripts\validate_p024_partial_fill_runtime_feasibility_audit.py` | Obtain fresh approval plus owner-generated partial-fill artifacts before declaring full acceptance |
+| Phase 4i Owner artifact partial-fill scan | Scan current account-console and owner runtime artifacts for qualifying partial-fill then cancel evidence and record rejected near candidates | completed_no_qualifying_partial_fill_then_cancel_candidate | `python scripts\validate_p024_partial_fill_owner_artifact_scan.py` | Use fresh approval or external owner evidence to produce a qualifying partial-fill artifact set |
 
 ## Runtime / Command Freeze
 
@@ -156,3 +161,4 @@ Phase 0 does not run broker mutation. Phase 1 may add API contracts but must not
 14. Phase 4e runtime execution gap audit is complete; `P024_RUNTIME_EXECUTION_GAP_AUDIT_OK` and `P024_RUNTIME_EXECUTION_GAP_BROWSER_EVIDENCE_OK` prove A4 remains visibly blocked until owner-runtime artifacts exist and `final_acceptance_claimed=false`.
 15. Phase 4g owner-runtime submit/cancel callback closeout is complete; `P024_OWNER_RUNTIME_EXECUTION_ATTEMPT_AUDIT_OK` proves explicit approval was obtained, owner-owned submit/cancel scripts ran, owner patch `6a50b02` waited for cancel callbacks, and terminal cancel status `5` was observed for native order id `2081`. Real partial-fill runtime remains blocked.
 16. Phase 4h real partial-fill runtime feasibility audit is complete as a typed blocker; `P024_PARTIAL_FILL_RUNTIME_FEASIBILITY_AUDIT_OK` proves no new partial-fill order was submitted, current artifacts have no trade fill, and both non-UI and Web UI real partial-fill acceptance remain blocked until owner partial-fill artifacts exist.
+17. Phase 4i owner artifact partial-fill scan is complete; `P024_PARTIAL_FILL_OWNER_ARTIFACT_SCAN_OK` proves current scanned artifacts contain zero qualifying partial-fill then cancel candidates and records why P023/P077 near candidates are insufficient.
