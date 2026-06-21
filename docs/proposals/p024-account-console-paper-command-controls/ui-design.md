@@ -99,6 +99,18 @@ No controls are reserved or visible in disabled mode.
 | `account-runtime-handoff-bundle-artifact-count` | required owner artifact count |
 | `account-runtime-handoff-bundle-gate-count` | post-handoff gate count |
 | `account-runtime-handoff-bundle-blocker` | typed approval/input/artifact blockers from the handoff bundle |
+| `account-runtime-execution-gap-panel` | final runtime execution gap audit projection panel |
+| `account-runtime-execution-gap-status` | gap audit status; must remain Phase 4e blocker evidence until owner-runtime artifacts exist |
+| `account-runtime-execution-gap-verdict` | gap audit verdict; must be blocked pending owner-runtime execution |
+| `account-runtime-execution-gap-final-claimed` | final acceptance claimed flag; must remain false before A4 owner-runtime artifacts exist |
+| `account-runtime-execution-gap-not-accepted` | A4 not-accepted scenario and required evidence shape |
+| `account-runtime-execution-gap-approval-obtained` | external write approval obtained flag; must remain false until exact approval is supplied |
+| `account-runtime-execution-gap-invoked` | runtime invocation flag; must remain false before approval |
+| `account-runtime-execution-gap-owner-write` | owner repo write attempted flag; must remain false before approval |
+| `account-runtime-execution-gap-broker-order` | broker order created flag; must remain false before approved runtime execution |
+| `account-runtime-execution-gap-artifact-count` | required owner artifact count |
+| `account-runtime-execution-gap-required` | concrete items required before all acceptance can be claimed |
+| `account-runtime-execution-gap-blocker` | residual blockers preventing final runtime acceptance |
 
 ## Layout Rules
 

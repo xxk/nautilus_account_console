@@ -367,6 +367,28 @@ class CommandRuntimeExecutionHandoffBundle(BaseModel):
     explicit_non_claims: list[str]
 
 
+class CommandRuntimeExecutionGapAudit(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    schema_: Literal["account-console.p024.runtime-execution-gap-audit.v1"] = Field(alias="schema")
+    proposal_id: Literal["p024-account-console-paper-command-controls"]
+    account_id: Literal["acct.ctp.paper.19053"]
+    reviewed_at: str
+    status: Literal["phase4e_final_runtime_execution_gap_audited"]
+    verdict: Literal["blocked_pending_owner_runtime_execution"]
+    goal_state: Literal["all_acceptance_requires_owner_runtime_execution_artifacts"]
+    accepted_scenarios: list[str]
+    not_accepted_scenarios: list[dict]
+    required_before_goal_complete: list[str]
+    external_write_approval: dict
+    owner_runtime_refs: dict
+    required_owner_artifacts: list[str]
+    post_execution_gates: list[str]
+    residual_blockers: list[dict]
+    negative_assertions: dict
+    explicit_non_claims: list[str]
+
+
 class Health(BaseModel):
     ok: bool
     service: str

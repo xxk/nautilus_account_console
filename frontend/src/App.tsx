@@ -91,6 +91,7 @@ import type {
   CommandApiResult,
   CommandRuntimeCloseout,
   CommandRuntimeExecutionApprovalPacket,
+  CommandRuntimeExecutionGapAudit,
   CommandRuntimeExecutionHandoffBundle,
   CommandRuntimeInvocationReadiness,
   CommandRuntimeRunRequest,
@@ -125,6 +126,7 @@ import type {
 import {
   cancelPaperOrderIntent,
   fetchCommandRuntimeExecutionApprovalPacket,
+  fetchCommandRuntimeExecutionGapAudit,
   fetchCommandRuntimeExecutionHandoffBundle,
   fetchCommandRuntimeInvocationReadiness,
   fetchCommandRuntimeCloseout,
@@ -1497,6 +1499,9 @@ function AccountWorkbenchTerminalPanel({
   const [runtimeHandoffBundle, setRuntimeHandoffBundle] =
     useState<CommandRuntimeExecutionHandoffBundle | null>(null);
   const [runtimeHandoffBundleError, setRuntimeHandoffBundleError] = useState<string | null>(null);
+  const [runtimeExecutionGapAudit, setRuntimeExecutionGapAudit] =
+    useState<CommandRuntimeExecutionGapAudit | null>(null);
+  const [runtimeExecutionGapAuditError, setRuntimeExecutionGapAuditError] = useState<string | null>(null);
   const [runtimeCloseout, setRuntimeCloseout] = useState<CommandRuntimeCloseout | null>(null);
   const [runtimeCloseoutError, setRuntimeCloseoutError] = useState<string | null>(null);
   const paperArmed = isP024PaperArmed(mirrorReadback);
@@ -1587,16 +1592,20 @@ function AccountWorkbenchTerminalPanel({
       setRuntimeApprovalPacketError(null);
       setRuntimeHandoffBundle(null);
       setRuntimeHandoffBundleError(null);
+      setRuntimeExecutionGapAudit(null);
+      setRuntimeExecutionGapAuditError(null);
       return;
     }
     let active = true;
     async function loadRuntimeEvidence() {
-      const [closeoutResult, readinessResult, approvalPacketResult, handoffBundleResult] = await Promise.allSettled([
-        fetchCommandRuntimeCloseout(summary.account.account_id),
-        fetchCommandRuntimeInvocationReadiness(summary.account.account_id),
-        fetchCommandRuntimeExecutionApprovalPacket(summary.account.account_id),
-        fetchCommandRuntimeExecutionHandoffBundle(summary.account.account_id)
-      ]);
+      const [closeoutResult, readinessResult, approvalPacketResult, handoffBundleResult, gapAuditResult] =
+        await Promise.allSettled([
+          fetchCommandRuntimeCloseout(summary.account.account_id),
+          fetchCommandRuntimeInvocationReadiness(summary.account.account_id),
+          fetchCommandRuntimeExecutionApprovalPacket(summary.account.account_id),
+          fetchCommandRuntimeExecutionHandoffBundle(summary.account.account_id),
+          fetchCommandRuntimeExecutionGapAudit(summary.account.account_id)
+        ]);
       if (!active) {
         return;
       }
@@ -1639,6 +1648,17 @@ function AccountWorkbenchTerminalPanel({
             : "runtime handoff bundle unavailable";
         setRuntimeHandoffBundle(null);
         setRuntimeHandoffBundleError(message);
+      }
+      if (gapAuditResult.status === "fulfilled") {
+        setRuntimeExecutionGapAudit(gapAuditResult.value);
+        setRuntimeExecutionGapAuditError(null);
+      } else {
+        const message =
+          gapAuditResult.reason instanceof Error
+            ? gapAuditResult.reason.message
+            : "runtime execution gap audit unavailable";
+        setRuntimeExecutionGapAudit(null);
+        setRuntimeExecutionGapAuditError(message);
       }
     }
     void loadRuntimeEvidence();
@@ -2483,6 +2503,11 @@ function AccountWorkbenchTerminalPanel({
           <CommandRuntimeExecutionHandoffBundlePanel
             bundle={runtimeHandoffBundle}
             error={runtimeHandoffBundleError}
+          />
+
+          <CommandRuntimeExecutionGapAuditPanel
+            audit={runtimeExecutionGapAudit}
+            error={runtimeExecutionGapAuditError}
           />
 
           <CommandRuntimeCloseoutPanel closeout={runtimeCloseout} error={runtimeCloseoutError} />
@@ -4802,6 +4827,114 @@ function CommandRuntimeExecutionHandoffBundlePanel({
         </div>
       ) : (
         <p className="muted">No owner-runtime execution handoff bundle is mounted for this account.</p>
+      )}
+    </section>
+  );
+}
+
+function CommandRuntimeExecutionGapAuditPanel({
+  audit,
+  error
+}: {
+  audit: CommandRuntimeExecutionGapAudit | null;
+  error: string | null;
+}) {
+  const a4 = audit?.not_accepted_scenarios.find((scenario) => scenario.id === "A4");
+  return (
+    <section className="terminal-panel" data-testid="account-runtime-execution-gap-panel">
+      <div className="terminal-panel-header">
+        <h3>Acceptance Gap</h3>
+        <StateBadge value={audit ? "blocked" : error ? "blocked" : "empty"} />
+      </div>
+      {audit ? (
+        <div className="evidence-stack compact-evidence-stack">
+          <div className="evidence-item">
+            <strong>Status</strong>
+            <span data-testid="account-runtime-execution-gap-status">{audit.status}</span>
+          </div>
+          <div className="evidence-item">
+            <strong>Verdict</strong>
+            <span data-testid="account-runtime-execution-gap-verdict">{audit.verdict}</span>
+          </div>
+          <div className="evidence-item">
+            <strong>Final claimed</strong>
+            <span data-testid="account-runtime-execution-gap-final-claimed">
+              {String(audit.negative_assertions.final_acceptance_claimed)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Accepted scenarios</strong>
+            <span data-testid="account-runtime-execution-gap-accepted-count">
+              {audit.accepted_scenarios.length}
+            </span>
+          </div>
+          {a4 ? (
+            <div className="evidence-item" data-testid="account-runtime-execution-gap-not-accepted">
+              <strong>{a4.id}</strong>
+              <span>
+                {a4.current_status} / {a4.required_evidence_shape}
+              </span>
+            </div>
+          ) : null}
+          <div className="evidence-item">
+            <strong>Approval obtained</strong>
+            <span data-testid="account-runtime-execution-gap-approval-obtained">
+              {String(audit.external_write_approval.obtained)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Approval path</strong>
+            <span data-testid="account-runtime-execution-gap-approval-path">
+              {audit.external_write_approval.approval_path}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Runtime invoked</strong>
+            <span data-testid="account-runtime-execution-gap-invoked">
+              {String(audit.negative_assertions.runtime_invocation_attempted)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Owner write</strong>
+            <span data-testid="account-runtime-execution-gap-owner-write">
+              {String(audit.negative_assertions.owner_repo_write_attempted)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Broker order</strong>
+            <span data-testid="account-runtime-execution-gap-broker-order">
+              {String(audit.negative_assertions.broker_order_created)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Artifacts</strong>
+            <span data-testid="account-runtime-execution-gap-artifact-count">
+              {audit.required_owner_artifacts.length}
+            </span>
+          </div>
+          {audit.required_before_goal_complete.map((item) => (
+            <div className="evidence-item" data-testid="account-runtime-execution-gap-required" key={item}>
+              <strong>{item}</strong>
+              <span>required before all acceptance</span>
+            </div>
+          ))}
+          {audit.residual_blockers.map((blocker) => (
+            <div
+              className="evidence-item"
+              data-testid="account-runtime-execution-gap-blocker"
+              key={blocker.blocker_id}
+            >
+              <strong>{blocker.type}</strong>
+              <span>{blocker.next_action}</span>
+            </div>
+          ))}
+        </div>
+      ) : error ? (
+        <div className="state-callout blocked" data-testid="account-runtime-execution-gap-error">
+          {error}
+        </div>
+      ) : (
+        <p className="muted">No runtime execution gap audit is mounted for this account.</p>
       )}
     </section>
   );

@@ -12,6 +12,7 @@ from .command_api import (
     accept_cancel_intent,
     accept_submit_intent,
     load_runtime_execution_approval_packet,
+    load_runtime_execution_gap_audit,
     load_runtime_execution_handoff_bundle,
     load_runtime_invocation_readiness,
     load_runtime_closeout,
@@ -32,6 +33,7 @@ from .schemas import (
     CommandApiResult,
     CommandRuntimeCloseout,
     CommandRuntimeExecutionApprovalPacket,
+    CommandRuntimeExecutionGapAudit,
     CommandRuntimeExecutionHandoffBundle,
     CommandRuntimeInvocationReadiness,
     CommandRuntimeRunRequest,
@@ -280,6 +282,15 @@ def command_runtime_execution_approval_packet(account_id: str) -> CommandRuntime
 )
 def command_runtime_execution_handoff_bundle(account_id: str) -> CommandRuntimeExecutionHandoffBundle:
     return load_runtime_execution_handoff_bundle(account_id)
+
+
+@app.get(
+    "/api/commands/accounts/{account_id}/runtime-execution-gap-audit",
+    response_model=CommandRuntimeExecutionGapAudit,
+    response_model_exclude_none=True,
+)
+def command_runtime_execution_gap_audit(account_id: str) -> CommandRuntimeExecutionGapAudit:
+    return load_runtime_execution_gap_audit(account_id)
 
 
 @app.get("/api/accounts/{account_id}", response_model=AccountDetail)

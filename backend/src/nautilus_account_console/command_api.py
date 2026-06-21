@@ -11,6 +11,7 @@ from .schemas import (
     CancelIntentRequest,
     CommandApiResult,
     CommandRuntimeExecutionApprovalPacket,
+    CommandRuntimeExecutionGapAudit,
     CommandRuntimeExecutionHandoffBundle,
     CommandRuntimeInvocationReadiness,
     CommandBlocker,
@@ -44,6 +45,13 @@ RUNTIME_EXECUTION_HANDOFF_BUNDLE = (
     / "acceptance"
     / "p024-account-console-paper-command-controls"
     / "owner-runtime-execution-handoff-bundle.json"
+)
+RUNTIME_EXECUTION_GAP_AUDIT = (
+    ROOT
+    / "docs"
+    / "acceptance"
+    / "p024-account-console-paper-command-controls"
+    / "runtime-execution-gap-audit.json"
 )
 DEFAULT_RUNTIME_RUN_ID = "p023-armed-20260621t0748z"
 REQUIRED_RUNTIME_FILES = [
@@ -422,6 +430,42 @@ def load_runtime_execution_handoff_bundle(account_id: str) -> CommandRuntimeExec
         if negative.get(key) is not False:
             raise HTTPException(status_code=409, detail=f"runtime execution handoff bundle negative assertion failed: {key}")
     return CommandRuntimeExecutionHandoffBundle(**payload)
+
+
+def load_runtime_execution_gap_audit(account_id: str) -> CommandRuntimeExecutionGapAudit:
+    if account_id != PAPER_ACCOUNT_ID:
+        raise HTTPException(status_code=403, detail="P024 runtime execution gap audit is scoped to acct.ctp.paper.19053 only")
+    if not RUNTIME_EXECUTION_GAP_AUDIT.exists():
+        raise HTTPException(status_code=404, detail="runtime execution gap audit evidence not found")
+    text = RUNTIME_EXECUTION_GAP_AUDIT.read_text(encoding="utf-8")
+    if any(fragment.lower() in text.lower() for fragment in SENSITIVE_RUNTIME_FRAGMENTS):
+        raise HTTPException(status_code=409, detail="runtime execution gap audit contains forbidden sensitive fragments")
+    payload = json.loads(text)
+    if payload.get("account_id") != PAPER_ACCOUNT_ID:
+        raise HTTPException(status_code=409, detail="runtime execution gap audit account_id mismatch")
+    approval = payload.get("external_write_approval") or {}
+    if approval.get("required") is not True or approval.get("obtained") is not False:
+        raise HTTPException(status_code=409, detail="runtime execution gap audit approval boundary drifted")
+    not_accepted = {item.get("id"): item for item in payload.get("not_accepted_scenarios") or []}
+    if not_accepted.get("A4", {}).get("current_status") != "blocked_pending_owner_runtime_execution":
+        raise HTTPException(status_code=409, detail="runtime execution gap audit A4 status drifted")
+    negative = payload.get("negative_assertions") or {}
+    for key in [
+        "final_acceptance_claimed",
+        "runtime_invocation_attempted",
+        "owner_repo_write_attempted",
+        "browser_triggered_broker_order",
+        "gateway_send_attempted",
+        "broker_order_created",
+        "live_armed",
+        "account_mirror_write_authority",
+        "raw_secret_values_recorded",
+        "raw_broker_endpoint_recorded",
+        "config_raw_content_read",
+    ]:
+        if negative.get(key) is not False:
+            raise HTTPException(status_code=409, detail=f"runtime execution gap audit negative assertion failed: {key}")
+    return CommandRuntimeExecutionGapAudit(**payload)
 
 
 def accept_submit_intent(account_id: str, intent: OrderIntentRequest) -> CommandApiResult:

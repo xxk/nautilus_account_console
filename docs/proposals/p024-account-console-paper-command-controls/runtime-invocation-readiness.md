@@ -1,7 +1,7 @@
 # P024 Runtime Invocation Readiness / Owner Runtime Approval Gate
 
 - Proposal ID: `p024-account-console-paper-command-controls`
-- Status: phase4d_runtime_handoff_bundle_ui_projection_passed
+- Status: phase4e_runtime_execution_gap_audit_passed
 - Previous readiness UI status: phase3e_runtime_readiness_ui_projection_passed
 - Previous approval packet status: phase4a_owner_runtime_execution_approval_packet_ready
 
@@ -18,6 +18,8 @@ Phase 4b renders that approval packet in the Web UI as a browser blocker project
 Phase 4c freezes the owner-runtime execution handoff bundle. The bundle records the post-approval sequence, runtime input requirements, required owner artifacts and post-handoff gates while `execution_allowed=false`.
 
 Phase 4d renders the handoff bundle in the Web UI as another browser blocker projection while `execution_allowed=false`, `approval_obtained=false`, `runtime_invocation_attempted=false`, `owner_repo_write_attempted=false` and `broker_order_created=false`.
+
+Phase 4e renders the final runtime execution gap audit in the Web UI while A4 remains not accepted and `final_acceptance_claimed=false`.
 
 ## Required Artifact
 
@@ -148,4 +150,21 @@ Pass signal:
 
 ```text
 P024_RUNTIME_HANDOFF_BUNDLE_BROWSER_EVIDENCE_OK: runtime_handoff_bundle_ui=pass execution_allowed=false runtime_invocation_attempted=false
+```
+
+## Phase 4e Runtime Execution Gap Audit
+
+```powershell
+python scripts\validate_p024_runtime_execution_gap_audit.py
+cd frontend
+npx playwright test tests/e2e/p024-runtime-execution-gap-audit.spec.ts --project=desktop
+cd ..
+python scripts\validate_p024_runtime_execution_gap_browser_evidence.py
+```
+
+Expected pass signal:
+
+```text
+P024_RUNTIME_EXECUTION_GAP_AUDIT_OK: verdict=blocked_pending_owner_runtime_execution final_acceptance_claimed=false
+P024_RUNTIME_EXECUTION_GAP_BROWSER_EVIDENCE_OK: verdict=blocked_pending_owner_runtime_execution final_acceptance_claimed=false
 ```

@@ -17,6 +17,7 @@
     "runtime_approval_packet_ui_projection",
     "owner_runtime_execution_handoff_bundle",
     "runtime_handoff_bundle_ui_projection",
+    "runtime_execution_gap_audit",
     "proposal_docs_and_adr_boundary"
   ],
   "not_accepted_scope": [
@@ -93,6 +94,12 @@
       "id": "p024_runtime_handoff_bundle_ui_projection",
       "command": "npx playwright test tests/e2e/p024-runtime-execution-handoff-bundle.spec.ts --project=desktop && python scripts\\validate_p024_runtime_handoff_bundle_browser_evidence.py",
       "pass_signal": "P024_RUNTIME_HANDOFF_BUNDLE_BROWSER_EVIDENCE_OK",
+      "status": "passed"
+    },
+    {
+      "id": "p024_runtime_execution_gap_audit",
+      "command": "python scripts\\validate_p024_runtime_execution_gap_audit.py && npx playwright test tests/e2e/p024-runtime-execution-gap-audit.spec.ts --project=desktop && python scripts\\validate_p024_runtime_execution_gap_browser_evidence.py",
+      "pass_signal": "P024_RUNTIME_EXECUTION_GAP_AUDIT_OK; P024_RUNTIME_EXECUTION_GAP_BROWSER_EVIDENCE_OK",
       "status": "passed"
     },
     {
@@ -264,6 +271,18 @@
       "evidence_refs": [
         "frontend/tests/e2e/p024-runtime-execution-handoff-bundle.spec.ts",
         "scripts/validate_p024_runtime_handoff_bundle_browser_evidence.py"
+      ]
+    },
+    {
+      "id": "A16",
+      "scenario": "Runtime execution gap is visible until owner-runtime artifacts exist",
+      "verification_shape": "artifact validator + Playwright + API route audit + browser evidence JSON",
+      "status": "passed_blocked_by_owner_runtime_execution",
+      "evidence_refs": [
+        "docs/acceptance/p024-account-console-paper-command-controls/runtime-execution-gap-audit.json",
+        "frontend/tests/e2e/p024-runtime-execution-gap-audit.spec.ts",
+        "scripts/validate_p024_runtime_execution_gap_audit.py",
+        "scripts/validate_p024_runtime_execution_gap_browser_evidence.py"
       ]
     }
   ],

@@ -24,6 +24,7 @@ ALLOWED_COMMAND_ROUTES = {
     "/api/commands/accounts/{account_id}/runtime-invocation-readiness": {"GET"},
     "/api/commands/accounts/{account_id}/runtime-execution-approval-packet": {"GET"},
     "/api/commands/accounts/{account_id}/runtime-execution-handoff-bundle": {"GET"},
+    "/api/commands/accounts/{account_id}/runtime-execution-gap-audit": {"GET"},
 }
 
 
@@ -239,6 +240,25 @@ def validate_api_behavior() -> None:
         "runtime handoff broker order flag mismatch",
     )
 
+    gap_response = client.get(f"/api/commands/accounts/{ACCOUNT_ID}/runtime-execution-gap-audit")
+    require(gap_response.status_code == 200, f"runtime execution gap audit status mismatch: {gap_response.status_code}")
+    gap_payload = gap_response.json()
+    require(
+        gap_payload["schema"] == "account-console.p024.runtime-execution-gap-audit.v1",
+        "runtime execution gap audit schema mismatch",
+    )
+    require(
+        gap_payload["status"] == "phase4e_final_runtime_execution_gap_audited",
+        "runtime execution gap audit status mismatch",
+    )
+    require(gap_payload["verdict"] == "blocked_pending_owner_runtime_execution", "runtime execution gap verdict mismatch")
+    require(gap_payload["external_write_approval"]["obtained"] is False, "runtime execution gap approval mismatch")
+    require(gap_payload["negative_assertions"]["final_acceptance_claimed"] is False, "runtime execution gap final claim mismatch")
+    require(
+        gap_payload["negative_assertions"]["runtime_invocation_attempted"] is False,
+        "runtime execution gap invocation flag mismatch",
+    )
+
     live_intent = submit_intent()
     live_intent["mode"] = "live_armed"
     live_response = client.post(f"/api/commands/accounts/{ACCOUNT_ID}/submit-intents", json=live_intent)
@@ -253,7 +273,7 @@ def main() -> None:
     validate_api_behavior()
     print(
         "P024_PAPER_COMMAND_API_OK: "
-        "phase=1 routes=8 status=accepted_for_risk runtime_handoff=blocked runtime_closeout=reconciled runtime_readiness=blocked runtime_approval_packet=ready runtime_handoff_bundle=ready mirror_read_only=true"
+        "phase=1 routes=9 status=accepted_for_risk runtime_handoff=blocked runtime_closeout=reconciled runtime_readiness=blocked runtime_approval_packet=ready runtime_handoff_bundle=ready runtime_execution_gap=blocked mirror_read_only=true"
     )
 
 

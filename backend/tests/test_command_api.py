@@ -297,6 +297,30 @@ def test_runtime_execution_handoff_bundle_projects_blocked_operator_sequence() -
     }
 
 
+def test_runtime_execution_gap_audit_projects_final_acceptance_blocker() -> None:
+    client = TestClient(app)
+    response = client.get("/api/commands/accounts/acct.ctp.paper.19053/runtime-execution-gap-audit")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["schema"] == "account-console.p024.runtime-execution-gap-audit.v1"
+    assert payload["status"] == "phase4e_final_runtime_execution_gap_audited"
+    assert payload["verdict"] == "blocked_pending_owner_runtime_execution"
+    assert "A4" not in payload["accepted_scenarios"]
+    assert [item["id"] for item in payload["not_accepted_scenarios"]] == ["A4"]
+    assert payload["external_write_approval"]["required"] is True
+    assert payload["external_write_approval"]["obtained"] is False
+    assert payload["negative_assertions"]["final_acceptance_claimed"] is False
+    assert payload["negative_assertions"]["runtime_invocation_attempted"] is False
+    assert payload["negative_assertions"]["owner_repo_write_attempted"] is False
+    assert payload["negative_assertions"]["broker_order_created"] is False
+    assert {blocker["type"] for blocker in payload["residual_blockers"]} == {
+        "external_write_approval_required",
+        "owner_runtime_artifacts_missing",
+        "owner_runtime_partial_fill_state_missing",
+    }
+
+
 def test_command_api_rejects_live_mode_and_account_mismatch() -> None:
     client = TestClient(app)
     live = deepcopy(submit_intent())

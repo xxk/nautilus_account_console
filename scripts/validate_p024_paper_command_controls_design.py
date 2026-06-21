@@ -69,6 +69,14 @@ P024_RUNTIME_HANDOFF_BUNDLE_UI_EVIDENCE = (
     / "p024-account-console-paper-command-controls"
     / "runtime-handoff-bundle-ui.json"
 )
+P024_RUNTIME_EXECUTION_GAP_UI_EVIDENCE = (
+    ROOT
+    / "docs"
+    / "acceptance"
+    / "browser-evidence"
+    / "p024-account-console-paper-command-controls"
+    / "runtime-execution-gap-audit-ui.json"
+)
 P024_OWNER_RUNTIME_READINESS = (
     ROOT
     / "docs"
@@ -97,6 +105,13 @@ P024_OWNER_RUNTIME_HANDOFF_BUNDLE = (
     / "p024-account-console-paper-command-controls"
     / "owner-runtime-execution-handoff-bundle.json"
 )
+P024_RUNTIME_EXECUTION_GAP_AUDIT = (
+    ROOT
+    / "docs"
+    / "acceptance"
+    / "p024-account-console-paper-command-controls"
+    / "runtime-execution-gap-audit.json"
+)
 OWNER_MAP = ROOT / "docs" / "ownership" / "account-console-owner-map.md"
 
 REQUIRED_DOCS = [
@@ -118,6 +133,7 @@ ALLOWED_COMMAND_ROUTES = {
     "/api/commands/accounts/{account_id}/runtime-invocation-readiness": {"GET"},
     "/api/commands/accounts/{account_id}/runtime-execution-approval-packet": {"GET"},
     "/api/commands/accounts/{account_id}/runtime-execution-handoff-bundle": {"GET"},
+    "/api/commands/accounts/{account_id}/runtime-execution-gap-audit": {"GET"},
 }
 
 
@@ -158,6 +174,7 @@ def validate_proposal_index_and_adr() -> None:
     require("runtime approval packet UI projection" in index, "proposal index missing P024 approval packet UI scope")
     require("owner-runtime execution handoff bundle" in index, "proposal index missing P024 handoff bundle scope")
     require("runtime handoff bundle UI projection" in index, "proposal index missing P024 handoff bundle UI scope")
+    require("runtime execution gap audit" in index, "proposal index missing P024 runtime execution gap scope")
 
     adr = read(ADR)
     require("ADR-0007" in adr, "ADR-0007 missing")
@@ -199,13 +216,17 @@ def validate_proposal_index_and_adr() -> None:
         "P024 Phase 4d runtime handoff bundle UI projection is accepted as browser blocker evidence only" in adr,
         "ADR missing P024 handoff bundle UI landing",
     )
+    require(
+        "P024 Phase 4e runtime execution gap audit is accepted as final blocker evidence only" in adr,
+        "ADR missing P024 runtime execution gap landing",
+    )
 
 
 def validate_readme() -> None:
     text = read(PROPOSAL / "README.md")
     for phrase in [
         "Proposal ID: `p024-account-console-paper-command-controls`",
-        "Status: phase4d_runtime_handoff_bundle_ui_projection_passed",
+        "Status: phase4e_runtime_execution_gap_audit_passed",
         "ADR carrier: yes",
         "Primary ADR: ADR-0007",
         "Predecessor: [P023 OpenCTP 19053 Paper Command Capability]",
@@ -226,6 +247,8 @@ def validate_readme() -> None:
         "validate_p024_runtime_approval_packet_browser_evidence.py",
         "validate_p024_owner_runtime_execution_handoff_bundle.py",
         "validate_p024_runtime_handoff_bundle_browser_evidence.py",
+        "validate_p024_runtime_execution_gap_audit.py",
+        "validate_p024_runtime_execution_gap_browser_evidence.py",
         "browser_triggered_broker_order=false",
         "runtime_invocation_attempted=false",
         "owner-runtime invocation readiness",
@@ -235,6 +258,7 @@ def validate_readme() -> None:
         "runtime approval packet UI projection",
         "owner-runtime execution handoff bundle",
         "runtime handoff bundle UI projection",
+        "runtime execution gap audit",
     ]:
         require(phrase in text, f"P024 README missing phrase: {phrase}")
 
@@ -268,6 +292,8 @@ def validate_phase_plan() -> None:
         "completed_handoff_bundle_gate_runtime_not_invoked",
         "phase_4d_runtime_handoff_bundle_ui_projection",
         "completed_browser_handoff_bundle_projection_gate",
+        "phase_4e_runtime_execution_gap_audit",
+        "completed_final_gap_audit_gate_blocked_by_owner_runtime_execution",
         "Runtime closeout projection",
         "Partial-fill cancel display",
         "Owner-runtime handoff request",
@@ -287,6 +313,8 @@ def validate_phase_plan() -> None:
         "validate_p024_runtime_approval_packet_browser_evidence.py",
         "validate_p024_owner_runtime_execution_handoff_bundle.py",
         "validate_p024_runtime_handoff_bundle_browser_evidence.py",
+        "validate_p024_runtime_execution_gap_audit.py",
+        "validate_p024_runtime_execution_gap_browser_evidence.py",
         "Browser controls are implemented only for `paper_armed` projection",
         "browser_triggered_broker_order=false",
         "Real partial-fill runtime remains blocked",
@@ -297,6 +325,7 @@ def validate_phase_plan() -> None:
         "Phase 4b runtime approval packet UI projection is complete",
         "Phase 4c owner-runtime execution handoff bundle is complete",
         "Phase 4d runtime handoff bundle UI projection is complete",
+        "Phase 4e runtime execution gap audit is complete",
         "external write approval",
     ]:
         require(phrase in text, f"P024 phase plan missing phrase: {phrase}")
@@ -318,6 +347,8 @@ def validate_acceptance() -> None:
         "P024_RUNTIME_APPROVAL_PACKET_BROWSER_EVIDENCE_OK",
         "P024_OWNER_RUNTIME_EXECUTION_HANDOFF_BUNDLE_OK",
         "P024_RUNTIME_HANDOFF_BUNDLE_BROWSER_EVIDENCE_OK",
+        "P024_RUNTIME_EXECUTION_GAP_AUDIT_OK",
+        "P024_RUNTIME_EXECUTION_GAP_BROWSER_EVIDENCE_OK",
         "Implementation/browser evidence is required before implementation closeout",
         "UI Anti-Drift Acceptance",
         "forbidden_actions",
@@ -363,6 +394,10 @@ def validate_acceptance() -> None:
         "Phase 4d Runtime Handoff Bundle UI Projection",
         "account-runtime-handoff-bundle-panel",
         "account-runtime-handoff-bundle-execution-allowed",
+        "Phase 4e Runtime Execution Gap Audit",
+        "runtime-execution-gap-audit.json",
+        "account-runtime-execution-gap-panel",
+        "account-runtime-execution-gap-final-claimed",
         "account-runtime-readiness-panel",
         "account-runtime-readiness-invoked",
         "owner_repo_write_attempted=false",
@@ -427,6 +462,18 @@ def validate_ui_docs() -> None:
         "account-runtime-handoff-bundle-artifact-count",
         "account-runtime-handoff-bundle-gate-count",
         "account-runtime-handoff-bundle-blocker",
+        "account-runtime-execution-gap-panel",
+        "account-runtime-execution-gap-status",
+        "account-runtime-execution-gap-verdict",
+        "account-runtime-execution-gap-final-claimed",
+        "account-runtime-execution-gap-not-accepted",
+        "account-runtime-execution-gap-approval-obtained",
+        "account-runtime-execution-gap-invoked",
+        "account-runtime-execution-gap-owner-write",
+        "account-runtime-execution-gap-broker-order",
+        "account-runtime-execution-gap-artifact-count",
+        "account-runtime-execution-gap-required",
+        "account-runtime-execution-gap-blocker",
         "After terminal cancel",
     ]:
         require(phrase in design, f"P024 UI design missing phrase: {phrase}")
@@ -464,6 +511,10 @@ def validate_ui_docs() -> None:
         "runtime handoff bundle projection",
         "account-runtime-handoff-bundle-panel",
         "P024_RUNTIME_HANDOFF_BUNDLE_BROWSER_EVIDENCE_OK",
+        "UI-15",
+        "runtime execution gap audit projection",
+        "account-runtime-execution-gap-panel",
+        "P024_RUNTIME_EXECUTION_GAP_BROWSER_EVIDENCE_OK",
         "NUI-13",
         "NUI-14",
         "NUI-15",
@@ -855,6 +906,98 @@ def validate_p024_runtime_handoff_bundle_ui_evidence() -> None:
         require(claim in non_claims, f"P024 handoff UI missing non-claim: {claim}")
 
 
+def validate_p024_runtime_execution_gap_audit() -> None:
+    payload = load_json(P024_RUNTIME_EXECUTION_GAP_AUDIT)
+    require(
+        payload["schema"] == "account-console.p024.runtime-execution-gap-audit.v1",
+        "P024 execution gap schema mismatch",
+    )
+    require(payload["proposal_id"] == "p024-account-console-paper-command-controls", "P024 execution gap proposal mismatch")
+    require(payload["account_id"] == "acct.ctp.paper.19053", "P024 execution gap account mismatch")
+    require(payload["status"] == "phase4e_final_runtime_execution_gap_audited", "P024 execution gap status mismatch")
+    require(payload["verdict"] == "blocked_pending_owner_runtime_execution", "P024 execution gap verdict mismatch")
+    require(set(payload["accepted_scenarios"]) == {f"A{index}" for index in range(1, 17)} - {"A4", "A16"}, "P024 execution gap accepted scenario mismatch")
+    not_accepted = {item["id"]: item for item in payload["not_accepted_scenarios"]}
+    require(set(not_accepted) == {"A4"}, "P024 execution gap not accepted scenario mismatch")
+    require(not_accepted["A4"]["current_status"] == "blocked_pending_owner_runtime_execution", "P024 execution gap A4 status mismatch")
+    approval = payload["external_write_approval"]
+    require(approval["required"] is True, "P024 execution gap approval required mismatch")
+    require(approval["obtained"] is False, "P024 execution gap approval obtained mismatch")
+    require(approval["approval_path"] == "D:/Nautilus/nautilus_ctp_adapter", "P024 execution gap approval path mismatch")
+    require(len(payload["required_before_goal_complete"]) == 8, "P024 execution gap required-before count mismatch")
+    require(len(payload["required_owner_artifacts"]) == 14, "P024 execution gap artifact count mismatch")
+    blockers = {blocker["blocker_id"] for blocker in payload["residual_blockers"]}
+    require(
+        blockers
+        == {
+            "p024_external_owner_runtime_write_approval_required",
+            "p024_owner_runtime_artifacts_missing",
+            "p024_real_partial_fill_runtime_missing",
+        },
+        "P024 execution gap blocker mismatch",
+    )
+    negative = payload["negative_assertions"]
+    for key in [
+        "final_acceptance_claimed",
+        "runtime_invocation_attempted",
+        "owner_repo_write_attempted",
+        "browser_triggered_broker_order",
+        "gateway_send_attempted",
+        "broker_order_created",
+        "live_armed",
+        "account_mirror_write_authority",
+        "raw_secret_values_recorded",
+        "raw_broker_endpoint_recorded",
+        "config_raw_content_read",
+    ]:
+        require(negative[key] is False, f"P024 execution gap negative assertion mismatch: {key}")
+
+
+def validate_p024_runtime_execution_gap_ui_evidence() -> None:
+    payload = load_json(P024_RUNTIME_EXECUTION_GAP_UI_EVIDENCE)
+    require(
+        payload["schema"] == "account-console.p024.runtime-execution-gap-audit-ui.v1",
+        "P024 execution gap UI schema mismatch",
+    )
+    require(payload["proposal_id"] == "p024-account-console-paper-command-controls", "P024 execution gap UI proposal mismatch")
+    require(payload["account_id"] == "acct.ctp.paper.19053", "P024 execution gap UI account mismatch")
+    require(payload["verdict"] == "pass", "P024 execution gap UI verdict mismatch")
+    audit = payload["api_gap_audit"]
+    require(audit["schema"] == "account-console.p024.runtime-execution-gap-audit.v1", "P024 execution gap UI API schema mismatch")
+    require(audit["status"] == "phase4e_final_runtime_execution_gap_audited", "P024 execution gap UI API status mismatch")
+    require(audit["verdict"] == "blocked_pending_owner_runtime_execution", "P024 execution gap UI API verdict mismatch")
+    require(audit["accepted_scenario_count"] == 14, "P024 execution gap UI accepted count mismatch")
+    require(audit["not_accepted_scenario_count"] == 1, "P024 execution gap UI not accepted count mismatch")
+    require(audit["required_before_goal_complete_count"] == 8, "P024 execution gap UI required-before count mismatch")
+    require(audit["required_owner_artifact_count"] == 14, "P024 execution gap UI artifact count mismatch")
+    require(audit["blocker_count"] == 3, "P024 execution gap UI blocker count mismatch")
+    for key in [
+        "final_acceptance_claimed",
+        "runtime_invocation_attempted",
+        "owner_repo_write_attempted",
+        "browser_triggered_broker_order",
+        "broker_order_created",
+        "raw_secret_values_recorded",
+        "raw_broker_endpoint_recorded",
+    ]:
+        require(audit[key] is False, f"P024 execution gap UI negative assertion mismatch: {key}")
+    checks = payload.get("browser_checks") or {}
+    for check in [
+        "gap_panel_visible",
+        "verdict_displayed_blocked",
+        "final_acceptance_claimed_displayed_false",
+        "a4_not_accepted_displayed",
+        "approval_obtained_displayed_false",
+        "runtime_invocation_displayed_false",
+        "owner_write_displayed_false",
+        "broker_order_displayed_false",
+        "required_items_displayed",
+        "blocker_items_displayed",
+        "sensitive_endpoint_wording_absent",
+    ]:
+        require(checks.get(check) is True, f"P024 execution gap UI browser check missing: {check}")
+
+
 def validate_p024_full_acceptance_closeout() -> None:
     payload = load_json(P024_FULL_ACCEPTANCE_CLOSEOUT)
     require(payload["schema"] == "account-console.p024.full-acceptance-closeout.v1", "P024 closeout schema mismatch")
@@ -866,7 +1009,7 @@ def validate_p024_full_acceptance_closeout() -> None:
         "P024 closeout verdict mismatch",
     )
     scenarios = {item["id"]: item for item in payload["scenario_matrix"]}
-    require(set(scenarios) == {f"A{index}" for index in range(1, 16)}, "P024 closeout scenario set mismatch")
+    require(set(scenarios) == {f"A{index}" for index in range(1, 17)}, "P024 closeout scenario set mismatch")
     require(
         scenarios["A4"]["status"] == "blocked_pending_owner_runtime_execution",
         "P024 closeout A4 must remain blocked",
@@ -876,6 +1019,10 @@ def validate_p024_full_acceptance_closeout() -> None:
         "P024 closeout A13 status mismatch",
     )
     require(scenarios["A15"]["status"] == "passed", "P024 closeout A15 status mismatch")
+    require(
+        scenarios["A16"]["status"] == "passed_blocked_by_owner_runtime_execution",
+        "P024 closeout A16 status mismatch",
+    )
     blockers = {blocker["blocker_id"]: blocker for blocker in payload["residual_blockers"]}
     require(
         set(blockers)
@@ -1131,6 +1278,8 @@ def main() -> None:
     validate_p024_runtime_readiness_ui_evidence()
     validate_p024_runtime_approval_packet_ui_evidence()
     validate_p024_runtime_handoff_bundle_ui_evidence()
+    validate_p024_runtime_execution_gap_audit()
+    validate_p024_runtime_execution_gap_ui_evidence()
     validate_p024_full_acceptance_closeout()
     validate_p024_owner_runtime_approval_packet()
     validate_p024_owner_runtime_handoff_bundle()
@@ -1140,7 +1289,7 @@ def main() -> None:
     validate_backend_command_routes_are_p024_only()
     print(
         "P024_PAPER_COMMAND_CONTROLS_DESIGN_OK: "
-        "status=phase4d_runtime_handoff_bundle_ui_projection_passed current_ui_command=guarded runtime_closeout=browser_projection_passed partial_fill_cancel_ui=browser_contract_passed runtime_handoff=browser_handoff_passed runtime_invocation_readiness=blocked_by_external_approval runtime_readiness_ui=browser_projection_passed full_closeout=residual_blocker_audit_passed approval_packet=ready_runtime_not_invoked runtime_approval_packet_ui=browser_projection_passed handoff_bundle=ready_runtime_not_invoked runtime_handoff_bundle_ui=browser_projection_passed"
+        "status=phase4e_runtime_execution_gap_audit_passed current_ui_command=guarded runtime_closeout=browser_projection_passed partial_fill_cancel_ui=browser_contract_passed runtime_handoff=browser_handoff_passed runtime_invocation_readiness=blocked_by_external_approval runtime_readiness_ui=browser_projection_passed full_closeout=residual_blocker_audit_passed approval_packet=ready_runtime_not_invoked runtime_approval_packet_ui=browser_projection_passed handoff_bundle=ready_runtime_not_invoked runtime_handoff_bundle_ui=browser_projection_passed runtime_execution_gap=blocked_final_claim_false"
     )
 
 

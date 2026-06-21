@@ -1,7 +1,7 @@
 # P024 UI Acceptance / Paper Command Controls
 
 - Proposal ID: `p024-account-console-paper-command-controls`
-- Status: phase4d_runtime_handoff_bundle_ui_projection_passed
+- Status: phase4e_runtime_execution_gap_audit_passed
 
 ## Browser Acceptance
 
@@ -21,6 +21,21 @@
 | UI-12 | runtime readiness blocker projection | readiness package owner refs, entrypoints, approval state, blockers and non-claims render in UI while runtime invocation remains false | phase3e_runtime_readiness_ui_projection_passed |
 | UI-13 | runtime approval packet projection | exact approval text, owner path, entrypoints, blockers and false execution flags render in UI while approval remains unobtained | phase4b_runtime_approval_packet_ui_projection_passed |
 | UI-14 | runtime handoff bundle projection | execution guard, runtime inputs, operator sequence, artifact counts and blockers render in UI while execution remains disallowed | phase4d_runtime_handoff_bundle_ui_projection_passed |
+| UI-15 | runtime execution gap audit projection | A4 not-accepted status, approval blocker, owner artifact count and false final-acceptance/execution flags render in UI | phase4e_runtime_execution_gap_audit_passed |
+
+## UI-15 Runtime Execution Gap Audit Projection
+
+The browser test must load `/accounts/acct.ctp.paper.19053`, call the read-only runtime execution gap endpoint, and verify:
+
+1. `account-runtime-execution-gap-panel` is visible.
+2. `account-runtime-execution-gap-status` is `phase4e_final_runtime_execution_gap_audited`.
+3. `account-runtime-execution-gap-verdict` is `blocked_pending_owner_runtime_execution`.
+4. `account-runtime-execution-gap-final-claimed` is `false`.
+5. `account-runtime-execution-gap-not-accepted` includes A4 and owner-runtime execution artifact requirements.
+6. `account-runtime-execution-gap-approval-obtained`, `account-runtime-execution-gap-invoked`, `account-runtime-execution-gap-owner-write` and `account-runtime-execution-gap-broker-order` are all `false`.
+7. `account-runtime-execution-gap-blocker` includes external write approval, owner runtime artifact and real partial-fill runtime blockers.
+
+Accepted evidence: `python scripts\validate_p024_runtime_execution_gap_browser_evidence.py` returns `P024_RUNTIME_EXECUTION_GAP_BROWSER_EVIDENCE_OK`.
 
 ## UI-14 Runtime Handoff Bundle Projection
 

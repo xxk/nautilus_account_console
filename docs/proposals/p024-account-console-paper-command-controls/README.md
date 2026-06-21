@@ -1,7 +1,7 @@
 # P024 Account Console Paper Command Controls
 
 - Proposal ID: `p024-account-console-paper-command-controls`
-- Status: phase4d_runtime_handoff_bundle_ui_projection_passed
+- Status: phase4e_runtime_execution_gap_audit_passed
 - ADR carrier: yes
 - Primary ADR: ADR-0007
 - Predecessor: [P023 OpenCTP 19053 Paper Command Capability](../p023-openctp-19053-paper-command-capability/README.md)
@@ -29,6 +29,7 @@ P024 does not enable `live_armed`, production admission, capital approval, or Ac
 12. Render the owner-runtime execution approval packet in the Web UI so the operator can verify exact approval text, false execution flags, entrypoints and blockers before granting approval.
 13. Freeze an owner-runtime execution handoff bundle that defines the approved execution sequence, runtime inputs, artifact ingest list and post-handoff gates while `execution_allowed=false`.
 14. Render the owner-runtime execution handoff bundle in the Web UI with execution guard, runtime inputs, operator sequence, artifact counts and blockers visible before approval.
+15. Render the final runtime execution gap audit in the Web UI so A4 remains visibly blocked until owner-runtime execution artifacts exist.
 
 ## Non-Goals
 
@@ -59,6 +60,7 @@ P024 does not enable `live_armed`, production admission, capital approval, or Ac
 | Phase 4b runtime approval packet UI projection | Web UI renders the exact owner-runtime approval packet and preserves `approval_obtained=false`, `runtime_invocation_attempted=false`, `owner_repo_write_attempted=false` and `broker_order_created=false` | `python scripts\validate_p024_runtime_approval_packet_browser_evidence.py` |
 | Phase 4c owner-runtime execution handoff bundle | Machine evidence freezes the post-approval operator sequence, runtime input requirements, required owner artifacts and post-handoff gates while `execution_allowed=false` | `python scripts\validate_p024_owner_runtime_execution_handoff_bundle.py` |
 | Phase 4d runtime handoff bundle UI projection | Web UI renders the execution handoff bundle and preserves `execution_allowed=false`, `approval_obtained=false`, `runtime_invocation_attempted=false`, `owner_repo_write_attempted=false` and `broker_order_created=false` | `python scripts\validate_p024_runtime_handoff_bundle_browser_evidence.py` |
+| Phase 4e runtime execution gap audit | Artifact/API/Web UI identify A4 as not accepted and preserve `final_acceptance_claimed=false`, `runtime_invocation_attempted=false`, `owner_repo_write_attempted=false` and `broker_order_created=false` | `python scripts\validate_p024_runtime_execution_gap_audit.py`; `python scripts\validate_p024_runtime_execution_gap_browser_evidence.py` |
 
 ## Document Map
 
@@ -85,11 +87,12 @@ P024 does not enable `live_armed`, production admission, capital approval, or Ac
 | Runtime invocation readiness | archive_only | Machine evidence proves owner repo, guarded entrypoints, approval scope and post-run artifact requirements are frozen while external write approval remains required | phase3d_owner_runtime_invocation_readiness_blocked_by_external_approval |
 | Runtime readiness UI projection | archive_only | Browser evidence proves the readiness blocker is visible in Web UI with no owner-runtime invocation, owner write, browser-triggered broker order or raw secret claim | phase3e_runtime_readiness_ui_projection_passed |
 | Architecture / ownership backfill | required before implementation closeout | command gateway owner map | phase4_owner_boundary_backfill_passed |
-| Phase 4 residual blocker closeout | archive_only | `full-acceptance-closeout.json` maps A1-A15, required gates, non-accepted runtime scope and residual owner-runtime blockers | phase4_residual_blocker_audit_passed |
+| Phase 4 residual blocker closeout | archive_only | `full-acceptance-closeout.json` maps A1-A16, required gates, non-accepted runtime scope and residual owner-runtime blockers | phase4_residual_blocker_audit_passed |
 | Owner-runtime execution approval packet | archive_only | `owner-runtime-execution-approval-packet.json` freezes exact approval text: `I approve writes to D:/Nautilus/nautilus_ctp_adapter ...`; runtime Web UI broker command execution remains blocked until approval and owner artifacts exist | phase4a_owner_runtime_execution_approval_packet_ready |
 | Runtime approval packet UI projection | archive_only | Browser evidence proves the exact approval packet is visible in Web UI with no owner-runtime invocation, owner write, broker order creation or raw secret claim | phase4b_runtime_approval_packet_ui_projection_passed |
 | Owner-runtime execution handoff bundle | archive_only | `owner-runtime-execution-handoff-bundle.json` freezes the post-approval sequence, runtime inputs and post-handoff gates while `execution_allowed=false` | phase4c_owner_runtime_execution_handoff_bundle_ready |
 | Runtime handoff bundle UI projection | archive_only | Browser evidence proves the execution handoff bundle is visible in Web UI with no execution allowed, owner write, broker order creation or raw secret claim | phase4d_runtime_handoff_bundle_ui_projection_passed |
-| Proposal-local evidence | archive_only | `acceptance.md`, browser command-controls evidence, runtime closeout projection evidence, P024 partial-fill display evidence, runtime handoff request evidence, owner-runtime invocation readiness evidence, runtime readiness UI projection evidence, full acceptance closeout audit, owner-runtime execution approval packet, runtime approval packet UI evidence, owner-runtime execution handoff bundle and runtime handoff bundle UI evidence; runtime Web UI broker command execution remains blocked pending external approval | phase4d_runtime_handoff_bundle_ui_projection_passed |
+| Runtime execution gap audit | archive_only | Browser evidence proves A4 remains not accepted until owner-runtime artifacts exist, with final acceptance claim false | phase4e_runtime_execution_gap_audit_passed |
+| Proposal-local evidence | archive_only | `acceptance.md`, browser command-controls evidence, runtime closeout projection evidence, P024 partial-fill display evidence, runtime handoff request evidence, owner-runtime invocation readiness evidence, runtime readiness UI projection evidence, full acceptance closeout audit, owner-runtime execution approval packet, runtime approval packet UI evidence, owner-runtime execution handoff bundle, runtime handoff bundle UI evidence and runtime execution gap audit evidence; runtime Web UI broker command execution remains blocked pending external approval | phase4e_runtime_execution_gap_audit_passed |
 
 No stable rule graduation: proposal-local evidence only until implementation and runtime gates pass.

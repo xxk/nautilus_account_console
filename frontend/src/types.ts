@@ -486,6 +486,56 @@ export interface CommandRuntimeExecutionHandoffBundle {
   explicit_non_claims: string[];
 }
 
+export interface CommandRuntimeExecutionGapAudit {
+  schema: "account-console.p024.runtime-execution-gap-audit.v1";
+  proposal_id: "p024-account-console-paper-command-controls";
+  account_id: "acct.ctp.paper.19053";
+  reviewed_at: string;
+  status: "phase4e_final_runtime_execution_gap_audited";
+  verdict: "blocked_pending_owner_runtime_execution";
+  goal_state: "all_acceptance_requires_owner_runtime_execution_artifacts";
+  accepted_scenarios: string[];
+  not_accepted_scenarios: Array<{
+    id: string;
+    scenario: string;
+    required_evidence_shape: string;
+    current_status: string;
+    blocker_refs: string[];
+  }>;
+  required_before_goal_complete: string[];
+  external_write_approval: {
+    required: true;
+    obtained: false;
+    approval_path: string;
+    exact_approval_text: string;
+  };
+  owner_runtime_refs: {
+    owner_ref: string;
+    owner_repo_path: string;
+    config_ref: string;
+    config_raw_content_read: false;
+    submit_entrypoint_ref: string;
+    cancel_entrypoint_ref: string;
+  };
+  required_owner_artifacts: string[];
+  post_execution_gates: string[];
+  residual_blockers: CommandApiBlocker[];
+  negative_assertions: {
+    final_acceptance_claimed: false;
+    runtime_invocation_attempted: false;
+    owner_repo_write_attempted: false;
+    browser_triggered_broker_order: false;
+    gateway_send_attempted: false;
+    broker_order_created: false;
+    live_armed: false;
+    account_mirror_write_authority: false;
+    raw_secret_values_recorded: false;
+    raw_broker_endpoint_recorded: false;
+    config_raw_content_read: false;
+  };
+  explicit_non_claims: string[];
+}
+
 export type AccountHealthPanelFixtureState =
   | "happy_path"
   | "empty"

@@ -4,6 +4,7 @@ import type {
   CommandApiResult,
   CommandRuntimeCloseout,
   CommandRuntimeExecutionApprovalPacket,
+  CommandRuntimeExecutionGapAudit,
   CommandRuntimeExecutionHandoffBundle,
   CommandRuntimeInvocationReadiness,
   CommandRuntimeRunRequest,
@@ -190,6 +191,16 @@ export async function fetchCommandRuntimeExecutionHandoffBundle(
   );
   if (!response.ok) {
     throw new Error(`runtime execution handoff bundle failed: ${response.status}`);
+  }
+  return response.json();
+}
+
+export async function fetchCommandRuntimeExecutionGapAudit(accountId: string): Promise<CommandRuntimeExecutionGapAudit> {
+  const response = await fetch(
+    `${API_BASE}/api/commands/accounts/${encodeURIComponent(accountId)}/runtime-execution-gap-audit`
+  );
+  if (!response.ok) {
+    throw new Error(`runtime execution gap audit failed: ${response.status}`);
   }
   return response.json();
 }
