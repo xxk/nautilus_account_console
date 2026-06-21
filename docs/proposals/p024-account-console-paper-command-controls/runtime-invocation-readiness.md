@@ -1,7 +1,7 @@
 # P024 Runtime Invocation Readiness / Owner Runtime Approval Gate
 
 - Proposal ID: `p024-account-console-paper-command-controls`
-- Status: phase3d_owner_runtime_invocation_readiness_blocked_by_external_approval
+- Status: phase3e_runtime_readiness_ui_projection_passed
 
 ## Scope
 
@@ -31,7 +31,30 @@ Before any owner runtime execution, the operator must explicitly approve:
 2. Reason: run owner-owned guarded OpenCTP paper submit/cancel scripts for P024.
 3. Expected impact: create owner-owned runtime/debug/readback/reconciliation artifacts outside this worktree and potentially submit/cancel one paper order in the 19053 simulation account.
 
-Without that approval, P024 remains blocked at Phase 3d and must not claim real Web UI broker execution. The external write approval is required before any owner-runtime invocation.
+Without that approval, P024 remains blocked for real owner-runtime execution and must not claim real Web UI broker execution. The external write approval is required before any owner-runtime invocation.
+
+## Web UI Projection Gate
+
+Phase 3e projects this readiness package into Account Workbench:
+
+1. Backend route: `GET /api/commands/accounts/{account_id}/runtime-invocation-readiness`.
+2. Web UI panel: `account-runtime-readiness-panel`.
+3. Required false flags: `account-runtime-readiness-invoked`, `account-runtime-readiness-owner-write`, `account-runtime-readiness-browser-trigger`, `account-runtime-readiness-config-raw` and `account-runtime-readiness-raw-secret`.
+4. Required visible blocker: external write approval is required and not obtained.
+5. Required non-claim: `does_not_close_phase_3_runtime_execution`.
+
+Run:
+
+```powershell
+npx playwright test tests/e2e/p024-runtime-invocation-readiness.spec.ts --project=desktop
+python scripts\validate_p024_runtime_readiness_browser_evidence.py
+```
+
+Pass signal:
+
+```text
+P024_RUNTIME_READINESS_BROWSER_EVIDENCE_OK: runtime_readiness_ui=pass runtime_invocation_attempted=false external_write_approval=blocked
+```
 
 ## Machine Gate
 

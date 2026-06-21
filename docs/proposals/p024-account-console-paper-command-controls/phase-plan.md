@@ -1,7 +1,7 @@
 # P024 Phase Plan / Account Console Paper Command Controls
 
 - Proposal ID: `p024-account-console-paper-command-controls`
-- Status: phase3d_owner_runtime_invocation_readiness_blocked_by_external_approval
+- Status: phase3e_runtime_readiness_ui_projection_passed
 - Primary ADR: ADR-0007
 
 ## Artifact Trust Boundary
@@ -40,7 +40,7 @@ Primary ADR: ADR-0007
 <!-- AI-PHASE-STATUS-BEGIN
 reviewed_at: 2026-06-21
 reviewer: codex
-overall_status: phase3d_owner_runtime_invocation_readiness_blocked_by_external_approval
+overall_status: phase3e_runtime_readiness_ui_projection_passed
 phases:
   - id: phase_0_design_gate
     status: completed
@@ -74,6 +74,10 @@ phases:
     status: completed_readiness_gate_blocked_by_external_approval
     ai_progress: 100
     evidence: "python scripts\\validate_p024_owner_runtime_invocation_readiness.py"
+  - id: phase_3e_runtime_readiness_ui_projection
+    status: completed_browser_readiness_projection_gate
+    ai_progress: 100
+    evidence: "npx playwright test tests/e2e/p024-runtime-invocation-readiness.spec.ts --project=desktop; python scripts\\validate_p024_runtime_readiness_browser_evidence.py"
   - id: phase_4_closeout
     status: planned
     ai_progress: 0
@@ -92,6 +96,7 @@ AI-PHASE-STATUS-END -->
 | Phase 3b Partial-fill cancel display | Prove Web UI display correctness for S1 working, S2 partial, S3 cancel pending and S4 remaining cancelled | completed_browser_display_gate | `npx playwright test tests/e2e/p024-partial-fill-cancel-order-display.spec.ts --project=desktop`; `python scripts\validate_p024_partial_fill_cancel_browser_evidence.py` | Keep runtime partial-fill blocker until real or owner-approved partial-fill state exists |
 | Phase 3c Owner-runtime handoff request | Prove Web UI prepares typed submit/cancel handoff requests for the owner runtime without invoking broker mutation | completed_browser_handoff_gate | `npx playwright test tests/e2e/p024-runtime-handoff-request.spec.ts --project=desktop`; `python scripts\validate_p024_runtime_handoff_browser_evidence.py` | External owner runtime invocation remains blocked until approved outside this worktree |
 | Phase 3d Owner-runtime invocation readiness | Freeze exact owner repo, guarded script entrypoints, argument shape, external write approval scope and post-run artifact requirements | completed_readiness_gate_blocked_by_external_approval | `python scripts\validate_p024_owner_runtime_invocation_readiness.py` | Ask for explicit approval before running owner scripts that may write outside this worktree and submit/cancel one paper order |
+| Phase 3e Runtime readiness UI projection | Render owner-runtime readiness blocker in Web UI with owner refs, entrypoints, approval state and non-claims | completed_browser_readiness_projection_gate | `npx playwright test tests/e2e/p024-runtime-invocation-readiness.spec.ts --project=desktop`; `python scripts\validate_p024_runtime_readiness_browser_evidence.py` | Keep owner-runtime execution blocked until explicit external approval and owner artifacts exist |
 | Phase 4 Closeout | Full P024 gate set and residual blocker mapping | planned | future evidence | Close only after implementation/browser evidence |
 
 ## Runtime / Command Freeze
@@ -107,3 +112,4 @@ Phase 0 does not run broker mutation. Phase 1 may add API contracts but must not
 5. Real partial-fill runtime remains blocked until a real or owner-approved partial-fill state is available.
 6. Web UI owner-runtime handoff requests are accepted only as typed requests; `runtime_invocation_attempted=false` and `browser_triggered_broker_order=false` remain required until owner runtime execution is approved and ingested.
 7. Phase 3d readiness is complete but real owner-runtime execution remains blocked because external write approval for `D:/Nautilus/nautilus_ctp_adapter` has not been granted in this thread.
+8. Phase 3e readiness UI projection is complete; it displays the blocker and owner refs in Web UI but does not invoke owner runtime, write the owner repo or create broker orders.

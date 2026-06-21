@@ -21,6 +21,7 @@ ALLOWED_COMMAND_ROUTES = {
     "/api/commands/accounts/{account_id}/runtime-run-requests/submit": {"POST"},
     "/api/commands/accounts/{account_id}/runtime-run-requests/cancel": {"POST"},
     "/api/commands/accounts/{account_id}/runtime-closeouts/{run_id}": {"GET"},
+    "/api/commands/accounts/{account_id}/runtime-invocation-readiness": {"GET"},
 }
 
 
@@ -167,6 +168,23 @@ def validate_api_behavior() -> None:
         "runtime closeout non-claim missing",
     )
 
+    readiness_response = client.get(f"/api/commands/accounts/{ACCOUNT_ID}/runtime-invocation-readiness")
+    require(readiness_response.status_code == 200, f"runtime readiness status mismatch: {readiness_response.status_code}")
+    readiness_payload = readiness_response.json()
+    require(
+        readiness_payload["schema"] == "account-console.p024.owner-runtime-invocation-readiness.v1",
+        "runtime readiness schema mismatch",
+    )
+    require(
+        readiness_payload["status"] == "blocked_waiting_for_external_owner_runtime_write_approval",
+        "runtime readiness status mismatch",
+    )
+    require(readiness_payload["external_write_approval_request"]["required"] is True, "runtime readiness approval required mismatch")
+    require(readiness_payload["external_write_approval_request"]["obtained"] is False, "runtime readiness approval obtained mismatch")
+    require(readiness_payload["negative_assertions"]["runtime_invocation_attempted"] is False, "runtime readiness invocation flag mismatch")
+    require(readiness_payload["negative_assertions"]["owner_repo_write_attempted"] is False, "runtime readiness owner write flag mismatch")
+    require(readiness_payload["negative_assertions"]["browser_triggered_broker_order"] is False, "runtime readiness browser trigger mismatch")
+
     live_intent = submit_intent()
     live_intent["mode"] = "live_armed"
     live_response = client.post(f"/api/commands/accounts/{ACCOUNT_ID}/submit-intents", json=live_intent)
@@ -181,7 +199,7 @@ def main() -> None:
     validate_api_behavior()
     print(
         "P024_PAPER_COMMAND_API_OK: "
-        "phase=1 routes=5 status=accepted_for_risk runtime_handoff=blocked runtime_closeout=reconciled mirror_read_only=true"
+        "phase=1 routes=6 status=accepted_for_risk runtime_handoff=blocked runtime_closeout=reconciled runtime_readiness=blocked mirror_read_only=true"
     )
 
 

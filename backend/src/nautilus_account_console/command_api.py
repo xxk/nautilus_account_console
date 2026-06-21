@@ -10,6 +10,7 @@ from fastapi import HTTPException
 from .schemas import (
     CancelIntentRequest,
     CommandApiResult,
+    CommandRuntimeInvocationReadiness,
     CommandBlocker,
     CommandRuntimeCloseout,
     CommandRuntimeRunRequest,
@@ -21,6 +22,13 @@ PAPER_ACCOUNT_ID = "acct.ctp.paper.19053"
 PROPOSAL_ID = "p024-account-console-paper-command-controls"
 ROOT = Path(__file__).resolve().parents[3]
 COMMAND_RUN_ROOT = ROOT / "output" / "account_command" / "ctp-paper-19053"
+RUNTIME_INVOCATION_READINESS = (
+    ROOT
+    / "docs"
+    / "acceptance"
+    / "p024-account-console-paper-command-controls"
+    / "owner-runtime-invocation-readiness.json"
+)
 DEFAULT_RUNTIME_RUN_ID = "p023-armed-20260621t0748z"
 REQUIRED_RUNTIME_FILES = [
     "submit_intent.json",
@@ -290,6 +298,40 @@ def load_runtime_closeout(account_id: str, run_id: str = DEFAULT_RUNTIME_RUN_ID)
             "web_ui_trigger_of_new_runtime_order_still_pending",
         ],
     )
+
+
+def load_runtime_invocation_readiness(account_id: str) -> CommandRuntimeInvocationReadiness:
+    if account_id != PAPER_ACCOUNT_ID:
+        raise HTTPException(status_code=403, detail="P024 runtime readiness is scoped to acct.ctp.paper.19053 only")
+    if not RUNTIME_INVOCATION_READINESS.exists():
+        raise HTTPException(status_code=404, detail="runtime invocation readiness evidence not found")
+    text = RUNTIME_INVOCATION_READINESS.read_text(encoding="utf-8")
+    if any(fragment.lower() in text.lower() for fragment in SENSITIVE_RUNTIME_FRAGMENTS):
+        raise HTTPException(status_code=409, detail="runtime invocation readiness contains forbidden sensitive fragments")
+    payload = json.loads(text)
+    if payload.get("account_id") != PAPER_ACCOUNT_ID:
+        raise HTTPException(status_code=409, detail="runtime invocation readiness account_id mismatch")
+    negative = payload.get("negative_assertions") or {}
+    for key in [
+        "runtime_invocation_attempted",
+        "owner_repo_write_attempted",
+        "browser_triggered_broker_order",
+        "gateway_send_attempted",
+        "broker_order_created",
+        "live_armed",
+        "raw_secret_values_recorded",
+        "raw_broker_endpoint_recorded",
+        "config_raw_content_read",
+    ]:
+        if negative.get(key) is not False:
+            raise HTTPException(status_code=409, detail=f"runtime invocation readiness negative assertion failed: {key}")
+    owner = payload.get("owner_runtime") or {}
+    if owner.get("config_raw_content_read") is not False:
+        raise HTTPException(status_code=409, detail="runtime invocation readiness read raw config content")
+    approval = payload.get("external_write_approval_request") or {}
+    if approval.get("required") is not True or approval.get("obtained") is not False:
+        raise HTTPException(status_code=409, detail="runtime invocation readiness approval boundary drifted")
+    return CommandRuntimeInvocationReadiness(**payload)
 
 
 def accept_submit_intent(account_id: str, intent: OrderIntentRequest) -> CommandApiResult:

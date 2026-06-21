@@ -1,7 +1,7 @@
 # P024 UI Acceptance / Paper Command Controls
 
 - Proposal ID: `p024-account-console-paper-command-controls`
-- Status: phase3d_owner_runtime_invocation_readiness_blocked_by_external_approval
+- Status: phase3e_runtime_readiness_ui_projection_passed
 
 ## Browser Acceptance
 
@@ -18,6 +18,22 @@
 | UI-09 | partial fill then cancel display correctness | S1/S2/S3/S4 order row keeps identity, stable fill rows, correct formulas and P024 evidence refs | phase3b_partial_fill_cancel_ui_display_passed |
 | UI-10 | runtime closeout projection | owner-backed P023 runtime closeout refs/checksums/non-claims render in UI with browser trigger false | phase3a_runtime_closeout_projection_passed |
 | UI-11 | owner-runtime handoff request | submit/cancel controls prepare blocked owner-runtime handoff requests with no browser-triggered broker order | phase3c_runtime_handoff_request_passed |
+| UI-12 | runtime readiness blocker projection | readiness package owner refs, entrypoints, approval state, blockers and non-claims render in UI while runtime invocation remains false | phase3e_runtime_readiness_ui_projection_passed |
+
+## UI-12 Runtime Readiness Blocker Projection
+
+The browser test must load `/accounts/acct.ctp.paper.19053`, call the read-only readiness endpoint, and verify:
+
+1. `account-runtime-readiness-panel` is visible.
+2. `account-runtime-readiness-status` is `blocked_waiting_for_external_owner_runtime_write_approval`.
+3. `account-runtime-readiness-owner`, `account-runtime-readiness-owner-path` and `account-runtime-readiness-config-ref` are visible without raw endpoint values.
+4. `account-runtime-readiness-approval-required` is `true` and `account-runtime-readiness-approval-obtained` is `false`.
+5. `account-runtime-readiness-invoked`, `account-runtime-readiness-owner-write`, `account-runtime-readiness-browser-trigger`, `account-runtime-readiness-config-raw` and `account-runtime-readiness-raw-secret` are all `false`.
+6. `account-runtime-readiness-entrypoint` shows both guarded submit/cancel entrypoints and arm flags.
+7. `account-runtime-readiness-blocker` includes external write approval and owner artifact blockers.
+8. No UI text claims live readiness, raw OpenCTP endpoint truth, or browser-submitted broker order.
+
+Accepted evidence: `python scripts\validate_p024_runtime_readiness_browser_evidence.py` returns `P024_RUNTIME_READINESS_BROWSER_EVIDENCE_OK`.
 
 ## UI-11 Owner Runtime Handoff Request
 
@@ -86,6 +102,7 @@ Accepted evidence: `python scripts\validate_p024_partial_fill_cancel_browser_evi
 | NUI-10 | cancel pending hides the blocker and claims final canceled state | blocked |
 | NUI-11 | runtime closeout panel claims browser-triggered broker order or gateway ack final state | test failure |
 | NUI-12 | runtime handoff panel claims owner runtime invocation, gateway send or broker order creation from browser | test failure |
+| NUI-13 | runtime readiness panel hides approval blocker, shows raw endpoint/secret material, or claims owner runtime invocation | test failure |
 
 ## Blocker
 

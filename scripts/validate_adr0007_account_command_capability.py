@@ -32,6 +32,7 @@ ALLOWED_COMMAND_ROUTES = {
     "/api/commands/accounts/{account_id}/runtime-run-requests/submit": {"POST"},
     "/api/commands/accounts/{account_id}/runtime-run-requests/cancel": {"POST"},
     "/api/commands/accounts/{account_id}/runtime-closeouts/{run_id}": {"GET"},
+    "/api/commands/accounts/{account_id}/runtime-invocation-readiness": {"GET"},
 }
 
 
@@ -53,7 +54,7 @@ def validate_adr() -> None:
     for phrase in [
         'adr_id: "0007"',
         "decision_status: proposed",
-        "landing_status: p024_phase3d_owner_runtime_invocation_readiness_gate",
+        "landing_status: p024_phase3e_runtime_readiness_ui_projection_gate",
         "Governed Account Command Capability",
         "Account Mirror never sends commands",
         "Gateway acknowledgement 不是最终账户状态",
@@ -66,9 +67,11 @@ def validate_adr() -> None:
         "P024 Phase 3b partial-fill cancel UI display is accepted as browser display-contract evidence only",
         "P024 Phase 3c owner-runtime handoff request is accepted as browser handoff evidence only",
         "P024 Phase 3d owner-runtime invocation readiness is accepted as a readiness gate only",
+        "P024 Phase 3e runtime readiness UI projection is accepted as browser blocker evidence only",
         "browser_triggered_broker_order=false",
         "gateway_send_attempted=false",
         "runtime_invocation_attempted=false",
+        "owner_repo_write_attempted=false",
     ]:
         require(phrase in text, f"ADR-0007 missing phrase: {phrase}")
     for phrase in REQUIRED_FLOW:
@@ -132,7 +135,10 @@ def main() -> None:
     validate_existing_design_gate_still_closed()
     validate_capability_fixtures_still_disabled()
     validate_backend_has_only_p024_command_routes()
-    print("ADR0007_ACCOUNT_COMMAND_CAPABILITY_OK: status=proposed landing=p024_phase3d_owner_runtime_invocation_readiness_gate")
+    print(
+        "ADR0007_ACCOUNT_COMMAND_CAPABILITY_OK: "
+        "status=proposed landing=p024_phase3e_runtime_readiness_ui_projection_gate"
+    )
 
 
 if __name__ == "__main__":

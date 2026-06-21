@@ -307,6 +307,67 @@ export interface CommandRuntimeRunRequest {
   run_request_checksum: string;
 }
 
+export interface CommandRuntimeInvocationReadiness {
+  schema: "account-console.p024.owner-runtime-invocation-readiness.v1";
+  proposal_id: "p024-account-console-paper-command-controls";
+  account_id: "acct.ctp.paper.19053";
+  status: "blocked_waiting_for_external_owner_runtime_write_approval";
+  verdict: "readiness_package_passed_runtime_not_invoked";
+  reviewed_at: string;
+  owner_runtime: {
+    owner_ref: string;
+    owner_repo_ref: string;
+    owner_repo_path: string;
+    config_ref: string;
+    config_file_exists_on_owner_node: boolean;
+    config_raw_content_read: false;
+    raw_secret_values_recorded: false;
+    raw_broker_endpoint_recorded: false;
+  };
+  entrypoints: Array<{
+    action: "submit" | "cancel";
+    entrypoint_ref: string;
+    owner_path: string;
+    checksum: string;
+    armed_flag: string;
+    required_arguments: string[];
+  }>;
+  predecessor_evidence: Record<string, unknown>;
+  external_write_approval_request: {
+    required: true;
+    obtained: false;
+    approval_path: string;
+    write_scope: string[];
+    reason: string;
+    expected_impact: string[];
+    approval_prompt_required_before_execution: true;
+  };
+  planned_runtime_commands: Array<{
+    action: "submit" | "cancel";
+    entrypoint_ref: string;
+    command_template: string;
+    runtime_invocation_attempted: false;
+  }>;
+  acceptance_after_owner_run: {
+    required_owner_artifacts: string[];
+    required_browser_evidence: string[];
+    required_validators: string[];
+  };
+  negative_assertions: {
+    runtime_invocation_attempted: false;
+    owner_repo_write_attempted: false;
+    browser_triggered_broker_order: false;
+    gateway_send_attempted: false;
+    broker_order_created: false;
+    live_armed: false;
+    raw_secret_values_recorded: false;
+    raw_broker_endpoint_recorded: false;
+    config_raw_content_read: false;
+  };
+  blockers: CommandApiBlocker[];
+  explicit_non_claims: string[];
+}
+
 export type AccountHealthPanelFixtureState =
   | "happy_path"
   | "empty"

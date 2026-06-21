@@ -1,7 +1,7 @@
 # P024 UI Design / Paper Command Controls
 
 - Proposal ID: `p024-account-console-paper-command-controls`
-- Status: phase3d_owner_runtime_invocation_readiness_blocked_by_external_approval
+- Status: phase3e_runtime_readiness_ui_projection_passed
 
 ## Design Intent
 
@@ -61,6 +61,21 @@ No controls are reserved or visible in disabled mode.
 | `account-runtime-handoff-raw-secret` | raw secret evidence flag; must remain false |
 | `account-runtime-handoff-blocker` | typed blocker for owner invocation, external write approval and post-run ingest |
 | `account-runtime-handoff-non-claim` | explicit non-claims shown in UI |
+| `account-runtime-readiness-panel` | owner-runtime readiness blocker projection panel |
+| `account-runtime-readiness-status` | readiness status; must remain blocked until external owner-runtime approval and artifacts exist |
+| `account-runtime-readiness-owner` | owner runtime ref |
+| `account-runtime-readiness-owner-path` | owner repo path requiring external write approval |
+| `account-runtime-readiness-config-ref` | owner config ref without raw endpoint or secret values |
+| `account-runtime-readiness-config-raw` | raw config content read flag; must remain false |
+| `account-runtime-readiness-approval-required` | external write approval required flag |
+| `account-runtime-readiness-approval-obtained` | external write approval obtained flag; must remain false until approved |
+| `account-runtime-readiness-invoked` | owner runtime invocation flag; must remain false |
+| `account-runtime-readiness-owner-write` | owner repo write attempted flag; must remain false |
+| `account-runtime-readiness-browser-trigger` | browser-triggered broker order flag; must remain false |
+| `account-runtime-readiness-raw-secret` | raw secret evidence flag; must remain false |
+| `account-runtime-readiness-entrypoint` | guarded submit/cancel owner runtime entrypoints and arm flags |
+| `account-runtime-readiness-blocker` | typed external approval and owner artifact blockers |
+| `account-runtime-readiness-non-claim` | explicit non-claims shown in UI |
 
 ## Layout Rules
 
@@ -73,6 +88,7 @@ No controls are reserved or visible in disabled mode.
 7. After terminal cancel, the order row must preserve filled quantity, set remaining quantity to zero and show cancelled quantity equal to the cancelled remainder.
 8. Runtime closeout projection is read-only and must show `browser_triggered_broker_order=false` beside predecessor runtime refs.
 9. Runtime handoff requests are displayed as blocked owner-runtime preparation, not as browser-triggered broker execution.
+10. Runtime readiness is displayed as a blocker projection: owner refs and config refs are visible, but raw config, endpoints, secrets, owner writes and runtime invocation remain false.
 
 ## Disabled Mode
 

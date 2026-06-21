@@ -165,12 +165,13 @@ def validate_payload(payload: dict[str, Any]) -> None:
 def validate_doc() -> None:
     text = DOC.read_text(encoding="utf-8")
     for phrase in [
-        "phase3d_owner_runtime_invocation_readiness_blocked_by_external_approval",
+        "phase3e_runtime_readiness_ui_projection_passed",
         "This is not broker execution evidence",
         "external write approval is required",
         "runtime_invocation_attempted=false",
         "owner_repo_write_attempted=false",
         "P024_OWNER_RUNTIME_INVOCATION_READINESS_OK",
+        "P024_RUNTIME_READINESS_BROWSER_EVIDENCE_OK",
     ]:
         require(phrase in text, f"readiness doc missing phrase: {phrase}")
 

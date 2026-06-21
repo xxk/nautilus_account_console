@@ -11,6 +11,7 @@ from . import __version__
 from .command_api import (
     accept_cancel_intent,
     accept_submit_intent,
+    load_runtime_invocation_readiness,
     load_runtime_closeout,
     prepare_cancel_runtime_run_request,
     prepare_submit_runtime_run_request,
@@ -28,6 +29,7 @@ from .schemas import (
     CancelIntentRequest,
     CommandApiResult,
     CommandRuntimeCloseout,
+    CommandRuntimeInvocationReadiness,
     CommandRuntimeRunRequest,
     Health,
     MirrorAccountProjection,
@@ -247,6 +249,15 @@ def command_cancel_runtime_run_request(account_id: str, intent: CancelIntentRequ
 )
 def command_runtime_closeout(account_id: str, run_id: str) -> CommandRuntimeCloseout:
     return load_runtime_closeout(account_id, run_id)
+
+
+@app.get(
+    "/api/commands/accounts/{account_id}/runtime-invocation-readiness",
+    response_model=CommandRuntimeInvocationReadiness,
+    response_model_exclude_none=True,
+)
+def command_runtime_invocation_readiness(account_id: str) -> CommandRuntimeInvocationReadiness:
+    return load_runtime_invocation_readiness(account_id)
 
 
 @app.get("/api/accounts/{account_id}", response_model=AccountDetail)

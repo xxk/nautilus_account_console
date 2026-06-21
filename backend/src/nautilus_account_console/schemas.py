@@ -4,7 +4,7 @@ from datetime import datetime
 from enum import StrEnum
 from typing import Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class AccountKind(StrEnum):
@@ -304,6 +304,26 @@ class CommandRuntimeRunRequest(BaseModel):
     blockers: list[CommandBlocker]
     explicit_non_claims: list[str]
     run_request_checksum: str
+
+
+class CommandRuntimeInvocationReadiness(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    schema_: Literal["account-console.p024.owner-runtime-invocation-readiness.v1"] = Field(alias="schema")
+    proposal_id: Literal["p024-account-console-paper-command-controls"]
+    account_id: Literal["acct.ctp.paper.19053"]
+    status: Literal["blocked_waiting_for_external_owner_runtime_write_approval"]
+    verdict: Literal["readiness_package_passed_runtime_not_invoked"]
+    reviewed_at: str
+    owner_runtime: dict
+    entrypoints: list[dict]
+    predecessor_evidence: dict
+    external_write_approval_request: dict
+    planned_runtime_commands: list[dict]
+    acceptance_after_owner_run: dict
+    negative_assertions: dict
+    blockers: list[CommandBlocker]
+    explicit_non_claims: list[str]
 
 
 class Health(BaseModel):

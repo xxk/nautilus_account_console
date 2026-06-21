@@ -80,6 +80,7 @@ ALLOWED_GOVERNED_COMMAND_ROUTES = {
     "/api/commands/accounts/{account_id}/runtime-run-requests/submit": {"POST"},
     "/api/commands/accounts/{account_id}/runtime-run-requests/cancel": {"POST"},
     "/api/commands/accounts/{account_id}/runtime-closeouts/{run_id}": {"GET"},
+    "/api/commands/accounts/{account_id}/runtime-invocation-readiness": {"GET"},
 }
 PASS_SIGNAL = "P019_API_BOUNDARY_OK: mirror_only=true governed_command_routes=p024_only direct_broker_routes=absent"
 

@@ -1,7 +1,7 @@
 # P024 Account Console Paper Command Controls
 
 - Proposal ID: `p024-account-console-paper-command-controls`
-- Status: phase3d_owner_runtime_invocation_readiness_blocked_by_external_approval
+- Status: phase3e_runtime_readiness_ui_projection_passed
 - ADR carrier: yes
 - Primary ADR: ADR-0007
 - Predecessor: [P023 OpenCTP 19053 Paper Command Capability](../p023-openctp-19053-paper-command-capability/README.md)
@@ -24,6 +24,7 @@ P024 does not enable `live_armed`, production admission, capital approval, or Ac
 7. Render owner-backed OpenCTP 19053 paper runtime closeout artifacts in the Web UI without claiming a browser-triggered broker order.
 8. Prepare typed Web UI owner-runtime submit/cancel handoff requests while preserving `runtime_invocation_attempted=false` and `browser_triggered_broker_order=false`.
 9. Freeze the external owner-runtime invocation readiness package: owner repo, guarded entrypoints, argument shape, expected write scope, required approval and post-run artifact requirements.
+10. Render the owner-runtime readiness package in the Web UI as an explicit blocker with owner refs, entrypoints, approval state and non-claims.
 
 ## Non-Goals
 
@@ -48,6 +49,7 @@ P024 does not enable `live_armed`, production admission, capital approval, or Ac
 | Phase 3b partial-fill display | Web UI order display contract passes S1 working, S2 partial, S3 cancel pending and S4 remaining cancelled with stable fill/order identities | `python scripts\validate_p024_partial_fill_cancel_browser_evidence.py` |
 | Phase 3c runtime handoff request | Web UI prepares owner-runtime submit/cancel handoff requests with blocked owner invocation and no browser-triggered broker order claim | `python scripts\validate_p024_runtime_handoff_browser_evidence.py` |
 | Phase 3d runtime invocation readiness | Owner-runtime readiness package records external write approval scope, owner entrypoint checksums and post-run artifact requirements while runtime remains uninvoked | `python scripts\validate_p024_owner_runtime_invocation_readiness.py` |
+| Phase 3e runtime readiness UI projection | Web UI renders owner-runtime readiness blocker, owner repo refs, entrypoints, approval state and non-claims while `runtime_invocation_attempted=false` | `python scripts\validate_p024_runtime_readiness_browser_evidence.py` |
 
 ## Document Map
 
@@ -71,7 +73,8 @@ P024 does not enable `live_armed`, production admission, capital approval, or Ac
 | Partial-fill cancel display | archive_only | Browser evidence proves S1-S4 order/fill display correctness and typed runtime blocker | phase3b_partial_fill_cancel_ui_display_passed |
 | Runtime handoff request | archive_only | Browser evidence proves submit/cancel prepare owner-runtime run requests while owner runtime invocation, gateway send and broker order creation remain false | phase3c_runtime_handoff_request_passed |
 | Runtime invocation readiness | archive_only | Machine evidence proves owner repo, guarded entrypoints, approval scope and post-run artifact requirements are frozen while external write approval remains required | phase3d_owner_runtime_invocation_readiness_blocked_by_external_approval |
+| Runtime readiness UI projection | archive_only | Browser evidence proves the readiness blocker is visible in Web UI with no owner-runtime invocation, owner write, browser-triggered broker order or raw secret claim | phase3e_runtime_readiness_ui_projection_passed |
 | Architecture / ownership backfill | required before implementation closeout | command gateway owner map | not_started |
-| Proposal-local evidence | archive_only | `acceptance.md`, browser command-controls evidence, runtime closeout projection evidence, P024 partial-fill display evidence, runtime handoff request evidence and owner-runtime invocation readiness evidence; runtime Web UI broker command execution remains blocked pending external approval | phase3d_owner_runtime_invocation_readiness_blocked_by_external_approval |
+| Proposal-local evidence | archive_only | `acceptance.md`, browser command-controls evidence, runtime closeout projection evidence, P024 partial-fill display evidence, runtime handoff request evidence, owner-runtime invocation readiness evidence and runtime readiness UI projection evidence; runtime Web UI broker command execution remains blocked pending external approval | phase3e_runtime_readiness_ui_projection_passed |
 
 No stable rule graduation: proposal-local evidence only until implementation and runtime gates pass.

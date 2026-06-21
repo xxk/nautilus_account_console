@@ -3,6 +3,7 @@ import type {
   CancelIntentRequest,
   CommandApiResult,
   CommandRuntimeCloseout,
+  CommandRuntimeInvocationReadiness,
   CommandRuntimeRunRequest,
   MirrorAccountProjection,
   MirrorEvidenceResponse,
@@ -151,6 +152,18 @@ export async function fetchCommandRuntimeCloseout(
   );
   if (!response.ok) {
     throw new Error(`runtime closeout request failed: ${response.status}`);
+  }
+  return response.json();
+}
+
+export async function fetchCommandRuntimeInvocationReadiness(
+  accountId: string
+): Promise<CommandRuntimeInvocationReadiness> {
+  const response = await fetch(
+    `${API_BASE}/api/commands/accounts/${encodeURIComponent(accountId)}/runtime-invocation-readiness`
+  );
+  if (!response.ok) {
+    throw new Error(`runtime invocation readiness failed: ${response.status}`);
   }
   return response.json();
 }

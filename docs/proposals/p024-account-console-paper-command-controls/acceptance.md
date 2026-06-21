@@ -1,7 +1,7 @@
 # P024 Acceptance / Account Console Paper Command Controls
 
 - Proposal ID: `p024-account-console-paper-command-controls`
-- Status: phase3d_owner_runtime_invocation_readiness_blocked_by_external_approval
+- Status: phase3e_runtime_readiness_ui_projection_passed
 - Primary ADR: ADR-0007
 
 ## Scope
@@ -21,6 +21,7 @@ Out of scope: live trading, replace order, Account Mirror write authority, direc
 | P024 partial-fill cancel display | `npx playwright test tests/e2e/p024-partial-fill-cancel-order-display.spec.ts --project=desktop` then `python scripts\validate_p024_partial_fill_cancel_browser_evidence.py` | `P024_PARTIAL_FILL_CANCEL_BROWSER_EVIDENCE_OK` | S1-S4 Web UI order/fill display correctness; cancel pending is not final; runtime partial-fill remains typed blocker |
 | P024 runtime handoff request | `npx playwright test tests/e2e/p024-runtime-handoff-request.spec.ts --project=desktop` then `python scripts\validate_p024_runtime_handoff_browser_evidence.py` | `P024_RUNTIME_HANDOFF_BROWSER_EVIDENCE_OK` | Submit/cancel controls prepare owner-runtime run requests with blocked owner invocation; no browser-triggered broker order claim |
 | P024 owner-runtime invocation readiness | `python scripts\validate_p024_owner_runtime_invocation_readiness.py` | `P024_OWNER_RUNTIME_INVOCATION_READINESS_OK` | Owner repo, guarded script checksums, external write approval scope and post-run artifact requirements are frozen; runtime remains uninvoked |
+| P024 runtime readiness UI projection | `npx playwright test tests/e2e/p024-runtime-invocation-readiness.spec.ts --project=desktop` then `python scripts\validate_p024_runtime_readiness_browser_evidence.py` | `P024_RUNTIME_READINESS_BROWSER_EVIDENCE_OK` | Web UI renders readiness blocker, owner refs, entrypoints, approval state and non-claims without owner runtime invocation |
 | P023 runtime predecessor | `python scripts\validate_p023_openctp19053_command_run.py --run-dir output\account_command\ctp-paper-19053\p023-armed-20260621t0748z --source-package output\account_capability\ctp-paper-19053\source-package.json` | `P023_OPENCTP19053_COMMAND_RUN_OK` | Predecessor paper command evidence |
 | Proposal docs | `python scripts\check_proposal_docs.py --root . --proposal-id p024-account-console-paper-command-controls` | `PROPOSAL_DOCS_OK` | Proposal structure |
 
@@ -41,6 +42,19 @@ Out of scope: live trading, replace order, Account Mirror write authority, direc
 | A11 | positive | Runtime closeout evidence appears in Web UI without browser-trigger claim | Playwright + API route audit + browser evidence JSON | UI hides refs/checksums, shows gateway ack final, or claims browser submitted broker order | phase3a_runtime_closeout_projection_passed |
 | A12 | positive | Web UI prepares owner-runtime submit/cancel handoff without invoking broker runtime | Playwright + API route audit + browser evidence JSON | runtime invocation, gateway send or broker order creation is claimed from the browser | phase3c_runtime_handoff_request_passed |
 | A13 | positive | Owner-runtime invocation readiness and external approval scope are frozen | readiness artifact + owner script checksum validator | owner repo path, script checksum, approval scope or non-claims drift | phase3d_owner_runtime_invocation_readiness_blocked_by_external_approval |
+| A14 | positive | Runtime readiness blocker appears in Web UI without broker execution claims | Playwright + API route audit + browser evidence JSON | UI hides blocker, copies raw endpoint/secret data, or claims owner runtime was invoked | phase3e_runtime_readiness_ui_projection_passed |
+
+## Phase 3e Runtime Readiness UI Projection Acceptance
+
+The Web UI must render the Phase 3d readiness package as an explicit blocker:
+
+1. Backend exposes `GET /api/commands/accounts/{account_id}/runtime-invocation-readiness` as a read-only projection.
+2. The response uses schema `account-console.p024.owner-runtime-invocation-readiness.v1`.
+3. The Web UI displays `account-runtime-readiness-panel`, `account-runtime-readiness-status`, owner repo ref/path, config ref, entrypoint refs, approval required/obtained flags, blockers and explicit non-claims.
+4. `account-runtime-readiness-invoked`, `account-runtime-readiness-owner-write`, `account-runtime-readiness-browser-trigger`, `account-runtime-readiness-config-raw` and `account-runtime-readiness-raw-secret` must all show `false`.
+5. UI text must not include raw broker endpoints, raw front-address wording, live-ready wording or browser-submitted broker-order claims.
+
+Accepted evidence: `python scripts\validate_p024_runtime_readiness_browser_evidence.py` returns `P024_RUNTIME_READINESS_BROWSER_EVIDENCE_OK`. This is a browser projection of a blocker, not owner-runtime execution.
 
 ## Phase 3d Owner Runtime Invocation Readiness Acceptance
 
@@ -158,4 +172,4 @@ This remains browser/control contract evidence. It does not claim real Web UI Op
 
 ## Evidence Boundary
 
-Implementation/browser evidence is required before implementation closeout. Phase 1, Phase 2, Phase 3a, Phase 3b, Phase 3c and Phase 3d readiness gates are accepted; Phase 3 real Web UI submit/cancel runtime execution and Phase 4 closeout remain blocked pending external owner-runtime approval and artifacts.
+Implementation/browser evidence is required before implementation closeout. Phase 1, Phase 2, Phase 3a, Phase 3b, Phase 3c, Phase 3d readiness and Phase 3e readiness UI projection gates are accepted; Phase 3 real Web UI submit/cancel runtime execution and Phase 4 closeout remain blocked pending external owner-runtime approval and artifacts.

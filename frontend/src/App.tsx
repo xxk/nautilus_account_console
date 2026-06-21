@@ -90,6 +90,7 @@ import type {
   CancelIntentRequest,
   CommandApiResult,
   CommandRuntimeCloseout,
+  CommandRuntimeInvocationReadiness,
   CommandRuntimeRunRequest,
   AccountOrderDetailFixtureState,
   AccountOrderDetailPanelReadModel,
@@ -121,6 +122,7 @@ import type {
 } from "./types";
 import {
   cancelPaperOrderIntent,
+  fetchCommandRuntimeInvocationReadiness,
   fetchCommandRuntimeCloseout,
   fetchMirrorAccount,
   fetchMirrorAccounts,
@@ -1483,6 +1485,8 @@ function AccountWorkbenchTerminalPanel({
   const [commandError, setCommandError] = useState<string | null>(null);
   const [runtimeRunRequest, setRuntimeRunRequest] = useState<CommandRuntimeRunRequest | null>(null);
   const [runtimeRunRequestError, setRuntimeRunRequestError] = useState<string | null>(null);
+  const [runtimeReadiness, setRuntimeReadiness] = useState<CommandRuntimeInvocationReadiness | null>(null);
+  const [runtimeReadinessError, setRuntimeReadinessError] = useState<string | null>(null);
   const [runtimeCloseout, setRuntimeCloseout] = useState<CommandRuntimeCloseout | null>(null);
   const [runtimeCloseoutError, setRuntimeCloseoutError] = useState<string | null>(null);
   const paperArmed = isP024PaperArmed(mirrorReadback);
@@ -1567,24 +1571,39 @@ function AccountWorkbenchTerminalPanel({
     if (summary.account.account_id !== "acct.ctp.paper.19053") {
       setRuntimeCloseout(null);
       setRuntimeCloseoutError(null);
+      setRuntimeReadiness(null);
+      setRuntimeReadinessError(null);
       return;
     }
     let active = true;
-    async function loadRuntimeCloseout() {
-      try {
-        const closeout = await fetchCommandRuntimeCloseout(summary.account.account_id);
-        if (active) {
-          setRuntimeCloseout(closeout);
-          setRuntimeCloseoutError(null);
-        }
-      } catch (error) {
-        if (active) {
-          setRuntimeCloseout(null);
-          setRuntimeCloseoutError(error instanceof Error ? error.message : "runtime closeout unavailable");
-        }
+    async function loadRuntimeEvidence() {
+      const [closeoutResult, readinessResult] = await Promise.allSettled([
+        fetchCommandRuntimeCloseout(summary.account.account_id),
+        fetchCommandRuntimeInvocationReadiness(summary.account.account_id)
+      ]);
+      if (!active) {
+        return;
+      }
+      if (closeoutResult.status === "fulfilled") {
+        setRuntimeCloseout(closeoutResult.value);
+        setRuntimeCloseoutError(null);
+      } else {
+        const message =
+          closeoutResult.reason instanceof Error ? closeoutResult.reason.message : "runtime closeout unavailable";
+        setRuntimeCloseout(null);
+        setRuntimeCloseoutError(message);
+      }
+      if (readinessResult.status === "fulfilled") {
+        setRuntimeReadiness(readinessResult.value);
+        setRuntimeReadinessError(null);
+      } else {
+        const message =
+          readinessResult.reason instanceof Error ? readinessResult.reason.message : "runtime readiness unavailable";
+        setRuntimeReadiness(null);
+        setRuntimeReadinessError(message);
       }
     }
-    void loadRuntimeCloseout();
+    void loadRuntimeEvidence();
     return () => {
       active = false;
     };
@@ -2415,6 +2434,8 @@ function AccountWorkbenchTerminalPanel({
           </section>
 
           <CommandRuntimeRunRequestPanel request={runtimeRunRequest} error={runtimeRunRequestError} />
+
+          <CommandRuntimeInvocationReadinessPanel readiness={runtimeReadiness} error={runtimeReadinessError} />
 
           <CommandRuntimeCloseoutPanel closeout={runtimeCloseout} error={runtimeCloseoutError} />
 
@@ -4419,6 +4440,111 @@ function CommandRuntimeRunRequestPanel({
         </div>
       ) : (
         <p className="muted">No owner-runtime handoff request has been prepared from this browser session.</p>
+      )}
+    </section>
+  );
+}
+
+function CommandRuntimeInvocationReadinessPanel({
+  readiness,
+  error
+}: {
+  readiness: CommandRuntimeInvocationReadiness | null;
+  error: string | null;
+}) {
+  return (
+    <section className="terminal-panel" data-testid="account-runtime-readiness-panel">
+      <div className="terminal-panel-header">
+        <h3>Runtime Readiness</h3>
+        <StateBadge value={readiness ? "blocked" : error ? "blocked" : "empty"} />
+      </div>
+      {readiness ? (
+        <div className="evidence-stack compact-evidence-stack">
+          <div className="evidence-item">
+            <strong>Status</strong>
+            <span data-testid="account-runtime-readiness-status">{readiness.status}</span>
+          </div>
+          <div className="evidence-item">
+            <strong>Owner</strong>
+            <span data-testid="account-runtime-readiness-owner">{readiness.owner_runtime.owner_ref}</span>
+          </div>
+          <div className="evidence-item">
+            <strong>Repo</strong>
+            <span data-testid="account-runtime-readiness-owner-path">{readiness.owner_runtime.owner_repo_path}</span>
+          </div>
+          <div className="evidence-item">
+            <strong>Config</strong>
+            <span data-testid="account-runtime-readiness-config-ref">{readiness.owner_runtime.config_ref}</span>
+          </div>
+          <div className="evidence-item">
+            <strong>Config raw read</strong>
+            <span data-testid="account-runtime-readiness-config-raw">
+              {String(readiness.owner_runtime.config_raw_content_read)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Approval required</strong>
+            <span data-testid="account-runtime-readiness-approval-required">
+              {String(readiness.external_write_approval_request.required)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Approval obtained</strong>
+            <span data-testid="account-runtime-readiness-approval-obtained">
+              {String(readiness.external_write_approval_request.obtained)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Runtime invoked</strong>
+            <span data-testid="account-runtime-readiness-invoked">
+              {String(readiness.negative_assertions.runtime_invocation_attempted)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Owner write</strong>
+            <span data-testid="account-runtime-readiness-owner-write">
+              {String(readiness.negative_assertions.owner_repo_write_attempted)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Browser trigger</strong>
+            <span data-testid="account-runtime-readiness-browser-trigger">
+              {String(readiness.negative_assertions.browser_triggered_broker_order)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Raw secrets</strong>
+            <span data-testid="account-runtime-readiness-raw-secret">
+              {String(readiness.negative_assertions.raw_secret_values_recorded)}
+            </span>
+          </div>
+          {readiness.entrypoints.map((entrypoint) => (
+            <div className="evidence-item" data-testid="account-runtime-readiness-entrypoint" key={entrypoint.action}>
+              <strong>{entrypoint.action}</strong>
+              <span>
+                {entrypoint.entrypoint_ref} / {entrypoint.armed_flag}
+              </span>
+            </div>
+          ))}
+          {readiness.blockers.map((blocker) => (
+            <div className="evidence-item" data-testid="account-runtime-readiness-blocker" key={blocker.blocker_id}>
+              <strong>{blocker.type}</strong>
+              <span>{blocker.next_action}</span>
+            </div>
+          ))}
+          {readiness.explicit_non_claims.map((claim) => (
+            <div className="evidence-item" data-testid="account-runtime-readiness-non-claim" key={claim}>
+              <strong>Non-claim</strong>
+              <span>{claim}</span>
+            </div>
+          ))}
+        </div>
+      ) : error ? (
+        <div className="state-callout blocked" data-testid="account-runtime-readiness-error">
+          {error}
+        </div>
+      ) : (
+        <p className="muted">No owner-runtime invocation readiness evidence is mounted for this account.</p>
       )}
     </section>
   );

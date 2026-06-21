@@ -213,6 +213,27 @@ def test_cancel_runtime_run_request_prepares_owner_handoff_without_invocation() 
     assert payload["readback_ref"] == cancel_intent()["readback_ref"]
 
 
+def test_runtime_invocation_readiness_projects_external_approval_blocker() -> None:
+    client = TestClient(app)
+    response = client.get("/api/commands/accounts/acct.ctp.paper.19053/runtime-invocation-readiness")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["schema"] == "account-console.p024.owner-runtime-invocation-readiness.v1"
+    assert payload["status"] == "blocked_waiting_for_external_owner_runtime_write_approval"
+    assert payload["owner_runtime"]["owner_ref"] == "owner://nautilus_ctp_adapter"
+    assert payload["owner_runtime"]["config_raw_content_read"] is False
+    assert payload["external_write_approval_request"]["required"] is True
+    assert payload["external_write_approval_request"]["obtained"] is False
+    assert payload["negative_assertions"]["runtime_invocation_attempted"] is False
+    assert payload["negative_assertions"]["owner_repo_write_attempted"] is False
+    assert payload["negative_assertions"]["browser_triggered_broker_order"] is False
+    assert {blocker["type"] for blocker in payload["blockers"]} == {
+        "external_write_approval_required",
+        "owner_runtime_artifacts_missing",
+    }
+
+
 def test_command_api_rejects_live_mode_and_account_mismatch() -> None:
     client = TestClient(app)
     live = deepcopy(submit_intent())
