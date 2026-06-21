@@ -1,7 +1,7 @@
 # P024 UI Acceptance / Paper Command Controls
 
 - Proposal ID: `p024-account-console-paper-command-controls`
-- Status: phase4s_owner_repair_plan_ui_projection_passed
+- Status: phase4t_owner_repair_evidence_ingest_gate_ready
 
 ## Browser Acceptance
 
@@ -194,6 +194,7 @@ Every blocked command-control state must include reason, stage, source ref and n
 ## Evidence
 
 P024 cannot close on UI design text alone. Browser evidence and command artifacts are required before implementation closeout.
+
 
 
 

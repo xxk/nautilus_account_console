@@ -1,7 +1,7 @@
 # P024 Account Console Paper Command Controls
 
 - Proposal ID: `p024-account-console-paper-command-controls`
-- Status: phase4s_owner_repair_plan_ui_projection_passed
+- Status: phase4t_owner_repair_evidence_ingest_gate_ready
 - ADR carrier: yes
 - Primary ADR: ADR-0007
 - Predecessor: [P023 OpenCTP 19053 Paper Command Capability](../p023-openctp-19053-paper-command-capability/README.md)
@@ -75,6 +75,7 @@ P024 does not enable `live_armed`, production admission, capital approval, or Ac
 | Phase 4q remaining acceptance current state | The remaining full-acceptance requirements are enumerated as owner repair approval, owner repair evidence, owner validators, real partial-fill runtime artifacts and Web UI projection of those real refs | `python scripts\validate_p024_partial_fill_remaining_acceptance_current_state.py` |
 | Phase 4r owner close-offset repair implementation plan | Owner repair is planned down to guarded-loop predicate, wording and focused CLOSEYESTERDAY tests while owner write and runtime retry remain false | `python scripts\validate_p024_partial_fill_owner_repair_implementation_plan.py` |
 | Phase 4s owner repair plan UI projection | Web UI renders the owner repair plan, CLOSEYESTERDAY gap, validator sequence and no-write/no-retry flags | `python scripts\validate_p024_partial_fill_owner_repair_plan_browser_evidence.py` |
+| Phase 4t owner repair evidence ingest gate | Owner repair evidence intake shape is frozen before any owner commit/checksum/validator evidence is recorded; runtime retry remains disallowed | `python scripts\validate_p024_partial_fill_owner_repair_evidence_ingest_gate.py` |
 
 ## Document Map
 
@@ -99,6 +100,7 @@ P024 does not enable `live_armed`, production admission, capital approval, or Ac
 | `docs/acceptance/p024-account-console-paper-command-controls/partial-fill-remaining-acceptance-current-state.json` | current-state audit for remaining full-acceptance requirements |
 | `docs/acceptance/p024-account-console-paper-command-controls/partial-fill-owner-repair-implementation-plan.json` | owner close-offset repair implementation plan, validators and no-retry gate |
 | `docs/acceptance/browser-evidence/p024-account-console-paper-command-controls/partial-fill-owner-repair-plan-ui.json` | Web UI projection evidence for the owner repair implementation plan |
+| `docs/acceptance/p024-account-console-paper-command-controls/partial-fill-owner-repair-evidence-ingest-gate.json` | post-repair owner evidence ingest gate for commit/checksum/validator refs |
 
 ## Graduation / Closeout Matrix
 
@@ -132,9 +134,11 @@ P024 does not enable `live_armed`, production admission, capital approval, or Ac
 | Remaining acceptance current state audit | archive_only | `partial-fill-remaining-acceptance-current-state.json` records the five missing requirements before full acceptance can be claimed | phase4q_remaining_acceptance_current_state_audited |
 | Owner close-offset repair implementation plan | archive_only | `partial-fill-owner-repair-implementation-plan.json` records the exact owner-side predicate/test plan for CLOSEYESTERDAY offset 4 while owner writes remain false | phase4r_owner_close_offset_repair_implementation_plan_ready |
 | Owner repair plan UI projection | archive_only | Browser evidence proves the owner repair plan is visible in Web UI while owner write, runtime retry, partial-fill claim and full acceptance claim remain false | phase4s_owner_repair_plan_ui_projection_passed |
+| Owner repair evidence ingest gate | archive_only | `partial-fill-owner-repair-evidence-ingest-gate.json` records the owner commit/checksum/validator evidence required after repair while all evidence remains missing and runtime retry remains false | phase4t_owner_repair_evidence_ingest_gate_ready |
 | Proposal-local evidence | archive_only | `acceptance.md`, browser command-controls evidence, runtime closeout projection evidence, P024 partial-fill display evidence, runtime handoff request evidence, owner-runtime invocation readiness evidence, runtime readiness UI projection evidence, full acceptance closeout audit, owner-runtime execution approval packet, runtime approval packet UI evidence, owner-runtime execution handoff bundle, runtime handoff bundle UI evidence and runtime execution gap audit evidence; runtime Web UI broker command execution remains blocked pending external approval | phase4e_runtime_execution_gap_audit_passed |
 
 No stable rule graduation: proposal-local evidence only until implementation and runtime gates pass.
+
 
 
 

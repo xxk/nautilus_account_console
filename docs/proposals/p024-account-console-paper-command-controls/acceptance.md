@@ -1,7 +1,7 @@
 # P024 Acceptance / Account Console Paper Command Controls
 
 - Proposal ID: `p024-account-console-paper-command-controls`
-- Status: phase4s_owner_repair_plan_ui_projection_passed
+- Status: phase4t_owner_repair_evidence_ingest_gate_ready
 - Primary ADR: ADR-0007
 
 ## Scope
@@ -41,6 +41,7 @@ Out of scope: live trading, replace order, Account Mirror write authority, direc
 | P024 partial-fill remaining acceptance current state | `python scripts\validate_p024_partial_fill_remaining_acceptance_current_state.py` | `P024_PARTIAL_FILL_REMAINING_ACCEPTANCE_CURRENT_STATE_OK` | Full acceptance remains false and the five remaining evidence requirements are machine-checked |
 | P024 partial-fill owner repair implementation plan | `python scripts\validate_p024_partial_fill_owner_repair_implementation_plan.py` | `P024_PARTIAL_FILL_OWNER_REPAIR_IMPLEMENTATION_PLAN_OK` | Owner guarded-loop repair target, CLOSEYESTERDAY focused test requirements and no-retry gates are machine-checked before any owner write |
 | P024 partial-fill owner repair plan UI projection | `npx playwright test tests/e2e/p024-partial-fill-owner-repair-plan.spec.ts --project=desktop` then `python scripts\validate_p024_partial_fill_owner_repair_plan_browser_evidence.py` | `P024_PARTIAL_FILL_OWNER_REPAIR_PLAN_BROWSER_EVIDENCE_OK` | Web UI renders the owner repair plan and keeps owner write, runtime retry, partial-fill claim and full acceptance claim false |
+| P024 partial-fill owner repair evidence ingest gate | `python scripts\validate_p024_partial_fill_owner_repair_evidence_ingest_gate.py` | `P024_PARTIAL_FILL_OWNER_REPAIR_EVIDENCE_INGEST_GATE_OK` | Post-repair owner commit/checksum/validator evidence requirements are frozen while repair evidence is still missing and runtime retry remains false |
 | P023 runtime predecessor | `python scripts\validate_p023_openctp19053_command_run.py --run-dir output\account_command\ctp-paper-19053\p023-armed-20260621t0748z --source-package output\account_capability\ctp-paper-19053\source-package.json` | `P023_OPENCTP19053_COMMAND_RUN_OK` | Predecessor paper command evidence |
 | Proposal docs | `python scripts\check_proposal_docs.py --root . --proposal-id p024-account-console-paper-command-controls` | `PROPOSAL_DOCS_OK` | Proposal structure |
 
@@ -82,6 +83,7 @@ The close-offset semantic gap audit is
 | A21 | blocker | Remaining full-acceptance evidence is explicit and not claimed complete | current-state audit validator | any of owner repair, real partial-fill runtime, or Web UI real-ref projection is marked accepted without authoritative evidence | phase4q_remaining_acceptance_current_state_audited |
 | A22 | blocker | Owner close-offset repair plan targets the exact CLOSEYESTERDAY gap without executing owner writes | implementation plan validator + owner read context | plan authorizes runtime retry, claims owner repair complete, or omits CLOSEYESTERDAY offset 4 focused tests | phase4r_owner_close_offset_repair_implementation_plan_ready |
 | A23 | blocker | Owner repair implementation plan is visible from Web UI without execution claims | Playwright + API route audit + browser evidence JSON | UI hides the CLOSEYESTERDAY repair plan or claims owner write/runtime retry/partial-fill/full acceptance | phase4s_owner_repair_plan_ui_projection_passed |
+| A24 | blocker | Owner repair evidence ingest gate rejects incomplete repair evidence | ingest gate validator | owner commit/checksum/validator evidence is missing, chat-only, secret-bearing, or used to authorize runtime retry | phase4t_owner_repair_evidence_ingest_gate_ready |
 
 ## Phase 4e Runtime Execution Gap Audit
 
@@ -344,6 +346,7 @@ This remains browser/control contract evidence. It does not claim real Web UI Op
 ## Evidence Boundary
 
 Implementation/browser evidence is required before implementation closeout. Phase 1, Phase 2, Phase 3a, Phase 3b, Phase 3c, Phase 3d readiness, Phase 3e readiness UI projection, Phase 4 residual blocker audit, Phase 4a owner-runtime execution approval packet, Phase 4b runtime approval packet UI projection, Phase 4c owner-runtime execution handoff bundle, Phase 4d runtime handoff bundle UI projection, Phase 4e runtime execution gap audit and Phase 4g owner-runtime submit/cancel callback closeout gates are accepted; full real partial-fill acceptance remains blocked pending real or owner-approved partial-fill runtime state.
+
 
 
 

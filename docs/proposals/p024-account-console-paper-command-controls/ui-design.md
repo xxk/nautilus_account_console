@@ -1,7 +1,7 @@
 # P024 UI Design / Paper Command Controls
 
 - Proposal ID: `p024-account-console-paper-command-controls`
-- Status: phase4s_owner_repair_plan_ui_projection_passed
+- Status: phase4t_owner_repair_evidence_ingest_gate_ready
 
 ## Design Intent
 
@@ -154,6 +154,7 @@ No controls are reserved or visible in disabled mode.
 ## Disabled Mode
 
 When disabled, the view keeps the observation-only layout and renders no submit/cancel/replace affordance. Disabled mode may display status/evidence panels but no action controls.
+
 
 
 
