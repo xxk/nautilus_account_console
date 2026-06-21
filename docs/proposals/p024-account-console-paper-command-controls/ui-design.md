@@ -1,7 +1,7 @@
 # P024 UI Design / Paper Command Controls
 
 - Proposal ID: `p024-account-console-paper-command-controls`
-- Status: phase3c_runtime_handoff_request_passed
+- Status: phase3d_owner_runtime_invocation_readiness_blocked_by_external_approval
 
 ## Design Intent
 

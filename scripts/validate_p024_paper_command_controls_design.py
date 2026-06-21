@@ -45,6 +45,13 @@ P024_RUNTIME_HANDOFF_EVIDENCE = (
     / "p024-account-console-paper-command-controls"
     / "runtime-handoff-ui.json"
 )
+P024_OWNER_RUNTIME_READINESS = (
+    ROOT
+    / "docs"
+    / "acceptance"
+    / "p024-account-console-paper-command-controls"
+    / "owner-runtime-invocation-readiness.json"
+)
 
 REQUIRED_DOCS = [
     "README.md",
@@ -53,6 +60,7 @@ REQUIRED_DOCS = [
     "ui-design.md",
     "ui-acceptance.md",
     "partial-fill-cancel-ui-acceptance.md",
+    "runtime-invocation-readiness.md",
 ]
 
 ALLOWED_COMMAND_ROUTES = {
@@ -94,6 +102,7 @@ def validate_proposal_index_and_adr() -> None:
     require("partial-fill then cancel Web UI display correctness" in index, "proposal index missing P024 partial-fill scope")
     require("owner-backed runtime closeout projection" in index, "proposal index missing P024 runtime closeout scope")
     require("owner-runtime handoff request evidence" in index, "proposal index missing P024 runtime handoff scope")
+    require("owner-runtime invocation readiness" in index, "proposal index missing P024 runtime readiness scope")
 
     adr = read(ADR)
     require("ADR-0007" in adr, "ADR-0007 missing")
@@ -107,13 +116,17 @@ def validate_proposal_index_and_adr() -> None:
         "P024 Phase 3c owner-runtime handoff request is accepted as browser handoff evidence only" in adr,
         "ADR missing P024 runtime handoff landing",
     )
+    require(
+        "P024 Phase 3d owner-runtime invocation readiness is accepted as a readiness gate only" in adr,
+        "ADR missing P024 runtime readiness landing",
+    )
 
 
 def validate_readme() -> None:
     text = read(PROPOSAL / "README.md")
     for phrase in [
         "Proposal ID: `p024-account-console-paper-command-controls`",
-        "Status: phase3c_runtime_handoff_request_passed",
+        "Status: phase3d_owner_runtime_invocation_readiness_blocked_by_external_approval",
         "ADR carrier: yes",
         "Primary ADR: ADR-0007",
         "Predecessor: [P023 OpenCTP 19053 Paper Command Capability]",
@@ -127,8 +140,10 @@ def validate_readme() -> None:
         "validate_p024_runtime_closeout_browser_evidence.py",
         "validate_p024_partial_fill_cancel_browser_evidence.py",
         "validate_p024_runtime_handoff_browser_evidence.py",
+        "validate_p024_owner_runtime_invocation_readiness.py",
         "browser_triggered_broker_order=false",
         "runtime_invocation_attempted=false",
+        "owner-runtime invocation readiness",
     ]:
         require(phrase in text, f"P024 README missing phrase: {phrase}")
 
@@ -148,19 +163,24 @@ def validate_phase_plan() -> None:
         "completed_browser_display_gate",
         "phase_3c_owner_runtime_handoff_request",
         "completed_browser_handoff_gate",
+        "phase_3d_owner_runtime_invocation_readiness",
+        "completed_readiness_gate_blocked_by_external_approval",
         "Runtime closeout projection",
         "Partial-fill cancel display",
         "Owner-runtime handoff request",
+        "Owner-runtime invocation readiness",
         "Phase 1 Backend command API",
         "completed_contract_gate",
         "validate_p024_paper_command_api.py",
         "validate_p024_runtime_closeout_browser_evidence.py",
         "validate_p024_partial_fill_cancel_browser_evidence.py",
         "validate_p024_runtime_handoff_browser_evidence.py",
+        "validate_p024_owner_runtime_invocation_readiness.py",
         "Browser controls are implemented only for `paper_armed` projection",
         "browser_triggered_broker_order=false",
         "Real partial-fill runtime remains blocked",
         "Web UI owner-runtime handoff requests are accepted only as typed requests",
+        "external write approval",
     ]:
         require(phrase in text, f"P024 phase plan missing phrase: {phrase}")
 
@@ -174,6 +194,7 @@ def validate_acceptance() -> None:
         "P024_RUNTIME_CLOSEOUT_BROWSER_EVIDENCE_OK",
         "P024_PARTIAL_FILL_CANCEL_BROWSER_EVIDENCE_OK",
         "P024_RUNTIME_HANDOFF_BROWSER_EVIDENCE_OK",
+        "P024_OWNER_RUNTIME_INVOCATION_READINESS_OK",
         "Implementation/browser evidence is required before implementation closeout",
         "UI Anti-Drift Acceptance",
         "forbidden_actions",
@@ -185,6 +206,7 @@ def validate_acceptance() -> None:
         "Partial fill then cancel Web UI order display correctness",
         "Runtime closeout evidence appears in Web UI without browser-trigger claim",
         "Web UI prepares owner-runtime submit/cancel handoff without invoking broker runtime",
+        "Owner-runtime invocation readiness and external approval scope are frozen",
         "S1 submitted/working",
         "S2 partially filled",
         "S3 cancel pending",
@@ -199,6 +221,8 @@ def validate_acceptance() -> None:
         "browser_triggered_broker_order=false",
         "runtime_invocation_attempted=false",
         "blocked_until_owner_runtime_invocation",
+        "owner_repo_write_attempted=false",
+        "external owner-runtime approval",
         "Phase 1 Backend Command API Acceptance",
         "gateway_send_attempted=false",
         "accepted_for_risk",
@@ -250,7 +274,7 @@ def validate_ui_docs() -> None:
         "account-runtime-closeout-panel",
         "account-runtime-closeout-web-trigger",
         "P024_RUNTIME_CLOSEOUT_BROWSER_EVIDENCE_OK",
-        "phase3c_runtime_handoff_request_passed",
+        "phase3d_owner_runtime_invocation_readiness_blocked_by_external_approval",
         "UI-11",
         "owner-runtime handoff request",
         "account-runtime-handoff-panel",
@@ -411,6 +435,57 @@ def validate_p024_runtime_handoff_evidence() -> None:
             require(claim in non_claims, f"{key}: missing non-claim {claim}")
 
 
+def validate_p024_owner_runtime_readiness() -> None:
+    payload = load_json(P024_OWNER_RUNTIME_READINESS)
+    require(
+        payload["schema"] == "account-console.p024.owner-runtime-invocation-readiness.v1",
+        "P024 runtime readiness schema mismatch",
+    )
+    require(payload["proposal_id"] == "p024-account-console-paper-command-controls", "P024 readiness proposal mismatch")
+    require(payload["account_id"] == "acct.ctp.paper.19053", "P024 readiness account mismatch")
+    require(
+        payload["status"] == "blocked_waiting_for_external_owner_runtime_write_approval",
+        "P024 readiness status mismatch",
+    )
+    require(payload["verdict"] == "readiness_package_passed_runtime_not_invoked", "P024 readiness verdict mismatch")
+    owner = payload["owner_runtime"]
+    require(owner["owner_ref"] == "owner://nautilus_ctp_adapter", "P024 readiness owner mismatch")
+    require(owner["config_raw_content_read"] is False, "P024 readiness config read flag mismatch")
+    require(owner["raw_secret_values_recorded"] is False, "P024 readiness raw secret flag mismatch")
+    require(owner["raw_broker_endpoint_recorded"] is False, "P024 readiness raw endpoint flag mismatch")
+    entrypoints = {entry["action"]: entry for entry in payload["entrypoints"]}
+    require(set(entrypoints) == {"submit", "cancel"}, "P024 readiness entrypoint action mismatch")
+    require(entrypoints["submit"]["armed_flag"] == "--arm-paper-send", "P024 readiness submit arm flag mismatch")
+    require(entrypoints["cancel"]["armed_flag"] == "--arm-cancel-send", "P024 readiness cancel arm flag mismatch")
+    approval = payload["external_write_approval_request"]
+    require(approval["required"] is True, "P024 readiness approval required mismatch")
+    require(approval["obtained"] is False, "P024 readiness approval obtained mismatch")
+    require(approval["approval_path"] == "D:/Nautilus/nautilus_ctp_adapter", "P024 readiness approval path mismatch")
+    negative = payload["negative_assertions"]
+    for key in [
+        "runtime_invocation_attempted",
+        "owner_repo_write_attempted",
+        "browser_triggered_broker_order",
+        "gateway_send_attempted",
+        "broker_order_created",
+        "live_armed",
+        "raw_secret_values_recorded",
+        "raw_broker_endpoint_recorded",
+        "config_raw_content_read",
+    ]:
+        require(negative[key] is False, f"P024 readiness negative assertion mismatch: {key}")
+    non_claims = set(payload["explicit_non_claims"])
+    for claim in [
+        "does_not_invoke_owner_runtime",
+        "does_not_send_broker_order_from_browser",
+        "does_not_write_owner_repo",
+        "does_not_read_raw_ctp_secret_or_endpoint",
+        "does_not_claim_live_readiness",
+        "does_not_close_phase_3_runtime_execution",
+    ]:
+        require(claim in non_claims, f"P024 readiness missing non-claim: {claim}")
+
+
 def validate_p023_predecessor_evidence() -> None:
     payload = load_json(P023_PARTIAL_EVIDENCE)
     require(payload["schema"] == "account-console.p023.partial-fill-order-display.v1", "P023 evidence schema mismatch")
@@ -497,12 +572,13 @@ def main() -> None:
     validate_p024_partial_fill_evidence()
     validate_p024_runtime_closeout_evidence()
     validate_p024_runtime_handoff_evidence()
+    validate_p024_owner_runtime_readiness()
     validate_p023_predecessor_evidence()
     validate_existing_command_boundary_still_closed()
     validate_backend_command_routes_are_p024_only()
     print(
         "P024_PAPER_COMMAND_CONTROLS_DESIGN_OK: "
-        "status=phase3c_runtime_handoff_request_passed current_ui_command=guarded runtime_closeout=browser_projection_passed partial_fill_cancel_ui=browser_contract_passed runtime_handoff=browser_handoff_passed"
+        "status=phase3d_owner_runtime_invocation_readiness_blocked_by_external_approval current_ui_command=guarded runtime_closeout=browser_projection_passed partial_fill_cancel_ui=browser_contract_passed runtime_handoff=browser_handoff_passed runtime_invocation_readiness=blocked_by_external_approval"
     )
 
 

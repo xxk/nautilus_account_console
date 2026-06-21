@@ -1,7 +1,7 @@
 # P024 Acceptance / Account Console Paper Command Controls
 
 - Proposal ID: `p024-account-console-paper-command-controls`
-- Status: phase3c_runtime_handoff_request_passed
+- Status: phase3d_owner_runtime_invocation_readiness_blocked_by_external_approval
 - Primary ADR: ADR-0007
 
 ## Scope
@@ -20,6 +20,7 @@ Out of scope: live trading, replace order, Account Mirror write authority, direc
 | P024 runtime closeout projection | `npx playwright test tests/e2e/p024-runtime-closeout-evidence.spec.ts --project=desktop` then `python scripts\validate_p024_runtime_closeout_browser_evidence.py` | `P024_RUNTIME_CLOSEOUT_BROWSER_EVIDENCE_OK` | Existing owner-backed P023 OpenCTP paper runtime closeout refs/checksums/non-claims render in Web UI; browser-triggered broker order remains false |
 | P024 partial-fill cancel display | `npx playwright test tests/e2e/p024-partial-fill-cancel-order-display.spec.ts --project=desktop` then `python scripts\validate_p024_partial_fill_cancel_browser_evidence.py` | `P024_PARTIAL_FILL_CANCEL_BROWSER_EVIDENCE_OK` | S1-S4 Web UI order/fill display correctness; cancel pending is not final; runtime partial-fill remains typed blocker |
 | P024 runtime handoff request | `npx playwright test tests/e2e/p024-runtime-handoff-request.spec.ts --project=desktop` then `python scripts\validate_p024_runtime_handoff_browser_evidence.py` | `P024_RUNTIME_HANDOFF_BROWSER_EVIDENCE_OK` | Submit/cancel controls prepare owner-runtime run requests with blocked owner invocation; no browser-triggered broker order claim |
+| P024 owner-runtime invocation readiness | `python scripts\validate_p024_owner_runtime_invocation_readiness.py` | `P024_OWNER_RUNTIME_INVOCATION_READINESS_OK` | Owner repo, guarded script checksums, external write approval scope and post-run artifact requirements are frozen; runtime remains uninvoked |
 | P023 runtime predecessor | `python scripts\validate_p023_openctp19053_command_run.py --run-dir output\account_command\ctp-paper-19053\p023-armed-20260621t0748z --source-package output\account_capability\ctp-paper-19053\source-package.json` | `P023_OPENCTP19053_COMMAND_RUN_OK` | Predecessor paper command evidence |
 | Proposal docs | `python scripts\check_proposal_docs.py --root . --proposal-id p024-account-console-paper-command-controls` | `PROPOSAL_DOCS_OK` | Proposal structure |
 
@@ -39,6 +40,20 @@ Out of scope: live trading, replace order, Account Mirror write authority, direc
 | A10 | positive | Partial fill then cancel Web UI order display correctness | Playwright + `partial-fill-cancel-ui-acceptance.md` + browser evidence JSON | identity changes, fill rows drift, or quantity formulas fail | phase3b_partial_fill_cancel_ui_display_passed |
 | A11 | positive | Runtime closeout evidence appears in Web UI without browser-trigger claim | Playwright + API route audit + browser evidence JSON | UI hides refs/checksums, shows gateway ack final, or claims browser submitted broker order | phase3a_runtime_closeout_projection_passed |
 | A12 | positive | Web UI prepares owner-runtime submit/cancel handoff without invoking broker runtime | Playwright + API route audit + browser evidence JSON | runtime invocation, gateway send or broker order creation is claimed from the browser | phase3c_runtime_handoff_request_passed |
+| A13 | positive | Owner-runtime invocation readiness and external approval scope are frozen | readiness artifact + owner script checksum validator | owner repo path, script checksum, approval scope or non-claims drift | phase3d_owner_runtime_invocation_readiness_blocked_by_external_approval |
+
+## Phase 3d Owner Runtime Invocation Readiness Acceptance
+
+This gate prepares real owner-runtime execution but does not run it:
+
+1. `docs/acceptance/p024-account-console-paper-command-controls/owner-runtime-invocation-readiness.json` uses schema `account-console.p024.owner-runtime-invocation-readiness.v1`.
+2. The readiness artifact cites owner `owner://nautilus_ctp_adapter`, owner repo path, submit/cancel guarded entrypoints and script checksums.
+3. The config is recorded only as `cfgs/local/ctp.openctp.tts.7x24.local.json`; raw config contents, broker endpoints and secrets are not read or copied.
+4. External write approval is required for `D:/Nautilus/nautilus_ctp_adapter` before any owner runtime invocation.
+5. `runtime_invocation_attempted=false`, `owner_repo_write_attempted=false`, `browser_triggered_broker_order=false`, `gateway_send_attempted=false`, `broker_order_created=false`, `raw_secret_values_recorded=false` and `raw_broker_endpoint_recorded=false` are required.
+6. Post-run required artifacts are enumerated before execution: intents, risk decisions, approvals, gateway events, readbacks, reconciliation, redaction report, command audit and closeout manifest.
+
+Accepted evidence: `python scripts\validate_p024_owner_runtime_invocation_readiness.py` returns `P024_OWNER_RUNTIME_INVOCATION_READINESS_OK`. This is still not real broker execution evidence; it is the exact approval and readiness boundary for the next step.
 
 ## Phase 3c Owner Runtime Handoff Request Acceptance
 
@@ -128,6 +143,7 @@ This remains browser/control contract evidence. It does not claim real Web UI Op
 | N10 | cancel-pending gateway event is shown as final canceled state | blocked until readback/reconciliation |
 | N11 | Phase 1 API reaches gateway without risk/approval | reject; `gateway_send_attempted=false` required |
 | N12 | runtime handoff request is treated as broker execution | blocked until owner runtime artifacts are ingested and reconciled |
+| N13 | owner runtime is executed or owner repo is written before explicit approval | reject; preserve external write approval blocker |
 
 ## UI Anti-Drift Acceptance
 
@@ -138,7 +154,8 @@ This remains browser/control contract evidence. It does not claim real Web UI Op
 | UAD-03 | Gateway ack shown as final | final success without readback | command complete | blocker |
 | UAD-04 | Live control appears | live submit/cancel | live ready | reject |
 | UAD-05 | Runtime handoff panel claims owner runtime was invoked from browser | owner runtime send | broker order created by browser | reject |
+| UAD-06 | Readiness artifact copies raw owner config, endpoint or secret values | owner config read/copy | broker endpoint truth in this repo | reject |
 
 ## Evidence Boundary
 
-Implementation/browser evidence is required before implementation closeout. Phase 1, Phase 2, Phase 3a, Phase 3b and Phase 3c browser/contract gates are accepted; Phase 3 real Web UI submit/cancel runtime execution and Phase 4 closeout remain pending.
+Implementation/browser evidence is required before implementation closeout. Phase 1, Phase 2, Phase 3a, Phase 3b, Phase 3c and Phase 3d readiness gates are accepted; Phase 3 real Web UI submit/cancel runtime execution and Phase 4 closeout remain blocked pending external owner-runtime approval and artifacts.
