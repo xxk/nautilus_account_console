@@ -29,6 +29,14 @@ P024_PARTIAL_EVIDENCE = (
     / "p024-account-console-paper-command-controls"
     / "partial-fill-cancel-order-display.json"
 )
+P024_RUNTIME_CLOSEOUT_EVIDENCE = (
+    ROOT
+    / "docs"
+    / "acceptance"
+    / "browser-evidence"
+    / "p024-account-console-paper-command-controls"
+    / "runtime-closeout-ui.json"
+)
 
 REQUIRED_DOCS = [
     "README.md",
@@ -40,8 +48,9 @@ REQUIRED_DOCS = [
 ]
 
 ALLOWED_COMMAND_ROUTES = {
-    "/api/commands/accounts/{account_id}/submit-intents",
-    "/api/commands/accounts/{account_id}/cancel-intents",
+    "/api/commands/accounts/{account_id}/submit-intents": {"POST"},
+    "/api/commands/accounts/{account_id}/cancel-intents": {"POST"},
+    "/api/commands/accounts/{account_id}/runtime-closeouts/{run_id}": {"GET"},
 }
 
 
@@ -73,18 +82,23 @@ def validate_proposal_index_and_adr() -> None:
     index = read(PROPOSAL_INDEX)
     require("P024 Account Console Paper Command Controls" in index, "proposal index missing P024")
     require("partial-fill then cancel Web UI display correctness" in index, "proposal index missing P024 partial-fill scope")
+    require("owner-backed runtime closeout projection" in index, "proposal index missing P024 runtime closeout scope")
 
     adr = read(ADR)
     require("ADR-0007" in adr, "ADR-0007 missing")
     require("Second successor proposal: [P024 Account Console Paper Command Controls]" in adr, "ADR missing P024 successor")
     require("P024 Phase 1 backend command API" in adr, "ADR missing P024 next implementation work")
+    require(
+        "P024 Phase 3a runtime closeout projection is accepted as read-only Web UI evidence" in adr,
+        "ADR missing P024 runtime closeout landing",
+    )
 
 
 def validate_readme() -> None:
     text = read(PROPOSAL / "README.md")
     for phrase in [
         "Proposal ID: `p024-account-console-paper-command-controls`",
-        "Status: phase3b_partial_fill_cancel_ui_display_passed",
+        "Status: phase3a_runtime_closeout_and_phase3b_display_passed",
         "ADR carrier: yes",
         "Primary ADR: ADR-0007",
         "Predecessor: [P023 OpenCTP 19053 Paper Command Capability]",
@@ -95,7 +109,9 @@ def validate_readme() -> None:
         "validate_p024_paper_command_controls_design.py",
         "validate_p024_paper_command_api.py",
         "validate_p024_ui_command_controls_browser_evidence.py",
+        "validate_p024_runtime_closeout_browser_evidence.py",
         "validate_p024_partial_fill_cancel_browser_evidence.py",
+        "browser_triggered_broker_order=false",
     ]:
         require(phrase in text, f"P024 README missing phrase: {phrase}")
 
@@ -109,14 +125,19 @@ def validate_phase_plan() -> None:
         "phase_2_frontend_guarded_controls",
         "completed_browser_contract_gate",
         "phase_3_browser_paper_submit_cancel",
+        "phase_3a_runtime_closeout_projection",
+        "completed_browser_runtime_projection_gate",
         "phase_3b_partial_fill_cancel_ui_display",
         "completed_browser_display_gate",
+        "Runtime closeout projection",
         "Partial-fill cancel display",
         "Phase 1 Backend command API",
         "completed_contract_gate",
         "validate_p024_paper_command_api.py",
+        "validate_p024_runtime_closeout_browser_evidence.py",
         "validate_p024_partial_fill_cancel_browser_evidence.py",
         "Browser controls are implemented only for `paper_armed` projection",
+        "browser_triggered_broker_order=false",
         "Real partial-fill runtime remains blocked",
     ]:
         require(phrase in text, f"P024 phase plan missing phrase: {phrase}")
@@ -128,6 +149,7 @@ def validate_acceptance() -> None:
         "P024_PAPER_COMMAND_CONTROLS_DESIGN_OK",
         "P024_PAPER_COMMAND_API_OK",
         "P024_UI_COMMAND_CONTROLS_BROWSER_EVIDENCE_OK",
+        "P024_RUNTIME_CLOSEOUT_BROWSER_EVIDENCE_OK",
         "P024_PARTIAL_FILL_CANCEL_BROWSER_EVIDENCE_OK",
         "Implementation/browser evidence is required before implementation closeout",
         "UI Anti-Drift Acceptance",
@@ -138,6 +160,7 @@ def validate_acceptance() -> None:
         "live mode exposed",
         "A10",
         "Partial fill then cancel Web UI order display correctness",
+        "Runtime closeout evidence appears in Web UI without browser-trigger claim",
         "S1 submitted/working",
         "S2 partially filled",
         "S3 cancel pending",
@@ -147,7 +170,9 @@ def validate_acceptance() -> None:
         "account-order-identity",
         "account-cancel-pending-ref",
         "validate_p024_partial_fill_cancel_browser_evidence.py",
+        "validate_p024_runtime_closeout_browser_evidence.py",
         "does not claim real partial-fill runtime",
+        "browser_triggered_broker_order=false",
         "Phase 1 Backend Command API Acceptance",
         "gateway_send_attempted=false",
         "accepted_for_risk",
@@ -172,6 +197,9 @@ def validate_ui_docs() -> None:
         "account-cancel-pending-ref",
         "account-fill-source-ref",
         "account-command-reconciliation-ref",
+        "account-runtime-closeout-panel",
+        "account-runtime-closeout-web-trigger",
+        "account-runtime-closeout-non-claim",
         "After terminal cancel",
     ]:
         require(phrase in design, f"P024 UI design missing phrase: {phrase}")
@@ -187,7 +215,12 @@ def validate_ui_docs() -> None:
         "S4 cancelled quantity equals S2 remaining quantity",
         "Screenshots alone are not sufficient",
         "NUI-09",
-        "phase3b_partial_fill_cancel_ui_display_passed",
+        "UI-10",
+        "runtime closeout projection",
+        "account-runtime-closeout-panel",
+        "account-runtime-closeout-web-trigger",
+        "P024_RUNTIME_CLOSEOUT_BROWSER_EVIDENCE_OK",
+        "phase3a_runtime_closeout_and_phase3b_display_passed",
     ]:
         require(phrase in ui_acceptance, f"P024 UI acceptance missing phrase: {phrase}")
 
@@ -264,6 +297,43 @@ def validate_p024_partial_fill_evidence() -> None:
         require(claim in non_claims, f"P024 partial non-claim missing: {claim}")
 
 
+def validate_p024_runtime_closeout_evidence() -> None:
+    payload = load_json(P024_RUNTIME_CLOSEOUT_EVIDENCE)
+    require(payload["schema"] == "account-console.p024.runtime-closeout-ui.v1", "P024 runtime schema mismatch")
+    require(payload["proposal_id"] == "p024-account-console-paper-command-controls", "P024 runtime proposal mismatch")
+    require(payload["account_id"] == "acct.ctp.paper.19053", "P024 runtime account mismatch")
+    require(payload["run_id"] == "p023-armed-20260621t0748z", "P024 runtime run id mismatch")
+    require(payload["verdict"] == "pass", "P024 runtime verdict mismatch")
+    require(payload["api_schema"] == "account_command.runtime_closeout.v1", "P024 runtime API schema mismatch")
+    require(payload["api_status"] == "reconciled", "P024 runtime API status mismatch")
+    require(payload["api_mode"] == "paper_armed", "P024 runtime API mode mismatch")
+    require(payload["runtime_gateway_send_observed"] is True, "P024 runtime gateway send evidence missing")
+    require(payload["broker_order_created"] is True, "P024 runtime broker order evidence missing")
+    require(payload["browser_triggered_broker_order"] is False, "P024 runtime browser trigger non-claim missing")
+    require(payload["gateway_ack_is_final_state"] is False, "P024 runtime gateway final flag mismatch")
+    require(payload["raw_secret_values_recorded"] is False, "P024 runtime raw secret flag mismatch")
+    require(payload["raw_broker_endpoint_recorded"] is False, "P024 runtime raw endpoint flag mismatch")
+    require(payload["artifact_checksum_count"] >= 13, "P024 runtime artifact checksum count too low")
+    checks = payload.get("browser_checks") or {}
+    for check in [
+        "runtime_panel_visible",
+        "command_status_refs_visible",
+        "browser_trigger_displayed_false",
+        "gateway_final_displayed_false",
+        "live_ready_wording_absent",
+    ]:
+        require(checks.get(check) is True, f"P024 runtime browser check missing: {check}")
+    non_claims = set(payload.get("explicit_non_claims") or [])
+    for claim in [
+        "does_not_send_broker_order_from_browser_read",
+        "does_not_store_raw_ctp_secret_or_endpoint",
+        "does_not_claim_live_readiness",
+        "does_not_make_gateway_ack_final_state",
+        "web_ui_trigger_of_new_runtime_order_still_pending",
+    ]:
+        require(claim in non_claims, f"P024 runtime non-claim missing: {claim}")
+
+
 def validate_p023_predecessor_evidence() -> None:
     payload = load_json(P023_PARTIAL_EVIDENCE)
     require(payload["schema"] == "account-console.p023.partial-fill-order-display.v1", "P023 evidence schema mismatch")
@@ -325,12 +395,12 @@ def validate_backend_command_routes_are_p024_only() -> None:
     from nautilus_account_console.main import app
 
     route_paths = {getattr(route, "path", "") for route in app.routes}
-    require(ALLOWED_COMMAND_ROUTES.issubset(route_paths), "P024 command API routes missing")
+    require(set(ALLOWED_COMMAND_ROUTES).issubset(route_paths), "P024 command API routes missing")
     for route in app.routes:
         path = getattr(route, "path", "")
         methods = getattr(route, "methods", set()) or set()
         if path in ALLOWED_COMMAND_ROUTES:
-            require(methods == {"POST"}, f"{path}: P024 command route must be POST-only")
+            require(methods == ALLOWED_COMMAND_ROUTES[path], f"{path}: P024 command route methods mismatch")
         elif path.startswith("/api/commands"):
             require(False, f"unexpected command route outside P024 allowlist: {path}")
         require("/replace" not in path, f"replace route remains forbidden in P024: {path}")
@@ -348,12 +418,13 @@ def main() -> None:
     validate_ui_docs()
     validate_partial_fill_cancel_doc()
     validate_p024_partial_fill_evidence()
+    validate_p024_runtime_closeout_evidence()
     validate_p023_predecessor_evidence()
     validate_existing_command_boundary_still_closed()
     validate_backend_command_routes_are_p024_only()
     print(
         "P024_PAPER_COMMAND_CONTROLS_DESIGN_OK: "
-        "status=phase3b_partial_fill_cancel_ui_display_passed current_ui_command=guarded partial_fill_cancel_ui=browser_contract_passed"
+        "status=phase3a_runtime_closeout_and_phase3b_display_passed current_ui_command=guarded runtime_closeout=browser_projection_passed partial_fill_cancel_ui=browser_contract_passed"
     )
 
 

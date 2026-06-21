@@ -75,8 +75,9 @@ REQUIRED_MIRROR_ROUTES = {
     "/api/mirror/accounts/{account_id}/evidence",
 }
 ALLOWED_GOVERNED_COMMAND_ROUTES = {
-    "/api/commands/accounts/{account_id}/submit-intents",
-    "/api/commands/accounts/{account_id}/cancel-intents",
+    "/api/commands/accounts/{account_id}/submit-intents": {"POST"},
+    "/api/commands/accounts/{account_id}/cancel-intents": {"POST"},
+    "/api/commands/accounts/{account_id}/runtime-closeouts/{run_id}": {"GET"},
 }
 PASS_SIGNAL = "P019_API_BOUNDARY_OK: mirror_only=true governed_command_routes=p024_only direct_broker_routes=absent"
 
@@ -122,7 +123,10 @@ def main() -> None:
         if path in ALLOWED_LEGACY_READ_ROUTES:
             require(methods == {"GET"}, f"{path}: legacy read route must be GET-only, got {sorted(methods)}")
         if path in ALLOWED_GOVERNED_COMMAND_ROUTES:
-            require(methods == {"POST"}, f"{path}: governed P024 command route must be POST-only, got {sorted(methods)}")
+            require(
+                methods == ALLOWED_GOVERNED_COMMAND_ROUTES[path],
+                f"{path}: governed P024 command route has invalid methods {sorted(methods)}",
+            )
         elif path.startswith("/api/commands"):
             require(False, f"{path}: command route is outside the P024 governed allowlist")
         for fragment in FORBIDDEN_ROUTE_FRAGMENTS:

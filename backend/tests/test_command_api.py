@@ -111,6 +111,49 @@ def test_cancel_intent_requires_readback_identity_and_stays_pre_gateway() -> Non
     ]
 
 
+def test_runtime_closeout_reads_reconciled_owner_artifacts_without_browser_send() -> None:
+    client = TestClient(app)
+    response = client.get(
+        "/api/commands/accounts/acct.ctp.paper.19053/runtime-closeouts/p023-armed-20260621t0748z"
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["schema_version"] == "account_command.runtime_closeout.v1"
+    assert payload["proposal_id"] == "p024-account-console-paper-command-controls"
+    assert payload["account_id"] == "acct.ctp.paper.19053"
+    assert payload["run_id"] == "p023-armed-20260621t0748z"
+    assert payload["mode"] == "paper_armed"
+    assert payload["status"] == "reconciled"
+    assert payload["runtime_gateway_send_observed"] is True
+    assert payload["broker_order_created"] is True
+    assert payload["browser_triggered_broker_order"] is False
+    assert payload["gateway_ack_is_final_state"] is False
+    assert payload["raw_secret_values_recorded"] is False
+    assert payload["raw_broker_endpoint_recorded"] is False
+    assert len(payload["intent_refs"]) == 2
+    assert len(payload["risk_decision_refs"]) == 2
+    assert len(payload["approval_decision_refs"]) == 2
+    assert len(payload["gateway_event_refs"]) == 2
+    assert len(payload["readback_refs"]) == 2
+    assert payload["reconciliation_ref"].endswith("reconciliation_result.json")
+    assert payload["closeout_manifest_checksum"].startswith("sha256:")
+    assert payload["command_audit_checksum"].startswith("sha256:")
+    assert payload["artifact_checksums"][payload["command_audit_ref"]] == payload["command_audit_checksum"]
+    assert "web_ui_trigger_of_new_runtime_order_still_pending" in payload["explicit_non_claims"]
+
+
+def test_runtime_closeout_rejects_scope_and_unsafe_run_id() -> None:
+    client = TestClient(app)
+    wrong_account = client.get(
+        "/api/commands/accounts/acct.ctp.live.025292/runtime-closeouts/p023-armed-20260621t0748z"
+    )
+    assert wrong_account.status_code == 403
+
+    unsafe = client.get("/api/commands/accounts/acct.ctp.paper.19053/runtime-closeouts/bad%20run")
+    assert unsafe.status_code == 400
+
+
 def test_command_api_rejects_live_mode_and_account_mismatch() -> None:
     client = TestClient(app)
     live = deepcopy(submit_intent())

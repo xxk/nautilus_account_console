@@ -1,7 +1,7 @@
 # P024 UI Design / Paper Command Controls
 
 - Proposal ID: `p024-account-console-paper-command-controls`
-- Status: phase3b_partial_fill_cancel_ui_display_passed
+- Status: phase3a_runtime_closeout_and_phase3b_display_passed
 
 ## Design Intent
 
@@ -40,6 +40,16 @@ No controls are reserved or visible in disabled mode.
 | `account-command-readback-ref` | readback ref |
 | `account-command-reconciliation-ref` | reconciliation ref |
 | `account-command-blocker` | fail-closed blocker |
+| `account-runtime-closeout-panel` | read-only runtime closeout evidence panel |
+| `account-runtime-closeout-run-id` | owner-backed runtime run id |
+| `account-runtime-closeout-status` | runtime closeout reconciliation status |
+| `account-runtime-closeout-manifest-checksum` | closeout manifest checksum |
+| `account-runtime-closeout-gateway-send` | predecessor runtime gateway send observed flag |
+| `account-runtime-closeout-web-trigger` | browser-triggered broker order flag; must remain false |
+| `account-runtime-closeout-raw-secret` | raw secret evidence flag; must remain false |
+| `account-runtime-closeout-gateway-final` | gateway ack final-state flag; must remain false |
+| `account-runtime-closeout-artifact-count` | count of checksum-backed runtime artifacts |
+| `account-runtime-closeout-non-claim` | explicit non-claims shown in UI |
 
 ## Layout Rules
 
@@ -50,6 +60,7 @@ No controls are reserved or visible in disabled mode.
 5. Gateway acknowledgement is shown as a gateway event, never as final account state.
 6. Partial-fill then cancel display keeps one row identity through working, partial, cancel pending and canceled stages.
 7. After terminal cancel, the order row must preserve filled quantity, set remaining quantity to zero and show cancelled quantity equal to the cancelled remainder.
+8. Runtime closeout projection is read-only and must show `browser_triggered_broker_order=false` beside predecessor runtime refs.
 
 ## Disabled Mode
 

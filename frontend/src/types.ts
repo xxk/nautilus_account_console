@@ -248,6 +248,35 @@ export interface CommandApiResult {
   raw_broker_endpoint_recorded: false;
 }
 
+export interface CommandRuntimeCloseout {
+  schema_version: "account_command.runtime_closeout.v1";
+  proposal_id: "p024-account-console-paper-command-controls";
+  account_id: "acct.ctp.paper.19053";
+  run_id: string;
+  mode: "paper_armed";
+  status: "reconciled";
+  closeout_manifest_ref: string;
+  closeout_manifest_checksum: string;
+  command_audit_ref: string;
+  command_audit_checksum: string;
+  intent_refs: string[];
+  risk_decision_refs: string[];
+  approval_decision_refs: string[];
+  gateway_event_refs: string[];
+  readback_refs: string[];
+  reconciliation_ref: string;
+  artifact_checksums: Record<string, string>;
+  runtime_gateway_send_observed: true;
+  broker_order_created: true;
+  browser_triggered_broker_order: false;
+  gateway_ack_is_final_state: false;
+  raw_secret_values_recorded: false;
+  raw_broker_endpoint_recorded: false;
+  runtime_duplicate_send_attempted: false;
+  source_owner_ref: string;
+  explicit_non_claims: string[];
+}
+
 export type AccountHealthPanelFixtureState =
   | "happy_path"
   | "empty"

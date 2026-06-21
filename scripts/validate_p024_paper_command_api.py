@@ -16,8 +16,9 @@ from nautilus_account_console.main import app  # noqa: E402
 
 ACCOUNT_ID = "acct.ctp.paper.19053"
 ALLOWED_COMMAND_ROUTES = {
-    "/api/commands/accounts/{account_id}/submit-intents",
-    "/api/commands/accounts/{account_id}/cancel-intents",
+    "/api/commands/accounts/{account_id}/submit-intents": {"POST"},
+    "/api/commands/accounts/{account_id}/cancel-intents": {"POST"},
+    "/api/commands/accounts/{account_id}/runtime-closeouts/{run_id}": {"GET"},
 }
 
 
@@ -78,12 +79,12 @@ def cancel_intent() -> dict:
 def validate_route_boundary() -> None:
     routes = [route for route in app.routes if isinstance(route, APIRoute)]
     route_paths = {route.path for route in routes}
-    require(ALLOWED_COMMAND_ROUTES.issubset(route_paths), "P024 command API routes missing")
+    require(set(ALLOWED_COMMAND_ROUTES).issubset(route_paths), "P024 command API routes missing")
     for route in routes:
         path = route.path
         methods = route.methods or set()
         if path in ALLOWED_COMMAND_ROUTES:
-            require(methods == {"POST"}, f"{path}: command route must be POST-only")
+            require(methods == ALLOWED_COMMAND_ROUTES[path], f"{path}: command route methods mismatch")
         elif path.startswith("/api/commands"):
             raise P024CommandApiValidationError(f"unexpected command route: {path}")
         if path.startswith("/api/mirror/"):
@@ -115,6 +116,26 @@ def validate_api_behavior() -> None:
     require(cancel_payload["gateway_send_attempted"] is False, "cancel must not send gateway in Phase 1")
     require(cancel_payload["readback_refs"], "cancel must carry readback identity ref")
 
+    closeout_response = client.get(
+        f"/api/commands/accounts/{ACCOUNT_ID}/runtime-closeouts/p023-armed-20260621t0748z"
+    )
+    require(closeout_response.status_code == 200, f"runtime closeout status mismatch: {closeout_response.status_code}")
+    closeout_payload = closeout_response.json()
+    require(
+        closeout_payload["schema_version"] == "account_command.runtime_closeout.v1",
+        "runtime closeout schema mismatch",
+    )
+    require(closeout_payload["status"] == "reconciled", "runtime closeout must be reconciled")
+    require(closeout_payload["runtime_gateway_send_observed"] is True, "runtime gateway send evidence missing")
+    require(closeout_payload["broker_order_created"] is True, "runtime broker order evidence missing")
+    require(closeout_payload["browser_triggered_broker_order"] is False, "runtime closeout must not claim browser trigger")
+    require(closeout_payload["gateway_ack_is_final_state"] is False, "runtime closeout must not mark gateway ack final")
+    require(closeout_payload["raw_secret_values_recorded"] is False, "runtime closeout must not record raw secrets")
+    require(
+        "web_ui_trigger_of_new_runtime_order_still_pending" in closeout_payload["explicit_non_claims"],
+        "runtime closeout non-claim missing",
+    )
+
     live_intent = submit_intent()
     live_intent["mode"] = "live_armed"
     live_response = client.post(f"/api/commands/accounts/{ACCOUNT_ID}/submit-intents", json=live_intent)
@@ -129,7 +150,7 @@ def main() -> None:
     validate_api_behavior()
     print(
         "P024_PAPER_COMMAND_API_OK: "
-        "phase=1 routes=2 status=accepted_for_risk gateway_send_attempted=false mirror_read_only=true"
+        "phase=1 routes=3 status=accepted_for_risk runtime_closeout=reconciled mirror_read_only=true"
     )
 
 

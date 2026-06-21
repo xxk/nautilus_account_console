@@ -477,6 +477,10 @@ test("P024 Web UI displays partial-fill then cancel order lifecycle correctly", 
 
   await page.route("**/api/commands/**", async (route) => {
     const request = route.request();
+    if (request.method() !== "POST") {
+      await route.fallback();
+      return;
+    }
     const payload = request.postDataJSON() as Record<string, unknown>;
     cancelRequests.push(payload);
     await route.fulfill({ json: commandResult(payload), status: 202 });

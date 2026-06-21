@@ -1,14 +1,37 @@
 from __future__ import annotations
 
+import json
+import re
 from hashlib import sha256
+from pathlib import Path
 
 from fastapi import HTTPException
 
-from .schemas import CancelIntentRequest, CommandApiResult, CommandBlocker, OrderIntentRequest
+from .schemas import CancelIntentRequest, CommandApiResult, CommandBlocker, CommandRuntimeCloseout, OrderIntentRequest
 
 
 PAPER_ACCOUNT_ID = "acct.ctp.paper.19053"
 PROPOSAL_ID = "p024-account-console-paper-command-controls"
+ROOT = Path(__file__).resolve().parents[3]
+COMMAND_RUN_ROOT = ROOT / "output" / "account_command" / "ctp-paper-19053"
+DEFAULT_RUNTIME_RUN_ID = "p023-armed-20260621t0748z"
+REQUIRED_RUNTIME_FILES = [
+    "submit_intent.json",
+    "submit_risk_decision.json",
+    "submit_approval_decision.json",
+    "submit_gateway_event.json",
+    "post_submit_readback.json",
+    "cancel_intent.json",
+    "cancel_risk_decision.json",
+    "cancel_approval_decision.json",
+    "cancel_gateway_event.json",
+    "post_cancel_readback.json",
+    "reconciliation_result.json",
+    "command_audit.json",
+    "redaction_report.json",
+    "closeout_manifest.json",
+]
+SENSITIVE_RUNTIME_FRAGMENTS = ["tcp://", "trading.openctp", "Password", "AuthCode", "BrokerID", "UserID"]
 
 
 def _require_paper_scope(account_id: str, intent_account_id: str, mode: str) -> None:
@@ -49,6 +72,127 @@ def _pre_gateway_blockers(action: str, source_ref: str) -> list[CommandBlocker]:
             next_action="produce ApprovalDecision evidence before gateway send",
         ),
     ]
+
+
+def _file_checksum(path: Path) -> str:
+    return "sha256:" + sha256(path.read_bytes()).hexdigest()
+
+
+def _read_json(path: Path) -> dict:
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def _runtime_ref(path: Path) -> str:
+    return str(path.relative_to(ROOT)).replace("\\", "/")
+
+
+def _scan_runtime_fragments(run_dir: Path) -> list[str]:
+    matches: list[str] = []
+    for path in sorted(run_dir.rglob("*.json")):
+        text = path.read_text(encoding="utf-8", errors="ignore")
+        if any(fragment.lower() in text.lower() for fragment in SENSITIVE_RUNTIME_FRAGMENTS):
+            matches.append(_runtime_ref(path))
+    return matches
+
+
+def _runtime_run_dir(run_id: str) -> Path:
+    if not re.fullmatch(r"[A-Za-z0-9_.-]+", run_id):
+        raise HTTPException(status_code=400, detail="invalid runtime run_id")
+    run_dir = (COMMAND_RUN_ROOT / run_id).resolve()
+    root = COMMAND_RUN_ROOT.resolve()
+    if not str(run_dir).startswith(str(root)):
+        raise HTTPException(status_code=400, detail="runtime run_id escaped command evidence root")
+    return run_dir
+
+
+def load_runtime_closeout(account_id: str, run_id: str = DEFAULT_RUNTIME_RUN_ID) -> CommandRuntimeCloseout:
+    if account_id != PAPER_ACCOUNT_ID:
+        raise HTTPException(status_code=403, detail="P024 runtime closeout is scoped to acct.ctp.paper.19053 only")
+    run_dir = _runtime_run_dir(run_id)
+    if not run_dir.exists():
+        raise HTTPException(status_code=404, detail="runtime closeout run not found")
+    missing = [filename for filename in REQUIRED_RUNTIME_FILES if not (run_dir / filename).exists()]
+    if missing:
+        raise HTTPException(status_code=409, detail=f"runtime closeout missing artifacts: {missing}")
+    leaks = _scan_runtime_fragments(run_dir)
+    if leaks:
+        raise HTTPException(status_code=409, detail=f"runtime closeout contains forbidden sensitive fragments: {leaks}")
+
+    manifest_path = run_dir / "closeout_manifest.json"
+    manifest = _read_json(manifest_path)
+    audit_path = run_dir / "command_audit.json"
+    audit = _read_json(audit_path)
+    redaction = _read_json(run_dir / "redaction_report.json")
+    reconciliation = _read_json(run_dir / "reconciliation_result.json")
+    submit_gateway = _read_json(run_dir / "submit_gateway_event.json")
+    cancel_gateway = _read_json(run_dir / "cancel_gateway_event.json")
+
+    if manifest.get("account_id") != PAPER_ACCOUNT_ID or audit.get("account_id") != PAPER_ACCOUNT_ID:
+        raise HTTPException(status_code=409, detail="runtime closeout account_id mismatch")
+    if manifest.get("status") != "reconciled" or audit.get("status") != "reconciled":
+        raise HTTPException(status_code=409, detail="runtime closeout is not reconciled")
+    if manifest.get("mode") != "paper_armed" or audit.get("mode") != "paper_armed":
+        raise HTTPException(status_code=409, detail="runtime closeout is not paper_armed")
+    if redaction.get("status") != "passed":
+        raise HTTPException(status_code=409, detail="runtime closeout redaction did not pass")
+    if reconciliation.get("status") != "reconciled":
+        raise HTTPException(status_code=409, detail="runtime closeout reconciliation did not pass")
+    if manifest.get("gateway_ack_is_final_state") is not False or audit.get("gateway_ack_is_final_state") is not False:
+        raise HTTPException(status_code=409, detail="runtime closeout marked gateway ack as final state")
+    if manifest.get("raw_secret_values_recorded") is not False or audit.get("raw_secret_values_recorded") is not False:
+        raise HTTPException(status_code=409, detail="runtime closeout recorded raw secret values")
+    if manifest.get("raw_broker_endpoint_recorded") is not False or audit.get("raw_broker_endpoint_recorded") is not False:
+        raise HTTPException(status_code=409, detail="runtime closeout recorded raw broker endpoint")
+    if submit_gateway.get("paper_send_armed") is not True or cancel_gateway.get("cancel_send_armed") is not True:
+        raise HTTPException(status_code=409, detail="runtime closeout gateway send evidence is not armed paper runtime")
+
+    artifact_refs = manifest.get("artifact_refs")
+    if not isinstance(artifact_refs, dict) or not artifact_refs:
+        raise HTTPException(status_code=409, detail="runtime closeout manifest artifact_refs missing")
+    artifact_checksums: dict[str, str] = {}
+    for filename, item in artifact_refs.items():
+        artifact_path = run_dir / filename
+        if not artifact_path.exists():
+            raise HTTPException(status_code=409, detail=f"manifest references missing artifact: {filename}")
+        checksum = _file_checksum(artifact_path)
+        if item.get("checksum") != checksum:
+            raise HTTPException(status_code=409, detail=f"manifest checksum mismatch: {filename}")
+        artifact_checksums[_runtime_ref(artifact_path)] = checksum
+
+    return CommandRuntimeCloseout(
+        schema_version="account_command.runtime_closeout.v1",
+        proposal_id=PROPOSAL_ID,
+        account_id=PAPER_ACCOUNT_ID,
+        run_id=run_id,
+        mode="paper_armed",
+        status="reconciled",
+        closeout_manifest_ref=_runtime_ref(manifest_path),
+        closeout_manifest_checksum=_file_checksum(manifest_path),
+        command_audit_ref=_runtime_ref(audit_path),
+        command_audit_checksum=_file_checksum(audit_path),
+        intent_refs=list(audit.get("intent_refs") or []),
+        risk_decision_refs=list(audit.get("risk_decision_refs") or []),
+        approval_decision_refs=list(audit.get("approval_decision_refs") or []),
+        gateway_event_refs=list(audit.get("gateway_event_refs") or []),
+        readback_refs=list(audit.get("readback_refs") or []),
+        reconciliation_ref=str(audit.get("reconciliation_ref") or ""),
+        artifact_checksums=artifact_checksums,
+        runtime_gateway_send_observed=True,
+        broker_order_created=True,
+        browser_triggered_broker_order=False,
+        gateway_ack_is_final_state=False,
+        raw_secret_values_recorded=False,
+        raw_broker_endpoint_recorded=False,
+        runtime_duplicate_send_attempted=False,
+        source_owner_ref="output/account_command/ctp-paper-19053",
+        explicit_non_claims=[
+            "does_not_send_broker_order_from_browser_read",
+            "does_not_store_raw_ctp_secret_or_endpoint",
+            "does_not_claim_live_readiness",
+            "does_not_make_gateway_ack_final_state",
+            "web_ui_trigger_of_new_runtime_order_still_pending",
+        ],
+    )
 
 
 def accept_submit_intent(account_id: str, intent: OrderIntentRequest) -> CommandApiResult:

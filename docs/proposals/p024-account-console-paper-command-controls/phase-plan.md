@@ -1,7 +1,7 @@
 # P024 Phase Plan / Account Console Paper Command Controls
 
 - Proposal ID: `p024-account-console-paper-command-controls`
-- Status: phase3b_partial_fill_cancel_ui_display_passed
+- Status: phase3a_runtime_closeout_and_phase3b_display_passed
 - Primary ADR: ADR-0007
 
 ## Artifact Trust Boundary
@@ -39,7 +39,7 @@ Primary ADR: ADR-0007
 <!-- AI-PHASE-STATUS-BEGIN
 reviewed_at: 2026-06-21
 reviewer: codex
-overall_status: phase3b_partial_fill_cancel_ui_display_passed
+overall_status: phase3a_runtime_closeout_and_phase3b_display_passed
 phases:
   - id: phase_0_design_gate
     status: completed
@@ -57,6 +57,10 @@ phases:
     status: planned
     ai_progress: 0
     evidence: "future Playwright and command runtime artifacts"
+  - id: phase_3a_runtime_closeout_projection
+    status: completed_browser_runtime_projection_gate
+    ai_progress: 100
+    evidence: "npx playwright test tests/e2e/p024-runtime-closeout-evidence.spec.ts --project=desktop; python scripts\\validate_p024_runtime_closeout_browser_evidence.py"
   - id: phase_3b_partial_fill_cancel_ui_display
     status: completed_browser_display_gate
     ai_progress: 100
@@ -75,6 +79,7 @@ AI-PHASE-STATUS-END -->
 | Phase 1 Backend command API | Add guarded paper-only command endpoints outside `/api/mirror` | completed_contract_gate | `python scripts\validate_p024_paper_command_api.py`; backend tests | Add frontend guarded controls after API contract |
 | Phase 2 Frontend guarded controls | Show submit/cancel controls only when `command.mode=paper_armed` and refs exist | completed_browser_contract_gate | `npx playwright test tests/e2e/p024-paper-command-controls.spec.ts --project=desktop`; `python scripts\validate_p024_ui_command_controls_browser_evidence.py` | Add real browser submit/cancel runtime evidence |
 | Phase 3 Browser paper submit/cancel | Prove Web UI submit/cancel round-trip through command audit and mirror readback | planned | future evidence | Run 19053 paper acceptance from UI |
+| Phase 3a Runtime closeout projection | Render owner-backed P023 OpenCTP 19053 paper runtime closeout in Web UI with refs/checksums/non-claims | completed_browser_runtime_projection_gate | `npx playwright test tests/e2e/p024-runtime-closeout-evidence.spec.ts --project=desktop`; `python scripts\validate_p024_runtime_closeout_browser_evidence.py` | Keep `browser_triggered_broker_order=false` until browser-triggered runtime exists |
 | Phase 3b Partial-fill cancel display | Prove Web UI display correctness for S1 working, S2 partial, S3 cancel pending and S4 remaining cancelled | completed_browser_display_gate | `npx playwright test tests/e2e/p024-partial-fill-cancel-order-display.spec.ts --project=desktop`; `python scripts\validate_p024_partial_fill_cancel_browser_evidence.py` | Keep runtime partial-fill blocker until real or owner-approved partial-fill state exists |
 | Phase 4 Closeout | Full P024 gate set and residual blocker mapping | planned | future evidence | Close only after implementation/browser evidence |
 
@@ -85,6 +90,7 @@ Phase 0 does not run broker mutation. Phase 1 may add API contracts but must not
 ## Current Blockers
 
 1. Browser controls are implemented only for `paper_armed` projection and currently stop at Phase 1 API `accepted_for_risk`.
-2. Broker mutation from Web UI is not accepted yet because risk/approval/gateway/readback/reconciliation runtime chain is still future.
-3. Live trading readiness remains out of scope.
-4. Real partial-fill runtime remains blocked until a real or owner-approved partial-fill state is available.
+2. Phase 3a displays existing owner-backed runtime closeout artifacts only; it does not create a new browser-triggered broker order.
+3. Broker mutation from Web UI is not accepted yet because risk/approval/gateway/readback/reconciliation runtime chain is still future.
+4. Live trading readiness remains out of scope.
+5. Real partial-fill runtime remains blocked until a real or owner-approved partial-fill state is available.

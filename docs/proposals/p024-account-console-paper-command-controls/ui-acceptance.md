@@ -1,7 +1,7 @@
 # P024 UI Acceptance / Paper Command Controls
 
 - Proposal ID: `p024-account-console-paper-command-controls`
-- Status: phase3b_partial_fill_cancel_ui_display_passed
+- Status: phase3a_runtime_closeout_and_phase3b_display_passed
 
 ## Browser Acceptance
 
@@ -16,6 +16,21 @@
 | UI-07 | duplicate click | duplicate click keeps one idempotency key and one command result | planned |
 | UI-08 | gateway ack only | status is blocked, not final | planned |
 | UI-09 | partial fill then cancel display correctness | S1/S2/S3/S4 order row keeps identity, stable fill rows, correct formulas and P024 evidence refs | phase3b_partial_fill_cancel_ui_display_passed |
+| UI-10 | runtime closeout projection | owner-backed P023 runtime closeout refs/checksums/non-claims render in UI with browser trigger false | phase3a_runtime_closeout_projection_passed |
+
+## UI-10 Runtime Closeout Projection
+
+The browser test must load `/accounts/acct.ctp.paper.19053` with the P024 runtime closeout endpoint available and verify:
+
+1. `account-runtime-closeout-panel` is visible.
+2. `account-runtime-closeout-run-id` is `p023-armed-20260621t0748z`.
+3. `account-runtime-closeout-status` is `reconciled`.
+4. `account-runtime-closeout-gateway-send` is `true` only as predecessor runtime evidence.
+5. `account-runtime-closeout-web-trigger`, `account-runtime-closeout-raw-secret` and `account-runtime-closeout-gateway-final` are all `false`.
+6. Command status refs for audit, risk, approval, gateway, readback and reconciliation are visible.
+7. No UI text claims live readiness, gateway ack final state or browser-submitted broker order.
+
+Accepted evidence: `python scripts\validate_p024_runtime_closeout_browser_evidence.py` returns `P024_RUNTIME_CLOSEOUT_BROWSER_EVIDENCE_OK`.
 
 ## UI-09 Partial Fill Then Cancel Display
 
@@ -55,6 +70,7 @@ Accepted evidence: `python scripts\validate_p024_partial_fill_cancel_browser_evi
 | NUI-08 | partial-fill cancel display changes order identity | test failure |
 | NUI-09 | final canceled row has `remaining_quantity > 0` or `cancelled_quantity != S2 remaining_quantity` | test failure |
 | NUI-10 | cancel pending hides the blocker and claims final canceled state | blocked |
+| NUI-11 | runtime closeout panel claims browser-triggered broker order or gateway ack final state | test failure |
 
 ## Blocker
 

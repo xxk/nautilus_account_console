@@ -89,6 +89,7 @@ import type {
   AccountKind,
   CancelIntentRequest,
   CommandApiResult,
+  CommandRuntimeCloseout,
   AccountOrderDetailFixtureState,
   AccountOrderDetailPanelReadModel,
   AccountExecutionReportRow,
@@ -119,6 +120,7 @@ import type {
 } from "./types";
 import {
   cancelPaperOrderIntent,
+  fetchCommandRuntimeCloseout,
   fetchMirrorAccount,
   fetchMirrorAccounts,
   fetchMirrorEvidence,
@@ -769,6 +771,23 @@ function commandResultToStatus(result: CommandApiResult): MirrorAccountProjectio
     readback_required: true,
     reconciliation_required: true,
     blockers: result.blockers.map((blocker) => ({ ...blocker }))
+  };
+}
+
+function runtimeCloseoutToStatus(closeout: CommandRuntimeCloseout): MirrorAccountProjection["command_status"] {
+  return {
+    schema_version: "account_command.ui_status_projection.v1",
+    status: closeout.status,
+    command_audit_ref: closeout.command_audit_ref,
+    risk_decision_refs: closeout.risk_decision_refs,
+    approval_decision_refs: closeout.approval_decision_refs,
+    gateway_event_refs: closeout.gateway_event_refs,
+    readback_refs: closeout.readback_refs,
+    reconciliation_ref: closeout.reconciliation_ref,
+    gateway_ack_is_final_state: closeout.gateway_ack_is_final_state,
+    readback_required: true,
+    reconciliation_required: true,
+    blockers: []
   };
 }
 
@@ -1454,6 +1473,8 @@ function AccountWorkbenchTerminalPanel({
   const visibleOrders = orders.orders.filter((order) => order.account_id === summary.account.account_id);
   const [commandResult, setCommandResult] = useState<CommandApiResult | null>(null);
   const [commandError, setCommandError] = useState<string | null>(null);
+  const [runtimeCloseout, setRuntimeCloseout] = useState<CommandRuntimeCloseout | null>(null);
+  const [runtimeCloseoutError, setRuntimeCloseoutError] = useState<string | null>(null);
   const paperArmed = isP024PaperArmed(mirrorReadback);
   const submitIntent = mirrorReadback && paperArmed ? defaultSubmitIntent(mirrorReadback) : null;
   const cancelEligibleOrder = paperArmed
@@ -1464,7 +1485,11 @@ function AccountWorkbenchTerminalPanel({
     : null;
   const commandStatus = commandResult
     ? commandResultToStatus(commandResult)
-    : mirrorReadback?.selected.command_status ?? null;
+    : mirrorReadback?.selected.command_status
+      ? mirrorReadback.selected.command_status
+      : runtimeCloseout
+        ? runtimeCloseoutToStatus(runtimeCloseout)
+        : null;
   const executionReportRows = mirrorReadback
     ? mirrorExecutionReportRows(mirrorReadback).filter((report) => report.account_id === summary.account.account_id)
     : visibleOrders
@@ -1527,6 +1552,33 @@ function AccountWorkbenchTerminalPanel({
       ref: "orders locked"
     }
   ];
+
+  useEffect(() => {
+    if (summary.account.account_id !== "acct.ctp.paper.19053") {
+      setRuntimeCloseout(null);
+      setRuntimeCloseoutError(null);
+      return;
+    }
+    let active = true;
+    async function loadRuntimeCloseout() {
+      try {
+        const closeout = await fetchCommandRuntimeCloseout(summary.account.account_id);
+        if (active) {
+          setRuntimeCloseout(closeout);
+          setRuntimeCloseoutError(null);
+        }
+      } catch (error) {
+        if (active) {
+          setRuntimeCloseout(null);
+          setRuntimeCloseoutError(error instanceof Error ? error.message : "runtime closeout unavailable");
+        }
+      }
+    }
+    void loadRuntimeCloseout();
+    return () => {
+      active = false;
+    };
+  }, [summary.account.account_id]);
 
   async function handleSubmitIntent() {
     if (!mirrorReadback || !submitIntent) {
@@ -2345,6 +2397,8 @@ function AccountWorkbenchTerminalPanel({
               </div>
             ) : null}
           </section>
+
+          <CommandRuntimeCloseoutPanel closeout={runtimeCloseout} error={runtimeCloseoutError} />
 
           <CommandStatusPanel status={commandStatus} />
 
@@ -4262,6 +4316,87 @@ function SelectFilter({
         ))}
       </select>
     </label>
+  );
+}
+
+function CommandRuntimeCloseoutPanel({
+  closeout,
+  error
+}: {
+  closeout: CommandRuntimeCloseout | null;
+  error: string | null;
+}) {
+  return (
+    <section className="terminal-panel" data-testid="account-runtime-closeout-panel">
+      <div className="terminal-panel-header">
+        <h3>Runtime Closeout</h3>
+        <StateBadge value={closeout ? closeout.status : error ? "blocked" : "empty"} />
+      </div>
+      {closeout ? (
+        <div className="evidence-stack compact-evidence-stack">
+          <div className="evidence-item">
+            <strong>Run</strong>
+            <span data-testid="account-runtime-closeout-run-id">{closeout.run_id}</span>
+          </div>
+          <div className="evidence-item">
+            <strong>Status</strong>
+            <span data-testid="account-runtime-closeout-status">{closeout.status}</span>
+          </div>
+          <div className="evidence-item">
+            <strong>Manifest</strong>
+            <CopyableCode label="runtime closeout manifest" value={closeout.closeout_manifest_ref} />
+          </div>
+          <div className="evidence-item">
+            <strong>Checksum</strong>
+            <span data-testid="account-runtime-closeout-manifest-checksum">
+              {closeout.closeout_manifest_checksum}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Gateway send</strong>
+            <span data-testid="account-runtime-closeout-gateway-send">
+              {String(closeout.runtime_gateway_send_observed)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Browser trigger</strong>
+            <span data-testid="account-runtime-closeout-web-trigger">
+              {String(closeout.browser_triggered_broker_order)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Raw secrets</strong>
+            <span data-testid="account-runtime-closeout-raw-secret">
+              {String(closeout.raw_secret_values_recorded)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Gateway final</strong>
+            <span data-testid="account-runtime-closeout-gateway-final">
+              {String(closeout.gateway_ack_is_final_state)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Artifacts</strong>
+            <span data-testid="account-runtime-closeout-artifact-count">
+              {Object.keys(closeout.artifact_checksums).length}
+            </span>
+          </div>
+          {closeout.explicit_non_claims.map((claim) => (
+            <div className="evidence-item" data-testid="account-runtime-closeout-non-claim" key={claim}>
+              <strong>Non-claim</strong>
+              <span>{claim}</span>
+            </div>
+          ))}
+        </div>
+      ) : error ? (
+        <div className="state-callout blocked" data-testid="account-runtime-closeout-error">
+          {error}
+        </div>
+      ) : (
+        <p className="muted">No runtime command closeout evidence is mounted for this account.</p>
+      )}
+    </section>
   );
 }
 

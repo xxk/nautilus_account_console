@@ -249,6 +249,10 @@ test("P024 Web UI gates paper submit and cancel controls on command capability",
 
   await page.route("**/api/commands/**", async (route) => {
     const request = route.request();
+    if (request.method() !== "POST") {
+      await route.fallback();
+      return;
+    }
     const payload = request.postDataJSON() as Record<string, unknown>;
     commandRequests.push(payload);
     const action = request.url().includes("cancel-intents") ? "cancel" : "submit";

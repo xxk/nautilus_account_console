@@ -1,7 +1,7 @@
 # P024 Acceptance / Account Console Paper Command Controls
 
 - Proposal ID: `p024-account-console-paper-command-controls`
-- Status: phase3b_partial_fill_cancel_ui_display_passed
+- Status: phase3a_runtime_closeout_and_phase3b_display_passed
 - Primary ADR: ADR-0007
 
 ## Scope
@@ -17,6 +17,7 @@ Out of scope: live trading, replace order, Account Mirror write authority, direc
 | P024 design gate | `python scripts\validate_p024_paper_command_controls_design.py` | `P024_PAPER_COMMAND_CONTROLS_DESIGN_OK` | Proposal docs, ADR coverage, current no-controls boundary |
 | P024 backend command API | `python scripts\validate_p024_paper_command_api.py` | `P024_PAPER_COMMAND_API_OK` | Paper-only submit/cancel intent API, fail-closed before gateway, mirror remains read-only |
 | P024 frontend command controls | `npx playwright test tests/e2e/p024-paper-command-controls.spec.ts --project=desktop` then `python scripts\validate_p024_ui_command_controls_browser_evidence.py` | `P024_UI_COMMAND_CONTROLS_BROWSER_EVIDENCE_OK` | Disabled controls absent; `paper_armed` controls visible; submit/cancel call Phase 1 API; gateway send remains false |
+| P024 runtime closeout projection | `npx playwright test tests/e2e/p024-runtime-closeout-evidence.spec.ts --project=desktop` then `python scripts\validate_p024_runtime_closeout_browser_evidence.py` | `P024_RUNTIME_CLOSEOUT_BROWSER_EVIDENCE_OK` | Existing owner-backed P023 OpenCTP paper runtime closeout refs/checksums/non-claims render in Web UI; browser-triggered broker order remains false |
 | P024 partial-fill cancel display | `npx playwright test tests/e2e/p024-partial-fill-cancel-order-display.spec.ts --project=desktop` then `python scripts\validate_p024_partial_fill_cancel_browser_evidence.py` | `P024_PARTIAL_FILL_CANCEL_BROWSER_EVIDENCE_OK` | S1-S4 Web UI order/fill display correctness; cancel pending is not final; runtime partial-fill remains typed blocker |
 | P023 runtime predecessor | `python scripts\validate_p023_openctp19053_command_run.py --run-dir output\account_command\ctp-paper-19053\p023-armed-20260621t0748z --source-package output\account_capability\ctp-paper-19053\source-package.json` | `P023_OPENCTP19053_COMMAND_RUN_OK` | Predecessor paper command evidence |
 | Proposal docs | `python scripts\check_proposal_docs.py --root . --proposal-id p024-account-console-paper-command-controls` | `PROPOSAL_DOCS_OK` | Proposal structure |
@@ -35,6 +36,19 @@ Out of scope: live trading, replace order, Account Mirror write authority, direc
 | A8 | positive | UI status waits for readback/reconcile | browser evidence | final state shown without readback/reconcile | planned |
 | A9 | positive | Secret redaction | artifact redaction gate | raw password/front/auth/token recorded | planned |
 | A10 | positive | Partial fill then cancel Web UI order display correctness | Playwright + `partial-fill-cancel-ui-acceptance.md` + browser evidence JSON | identity changes, fill rows drift, or quantity formulas fail | phase3b_partial_fill_cancel_ui_display_passed |
+| A11 | positive | Runtime closeout evidence appears in Web UI without browser-trigger claim | Playwright + API route audit + browser evidence JSON | UI hides refs/checksums, shows gateway ack final, or claims browser submitted broker order | phase3a_runtime_closeout_projection_passed |
+
+## Phase 3a Runtime Closeout Projection Acceptance
+
+The Web UI must render the existing owner-backed P023 OpenCTP 19053 paper runtime closeout for `p023-armed-20260621t0748z` as read-only evidence:
+
+1. Backend exposes `GET /api/commands/accounts/{account_id}/runtime-closeouts/{run_id}` and no write method for closeout projection.
+2. The response includes `closeout_manifest_ref`, `command_audit_ref`, artifact checksums, intent/risk/approval/gateway/readback/reconciliation refs and explicit non-claims.
+3. `runtime_gateway_send_observed=true` and `broker_order_created=true` are accepted only as owner-backed predecessor runtime evidence.
+4. `browser_triggered_broker_order=false`, `gateway_ack_is_final_state=false`, `raw_secret_values_recorded=false` and `raw_broker_endpoint_recorded=false` must be displayed and validated.
+5. The command status panel may project those refs, but it must not claim live readiness or a new browser-triggered broker order.
+
+Accepted evidence: `python scripts\validate_p024_runtime_closeout_browser_evidence.py` returns `P024_RUNTIME_CLOSEOUT_BROWSER_EVIDENCE_OK`.
 
 ## Partial Fill Then Cancel Acceptance
 
@@ -63,10 +77,11 @@ P024 Phase 1 exposes only these backend routes:
 
 1. `POST /api/commands/accounts/{account_id}/submit-intents`
 2. `POST /api/commands/accounts/{account_id}/cancel-intents`
+3. `GET /api/commands/accounts/{account_id}/runtime-closeouts/{run_id}`
 
 The API accepts only `account_id=acct.ctp.paper.19053` and `mode=paper_armed`. A valid request returns `status=accepted_for_risk`, deterministic `command_id`, `idempotency_enforced=true`, `gateway_send_attempted=false`, `broker_order_created=false`, `runtime_duplicate_send_attempted=false`, `gateway_ack_is_final_state=false`, `raw_secret_values_recorded=false`, and blockers for `risk_decision_required` plus `approval_decision_required`.
 
-This is a contract gate only. It does not send broker commands and does not enable Web UI command controls.
+The submit/cancel routes are contract gates only. They do not send broker commands. The runtime closeout route is read-only projection of existing owner-backed artifacts and does not send broker commands.
 
 ## Phase 2 Frontend Guarded Controls Acceptance
 
@@ -107,4 +122,4 @@ This remains browser/control contract evidence. It does not claim real Web UI Op
 
 ## Evidence Boundary
 
-Implementation/browser evidence is required before implementation closeout. Phase 1, Phase 2 and Phase 3b browser/contract gates are accepted; Phase 3 real Web UI submit/cancel runtime and Phase 4 closeout remain pending.
+Implementation/browser evidence is required before implementation closeout. Phase 1, Phase 2, Phase 3a and Phase 3b browser/contract gates are accepted; Phase 3 real Web UI submit/cancel runtime and Phase 4 closeout remain pending.

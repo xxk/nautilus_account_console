@@ -8,7 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 
 from . import __version__
-from .command_api import accept_cancel_intent, accept_submit_intent
+from .command_api import accept_cancel_intent, accept_submit_intent, load_runtime_closeout
 from .ledger import (
     get_account_snapshot,
     list_account_snapshots,
@@ -21,6 +21,7 @@ from .schemas import (
     AccountSnapshot,
     CancelIntentRequest,
     CommandApiResult,
+    CommandRuntimeCloseout,
     Health,
     MirrorAccountProjection,
     MirrorEvidenceResponse,
@@ -210,6 +211,15 @@ def command_submit_intent(account_id: str, intent: OrderIntentRequest) -> Comman
 )
 def command_cancel_intent(account_id: str, intent: CancelIntentRequest) -> CommandApiResult:
     return accept_cancel_intent(account_id, intent)
+
+
+@app.get(
+    "/api/commands/accounts/{account_id}/runtime-closeouts/{run_id}",
+    response_model=CommandRuntimeCloseout,
+    response_model_exclude_none=True,
+)
+def command_runtime_closeout(account_id: str, run_id: str) -> CommandRuntimeCloseout:
+    return load_runtime_closeout(account_id, run_id)
 
 
 @app.get("/api/accounts/{account_id}", response_model=AccountDetail)

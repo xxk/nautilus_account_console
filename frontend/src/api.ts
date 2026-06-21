@@ -2,6 +2,7 @@ import type {
   AccountSnapshot,
   CancelIntentRequest,
   CommandApiResult,
+  CommandRuntimeCloseout,
   MirrorAccountProjection,
   MirrorEvidenceResponse,
   MirrorListResponse,
@@ -100,6 +101,19 @@ export async function cancelPaperOrderIntent(
   });
   if (!response.ok) {
     throw new Error(`cancel intent request failed: ${response.status}`);
+  }
+  return response.json();
+}
+
+export async function fetchCommandRuntimeCloseout(
+  accountId: string,
+  runId = "p023-armed-20260621t0748z"
+): Promise<CommandRuntimeCloseout> {
+  const response = await fetch(
+    `${API_BASE}/api/commands/accounts/${encodeURIComponent(accountId)}/runtime-closeouts/${encodeURIComponent(runId)}`
+  );
+  if (!response.ok) {
+    throw new Error(`runtime closeout request failed: ${response.status}`);
   }
   return response.json();
 }

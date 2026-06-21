@@ -247,6 +247,35 @@ class CommandApiResult(BaseModel):
     raw_broker_endpoint_recorded: Literal[False]
 
 
+class CommandRuntimeCloseout(BaseModel):
+    schema_version: Literal["account_command.runtime_closeout.v1"]
+    proposal_id: Literal["p024-account-console-paper-command-controls"]
+    account_id: Literal["acct.ctp.paper.19053"]
+    run_id: str
+    mode: Literal["paper_armed"]
+    status: Literal["reconciled"]
+    closeout_manifest_ref: str
+    closeout_manifest_checksum: str
+    command_audit_ref: str
+    command_audit_checksum: str
+    intent_refs: list[str]
+    risk_decision_refs: list[str]
+    approval_decision_refs: list[str]
+    gateway_event_refs: list[str]
+    readback_refs: list[str]
+    reconciliation_ref: str
+    artifact_checksums: dict[str, str]
+    runtime_gateway_send_observed: Literal[True]
+    broker_order_created: Literal[True]
+    browser_triggered_broker_order: Literal[False]
+    gateway_ack_is_final_state: Literal[False]
+    raw_secret_values_recorded: Literal[False]
+    raw_broker_endpoint_recorded: Literal[False]
+    runtime_duplicate_send_attempted: Literal[False]
+    source_owner_ref: str
+    explicit_non_claims: list[str]
+
+
 class Health(BaseModel):
     ok: bool
     service: str

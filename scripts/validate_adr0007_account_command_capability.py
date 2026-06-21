@@ -27,8 +27,9 @@ FORBIDDEN_ROUTE_TOKENS = [
     "/replace",
 ]
 ALLOWED_COMMAND_ROUTES = {
-    "/api/commands/accounts/{account_id}/submit-intents",
-    "/api/commands/accounts/{account_id}/cancel-intents",
+    "/api/commands/accounts/{account_id}/submit-intents": {"POST"},
+    "/api/commands/accounts/{account_id}/cancel-intents": {"POST"},
+    "/api/commands/accounts/{account_id}/runtime-closeouts/{run_id}": {"GET"},
 }
 
 
@@ -50,7 +51,7 @@ def validate_adr() -> None:
     for phrase in [
         'adr_id: "0007"',
         "decision_status: proposed",
-        "landing_status: p024_phase3b_partial_fill_cancel_ui_contract_gate",
+        "landing_status: p024_phase3a_runtime_closeout_and_phase3b_display_gate",
         "Governed Account Command Capability",
         "Account Mirror never sends commands",
         "Gateway acknowledgement 不是最终账户状态",
@@ -59,7 +60,9 @@ def validate_adr() -> None:
         "Phase 0: ADR/proposal/contract skeleton, no command implementation.",
         "P024 Phase 1 backend command API is accepted as a contract gate only",
         "P024 Phase 2 frontend guarded controls are accepted as browser contract evidence only",
+        "P024 Phase 3a runtime closeout projection is accepted as read-only Web UI evidence",
         "P024 Phase 3b partial-fill cancel UI display is accepted as browser display-contract evidence only",
+        "browser_triggered_broker_order=false",
         "gateway_send_attempted=false",
     ]:
         require(phrase in text, f"ADR-0007 missing phrase: {phrase}")
@@ -103,12 +106,12 @@ def validate_backend_has_only_p024_command_routes() -> None:
     from nautilus_account_console.main import app
 
     route_paths = {getattr(route, "path", "") for route in app.routes}
-    require(ALLOWED_COMMAND_ROUTES.issubset(route_paths), "ADR-0007 P024 command routes missing")
+    require(set(ALLOWED_COMMAND_ROUTES).issubset(route_paths), "ADR-0007 P024 command routes missing")
     for route in app.routes:
         path = getattr(route, "path", "")
         methods = getattr(route, "methods", set()) or set()
         if path in ALLOWED_COMMAND_ROUTES:
-            require(methods == {"POST"}, f"{path}: P024 command route must be POST-only")
+            require(methods == ALLOWED_COMMAND_ROUTES[path], f"{path}: P024 command route methods mismatch")
         elif path.startswith("/api/commands"):
             require(False, f"unexpected command route outside P024 allowlist: {path}")
         for token in FORBIDDEN_ROUTE_TOKENS:
@@ -124,7 +127,7 @@ def main() -> None:
     validate_existing_design_gate_still_closed()
     validate_capability_fixtures_still_disabled()
     validate_backend_has_only_p024_command_routes()
-    print("ADR0007_ACCOUNT_COMMAND_CAPABILITY_OK: status=proposed landing=p024_phase3b_partial_fill_cancel_ui_contract_gate")
+    print("ADR0007_ACCOUNT_COMMAND_CAPABILITY_OK: status=proposed landing=p024_phase3a_runtime_closeout_and_phase3b_display_gate")
 
 
 if __name__ == "__main__":
