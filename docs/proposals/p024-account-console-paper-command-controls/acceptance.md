@@ -1,7 +1,7 @@
 # P024 Acceptance / Account Console Paper Command Controls
 
 - Proposal ID: `p024-account-console-paper-command-controls`
-- Status: phase4h_real_partial_fill_runtime_feasibility_blocked
+- Status: phase4k_partial_fill_runtime_execution_handoff_bundle_ready
 - Primary ADR: ADR-0007
 
 ## Scope
@@ -31,6 +31,8 @@ Out of scope: live trading, replace order, Account Mirror write authority, direc
 | P024 owner-runtime submit/cancel callback closeout | `python scripts\validate_p024_owner_runtime_execution_attempt_audit.py` | `P024_OWNER_RUNTIME_EXECUTION_ATTEMPT_AUDIT_OK` | Approved owner-runtime submit/cancel attempt observed accepted/reported submit callbacks and terminal cancel status `5` for the same native identity |
 | P024 real partial-fill runtime feasibility | `python scripts\validate_p024_partial_fill_runtime_feasibility_audit.py` | `P024_PARTIAL_FILL_RUNTIME_FEASIBILITY_AUDIT_OK` | Documents the remaining real partial-fill blocker without submitting a new order or promoting UI fixture evidence to runtime truth |
 | P024 owner artifact partial-fill scan | `python scripts\validate_p024_partial_fill_owner_artifact_scan.py` | `P024_PARTIAL_FILL_OWNER_ARTIFACT_SCAN_OK` | Scans current account-console and owner runtime JSON artifacts and rejects near candidates that are cancelled-without-fill or fully filled |
+| P024 partial-fill runtime execution approval packet | `python scripts\validate_p024_partial_fill_runtime_execution_approval_packet.py` | `P024_PARTIAL_FILL_RUNTIME_EXECUTION_APPROVAL_PACKET_OK` | Freezes exact approval text and one-attempt exposure-reduction constraints while `approval_obtained=false` |
+| P024 partial-fill runtime execution handoff bundle | `python scripts\validate_p024_partial_fill_runtime_execution_handoff_bundle.py` | `P024_PARTIAL_FILL_RUNTIME_EXECUTION_HANDOFF_BUNDLE_OK` | Freezes post-approval runtime inputs, success formulas and fallback classifications while `execution_allowed=false` |
 | P023 runtime predecessor | `python scripts\validate_p023_openctp19053_command_run.py --run-dir output\account_command\ctp-paper-19053\p023-armed-20260621t0748z --source-package output\account_capability\ctp-paper-19053\source-package.json` | `P023_OPENCTP19053_COMMAND_RUN_OK` | Predecessor paper command evidence |
 | Proposal docs | `python scripts\check_proposal_docs.py --root . --proposal-id p024-account-console-paper-command-controls` | `PROPOSAL_DOCS_OK` | Proposal structure |
 
@@ -185,6 +187,19 @@ This gate records why the remaining partial-fill acceptance cannot be declared f
 
 Accepted evidence: `python scripts\validate_p024_partial_fill_runtime_feasibility_audit.py` returns `P024_PARTIAL_FILL_RUNTIME_FEASIBILITY_AUDIT_OK` with `blocked_until_owner_runtime_partial_fill_state_available`. This is a typed blocker audit, not a real partial-fill pass.
 The companion scan evidence is accepted when `python scripts\validate_p024_partial_fill_owner_artifact_scan.py` returns `P024_PARTIAL_FILL_OWNER_ARTIFACT_SCAN_OK`.
+
+## Phase 4j/4k Partial-Fill Runtime Execution Approval And Handoff
+
+The next real step is prepared but not executed:
+
+1. `partial-fill-runtime-execution-approval-packet.json` requires exact approval text before any owner repo write or paper order mutation.
+2. The approval scope is limited to one small exposure-reduction paper order in account `acct.ctp.paper.19053`.
+3. The exact approval text is: `I approve writes to D:/Nautilus/nautilus_ctp_adapter to run owner-owned guarded OpenCTP paper submit/cancel scripts for P024 partial-fill acceptance; expected impact: create owner-owned runtime/debug/readback/reconciliation artifacts outside this worktree and may submit/cancel up to one small exposure-reduction paper order in the 19053 simulation account.`
+4. `partial-fill-runtime-execution-handoff-bundle.json` requires fresh owner pre-snapshot, reducible rb2610 exposure, quantity `2` or `3`, owner-reviewed limit price, and owner readback identity for cancel.
+5. Success requires same native order identity, `0 < filled_quantity < submitted_quantity`, `filled_quantity + cancelled_quantity == submitted_quantity`, `remaining_quantity == 0` after terminal cancel readback, and redaction evidence.
+6. Fully filled, cancelled-without-fill, rejected/timeout or incomplete artifacts remain typed blockers and must not be promoted to full acceptance.
+
+Accepted evidence: `python scripts\validate_p024_partial_fill_runtime_execution_approval_packet.py` returns `P024_PARTIAL_FILL_RUNTIME_EXECUTION_APPROVAL_PACKET_OK`, and `python scripts\validate_p024_partial_fill_runtime_execution_handoff_bundle.py` returns `P024_PARTIAL_FILL_RUNTIME_EXECUTION_HANDOFF_BUNDLE_OK`.
 
 ## Phase 3d Owner Runtime Invocation Readiness Acceptance
 

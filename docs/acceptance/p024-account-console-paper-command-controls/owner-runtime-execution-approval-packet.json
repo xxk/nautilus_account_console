@@ -62,7 +62,7 @@
       "action": "cancel",
       "entrypoint_ref": "scripts/ctp_guarded_paper_cancel_loop.py",
       "owner_path": "D:/Nautilus/nautilus_ctp_adapter/scripts/ctp_guarded_paper_cancel_loop.py",
-      "checksum": "sha256:33395ca5d2a6328358d0b8f1aaaf4c6cad3f0f2a4a0c77bd43e8264eaa9646c0",
+      "checksum": "sha256:3368c4856d5dc7cc904c68ac5ea7ec70f534e1d6170e226266b3577a0523ea9a",
       "armed_flag": "--arm-cancel-send",
       "required_arguments": [
         "--config",

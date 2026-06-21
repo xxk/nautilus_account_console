@@ -1,0 +1,145 @@
+{
+  "schema": "account-console.p024.partial-fill-runtime-execution-approval-packet.v1",
+  "proposal_id": "p024-account-console-paper-command-controls",
+  "account_id": "acct.ctp.paper.19053",
+  "reviewed_at": "2026-06-21T18:08:00+08:00",
+  "status": "phase4j_partial_fill_runtime_execution_approval_packet_ready",
+  "verdict": "approval_packet_ready_runtime_not_invoked",
+  "owner_runtime": {
+    "owner_ref": "owner://nautilus_ctp_adapter",
+    "owner_repo_ref": "owner-repo://nautilus_ctp_adapter",
+    "owner_repo_path": "D:/Nautilus/nautilus_ctp_adapter",
+    "config_ref": "cfgs/local/ctp.openctp.tts.7x24.local.json",
+    "config_file_exists_on_owner_node": true,
+    "config_raw_content_read": false,
+    "raw_secret_values_recorded": false,
+    "raw_broker_endpoint_recorded": false
+  },
+  "required_operator_approval": {
+    "required": true,
+    "obtained": false,
+    "approval_path": "D:/Nautilus/nautilus_ctp_adapter",
+    "reason": "Run owner-owned guarded OpenCTP paper submit/cancel scripts for one P024 partial-fill then cancel attempt.",
+    "expected_impact": [
+      "creates owner-owned runtime, debug, readback and reconciliation artifacts outside this worktree",
+      "may submit up to one small exposure-reduction paper order in the OpenCTP 19053 simulation account",
+      "may cancel the same paper order using owner readback identity after a partial fill is observed or after timeout",
+      "does not grant live_armed mode, production admission, capital approval, unrestricted order mutation or Account Mirror write authority"
+    ],
+    "exact_approval_text": "I approve writes to D:/Nautilus/nautilus_ctp_adapter to run owner-owned guarded OpenCTP paper submit/cancel scripts for P024 partial-fill acceptance; expected impact: create owner-owned runtime/debug/readback/reconciliation artifacts outside this worktree and may submit/cancel up to one small exposure-reduction paper order in the 19053 simulation account.",
+    "approval_prompt_required_before_execution": true
+  },
+  "planned_execution": {
+    "execution_root_ref": "owner-repo://nautilus_ctp_adapter/output/account_command/ctp-paper-19053/<p024-partial-fill-runtime-run-id>/",
+    "debug_root_ref": "owner-repo://nautilus_ctp_adapter/output/debug/",
+    "predecessor_attempt_ref": "docs/acceptance/p024-account-console-paper-command-controls/owner-runtime-execution-attempt-audit.json",
+    "partial_fill_feasibility_ref": "docs/acceptance/p024-account-console-paper-command-controls/partial-fill-runtime-feasibility-audit.json",
+    "owner_artifact_scan_ref": "docs/acceptance/p024-account-console-paper-command-controls/partial-fill-owner-artifact-scan.json",
+    "runtime_invocation_attempted": false,
+    "owner_repo_write_attempted": false,
+    "new_order_submitted": false,
+    "cancel_sent": false
+  },
+  "entrypoints": [
+    {
+      "action": "submit",
+      "entrypoint_ref": "scripts/ctp_guarded_paper_order_loop.py",
+      "owner_path": "D:/Nautilus/nautilus_ctp_adapter/scripts/ctp_guarded_paper_order_loop.py",
+      "checksum": "sha256:632c42352952def2f31f97d42dfbb834b23baf6086346fee7c5717588112e7c5",
+      "armed_flag": "--arm-paper-send"
+    },
+    {
+      "action": "cancel",
+      "entrypoint_ref": "scripts/ctp_guarded_paper_cancel_loop.py",
+      "owner_path": "D:/Nautilus/nautilus_ctp_adapter/scripts/ctp_guarded_paper_cancel_loop.py",
+      "checksum": "sha256:3368c4856d5dc7cc904c68ac5ea7ec70f534e1d6170e226266b3577a0523ea9a",
+      "armed_flag": "--arm-cancel-send"
+    }
+  ],
+  "attempt_constraints": {
+    "risk_shape": "exposure_reduction_only",
+    "preferred_instrument": "rb2610",
+    "maximum_submit_attempts": 1,
+    "maximum_order_quantity": 3,
+    "requires_fresh_pre_snapshot": true,
+    "requires_reducible_position_before_submit": true,
+    "requires_owner_readback_identity_for_cancel": true,
+    "partial_fill_success_formula": "0 < filled_quantity < submitted_quantity",
+    "terminal_cancel_success_formula": "filled_quantity + cancelled_quantity == submitted_quantity",
+    "post_cancel_remaining_quantity_formula": "remaining_quantity == 0",
+    "fallback_if_no_partial_fill": "record typed blocker with owner artifacts; do not retry without fresh approval"
+  },
+  "command_templates": [
+    {
+      "action": "submit",
+      "template": "python scripts/ctp_guarded_paper_order_loop.py --config cfgs/local/ctp.openctp.tts.7x24.local.json --pre-snapshot <owner_pre_snapshot_ref> --post-snapshot <owner_post_snapshot_ref> --instrument rb2610 --side SELL --quantity <qty_2_or_3_if_reducible> --limit-price <risk_reviewed_limit_price> --client-order-id <p024_partial_fill_idempotent_client_order_id> --timeout-seconds 20 --arm-paper-send --output-json output/account_command/ctp-paper-19053/<p024-partial-fill-runtime-run-id>/submit_owner_runtime_result.json",
+      "uses_placeholders_only_for_runtime_values": true,
+      "runtime_invocation_attempted": false
+    },
+    {
+      "action": "cancel",
+      "template": "python scripts/ctp_guarded_paper_cancel_loop.py --config cfgs/local/ctp.openctp.tts.7x24.local.json --pre-snapshot <owner_post_submit_readback_ref> --instrument rb2610 --client-order-id <p024_partial_fill_idempotent_client_order_id> --order-ref <order_ref> --front-id <front_id> --session-id <session_id> --exchange-id SHFE --arm-cancel-send --output-json output/account_command/ctp-paper-19053/<p024-partial-fill-runtime-run-id>/cancel_owner_runtime_result.json",
+      "uses_placeholders_only_for_runtime_values": true,
+      "runtime_invocation_attempted": false
+    }
+  ],
+  "required_post_run_artifacts": [
+    "pre_snapshot_with_reducible_position.json",
+    "submit_owner_runtime_result.json",
+    "post_submit_readback.json",
+    "trade_callback_or_trade_readback.json",
+    "cancel_owner_runtime_result.json",
+    "post_cancel_readback.json",
+    "reconciliation_result.json",
+    "redaction_report.json",
+    "partial_fill_closeout_manifest.json"
+  ],
+  "post_run_acceptance_gates": [
+    "python scripts\\validate_p024_partial_fill_runtime_feasibility_audit.py",
+    "python scripts\\validate_p024_partial_fill_owner_artifact_scan.py",
+    "python scripts\\validate_p024_partial_fill_cancel_browser_evidence.py",
+    "python scripts\\validate_p024_paper_command_controls_design.py"
+  ],
+  "blockers": [
+    {
+      "blocker_id": "p024_partial_fill_operator_approval_not_obtained",
+      "type": "external_write_approval_required",
+      "stage": "owner_runtime",
+      "reason": "Running the partial-fill attempt may write outside this worktree and may submit/cancel one paper order.",
+      "next_action": "operator must provide the exact partial-fill approval text before any owner runtime script is invoked"
+    },
+    {
+      "blocker_id": "p024_partial_fill_runtime_artifacts_missing",
+      "type": "owner_runtime_partial_fill_state_missing",
+      "stage": "readback",
+      "reason": "No qualifying partial-fill then cancel owner artifact set exists.",
+      "next_action": "after approved owner execution, ingest checksum-backed partial-fill submit/trade/cancel/readback/reconciliation artifacts"
+    }
+  ],
+  "negative_assertions": {
+    "approval_obtained": false,
+    "runtime_invocation_attempted": false,
+    "owner_repo_write_attempted": false,
+    "new_order_submitted": false,
+    "cancel_sent": false,
+    "browser_triggered_broker_order": false,
+    "gateway_send_attempted": false,
+    "broker_order_created": false,
+    "live_armed": false,
+    "account_mirror_write_authority": false,
+    "raw_secret_values_recorded": false,
+    "raw_broker_endpoint_recorded": false,
+    "config_raw_content_read": false,
+    "full_acceptance_claimed": false,
+    "browser_fixture_promoted_to_runtime_truth": false
+  },
+  "explicit_non_claims": [
+    "does_not_invoke_owner_runtime",
+    "does_not_write_owner_repo",
+    "does_not_submit_new_order",
+    "does_not_cancel_order",
+    "does_not_read_raw_ctp_secret_or_endpoint",
+    "does_not_claim_real_partial_fill_runtime",
+    "does_not_claim_full_acceptance"
+  ]
+}

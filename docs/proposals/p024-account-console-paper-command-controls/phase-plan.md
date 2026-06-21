@@ -1,7 +1,7 @@
 # P024 Phase Plan / Account Console Paper Command Controls
 
 - Proposal ID: `p024-account-console-paper-command-controls`
-- Status: phase4h_real_partial_fill_runtime_feasibility_blocked
+- Status: phase4k_partial_fill_runtime_execution_handoff_bundle_ready
 - Primary ADR: ADR-0007
 
 ## Artifact Trust Boundary
@@ -40,7 +40,7 @@ Primary ADR: ADR-0007
 <!-- AI-PHASE-STATUS-BEGIN
 reviewed_at: 2026-06-21
 reviewer: codex
-overall_status: phase4h_real_partial_fill_runtime_feasibility_blocked
+overall_status: phase4k_partial_fill_runtime_execution_handoff_bundle_ready
 phases:
   - id: phase_0_design_gate
     status: completed
@@ -114,6 +114,14 @@ phases:
     status: completed_no_qualifying_partial_fill_then_cancel_candidate
     ai_progress: 100
     evidence: "python scripts\\validate_p024_partial_fill_owner_artifact_scan.py"
+  - id: phase_4j_partial_fill_runtime_execution_approval_packet
+    status: approval_packet_ready_runtime_not_invoked
+    ai_progress: 100
+    evidence: "python scripts\\validate_p024_partial_fill_runtime_execution_approval_packet.py"
+  - id: phase_4k_partial_fill_runtime_execution_handoff_bundle
+    status: handoff_bundle_ready_runtime_not_invoked
+    ai_progress: 100
+    evidence: "python scripts\\validate_p024_partial_fill_runtime_execution_handoff_bundle.py"
 AI-PHASE-STATUS-END -->
 
 ## Phase Status Board
@@ -138,6 +146,8 @@ AI-PHASE-STATUS-END -->
 | Phase 4g Owner-runtime submit/cancel callback closeout | Record approved owner-runtime paper submit/cancel attempt, owner cancel-loop repair and terminal cancel callback for the same native identity | completed_owner_runtime_submit_cancel_callback_closed | `python scripts\validate_p024_owner_runtime_execution_attempt_audit.py` | Keep real partial-fill runtime blocked until owner provides stable partial-fill order/trade readbacks |
 | Phase 4h Real partial-fill runtime feasibility | Record why current owner evidence cannot satisfy partial-fill runtime truth and preserve the exact non-UI/Web UI acceptance shapes | blocked_until_owner_runtime_partial_fill_state_available | `python scripts\validate_p024_partial_fill_runtime_feasibility_audit.py` | Obtain fresh approval plus owner-generated partial-fill artifacts before declaring full acceptance |
 | Phase 4i Owner artifact partial-fill scan | Scan current account-console and owner runtime artifacts for qualifying partial-fill then cancel evidence and record rejected near candidates | completed_no_qualifying_partial_fill_then_cancel_candidate | `python scripts\validate_p024_partial_fill_owner_artifact_scan.py` | Use fresh approval or external owner evidence to produce a qualifying partial-fill artifact set |
+| Phase 4j Partial-fill runtime execution approval packet | Freeze exact approval text, owner path, one-attempt risk constraints and required post-run artifacts for the next partial-fill attempt | approval_packet_ready_runtime_not_invoked | `python scripts\validate_p024_partial_fill_runtime_execution_approval_packet.py` | Wait for exact operator approval before owner runtime writes or order mutation |
+| Phase 4k Partial-fill runtime execution handoff bundle | Freeze post-approval runtime inputs, operator sequence, success formulas and fallback blocker classifications | handoff_bundle_ready_runtime_not_invoked | `python scripts\validate_p024_partial_fill_runtime_execution_handoff_bundle.py` | After approval, execute owner-owned guarded scripts or preserve typed blocker if partial fill is not produced |
 
 ## Runtime / Command Freeze
 
@@ -162,3 +172,5 @@ Phase 0 does not run broker mutation. Phase 1 may add API contracts but must not
 15. Phase 4g owner-runtime submit/cancel callback closeout is complete; `P024_OWNER_RUNTIME_EXECUTION_ATTEMPT_AUDIT_OK` proves explicit approval was obtained, owner-owned submit/cancel scripts ran, owner patch `6a50b02` waited for cancel callbacks, and terminal cancel status `5` was observed for native order id `2081`. Real partial-fill runtime remains blocked.
 16. Phase 4h real partial-fill runtime feasibility audit is complete as a typed blocker; `P024_PARTIAL_FILL_RUNTIME_FEASIBILITY_AUDIT_OK` proves no new partial-fill order was submitted, current artifacts have no trade fill, and both non-UI and Web UI real partial-fill acceptance remain blocked until owner partial-fill artifacts exist.
 17. Phase 4i owner artifact partial-fill scan is complete; `P024_PARTIAL_FILL_OWNER_ARTIFACT_SCAN_OK` proves current scanned artifacts contain zero qualifying partial-fill then cancel candidates and records why P023/P077 near candidates are insufficient.
+18. Phase 4j partial-fill runtime execution approval packet is ready; `P024_PARTIAL_FILL_RUNTIME_EXECUTION_APPROVAL_PACKET_OK` freezes exact approval text while no owner runtime invocation or new order has occurred.
+19. Phase 4k partial-fill runtime execution handoff bundle is ready; `P024_PARTIAL_FILL_RUNTIME_EXECUTION_HANDOFF_BUNDLE_OK` freezes runtime inputs and success formulas while execution remains disallowed.
