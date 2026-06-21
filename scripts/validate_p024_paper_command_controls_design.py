@@ -31,12 +31,10 @@ REQUIRED_DOCS = [
     "partial-fill-cancel-ui-acceptance.md",
 ]
 
-FORBIDDEN_ROUTE_TOKENS = [
-    "/submit",
-    "/cancel",
-    "/replace",
-    "/commands",
-]
+ALLOWED_COMMAND_ROUTES = {
+    "/api/commands/accounts/{account_id}/submit-intents",
+    "/api/commands/accounts/{account_id}/cancel-intents",
+}
 
 
 class P024ValidationError(AssertionError):
@@ -78,7 +76,7 @@ def validate_readme() -> None:
     text = read(PROPOSAL / "README.md")
     for phrase in [
         "Proposal ID: `p024-account-console-paper-command-controls`",
-        "Status: design_gate_ready",
+        "Status: phase1_backend_contract_gate_passed",
         "ADR carrier: yes",
         "Primary ADR: ADR-0007",
         "Predecessor: [P023 OpenCTP 19053 Paper Command Capability]",
@@ -87,6 +85,7 @@ def validate_readme() -> None:
         "No Account Mirror broker writer.",
         "partial-fill then cancel order-display correctness scenario",
         "validate_p024_paper_command_controls_design.py",
+        "validate_p024_paper_command_api.py",
     ]:
         require(phrase in text, f"P024 README missing phrase: {phrase}")
 
@@ -101,7 +100,9 @@ def validate_phase_plan() -> None:
         "phase_3_browser_paper_submit_cancel",
         "phase_3b_partial_fill_cancel_ui_display",
         "Partial-fill cancel display",
-        "Backend command API is not implemented.",
+        "Phase 1 Backend command API",
+        "completed_contract_gate",
+        "validate_p024_paper_command_api.py",
         "Frontend submit/cancel controls are not implemented.",
         "Real partial-fill runtime remains blocked",
     ]:
@@ -112,6 +113,7 @@ def validate_acceptance() -> None:
     text = read(PROPOSAL / "acceptance.md")
     for phrase in [
         "P024_PAPER_COMMAND_CONTROLS_DESIGN_OK",
+        "P024_PAPER_COMMAND_API_OK",
         "Implementation/browser evidence is required before implementation closeout",
         "UI Anti-Drift Acceptance",
         "forbidden_actions",
@@ -131,6 +133,9 @@ def validate_acceptance() -> None:
         "account-cancel-pending-ref",
         "validate_p023_partial_fill_browser_evidence.py",
         "P024 implementation must regenerate P024-scoped browser evidence",
+        "Phase 1 Backend Command API Acceptance",
+        "gateway_send_attempted=false",
+        "accepted_for_risk",
     ]:
         require(phrase in text, f"P024 acceptance missing phrase: {phrase}")
 
@@ -173,7 +178,7 @@ def validate_partial_fill_cancel_doc() -> None:
     text = read(PROPOSAL / "partial-fill-cancel-ui-acceptance.md")
     for phrase in [
         "Proposal ID: `p024-account-console-paper-command-controls`",
-        "Status: design_gate_ready",
+        "Status: phase1_backend_contract_gate_passed",
         "acct.ctp.paper.19053",
         "not turn screenshots, browser text or TickTrader UI state into order truth",
         "account-console.p024.partial-fill-cancel-ui-acceptance.v1",
@@ -251,15 +256,20 @@ def validate_existing_command_boundary_still_closed() -> None:
         require(payload["boundaries"]["order_action"] is False, f"{path}: order_action boundary must stay false")
 
 
-def validate_backend_has_no_command_routes() -> None:
+def validate_backend_command_routes_are_p024_only() -> None:
     sys.path.insert(0, str(BACKEND_SRC))
     from nautilus_account_console.main import app
 
+    route_paths = {getattr(route, "path", "") for route in app.routes}
+    require(ALLOWED_COMMAND_ROUTES.issubset(route_paths), "P024 command API routes missing")
     for route in app.routes:
         path = getattr(route, "path", "")
         methods = getattr(route, "methods", set()) or set()
-        for token in FORBIDDEN_ROUTE_TOKENS:
-            require(token not in path, f"backend exposes forbidden command route during design gate: {path}")
+        if path in ALLOWED_COMMAND_ROUTES:
+            require(methods == {"POST"}, f"{path}: P024 command route must be POST-only")
+        elif path.startswith("/api/commands"):
+            require(False, f"unexpected command route outside P024 allowlist: {path}")
+        require("/replace" not in path, f"replace route remains forbidden in P024: {path}")
         if path.startswith("/api/mirror/"):
             forbidden_methods = sorted(method for method in methods if method not in {"GET", "HEAD"})
             require(not forbidden_methods, f"mirror route {path} exposes write methods: {forbidden_methods}")
@@ -275,10 +285,10 @@ def main() -> None:
     validate_partial_fill_cancel_doc()
     validate_p023_predecessor_evidence()
     validate_existing_command_boundary_still_closed()
-    validate_backend_has_no_command_routes()
+    validate_backend_command_routes_are_p024_only()
     print(
         "P024_PAPER_COMMAND_CONTROLS_DESIGN_OK: "
-        "status=design_gate_ready current_command=disabled partial_fill_cancel_ui=designed"
+        "status=phase1_backend_contract_gate_passed current_ui_command=disabled partial_fill_cancel_ui=designed"
     )
 
 

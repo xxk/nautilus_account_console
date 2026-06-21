@@ -3,7 +3,7 @@ status: proposed
 owner: architecture
 adr_id: "0007"
 decision_status: proposed
-landing_status: not_started
+landing_status: p024_phase1_backend_contract_gate
 ---
 
 # ADR-0007: Governed Account Command Capability / 受治理的账户下单与撤单能力
@@ -15,7 +15,7 @@ landing_status: not_started
 - 适用范围：`nautilus_account_console` Account Capability Fabric, Account Workbench, future Command Gateway, CTP / IB TWS / future broker command paths
 - 决策问题：Account Console 是否可以实现账户下单、撤单能力；如果可以，命令 authority、risk/approval、broker session、readback reconciliation 与 UI 安全边界应该如何分层？
 - 当前倾向：proposed；接受一个受治理的 command capability，但不得由 Account Mirror 或 UI 直接写 broker。命令必须通过 `OrderIntent -> RiskDecision -> ApprovalDecision -> ExecutionGateway -> ExecutionEvent -> AccountMirrorReadback -> ReconciliationResult`。
-- 最终决策：pending；在 successor proposal 完成 contracts、owner map、runtime gateway、negative gates 和真实 paper/live evidence 前，现有 UI/API 仍保持 `command.enabled=false`。
+- 最终决策：pending；P024 Phase 1 backend intent API contract gate exists for paper submit/cancel intents, but risk/approval/gateway/UI controls/live evidence are not complete and Account Mirror remains read-only.
 - Required predecessor: ADR-0004 command boundary and ADR-0005 read-only broker observation boundary.
 - First successor proposal: [P023 OpenCTP 19053 Paper Command Capability Acceptance Design](../proposals/p023-openctp-19053-paper-command-capability/README.md)
 - Second successor proposal: [P024 Account Console Paper Command Controls](../proposals/p024-account-console-paper-command-controls/README.md)
@@ -207,6 +207,7 @@ ADR-0007 is proposed only. Current repository behavior remains observation-only:
 
 1. Account Mirror command capability stays disabled.
 2. Existing OpenCTP 19053 UI shows orders/fills by read-only query only.
-3. No submit/cancel/replace UI or API is accepted by this ADR draft.
-4. P024 is the current successor proposal for guarded Web/API paper controls and partial-fill then cancel Web UI display correctness.
-5. Next implementation work is P024 Phase 1 backend command API, then guarded frontend controls and P024-scoped browser evidence.
+3. No submit/cancel/replace UI controls are accepted by this ADR draft.
+4. P024 Phase 1 backend command API is accepted as a contract gate only: it accepts paper `OrderIntent` / `CancelIntent`, returns `accepted_for_risk`, records risk/approval blockers and requires `gateway_send_attempted=false`.
+5. P024 is the current successor proposal for guarded Web/API paper controls and partial-fill then cancel Web UI display correctness.
+6. Next implementation work is guarded frontend controls and P024-scoped browser evidence; broker gateway send remains blocked until risk/approval/readback/reconciliation gates are present.

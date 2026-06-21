@@ -1,7 +1,7 @@
 # P024 Acceptance / Account Console Paper Command Controls
 
 - Proposal ID: `p024-account-console-paper-command-controls`
-- Status: design_gate_ready
+- Status: phase1_backend_contract_gate_passed
 - Primary ADR: ADR-0007
 
 ## Scope
@@ -15,6 +15,7 @@ Out of scope: live trading, replace order, Account Mirror write authority, direc
 | Gate | Command | Pass signal | Scope |
 | --- | --- | --- | --- |
 | P024 design gate | `python scripts\validate_p024_paper_command_controls_design.py` | `P024_PAPER_COMMAND_CONTROLS_DESIGN_OK` | Proposal docs, ADR coverage, current no-controls boundary |
+| P024 backend command API | `python scripts\validate_p024_paper_command_api.py` | `P024_PAPER_COMMAND_API_OK` | Paper-only submit/cancel intent API, fail-closed before gateway, mirror remains read-only |
 | P023 runtime predecessor | `python scripts\validate_p023_openctp19053_command_run.py --run-dir output\account_command\ctp-paper-19053\p023-armed-20260621t0748z --source-package output\account_capability\ctp-paper-19053\source-package.json` | `P023_OPENCTP19053_COMMAND_RUN_OK` | Predecessor paper command evidence |
 | Proposal docs | `python scripts\check_proposal_docs.py --root . --proposal-id p024-account-console-paper-command-controls` | `PROPOSAL_DOCS_OK` | Proposal structure |
 
@@ -22,13 +23,13 @@ Out of scope: live trading, replace order, Account Mirror write authority, direc
 
 | ID | Type | Scenario | Verification shape | Must fail if | Status |
 | --- | --- | --- | --- | --- | --- |
-| A1 | positive | Backend command API accepts paper submit intent | API contract + command artifact validator | endpoint bypasses risk/approval | planned |
+| A1 | positive | Backend command API accepts paper submit intent | API contract + command artifact validator | endpoint bypasses risk/approval | phase1_backend_contract_gate_passed |
 | A2 | positive | Account Mirror remains read-only | route audit | `/api/mirror` exposes POST/PUT/DELETE | design_gate_ready |
 | A3 | positive | Command controls render only in `paper_armed` mode | Playwright + API projection | controls appear while disabled | planned |
 | A4 | positive | Submit writes intent/risk/approval/gateway/readback/reconcile refs | integration + artifact validator | gateway ack alone is final | planned |
 | A5 | positive | Submit idempotency prevents duplicate order | retry/duplicate-click test | duplicate broker order identity appears | planned |
 | A6 | positive | Risk/approval fail closed | negative API tests | missing risk/approval reaches gateway | planned |
-| A7 | positive | Cancel uses latest readback identity | API/browser + readback artifact | cancel uses UI row text or screenshot | planned |
+| A7 | positive | Cancel uses latest readback identity | API/browser + readback artifact | cancel uses UI row text or screenshot | phase1_backend_contract_gate_passed |
 | A8 | positive | UI status waits for readback/reconcile | browser evidence | final state shown without readback/reconcile | planned |
 | A9 | positive | Secret redaction | artifact redaction gate | raw password/front/auth/token recorded | planned |
 | A10 | positive | Partial fill then cancel Web UI order display correctness | Playwright + `partial-fill-cancel-ui-acceptance.md` + browser evidence JSON | identity changes, fill rows drift, or quantity formulas fail | design_gate_ready |
@@ -54,6 +55,17 @@ Required identity and provenance checks:
 
 Current predecessor evidence is P023 display-contract evidence only: `python scripts\validate_p023_partial_fill_browser_evidence.py` returns `P023_PARTIAL_FILL_BROWSER_EVIDENCE_OK` and explicitly states runtime partial-fill remains a typed blocker until real or owner-approved partial-fill state exists. P024 implementation must regenerate P024-scoped browser evidence before closeout.
 
+## Phase 1 Backend Command API Acceptance
+
+P024 Phase 1 exposes only these backend routes:
+
+1. `POST /api/commands/accounts/{account_id}/submit-intents`
+2. `POST /api/commands/accounts/{account_id}/cancel-intents`
+
+The API accepts only `account_id=acct.ctp.paper.19053` and `mode=paper_armed`. A valid request returns `status=accepted_for_risk`, deterministic `command_id`, `idempotency_enforced=true`, `gateway_send_attempted=false`, `broker_order_created=false`, `runtime_duplicate_send_attempted=false`, `gateway_ack_is_final_state=false`, `raw_secret_values_recorded=false`, and blockers for `risk_decision_required` plus `approval_decision_required`.
+
+This is a contract gate only. It does not send broker commands and does not enable Web UI command controls.
+
 ## Negative Acceptance
 
 | ID | Failure path | Required rejection |
@@ -68,6 +80,7 @@ Current predecessor evidence is P023 display-contract evidence only: `python scr
 | N8 | live mode exposed | reject; P024 is paper-only |
 | N9 | partial-fill cancel display uses changed identity, stale fill rows or broken quantity formula | reject browser evidence |
 | N10 | cancel-pending gateway event is shown as final canceled state | blocked until readback/reconciliation |
+| N11 | Phase 1 API reaches gateway without risk/approval | reject; `gateway_send_attempted=false` required |
 
 ## UI Anti-Drift Acceptance
 

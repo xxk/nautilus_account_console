@@ -74,6 +74,11 @@ REQUIRED_MIRROR_ROUTES = {
     "/api/mirror/accounts/{account_id}/source-health",
     "/api/mirror/accounts/{account_id}/evidence",
 }
+ALLOWED_GOVERNED_COMMAND_ROUTES = {
+    "/api/commands/accounts/{account_id}/submit-intents",
+    "/api/commands/accounts/{account_id}/cancel-intents",
+}
+PASS_SIGNAL = "P019_API_BOUNDARY_OK: mirror_only=true governed_command_routes=p024_only direct_broker_routes=absent"
 
 
 class ApiBoundaryError(AssertionError):
@@ -116,16 +121,22 @@ def main() -> None:
             require(methods == {"GET"}, f"{path}: mirror route must be GET-only, got {sorted(methods)}")
         if path in ALLOWED_LEGACY_READ_ROUTES:
             require(methods == {"GET"}, f"{path}: legacy read route must be GET-only, got {sorted(methods)}")
+        if path in ALLOWED_GOVERNED_COMMAND_ROUTES:
+            require(methods == {"POST"}, f"{path}: governed P024 command route must be POST-only, got {sorted(methods)}")
+        elif path.startswith("/api/commands"):
+            require(False, f"{path}: command route is outside the P024 governed allowlist")
         for fragment in FORBIDDEN_ROUTE_FRAGMENTS:
             require(fragment not in path, f"forbidden direct broker/command route {path}")
         if path.startswith("/api/"):
             lowered = path.lower()
-            for action in FORBIDDEN_ROUTE_ACTION_WORDS:
-                require(action not in lowered, f"forbidden action word {action!r} in route {path}")
+            if path not in ALLOWED_GOVERNED_COMMAND_ROUTES:
+                for action in FORBIDDEN_ROUTE_ACTION_WORDS:
+                    require(action not in lowered, f"forbidden action word {action!r} in route {path}")
             require(
                 path.startswith("/api/mirror/")
                 or path in ALLOWED_LEGACY_READ_ROUTES
-                or path == "/api/accounts",
+                or path == "/api/accounts"
+                or path in ALLOWED_GOVERNED_COMMAND_ROUTES,
                 f"{path}: API route is outside accepted read-only families",
             )
 
@@ -212,7 +223,7 @@ def main() -> None:
         PHASE_PLAN,
         [
             "validate_p019_api_boundary.py",
-            "P019_API_BOUNDARY_OK: mirror_only=true command_routes=absent direct_broker_routes=absent",
+            PASS_SIGNAL,
         ],
     )
     require_terms(
@@ -220,11 +231,11 @@ def main() -> None:
         [
             "P019 API boundary validator",
             "validate_p019_api_boundary.py",
-            "P019_API_BOUNDARY_OK: mirror_only=true command_routes=absent direct_broker_routes=absent",
+            PASS_SIGNAL,
         ],
     )
 
-    print("P019_API_BOUNDARY_OK: mirror_only=true command_routes=absent direct_broker_routes=absent")
+    print(PASS_SIGNAL)
 
 
 if __name__ == "__main__":

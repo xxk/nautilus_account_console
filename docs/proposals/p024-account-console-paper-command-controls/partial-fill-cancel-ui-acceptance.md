@@ -1,7 +1,7 @@
 # P024 Partial Fill Then Cancel UI Acceptance
 
 - Proposal ID: `p024-account-console-paper-command-controls`
-- Status: design_gate_ready
+- Status: phase1_backend_contract_gate_passed
 - Primary ADR: ADR-0007
 - Account: `acct.ctp.paper.19053`
 

@@ -8,6 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 
 from . import __version__
+from .command_api import accept_cancel_intent, accept_submit_intent
 from .ledger import (
     get_account_snapshot,
     list_account_snapshots,
@@ -18,6 +19,8 @@ from .account_mirror import AccountMirrorStore
 from .schemas import (
     AccountDetail,
     AccountSnapshot,
+    CancelIntentRequest,
+    CommandApiResult,
     Health,
     MirrorAccountProjection,
     MirrorEvidenceResponse,
@@ -25,6 +28,7 @@ from .schemas import (
     MirrorListResponse,
     MirrorAccountSummary,
     MirrorSourceHealthResponse,
+    OrderIntentRequest,
     OrderEvent,
     OrderExecutionReports,
 )
@@ -35,9 +39,14 @@ app = FastAPI(title="Nautilus Account Console API", version=__version__)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+    allow_origins=[
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "http://localhost:5174",
+        "http://127.0.0.1:5174",
+    ],
     allow_credentials=False,
-    allow_methods=["GET"],
+    allow_methods=["GET", "POST"],
     allow_headers=["*"],
 )
 
@@ -181,6 +190,26 @@ def mirror_account_evidence(account_id: str) -> MirrorEvidenceResponse:
         blockers=projection.blockers,
         boundaries=projection.boundaries,
     )
+
+
+@app.post(
+    "/api/commands/accounts/{account_id}/submit-intents",
+    response_model=CommandApiResult,
+    response_model_exclude_none=True,
+    status_code=202,
+)
+def command_submit_intent(account_id: str, intent: OrderIntentRequest) -> CommandApiResult:
+    return accept_submit_intent(account_id, intent)
+
+
+@app.post(
+    "/api/commands/accounts/{account_id}/cancel-intents",
+    response_model=CommandApiResult,
+    response_model_exclude_none=True,
+    status_code=202,
+)
+def command_cancel_intent(account_id: str, intent: CancelIntentRequest) -> CommandApiResult:
+    return accept_cancel_intent(account_id, intent)
 
 
 @app.get("/api/accounts/{account_id}", response_model=AccountDetail)

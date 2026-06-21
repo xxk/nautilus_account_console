@@ -322,16 +322,22 @@ def validate_contract_gate_landed() -> None:
         require((fixture_dir / filename).exists(), f"missing command contract fixture {filename}")
 
 
-def validate_current_backend_still_read_only() -> None:
+def validate_current_backend_allows_only_p024_successor_commands() -> None:
     sys.path.insert(0, str(BACKEND_SRC))
     from nautilus_account_console.main import app
 
-    forbidden_tokens = ["/submit", "/cancel", "/replace", "/commands"]
+    allowed_p024_routes = {
+        "/api/commands/accounts/{account_id}/submit-intents",
+        "/api/commands/accounts/{account_id}/cancel-intents",
+    }
     for route in app.routes:
         path = getattr(route, "path", "")
         methods = getattr(route, "methods", set()) or set()
-        for token in forbidden_tokens:
-            require(token not in path, f"backend exposes command route before P023 implementation: {path}")
+        if path in allowed_p024_routes:
+            require(methods == {"POST"}, f"{path}: P024 successor command route must be POST-only")
+        elif path.startswith("/api/commands"):
+            require(False, f"unexpected command route outside P024 successor allowlist: {path}")
+        require("/replace" not in path, f"replace route remains forbidden: {path}")
         if path.startswith("/api/mirror/"):
             forbidden_methods = sorted(method for method in methods if method not in {"GET", "HEAD"})
             require(not forbidden_methods, f"mirror route exposes write method before P023 implementation: {path}")
@@ -342,7 +348,7 @@ def main() -> None:
     validate_proposal_docs()
     validate_index()
     validate_contract_gate_landed()
-    validate_current_backend_still_read_only()
+    validate_current_backend_allows_only_p024_successor_commands()
     print("P023_OPENCTP_19053_COMMAND_ACCEPTANCE_DESIGN_OK: status=paper_runtime_accepted current_command=disabled")
 
 

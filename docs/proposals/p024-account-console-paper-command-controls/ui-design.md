@@ -1,7 +1,7 @@
 # P024 UI Design / Paper Command Controls
 
 - Proposal ID: `p024-account-console-paper-command-controls`
-- Status: design_gate_ready
+- Status: phase1_backend_contract_gate_passed
 
 ## Design Intent
 

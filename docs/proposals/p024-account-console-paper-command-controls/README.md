@@ -1,7 +1,7 @@
 # P024 Account Console Paper Command Controls
 
 - Proposal ID: `p024-account-console-paper-command-controls`
-- Status: design_gate_ready
+- Status: phase1_backend_contract_gate_passed
 - ADR carrier: yes
 - Primary ADR: ADR-0007
 - Predecessor: [P023 OpenCTP 19053 Paper Command Capability](../p023-openctp-19053-paper-command-capability/README.md)
@@ -38,6 +38,7 @@ P024 does not enable `live_armed`, production admission, capital approval, or Ac
 | P023 paper runtime | Real OpenCTP 19053 paper submit/cancel/readback accepted | `python scripts\validate_p023_openctp19053_command_run.py --run-dir output\account_command\ctp-paper-19053\p023-armed-20260621t0748z --source-package output\account_capability\ctp-paper-19053\source-package.json` |
 | P023 UI status | Read-only status evidence accepted; command controls disabled | `python scripts\validate_p023_ui_status_browser_evidence.py` |
 | Current controls | No Web/API command controls are accepted yet | `python scripts\validate_p024_paper_command_controls_design.py` |
+| Phase 1 backend API | P024 backend accepts paper `OrderIntent` and `CancelIntent` contract requests, stops before risk/approval/gateway and keeps Account Mirror read-only | `python scripts\validate_p024_paper_command_api.py` |
 
 ## Document Map
 
@@ -54,7 +55,8 @@ P024 does not enable `live_armed`, production admission, capital approval, or Ac
 | Graduation item | Policy | Target | Status |
 | --- | --- | --- | --- |
 | ADR backfill | archive_only | ADR-0007 successor proposal list | design_gate_ready |
+| Backend command API contract gate | archive_only | P024 paper intent API accepts submit/cancel requests and fails closed before gateway | phase1_backend_contract_gate_passed |
 | Architecture / ownership backfill | required before implementation closeout | command gateway owner map | not_started |
-| Proposal-local evidence | archive_only | `acceptance.md` and future browser/runtime evidence | design_gate_ready |
+| Proposal-local evidence | archive_only | `acceptance.md` and future browser/runtime evidence | phase1_backend_contract_gate_passed |
 
 No stable rule graduation: proposal-local evidence only until implementation and runtime gates pass.

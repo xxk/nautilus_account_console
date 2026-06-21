@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime
 from enum import StrEnum
+from typing import Literal
 
 from pydantic import BaseModel, Field
 
@@ -167,6 +168,83 @@ class MirrorSourceHealthResponse(BaseModel):
     projection_checksum: str
     blockers: list[dict]
     boundaries: dict
+
+
+class OrderIntentRequest(BaseModel):
+    schema_version: Literal["account_command.order_intent.v1"]
+    intent_id: str = Field(pattern=r"^intent\.[a-z0-9_.-]+$")
+    account_id: Literal["acct.ctp.paper.19053"]
+    mode: Literal["paper_armed", "live_dry_run", "live_armed"]
+    action: Literal["submit"]
+    instrument: str = Field(min_length=1)
+    exchange: str = Field(min_length=1)
+    side: Literal["BUY", "SELL"]
+    quantity: int = Field(ge=1)
+    order_type: Literal["LIMIT"]
+    limit_price: float = Field(gt=0)
+    time_in_force: Literal["GFD", "IOC", "FAK", "FOK"]
+    offset: Literal["OPEN", "CLOSE", "CLOSETODAY", "CLOSEYESTERDAY"]
+    idempotency_key: str = Field(min_length=12)
+    operator_ref: str = Field(min_length=1)
+    preflight_ref: str = Field(min_length=1)
+    raw_secret_values_recorded: Literal[False]
+    raw_broker_endpoint_recorded: Literal[False]
+
+
+class CancelIntentRequest(BaseModel):
+    schema_version: Literal["account_command.cancel_intent.v1"]
+    intent_id: str = Field(pattern=r"^intent\.[a-z0-9_.-]+$")
+    account_id: Literal["acct.ctp.paper.19053"]
+    mode: Literal["paper_armed", "live_dry_run", "live_armed"]
+    action: Literal["cancel"]
+    instrument: str = Field(min_length=1)
+    exchange: str = Field(min_length=1)
+    client_order_id: str = Field(min_length=1)
+    venue_order_id: str = Field(min_length=1)
+    order_ref: str = Field(min_length=1)
+    front_id: int
+    session_id: int
+    idempotency_key: str = Field(min_length=12)
+    operator_ref: str = Field(min_length=1)
+    readback_ref: str = Field(min_length=1)
+    raw_secret_values_recorded: Literal[False]
+    raw_broker_endpoint_recorded: Literal[False]
+
+
+class CommandBlocker(BaseModel):
+    blocker_id: str
+    type: str
+    stage: str
+    reason: str
+    source_ref: str
+    next_action: str
+
+
+class CommandApiResult(BaseModel):
+    schema_version: Literal["account_command.command_api_result.v1"]
+    proposal_id: Literal["p024-account-console-paper-command-controls"]
+    account_id: str
+    action: Literal["submit", "cancel"]
+    mode: str
+    status: Literal["accepted_for_risk", "blocked"]
+    command_id: str
+    intent_id: str
+    intent_ref: str
+    idempotency_key: str
+    idempotency_enforced: bool
+    next_required_stage: str
+    blockers: list[CommandBlocker]
+    risk_decision_ref: str | None = None
+    approval_decision_ref: str | None = None
+    gateway_event_refs: list[str] = Field(default_factory=list)
+    readback_refs: list[str] = Field(default_factory=list)
+    reconciliation_ref: str | None = None
+    gateway_ack_is_final_state: Literal[False]
+    gateway_send_attempted: Literal[False]
+    broker_order_created: Literal[False]
+    runtime_duplicate_send_attempted: Literal[False]
+    raw_secret_values_recorded: Literal[False]
+    raw_broker_endpoint_recorded: Literal[False]
 
 
 class Health(BaseModel):

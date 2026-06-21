@@ -1,7 +1,7 @@
 # P024 Phase Plan / Account Console Paper Command Controls
 
 - Proposal ID: `p024-account-console-paper-command-controls`
-- Status: design_gate_ready
+- Status: phase1_backend_contract_gate_passed
 - Primary ADR: ADR-0007
 
 ## Artifact Trust Boundary
@@ -39,16 +39,16 @@ Primary ADR: ADR-0007
 <!-- AI-PHASE-STATUS-BEGIN
 reviewed_at: 2026-06-21
 reviewer: codex
-overall_status: design_gate_ready
+overall_status: phase1_backend_contract_gate_passed
 phases:
   - id: phase_0_design_gate
     status: completed
     ai_progress: 100
     evidence: "python scripts\\validate_p024_paper_command_controls_design.py"
   - id: phase_1_backend_command_api
-    status: planned
-    ai_progress: 0
-    evidence: "no command routes accepted yet"
+    status: completed_contract_gate
+    ai_progress: 100
+    evidence: "python scripts\\validate_p024_paper_command_api.py"
   - id: phase_2_frontend_guarded_controls
     status: planned
     ai_progress: 0
@@ -71,8 +71,8 @@ AI-PHASE-STATUS-END -->
 
 | Phase | Goal | Current Status | Evidence | Next Action |
 | --- | --- | --- | --- | --- |
-| Phase 0 Design gate | Freeze P024 scope, controls boundary and acceptance rows | completed | `python scripts\validate_p024_paper_command_controls_design.py` | Implement Phase 1 backend command API |
-| Phase 1 Backend command API | Add guarded paper-only command endpoints outside `/api/mirror` | planned | no command routes accepted yet | Add schema/API tests before UI controls |
+| Phase 0 Design gate | Freeze P024 scope, controls boundary and acceptance rows | completed | `python scripts\validate_p024_paper_command_controls_design.py` | Maintain design gate while implementation phases land |
+| Phase 1 Backend command API | Add guarded paper-only command endpoints outside `/api/mirror` | completed_contract_gate | `python scripts\validate_p024_paper_command_api.py`; backend tests | Add frontend guarded controls after API contract |
 | Phase 2 Frontend guarded controls | Show submit/cancel controls only when `command.mode=paper_armed` and refs exist | planned | `ui-design.md` | Add browser tests |
 | Phase 3 Browser paper submit/cancel | Prove Web UI submit/cancel round-trip through command audit and mirror readback | planned | future evidence | Run 19053 paper acceptance from UI |
 | Phase 3b Partial-fill cancel display | Prove Web UI display correctness for S1 working, S2 partial, S3 cancel pending and S4 remaining cancelled | design_gate_ready | `partial-fill-cancel-ui-acceptance.md`; `python scripts\validate_p023_partial_fill_browser_evidence.py` as predecessor | Regenerate P024-scoped browser evidence after command controls exist |
@@ -84,7 +84,7 @@ Phase 0 does not run broker mutation. Phase 1 may add API contracts but must not
 
 ## Current Blockers
 
-1. Backend command API is not implemented.
-2. Frontend submit/cancel controls are not implemented.
+1. Frontend submit/cancel controls are not implemented.
+2. Backend Phase 1 stops before risk/approval/gateway; broker mutation from Web UI is not accepted yet.
 3. Live trading readiness remains out of scope.
 4. Real partial-fill runtime remains blocked until a real or owner-approved partial-fill state is available.

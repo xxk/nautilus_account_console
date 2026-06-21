@@ -24,11 +24,12 @@ REQUIRED_FLOW = [
 ]
 
 FORBIDDEN_ROUTE_TOKENS = [
-    "/submit",
-    "/cancel",
     "/replace",
-    "/commands",
 ]
+ALLOWED_COMMAND_ROUTES = {
+    "/api/commands/accounts/{account_id}/submit-intents",
+    "/api/commands/accounts/{account_id}/cancel-intents",
+}
 
 
 class Adr0007ValidationError(AssertionError):
@@ -49,13 +50,15 @@ def validate_adr() -> None:
     for phrase in [
         'adr_id: "0007"',
         "decision_status: proposed",
-        "landing_status: not_started",
+        "landing_status: p024_phase1_backend_contract_gate",
         "Governed Account Command Capability",
         "Account Mirror never sends commands",
         "Gateway acknowledgement 不是最终账户状态",
         "`paper_armed`",
         "`live_armed`",
         "Phase 0: ADR/proposal/contract skeleton, no command implementation.",
+        "P024 Phase 1 backend command API is accepted as a contract gate only",
+        "gateway_send_attempted=false",
     ]:
         require(phrase in text, f"ADR-0007 missing phrase: {phrase}")
     for phrase in REQUIRED_FLOW:
@@ -93,15 +96,21 @@ def validate_capability_fixtures_still_disabled() -> None:
         require(payload["boundaries"]["order_action"] is False, f"{path}: order_action boundary must stay false")
 
 
-def validate_backend_has_no_command_routes() -> None:
+def validate_backend_has_only_p024_command_routes() -> None:
     sys.path.insert(0, str(BACKEND_SRC))
     from nautilus_account_console.main import app
 
+    route_paths = {getattr(route, "path", "") for route in app.routes}
+    require(ALLOWED_COMMAND_ROUTES.issubset(route_paths), "ADR-0007 P024 command routes missing")
     for route in app.routes:
         path = getattr(route, "path", "")
         methods = getattr(route, "methods", set()) or set()
+        if path in ALLOWED_COMMAND_ROUTES:
+            require(methods == {"POST"}, f"{path}: P024 command route must be POST-only")
+        elif path.startswith("/api/commands"):
+            require(False, f"unexpected command route outside P024 allowlist: {path}")
         for token in FORBIDDEN_ROUTE_TOKENS:
-            require(token not in path, f"backend exposes forbidden pre-ADR0007 command route: {path}")
+            require(token not in path, f"backend exposes forbidden ADR-0007 command route: {path}")
         if path.startswith("/api/mirror/"):
             forbidden_methods = sorted(method for method in methods if method not in {"GET", "HEAD"})
             require(not forbidden_methods, f"mirror route {path} exposes write methods: {forbidden_methods}")
@@ -112,8 +121,8 @@ def main() -> None:
     validate_index()
     validate_existing_design_gate_still_closed()
     validate_capability_fixtures_still_disabled()
-    validate_backend_has_no_command_routes()
-    print("ADR0007_ACCOUNT_COMMAND_CAPABILITY_OK: status=proposed current_command=disabled")
+    validate_backend_has_only_p024_command_routes()
+    print("ADR0007_ACCOUNT_COMMAND_CAPABILITY_OK: status=proposed landing=p024_phase1_backend_contract_gate")
 
 
 if __name__ == "__main__":
