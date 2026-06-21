@@ -15,6 +15,9 @@ from .schemas import (
     CommandPartialFillRuntimeExecutionHandoffBundle,
     CommandPartialFillOwnerRepairImplementationPlan,
     CommandPartialFillOwnerRepairEvidenceIngestGate,
+    CommandPartialFillOwnerRepairEvidenceIngestAudit,
+    CommandPartialFillPostRepairRuntimeRetryApprovalPacket,
+    CommandPartialFillPostRepairRuntimeAttemptAudit,
     CommandPartialFillOwnerRepairPreflightSourceAudit,
     CommandPartialFillOwnerRepairPatchPreview,
     CommandPartialFillOwnerRepairExecutionHandoffBundle,
@@ -103,6 +106,27 @@ PARTIAL_FILL_OWNER_REPAIR_EVIDENCE_INGEST_GATE = (
     / "acceptance"
     / "p024-account-console-paper-command-controls"
     / "partial-fill-owner-repair-evidence-ingest-gate.json"
+)
+PARTIAL_FILL_OWNER_REPAIR_EVIDENCE_INGEST_AUDIT = (
+    ROOT
+    / "docs"
+    / "acceptance"
+    / "p024-account-console-paper-command-controls"
+    / "partial-fill-owner-repair-evidence-ingest-audit.json"
+)
+PARTIAL_FILL_POST_REPAIR_RUNTIME_RETRY_APPROVAL_PACKET = (
+    ROOT
+    / "docs"
+    / "acceptance"
+    / "p024-account-console-paper-command-controls"
+    / "partial-fill-post-repair-runtime-retry-approval-packet.json"
+)
+PARTIAL_FILL_POST_REPAIR_RUNTIME_ATTEMPT_AUDIT = (
+    ROOT
+    / "docs"
+    / "acceptance"
+    / "p024-account-console-paper-command-controls"
+    / "partial-fill-post-repair-runtime-attempt-audit.json"
 )
 PARTIAL_FILL_OWNER_REPAIR_PREFLIGHT_SOURCE_AUDIT = (
     ROOT
@@ -793,6 +817,119 @@ def load_partial_fill_owner_repair_evidence_ingest_gate(
         if negative.get(key) is not False:
             raise HTTPException(status_code=409, detail=f"partial-fill owner repair evidence ingest gate negative assertion failed: {key}")
     return CommandPartialFillOwnerRepairEvidenceIngestGate(**payload)
+
+
+def load_partial_fill_owner_repair_evidence_ingest_audit(
+    account_id: str,
+) -> CommandPartialFillOwnerRepairEvidenceIngestAudit:
+    if account_id != PAPER_ACCOUNT_ID:
+        raise HTTPException(status_code=403, detail="P024 owner repair ingest audit is scoped to acct.ctp.paper.19053 only")
+    if not PARTIAL_FILL_OWNER_REPAIR_EVIDENCE_INGEST_AUDIT.exists():
+        raise HTTPException(status_code=404, detail="partial-fill owner repair evidence ingest audit not found")
+    text = PARTIAL_FILL_OWNER_REPAIR_EVIDENCE_INGEST_AUDIT.read_text(encoding="utf-8")
+    if any(fragment.lower() in text.lower() for fragment in SENSITIVE_RUNTIME_FRAGMENTS):
+        raise HTTPException(status_code=409, detail="partial-fill owner repair evidence ingest audit contains forbidden sensitive fragments")
+    payload = json.loads(text)
+    if payload.get("account_id") != PAPER_ACCOUNT_ID:
+        raise HTTPException(status_code=409, detail="partial-fill owner repair evidence ingest audit account_id mismatch")
+    owner = payload.get("owner_repair_evidence") or {}
+    if owner.get("owner_repo_ref") != "owner-repo://nautilus_ctp_adapter":
+        raise HTTPException(status_code=409, detail="partial-fill owner repair evidence ingest audit owner ref mismatch")
+    if owner.get("owner_runtime_invocation_attempted") is not False:
+        raise HTTPException(status_code=409, detail="partial-fill owner repair evidence ingest audit invoked runtime")
+    decision = payload.get("ingest_decision") or {}
+    if decision.get("owner_repair_evidence_recorded") is not True:
+        raise HTTPException(status_code=409, detail="partial-fill owner repair evidence not recorded")
+    if decision.get("owner_validators_passed") is not True:
+        raise HTTPException(status_code=409, detail="partial-fill owner validators not passed")
+    if decision.get("runtime_retry_authorized") is not False:
+        raise HTTPException(status_code=409, detail="partial-fill owner repair ingest audit authorized runtime retry")
+    negative = payload.get("negative_assertions") or {}
+    for key in [
+        "owner_runtime_invocation_attempted",
+        "post_repair_runtime_retry_claimed",
+        "real_partial_fill_claimed",
+        "web_ui_real_partial_fill_claimed",
+        "full_acceptance_claimed",
+        "raw_secret_values_recorded",
+        "raw_broker_endpoint_recorded",
+        "config_raw_content_recorded",
+    ]:
+        if negative.get(key) is not False:
+            raise HTTPException(status_code=409, detail=f"partial-fill owner repair ingest audit negative assertion failed: {key}")
+    return CommandPartialFillOwnerRepairEvidenceIngestAudit(**payload)
+
+
+def load_partial_fill_post_repair_runtime_retry_approval_packet(
+    account_id: str,
+) -> CommandPartialFillPostRepairRuntimeRetryApprovalPacket:
+    if account_id != PAPER_ACCOUNT_ID:
+        raise HTTPException(status_code=403, detail="P024 post-repair runtime retry packet is scoped to acct.ctp.paper.19053 only")
+    if not PARTIAL_FILL_POST_REPAIR_RUNTIME_RETRY_APPROVAL_PACKET.exists():
+        raise HTTPException(status_code=404, detail="partial-fill post-repair runtime retry approval packet not found")
+    text = PARTIAL_FILL_POST_REPAIR_RUNTIME_RETRY_APPROVAL_PACKET.read_text(encoding="utf-8")
+    if any(fragment.lower() in text.lower() for fragment in SENSITIVE_RUNTIME_FRAGMENTS):
+        raise HTTPException(status_code=409, detail="partial-fill post-repair runtime retry approval packet contains forbidden sensitive fragments")
+    payload = json.loads(text)
+    if payload.get("account_id") != PAPER_ACCOUNT_ID:
+        raise HTTPException(status_code=409, detail="partial-fill post-repair runtime retry approval packet account_id mismatch")
+    guard = payload.get("runtime_retry_guard") or {}
+    if guard.get("runtime_retry_authorized_by_packet") is not True:
+        raise HTTPException(status_code=409, detail="partial-fill post-repair runtime retry not authorized")
+    if guard.get("maximum_attempts") != 1:
+        raise HTTPException(status_code=409, detail="partial-fill post-repair runtime retry attempt cap drifted")
+    if guard.get("exposure_reduction_only") is not True or guard.get("small_order_only") is not True:
+        raise HTTPException(status_code=409, detail="partial-fill post-repair runtime retry risk guard drifted")
+    negative = payload.get("negative_assertions_before_runtime") or {}
+    for key in [
+        "owner_runtime_invocation_attempted_by_packet",
+        "paper_order_created_by_packet",
+        "paper_cancel_sent_by_packet",
+        "real_partial_fill_claimed",
+        "web_ui_real_partial_fill_claimed",
+        "full_acceptance_claimed",
+        "raw_secret_values_recorded",
+        "raw_broker_endpoint_recorded",
+        "config_raw_content_recorded",
+    ]:
+        if negative.get(key) is not False:
+            raise HTTPException(status_code=409, detail=f"partial-fill post-repair runtime retry packet negative assertion failed: {key}")
+    return CommandPartialFillPostRepairRuntimeRetryApprovalPacket(**payload)
+
+
+def load_partial_fill_post_repair_runtime_attempt_audit(
+    account_id: str,
+) -> CommandPartialFillPostRepairRuntimeAttemptAudit:
+    if account_id != PAPER_ACCOUNT_ID:
+        raise HTTPException(status_code=403, detail="P024 post-repair runtime attempt audit is scoped to acct.ctp.paper.19053 only")
+    if not PARTIAL_FILL_POST_REPAIR_RUNTIME_ATTEMPT_AUDIT.exists():
+        raise HTTPException(status_code=404, detail="partial-fill post-repair runtime attempt audit not found")
+    text = PARTIAL_FILL_POST_REPAIR_RUNTIME_ATTEMPT_AUDIT.read_text(encoding="utf-8")
+    if any(fragment.lower() in text.lower() for fragment in SENSITIVE_RUNTIME_FRAGMENTS):
+        raise HTTPException(status_code=409, detail="partial-fill post-repair runtime attempt audit contains forbidden sensitive fragments")
+    payload = json.loads(text)
+    if payload.get("account_id") != PAPER_ACCOUNT_ID:
+        raise HTTPException(status_code=409, detail="partial-fill post-repair runtime attempt audit account_id mismatch")
+    obs = payload.get("runtime_observation") or {}
+    if obs.get("partial_fill_formula_satisfied") is not False:
+        raise HTTPException(status_code=409, detail="partial-fill post-repair runtime attempt audit claimed partial fill")
+    decision = payload.get("acceptance_decision") or {}
+    if decision.get("partial_fill_then_cancel_acceptance_satisfied") is not False:
+        raise HTTPException(status_code=409, detail="partial-fill post-repair runtime attempt audit claimed acceptance")
+    negative = payload.get("negative_assertions") or {}
+    for key in [
+        "additional_runtime_retry_authorized",
+        "cancel_sent",
+        "real_partial_fill_claimed",
+        "web_ui_real_partial_fill_claimed",
+        "full_acceptance_claimed",
+        "raw_secret_values_recorded",
+        "raw_broker_endpoint_recorded",
+        "config_raw_content_recorded",
+    ]:
+        if negative.get(key) is not False:
+            raise HTTPException(status_code=409, detail=f"partial-fill post-repair runtime attempt audit negative assertion failed: {key}")
+    return CommandPartialFillPostRepairRuntimeAttemptAudit(**payload)
 
 
 def load_partial_fill_owner_repair_preflight_source_audit(

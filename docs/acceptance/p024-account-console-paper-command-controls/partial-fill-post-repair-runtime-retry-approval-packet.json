@@ -1,0 +1,71 @@
+{
+  "schema": "account-console.p024.partial-fill-post-repair-runtime-retry-approval-packet.v1",
+  "proposal_id": "p024-account-console-paper-command-controls",
+  "account_id": "acct.ctp.paper.19053",
+  "reviewed_at": "2026-06-21T23:45:00+08:00",
+  "status": "phase4ze_post_repair_runtime_retry_approval_packet_ready",
+  "verdict": "one_guarded_post_repair_paper_attempt_authorized",
+  "depends_on": {
+    "owner_repair_evidence_ingest_audit_ref": "docs/acceptance/p024-account-console-paper-command-controls/partial-fill-owner-repair-evidence-ingest-audit.json",
+    "owner_repair_evidence_ingest_audit_status": "phase4zd_owner_repair_evidence_ingested",
+    "owner_repair_commit_ref": "01db0f84203db09874fdec07ec8d03fb47ca4ea7",
+    "owner_focus_validator_exit_code": 0,
+    "owner_integration_validator_exit_code": 0,
+    "approval_packets_updated": true
+  },
+  "operator_approval": {
+    "approval_obtained": true,
+    "approval_path": "D:/Nautilus/nautilus_ctp_adapter",
+    "approval_text_ref": "user-message://2026-06-21/p024-owner-repair-and-one-runtime-attempt-approval",
+    "scope": "repair owner close-offset semantics for P024 and run at most one post-repair guarded OpenCTP paper partial-fill attempt",
+    "expected_impact": "create owner-owned code/runtime/debug/readback/reconciliation artifacts outside this worktree and may submit/cancel up to one small exposure-reduction paper order"
+  },
+  "runtime_retry_guard": {
+    "runtime_retry_authorized_by_packet": true,
+    "maximum_attempts": 1,
+    "account_id": "acct.ctp.paper.19053",
+    "simulation_user": "19053",
+    "mode": "paper_armed",
+    "exposure_reduction_only": true,
+    "small_order_only": true,
+    "owner_repo_ref": "owner-repo://nautilus_ctp_adapter",
+    "owner_repo_path": "D:/Nautilus/nautilus_ctp_adapter",
+    "submit_entrypoint_ref": "owner-repo://nautilus_ctp_adapter/scripts/ctp_guarded_paper_order_loop.py",
+    "cancel_entrypoint_ref": "owner-repo://nautilus_ctp_adapter/scripts/ctp_guarded_paper_cancel_loop.py",
+    "owner_config_ref": "owner-owned-openctp-paper-19053-config-ref",
+    "raw_secret_values_recorded": false,
+    "raw_broker_endpoint_recorded": false,
+    "config_raw_content_recorded": false
+  },
+  "required_runtime_evidence": [
+    "pre_snapshot_with_reducible_position.json",
+    "submit_owner_runtime_dry_run.json",
+    "submit_owner_runtime_result.json",
+    "post_submit_readback.json",
+    "cancel_owner_runtime_result.json or typed blocker if no partial fill occurs",
+    "post_cancel_readback.json or typed blocker if no cancellable remainder exists",
+    "reconciliation artifact proving success formula or preserving blocker"
+  ],
+  "success_formula": {
+    "partial_fill": "0 < filled_quantity < submitted_quantity",
+    "terminal_cancel": "filled_quantity + cancelled_quantity == submitted_quantity and remaining_quantity == 0",
+    "web_ui_projection": "Web UI shows owner runtime refs/checksums for the same order identity without raw secrets"
+  },
+  "fallback_if_not_partial": {
+    "claim_full_acceptance": false,
+    "record_typed_blocker": true,
+    "blocker_type": "post_repair_runtime_attempt_did_not_produce_partial_fill",
+    "next_action": "preserve runtime artifacts and do not run a second attempt without fresh approval"
+  },
+  "negative_assertions_before_runtime": {
+    "owner_runtime_invocation_attempted_by_packet": false,
+    "paper_order_created_by_packet": false,
+    "paper_cancel_sent_by_packet": false,
+    "real_partial_fill_claimed": false,
+    "web_ui_real_partial_fill_claimed": false,
+    "full_acceptance_claimed": false,
+    "raw_secret_values_recorded": false,
+    "raw_broker_endpoint_recorded": false,
+    "config_raw_content_recorded": false
+  }
+}

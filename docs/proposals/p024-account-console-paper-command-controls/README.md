@@ -1,7 +1,7 @@
 # P024 Account Console Paper Command Controls
 
 - Proposal ID: `p024-account-console-paper-command-controls`
-- Status: phase4zc_remaining_acceptance_state_ui_projection_passed
+- Status: phase4zf_post_repair_runtime_attempt_full_fill_blocker_recorded
 - ADR carrier: yes
 - Primary ADR: ADR-0007
 - Predecessor: [P023 OpenCTP 19053 Paper Command Capability](../p023-openctp-19053-paper-command-capability/README.md)
@@ -34,6 +34,8 @@ P024 does not enable `live_armed`, production admission, capital approval, or Ac
 17. Render the partial-fill runtime execution handoff bundle in the Web UI with runtime inputs, owner sequence, success formulas and fallback classifications while execution remains disallowed.
 18. Render the owner repair approval packet in the Web UI with exact repair approval text, current approval mismatch, owner changes, validators, blockers and false owner-write/runtime-retry flags.
 19. Render the remaining acceptance state in the Web UI with R1-R5 missing requirements and false owner-repair/runtime-retry/full-acceptance claims.
+20. Ingest owner repair evidence from `owner-repo://nautilus_ctp_adapter` with commit/checksum/validator refs and no raw secrets.
+21. Render the post-repair runtime retry approval packet in the Web UI, authorizing at most one guarded exposure-reduction paper attempt while pre-runtime claims remain false.
 
 ## Non-Goals
 
@@ -87,6 +89,9 @@ P024 does not enable `live_armed`, production admission, capital approval, or Ac
 | Phase 4za owner repair execution handoff UI projection | Web UI renders the execution handoff sequence, artifacts and no-execution/no-retry flags | `python scripts\validate_p024_partial_fill_owner_repair_execution_handoff_browser_evidence.py` |
 | Phase 4zb owner repair approval packet UI projection | Web UI renders exact owner repair approval text, current approval mismatch, owner changes, validators and blockers while owner write, runtime retry and full acceptance remain false | `python scripts\validate_p024_partial_fill_owner_repair_approval_packet_browser_evidence.py` |
 | Phase 4zc remaining acceptance state UI projection | Web UI renders R1-R5 missing requirements and accepted evidence groups while owner repair, runtime retry and full acceptance remain false | `python scripts\validate_p024_partial_fill_remaining_acceptance_state_browser_evidence.py` |
+| Phase 4zd owner repair evidence ingest audit | Owner repair commit/checksum/validator refs are ingested without raw secrets while runtime retry remains separately packet-gated | `python scripts\validate_p024_partial_fill_owner_repair_evidence_ingest_audit.py`; `python scripts\validate_p024_partial_fill_owner_repair_ingest_audit_browser_evidence.py` |
+| Phase 4ze post-repair runtime retry approval packet | One guarded exposure-reduction paper attempt is authorized after owner validators and account-console packet updates while pre-runtime claims remain false | `python scripts\validate_p024_partial_fill_post_repair_runtime_retry_approval_packet.py`; `python scripts\validate_p024_partial_fill_post_repair_runtime_retry_packet_browser_evidence.py` |
+| Phase 4zf post-repair runtime attempt audit | The authorized owner attempt produced a real full fill of 1 lot and position reduction, not a partial-fill/cancel lifecycle; retry is consumed | `python scripts\validate_p024_partial_fill_post_repair_runtime_attempt_audit.py`; `python scripts\validate_p024_partial_fill_post_repair_runtime_attempt_browser_evidence.py` |
 
 ## Document Map
 
@@ -164,6 +169,9 @@ P024 does not enable `live_armed`, production admission, capital approval, or Ac
 | Owner repair execution handoff UI projection | archive_only | Browser evidence proves the execution handoff is visible in Web UI while execution, owner write, runtime retry and full acceptance remain false | phase4za_owner_repair_execution_handoff_ui_projection_passed |
 | Owner repair approval packet UI projection | archive_only | Browser evidence proves the exact repair approval packet is visible in Web UI while current approval is insufficient and owner write, runtime retry, partial-fill claim and full acceptance remain false | phase4zb_owner_repair_approval_packet_ui_projection_passed |
 | Remaining acceptance state UI projection | archive_only | Browser evidence proves R1-R5 missing requirements are visible in Web UI while owner repair, runtime retry, real partial-fill, Web UI real partial-fill and full acceptance remain false | phase4zc_remaining_acceptance_state_ui_projection_passed |
+| Owner repair evidence ingest audit | archive_only | `partial-fill-owner-repair-evidence-ingest-audit.json` records owner commit `01db0f84203db09874fdec07ec8d03fb47ca4ea7`, source/test checksums and validator results while real partial-fill remains false | phase4zd_owner_repair_evidence_ingested |
+| Post-repair runtime retry approval packet | archive_only | `partial-fill-post-repair-runtime-retry-approval-packet.json` authorizes at most one guarded exposure-reduction paper attempt after owner repair evidence and packet updates | phase4ze_post_repair_runtime_retry_approval_packet_ready |
+| Post-repair runtime attempt audit | archive_only | `partial-fill-post-repair-runtime-attempt-audit.json` records the real owner paper order as full-filled, exposure-reducing, non-qualifying for partial-fill acceptance and retry-consumed | phase4zf_post_repair_runtime_attempt_full_fill_blocker_recorded |
 | Proposal-local evidence | archive_only | `acceptance.md`, browser command-controls evidence, runtime closeout projection evidence, P024 partial-fill display evidence, runtime handoff request evidence, owner-runtime invocation readiness evidence, runtime readiness UI projection evidence, full acceptance closeout audit, owner-runtime execution approval packet, runtime approval packet UI evidence, owner-runtime execution handoff bundle, runtime handoff bundle UI evidence and runtime execution gap audit evidence; runtime Web UI broker command execution remains blocked pending external approval | phase4e_runtime_execution_gap_audit_passed |
 
 No stable rule graduation: proposal-local evidence only until implementation and runtime gates pass.

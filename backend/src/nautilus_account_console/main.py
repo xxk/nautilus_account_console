@@ -15,6 +15,9 @@ from .command_api import (
     load_partial_fill_remaining_acceptance_current_state,
     load_partial_fill_owner_repair_implementation_plan,
     load_partial_fill_owner_repair_evidence_ingest_gate,
+    load_partial_fill_owner_repair_evidence_ingest_audit,
+    load_partial_fill_post_repair_runtime_retry_approval_packet,
+    load_partial_fill_post_repair_runtime_attempt_audit,
     load_partial_fill_owner_repair_preflight_source_audit,
     load_partial_fill_owner_repair_patch_preview,
     load_partial_fill_owner_repair_execution_handoff_bundle,
@@ -43,6 +46,9 @@ from .schemas import (
     CommandPartialFillOwnerRepairApprovalPacket,
     CommandPartialFillRemainingAcceptanceCurrentState,
     CommandPartialFillOwnerRepairEvidenceIngestGate,
+    CommandPartialFillOwnerRepairEvidenceIngestAudit,
+    CommandPartialFillPostRepairRuntimeRetryApprovalPacket,
+    CommandPartialFillPostRepairRuntimeAttemptAudit,
     CommandPartialFillOwnerRepairImplementationPlan,
     CommandPartialFillOwnerRepairPreflightSourceAudit,
     CommandPartialFillOwnerRepairPatchPreview,
@@ -375,6 +381,39 @@ def command_partial_fill_owner_repair_evidence_ingest_gate(
     account_id: str,
 ) -> CommandPartialFillOwnerRepairEvidenceIngestGate:
     return load_partial_fill_owner_repair_evidence_ingest_gate(account_id)
+
+
+@app.get(
+    "/api/commands/accounts/{account_id}/partial-fill-owner-repair-evidence-ingest-audit",
+    response_model=CommandPartialFillOwnerRepairEvidenceIngestAudit,
+    response_model_exclude_none=True,
+)
+def command_partial_fill_owner_repair_evidence_ingest_audit(
+    account_id: str,
+) -> CommandPartialFillOwnerRepairEvidenceIngestAudit:
+    return load_partial_fill_owner_repair_evidence_ingest_audit(account_id)
+
+
+@app.get(
+    "/api/commands/accounts/{account_id}/partial-fill-post-repair-runtime-retry-approval-packet",
+    response_model=CommandPartialFillPostRepairRuntimeRetryApprovalPacket,
+    response_model_exclude_none=True,
+)
+def command_partial_fill_post_repair_runtime_retry_approval_packet(
+    account_id: str,
+) -> CommandPartialFillPostRepairRuntimeRetryApprovalPacket:
+    return load_partial_fill_post_repair_runtime_retry_approval_packet(account_id)
+
+
+@app.get(
+    "/api/commands/accounts/{account_id}/partial-fill-post-repair-runtime-attempt-audit",
+    response_model=CommandPartialFillPostRepairRuntimeAttemptAudit,
+    response_model_exclude_none=True,
+)
+def command_partial_fill_post_repair_runtime_attempt_audit(
+    account_id: str,
+) -> CommandPartialFillPostRepairRuntimeAttemptAudit:
+    return load_partial_fill_post_repair_runtime_attempt_audit(account_id)
 
 
 @app.get(

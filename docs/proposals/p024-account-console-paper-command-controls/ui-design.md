@@ -1,7 +1,7 @@
 # P024 UI Design / Paper Command Controls
 
 - Proposal ID: `p024-account-console-paper-command-controls`
-- Status: phase4zc_remaining_acceptance_state_ui_projection_passed
+- Status: phase4zf_post_repair_runtime_attempt_full_fill_blocker_recorded
 
 ## Design Intent
 

@@ -851,6 +851,125 @@ export interface CommandPartialFillOwnerRepairEvidenceIngestGate {
   };
 }
 
+export interface CommandPartialFillOwnerRepairEvidenceIngestAudit {
+  schema: "account-console.p024.partial-fill-owner-repair-evidence-ingest-audit.v1";
+  proposal_id: "p024-account-console-paper-command-controls";
+  account_id: "acct.ctp.paper.19053";
+  reviewed_at: string;
+  status: "phase4zd_owner_repair_evidence_ingested";
+  verdict: "owner_repair_evidence_recorded_runtime_retry_packet_required";
+  depends_on: Record<string, unknown>;
+  owner_repair_evidence: {
+    owner_repo_ref: string;
+    owner_repo_path: string;
+    owner_branch_or_ref: string;
+    owner_repair_commit_ref: string;
+    owner_repair_commit_subject: string;
+    approval_text_ref: string;
+    owner_repo_write_attempted: boolean;
+    owner_runtime_invocation_attempted: false;
+    raw_secret_values_recorded: false;
+    raw_broker_endpoint_recorded: false;
+    config_raw_content_recorded: false;
+  };
+  post_repair_source_checksums: Array<{
+    path: string;
+    sha256: string;
+    required_symbol: string;
+    repair_assertion: string;
+  }>;
+  owner_validator_refs: Array<{
+    evidence_id: string;
+    command: string;
+    exit_code: number;
+    stdout_tail: string;
+    validator_run_sha256: string;
+  }>;
+  ingest_decision: {
+    owner_repair_evidence_recorded: true;
+    owner_validators_passed: true;
+    account_console_approval_packets_updated: boolean;
+    runtime_retry_authorized: false;
+    requires_post_repair_runtime_retry_packet: true;
+    maximum_runtime_attempts_after_repair: number;
+  };
+  remaining_runtime_evidence_required: string[];
+  negative_assertions: {
+    owner_runtime_invocation_attempted: false;
+    post_repair_runtime_retry_claimed: false;
+    real_partial_fill_claimed: false;
+    web_ui_real_partial_fill_claimed: false;
+    full_acceptance_claimed: false;
+    raw_secret_values_recorded: false;
+    raw_broker_endpoint_recorded: false;
+    config_raw_content_recorded: false;
+  };
+}
+
+export interface CommandPartialFillPostRepairRuntimeRetryApprovalPacket {
+  schema: "account-console.p024.partial-fill-post-repair-runtime-retry-approval-packet.v1";
+  proposal_id: "p024-account-console-paper-command-controls";
+  account_id: "acct.ctp.paper.19053";
+  reviewed_at: string;
+  status: "phase4ze_post_repair_runtime_retry_approval_packet_ready";
+  verdict: "one_guarded_post_repair_paper_attempt_authorized";
+  depends_on: Record<string, unknown>;
+  operator_approval: {
+    approval_obtained: true;
+    approval_path: string;
+    approval_text_ref: string;
+    scope: string;
+    expected_impact: string;
+  };
+  runtime_retry_guard: {
+    runtime_retry_authorized_by_packet: true;
+    maximum_attempts: number;
+    account_id: "acct.ctp.paper.19053";
+    simulation_user: string;
+    mode: "paper_armed";
+    exposure_reduction_only: true;
+    small_order_only: true;
+    owner_repo_ref: string;
+    owner_repo_path: string;
+    submit_entrypoint_ref: string;
+    cancel_entrypoint_ref: string;
+    owner_config_ref: string;
+    raw_secret_values_recorded: false;
+    raw_broker_endpoint_recorded: false;
+    config_raw_content_recorded: false;
+  };
+  required_runtime_evidence: string[];
+  success_formula: Record<string, string>;
+  fallback_if_not_partial: Record<string, unknown>;
+  negative_assertions_before_runtime: {
+    owner_runtime_invocation_attempted_by_packet: false;
+    paper_order_created_by_packet: false;
+    paper_cancel_sent_by_packet: false;
+    real_partial_fill_claimed: false;
+    web_ui_real_partial_fill_claimed: false;
+    full_acceptance_claimed: false;
+    raw_secret_values_recorded: false;
+    raw_broker_endpoint_recorded: false;
+    config_raw_content_recorded: false;
+  };
+}
+
+export interface CommandPartialFillPostRepairRuntimeAttemptAudit {
+  schema: "account-console.p024.partial-fill-post-repair-runtime-attempt-audit.v1";
+  proposal_id: "p024-account-console-paper-command-controls";
+  account_id: "acct.ctp.paper.19053";
+  reviewed_at: string;
+  status: "phase4zf_post_repair_runtime_attempt_full_fill_blocker_recorded";
+  verdict: "real_paper_order_filled_not_partial_fill_no_cancel_remainder";
+  depends_on: Record<string, unknown>;
+  owner_runtime_attempt: Record<string, unknown>;
+  owner_artifact_refs: Array<{ artifact_id: string; ref: string; sha256: string }>;
+  runtime_observation: Record<string, unknown>;
+  position_readback_delta: Record<string, unknown>;
+  acceptance_decision: Record<string, unknown>;
+  negative_assertions: Record<string, boolean>;
+}
+
 export interface CommandPartialFillOwnerRepairPreflightSourceAudit {
   schema: "account-console.p024.partial-fill-owner-repair-preflight-source-audit.v1";
   proposal_id: "p024-account-console-paper-command-controls";

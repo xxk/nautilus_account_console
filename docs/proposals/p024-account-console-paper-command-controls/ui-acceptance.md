@@ -1,7 +1,7 @@
 # P024 UI Acceptance / Paper Command Controls
 
 - Proposal ID: `p024-account-console-paper-command-controls`
-- Status: phase4zc_remaining_acceptance_state_ui_projection_passed
+- Status: phase4zf_post_repair_runtime_attempt_full_fill_blocker_recorded
 
 ## Browser Acceptance
 
@@ -26,6 +26,9 @@
 | UI-17 | partial-fill runtime handoff bundle projection | runtime inputs, owner sequence, success formulas, fallback classifications and false execution flags render in UI | phase4m_partial_fill_runtime_handoff_bundle_ui_projection_passed |
 | UI-18 | owner repair approval packet projection | exact owner repair approval text, current approval mismatch, owner changes, validators, blockers and false owner-write/runtime-retry flags render in UI | phase4zb_owner_repair_approval_packet_ui_projection_passed |
 | UI-19 | remaining acceptance state projection | R1-R5 missing requirements, accepted evidence groups and false owner-repair/runtime-retry/full-acceptance flags render in UI | phase4zc_remaining_acceptance_state_ui_projection_passed |
+| UI-20 | owner repair evidence ingest audit projection | owner repair commit, checksums, validator pass results and false runtime/partial-fill claims render in UI | phase4zd_owner_repair_evidence_ingested |
+| UI-21 | post-repair runtime retry packet projection | one-attempt authorization, exposure-reduction guard, runtime requirements and false pre-runtime claims render in UI | phase4ze_post_repair_runtime_retry_approval_packet_ready |
+| UI-22 | post-repair runtime attempt audit projection | full-fill outcome, zero remainder, false partial-fill acceptance and retry-consumed state render in UI | phase4zf_post_repair_runtime_attempt_full_fill_blocker_recorded |
 
 ## UI-19 Remaining Acceptance State Projection
 

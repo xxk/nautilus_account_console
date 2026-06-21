@@ -1,0 +1,33 @@
+{
+  "schema": "account-console.p024.partial-fill-post-repair-runtime-retry-packet-ui.v1",
+  "proposal_id": "p024-account-console-paper-command-controls",
+  "account_id": "acct.ctp.paper.19053",
+  "route": "/accounts/acct.ctp.paper.19053",
+  "verdict": "pass",
+  "api_post_repair_runtime_retry_packet": {
+    "schema": "account-console.p024.partial-fill-post-repair-runtime-retry-approval-packet.v1",
+    "status": "phase4ze_post_repair_runtime_retry_approval_packet_ready",
+    "verdict": "one_guarded_post_repair_paper_attempt_authorized",
+    "runtime_retry_authorized_by_packet": true,
+    "maximum_attempts": 1,
+    "exposure_reduction_only": true,
+    "required_runtime_evidence_count": 7,
+    "owner_runtime_invocation_attempted_by_packet": false,
+    "real_partial_fill_claimed": false
+  },
+  "browser_checks": {
+    "retry_packet_panel_visible": true,
+    "authorized_displayed_true": true,
+    "max_attempts_displayed_one": true,
+    "exposure_reduction_displayed_true": true,
+    "runtime_requirements_displayed": true,
+    "runtime_invoked_displayed_false": true,
+    "real_partial_fill_displayed_false": true,
+    "sensitive_endpoint_wording_absent": true
+  },
+  "browser_evidence": [
+    {
+      "screenshot": "docs/acceptance/browser-evidence/p024-account-console-paper-command-controls/p024-partial-fill-post-repair-runtime-retry-packet-ui.png"
+    }
+  ]
+}

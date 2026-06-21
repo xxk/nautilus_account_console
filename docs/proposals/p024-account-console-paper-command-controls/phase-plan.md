@@ -1,7 +1,7 @@
 # P024 Phase Plan / Account Console Paper Command Controls
 
 - Proposal ID: `p024-account-console-paper-command-controls`
-- Status: phase4zc_remaining_acceptance_state_ui_projection_passed
+- Status: phase4zf_post_repair_runtime_attempt_full_fill_blocker_recorded
 - Primary ADR: ADR-0007
 
 ## Artifact Trust Boundary
@@ -40,7 +40,7 @@ Primary ADR: ADR-0007
 <!-- AI-PHASE-STATUS-BEGIN
 reviewed_at: 2026-06-21
 reviewer: codex
-overall_status: phase4zc_remaining_acceptance_state_ui_projection_passed
+overall_status: phase4zf_post_repair_runtime_attempt_full_fill_blocker_recorded
 phases:
   - id: phase_0_design_gate
     status: completed
@@ -222,6 +222,9 @@ AI-PHASE-STATUS-END -->
 | Phase 4za Owner repair execution handoff UI projection | Render the phase4z handoff bundle in Web UI with operator sequence, post-handoff artifacts and no-execution/no-retry flags | completed_browser_owner_repair_execution_handoff_projection_gate | `npx playwright test tests/e2e/p024-partial-fill-owner-repair-execution-handoff.spec.ts --project=desktop`; `python scripts\validate_p024_partial_fill_owner_repair_execution_handoff_browser_evidence.py` | Obtain exact owner repair approval, then execute this bundle in owner repo and ingest evidence |
 | Phase 4zb Owner repair approval packet UI projection | Render the phase4p repair approval packet in Web UI with exact approval text, current approval mismatch, validators, blockers and no-write/no-retry flags | completed_browser_owner_repair_approval_packet_projection_gate | `npx playwright test tests/e2e/p024-partial-fill-owner-repair-approval-packet.spec.ts --project=desktop`; `python scripts\validate_p024_partial_fill_owner_repair_approval_packet_browser_evidence.py` | Obtain exact owner repair approval, then execute the owner repair handoff bundle |
 | Phase 4zc Remaining acceptance state UI projection | Render the phase4q remaining acceptance state in Web UI with R1-R5 missing requirements and no owner-repair/runtime-retry/full-acceptance claims | completed_browser_remaining_acceptance_state_projection_gate | `npx playwright test tests/e2e/p024-partial-fill-remaining-acceptance-state.spec.ts --project=desktop`; `python scripts\validate_p024_partial_fill_remaining_acceptance_state_browser_evidence.py` | Obtain exact owner repair approval, repair owner semantics, run validators, then produce real partial-fill runtime and Web UI real-ref evidence |
+| Phase 4zd Owner repair evidence ingest audit | Record owner repair commit/checksum/validator evidence from owner repo while keeping runtime retry separately gated | completed_owner_repair_evidence_ingest_audit | `python scripts\validate_p024_partial_fill_owner_repair_evidence_ingest_audit.py`; `npx playwright test tests/e2e/p024-partial-fill-owner-repair-ingest-audit.spec.ts --project=desktop`; `python scripts\validate_p024_partial_fill_owner_repair_ingest_audit_browser_evidence.py` | Update post-repair retry packet before any runtime attempt |
+| Phase 4ze Post-repair runtime retry approval packet | Authorize at most one guarded exposure-reduction paper attempt after owner repair validators and account-console packet updates | post_repair_runtime_retry_approval_packet_ready | `python scripts\validate_p024_partial_fill_post_repair_runtime_retry_approval_packet.py`; `npx playwright test tests/e2e/p024-partial-fill-post-repair-runtime-retry-packet.spec.ts --project=desktop`; `python scripts\validate_p024_partial_fill_post_repair_runtime_retry_packet_browser_evidence.py` | Run at most one owner-owned guarded OpenCTP paper attempt and ingest real runtime artifacts |
+| Phase 4zf Post-repair runtime attempt audit | Record the one authorized runtime attempt as a real full fill, not partial-fill/cancel acceptance, and consume retry authority | completed_post_repair_full_fill_blocker_audit | `python scripts\validate_p024_partial_fill_post_repair_runtime_attempt_audit.py`; `npx playwright test tests/e2e/p024-partial-fill-post-repair-runtime-attempt.spec.ts --project=desktop`; `python scripts\validate_p024_partial_fill_post_repair_runtime_attempt_browser_evidence.py` | Preserve blocker; do not retry without fresh approval |
 
 ## Runtime / Command Freeze
 
@@ -266,6 +269,9 @@ Phase 0 does not run broker mutation. Phase 1 may add API contracts but must not
 35. Phase 4za owner repair execution handoff UI projection is complete; `P024_PARTIAL_FILL_OWNER_REPAIR_EXECUTION_HANDOFF_BROWSER_EVIDENCE_OK` proves the handoff sequence renders in Web UI while execution, owner write, runtime retry and full acceptance remain false.
 36. Phase 4zb owner repair approval packet UI projection is complete; `P024_PARTIAL_FILL_OWNER_REPAIR_APPROVAL_PACKET_BROWSER_EVIDENCE_OK` proves the exact repair approval text, current approval mismatch, owner changes, validators and blockers render in Web UI while owner write, runtime retry, partial-fill claim and full acceptance remain false.
 37. Phase 4zc remaining acceptance state UI projection is complete; `P024_PARTIAL_FILL_REMAINING_ACCEPTANCE_STATE_BROWSER_EVIDENCE_OK` proves R1-R5 remaining requirements render in Web UI while owner repair, runtime retry, real partial-fill, Web UI real partial-fill and full acceptance claims remain false.
+38. Phase 4zd owner repair evidence ingest audit is complete; `P024_PARTIAL_FILL_OWNER_REPAIR_EVIDENCE_INGEST_AUDIT_OK` and browser evidence prove owner repair commit/checksum/validator refs are recorded while real partial-fill remains false.
+39. Phase 4ze post-repair runtime retry approval packet is ready; `P024_PARTIAL_FILL_POST_REPAIR_RUNTIME_RETRY_APPROVAL_PACKET_OK` and browser evidence prove exactly one guarded exposure-reduction paper retry is authorized while pre-runtime execution claims remain false.
+40. Phase 4zf post-repair runtime attempt audit is complete; `P024_PARTIAL_FILL_POST_REPAIR_RUNTIME_ATTEMPT_AUDIT_OK` and browser evidence prove the one authorized attempt full-filled 1 lot, reduced exposure, did not create a cancellable remainder and did not satisfy partial-fill acceptance.
 
 
 

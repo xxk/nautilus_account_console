@@ -303,6 +303,9 @@ ALLOWED_COMMAND_ROUTES = {
     "/api/commands/accounts/{account_id}/partial-fill-remaining-acceptance-current-state": {"GET"},
     "/api/commands/accounts/{account_id}/partial-fill-owner-repair-implementation-plan": {"GET"},
     "/api/commands/accounts/{account_id}/partial-fill-owner-repair-evidence-ingest-gate": {"GET"},
+    "/api/commands/accounts/{account_id}/partial-fill-owner-repair-evidence-ingest-audit": {"GET"},
+    "/api/commands/accounts/{account_id}/partial-fill-post-repair-runtime-retry-approval-packet": {"GET"},
+    "/api/commands/accounts/{account_id}/partial-fill-post-repair-runtime-attempt-audit": {"GET"},
     "/api/commands/accounts/{account_id}/partial-fill-owner-repair-preflight-source-audit": {"GET"},
     "/api/commands/accounts/{account_id}/partial-fill-owner-repair-patch-preview": {"GET"},
     "/api/commands/accounts/{account_id}/partial-fill-owner-repair-execution-handoff-bundle": {"GET"},
@@ -402,7 +405,7 @@ def validate_readme() -> None:
     text = read(PROPOSAL / "README.md")
     for phrase in [
         "Proposal ID: `p024-account-console-paper-command-controls`",
-        "Status: phase4zc_remaining_acceptance_state_ui_projection_passed",
+        "Status: phase4zf_post_repair_runtime_attempt_full_fill_blocker_recorded",
         "ADR carrier: yes",
         "Primary ADR: ADR-0007",
         "Predecessor: [P023 OpenCTP 19053 Paper Command Capability]",
@@ -717,6 +720,9 @@ def validate_acceptance() -> None:
         "A31",
         "A32",
         "A33",
+        "A34",
+        "A35",
+        "A36",
         "phase4u_owner_repair_ingest_gate_ui_projection_passed",
         "phase4v_owner_repair_preflight_source_audited",
         "phase4w_owner_repair_preflight_ui_projection_passed",
@@ -726,6 +732,9 @@ def validate_acceptance() -> None:
         "phase4za_owner_repair_execution_handoff_ui_projection_passed",
         "phase4zb_owner_repair_approval_packet_ui_projection_passed",
         "phase4zc_remaining_acceptance_state_ui_projection_passed",
+        "phase4zd_owner_repair_evidence_ingested",
+        "phase4ze_post_repair_runtime_retry_approval_packet_ready",
+        "phase4zf_post_repair_runtime_attempt_full_fill_blocker_recorded",
     ]:
         require(phrase in text, f"P024 acceptance missing phrase: {phrase}")
 
@@ -2838,7 +2847,7 @@ def main() -> None:
     validate_backend_command_routes_are_p024_only()
     print(
         "P024_PAPER_COMMAND_CONTROLS_DESIGN_OK: "
-        "status=phase4zc_remaining_acceptance_state_ui_projection_passed current_ui_command=guarded runtime_closeout=browser_projection_passed partial_fill_cancel_ui=browser_contract_passed runtime_handoff=browser_handoff_passed runtime_invocation_readiness=blocked_by_external_approval runtime_readiness_ui=browser_projection_passed full_closeout=residual_blocker_audit_passed approval_packet=ready_runtime_not_invoked runtime_approval_packet_ui=browser_projection_passed handoff_bundle=ready_runtime_not_invoked runtime_handoff_bundle_ui=browser_projection_passed runtime_execution_gap=blocked_final_claim_false partial_fill_runtime=blocked_until_owner_runtime_partial_fill_state_available partial_fill_artifact_scan=no_qualifying_candidate partial_fill_approval=ready_runtime_not_invoked partial_fill_approval_ui=browser_projection_passed partial_fill_handoff=ready_runtime_not_invoked partial_fill_handoff_ui=browser_projection_passed partial_fill_attempt=rejected_before_partial_fill_not_partial_fill close_yesterday_owner_rule_gap=blocked_retry_not_authorized owner_repair_approval=required_before_retry owner_repair_approval_ui=browser_projection_passed remaining_acceptance=owner_repair_and_real_partial_fill_missing remaining_acceptance_ui=browser_projection_passed owner_repair_plan=ready_no_owner_write owner_repair_plan_ui=browser_projection_passed owner_repair_ingest_gate=ready_missing_evidence owner_repair_ingest_gate_ui=browser_projection_passed owner_repair_preflight=blind_retry_rejected owner_repair_preflight_ui=browser_projection_passed owner_repair_patch_preview=ready_owner_write_false owner_repair_patch_preview_ui=browser_projection_passed owner_repair_execution_handoff=ready_owner_write_false owner_repair_execution_handoff_ui=browser_projection_passed"
+        "status=phase4zf_post_repair_runtime_attempt_full_fill_blocker_recorded current_ui_command=guarded runtime_closeout=browser_projection_passed partial_fill_cancel_ui=browser_contract_passed runtime_handoff=browser_handoff_passed runtime_invocation_readiness=blocked_by_external_approval runtime_readiness_ui=browser_projection_passed full_closeout=residual_blocker_audit_passed approval_packet=ready_runtime_not_invoked runtime_approval_packet_ui=browser_projection_passed handoff_bundle=ready_runtime_not_invoked runtime_handoff_bundle_ui=browser_projection_passed runtime_execution_gap=blocked_final_claim_false partial_fill_runtime=blocked_until_owner_runtime_partial_fill_state_available partial_fill_artifact_scan=no_qualifying_candidate partial_fill_approval=ready_runtime_not_invoked partial_fill_approval_ui=browser_projection_passed partial_fill_handoff=ready_runtime_not_invoked partial_fill_handoff_ui=browser_projection_passed partial_fill_attempt=rejected_before_partial_fill_not_partial_fill close_yesterday_owner_rule_gap=blocked_retry_not_authorized owner_repair_approval=required_before_retry owner_repair_approval_ui=browser_projection_passed remaining_acceptance=owner_repair_and_real_partial_fill_missing remaining_acceptance_ui=browser_projection_passed owner_repair_plan=ready_no_owner_write owner_repair_plan_ui=browser_projection_passed owner_repair_ingest_gate=ready_missing_evidence owner_repair_ingest_gate_ui=browser_projection_passed owner_repair_preflight=blind_retry_rejected owner_repair_preflight_ui=browser_projection_passed owner_repair_patch_preview=ready_owner_write_false owner_repair_patch_preview_ui=browser_projection_passed owner_repair_execution_handoff=ready_owner_write_false owner_repair_execution_handoff_ui=browser_projection_passed owner_repair_ingest_audit=evidence_recorded retry_packet=one_attempt_authorized_pre_runtime post_repair_attempt=full_fill_not_partial_retry_consumed"
     )
 
 

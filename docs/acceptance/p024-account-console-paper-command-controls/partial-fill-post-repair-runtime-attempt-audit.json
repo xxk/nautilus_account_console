@@ -1,0 +1,94 @@
+{
+  "schema": "account-console.p024.partial-fill-post-repair-runtime-attempt-audit.v1",
+  "proposal_id": "p024-account-console-paper-command-controls",
+  "account_id": "acct.ctp.paper.19053",
+  "reviewed_at": "2026-06-22T00:05:00+08:00",
+  "status": "phase4zf_post_repair_runtime_attempt_full_fill_blocker_recorded",
+  "verdict": "real_paper_order_filled_not_partial_fill_no_cancel_remainder",
+  "depends_on": {
+    "post_repair_runtime_retry_approval_packet_ref": "docs/acceptance/p024-account-console-paper-command-controls/partial-fill-post-repair-runtime-retry-approval-packet.json",
+    "post_repair_runtime_retry_approval_packet_status": "phase4ze_post_repair_runtime_retry_approval_packet_ready",
+    "owner_repair_commit_ref": "01db0f84203db09874fdec07ec8d03fb47ca4ea7"
+  },
+  "owner_runtime_attempt": {
+    "owner_repo_ref": "owner-repo://nautilus_ctp_adapter",
+    "owner_repo_path": "D:/Nautilus/nautilus_ctp_adapter",
+    "owner_runtime_artifacts_commit_ref": "ef17af24d31d9ae047cf554b8b3ba82c74b5795d",
+    "run_id": "p024-post-repair-runtime-20260621T2355p0800",
+    "client_order_id": "p024-post-repair-20260621T2355-rb2610",
+    "instrument": "rb2610",
+    "side": "SELL",
+    "quantity": 1,
+    "position_effect": "CLOSEYESTERDAY",
+    "limit_price": 3000.0,
+    "paper_send_armed": true,
+    "runtime_attempt_count_consumed": 1,
+    "additional_runtime_retry_authorized": false
+  },
+  "owner_artifact_refs": [
+    {
+      "artifact_id": "pre_snapshot_with_reducible_position",
+      "ref": "owner-repo://nautilus_ctp_adapter/output/account_command/ctp-paper-19053/p024-post-repair-runtime-20260621T2355p0800/pre_snapshot_with_reducible_position.json",
+      "sha256": "091FE95444AB47CA429797121396B470768AA97CAEB85571DBA8497B31EB2072"
+    },
+    {
+      "artifact_id": "submit_owner_runtime_result",
+      "ref": "owner-repo://nautilus_ctp_adapter/output/account_command/ctp-paper-19053/p024-post-repair-runtime-20260621T2355p0800/submit_owner_runtime_result.json",
+      "sha256": "FD3026191B5070E9784B974F73D018CFAE55F6E8D067A9B4A8D27BE9604F3E35"
+    },
+    {
+      "artifact_id": "post_submit_readback",
+      "ref": "owner-repo://nautilus_ctp_adapter/output/account_command/ctp-paper-19053/p024-post-repair-runtime-20260621T2355p0800/post_submit_readback.json",
+      "sha256": "A6BE691A755655456743DAE05791DEF814EFD37EAA95293EAF95A99FF0829FB3"
+    }
+  ],
+  "runtime_observation": {
+    "lifecycle_disposition": "filled",
+    "submitted_quantity": 1,
+    "filled_quantity": 1,
+    "remaining_quantity": 0,
+    "unique_fill_count": 1,
+    "trade_volume": 1,
+    "matched_exec_count": 4,
+    "event_kinds": [
+      "login_succeeded",
+      "settlement_confirmed",
+      "order",
+      "order",
+      "order",
+      "trade"
+    ],
+    "partial_fill_formula_satisfied": false,
+    "partial_fill_formula": "0 < filled_quantity < submitted_quantity",
+    "terminal_cancel_formula_satisfied": false,
+    "cancel_attempted": false,
+    "cancel_reason": "no_cancellable_remainder_after_full_fill"
+  },
+  "position_readback_delta": {
+    "instrument": "rb2610",
+    "direction": "LONG",
+    "pre_position_qty": 3,
+    "post_position_qty": 2,
+    "delta": -1,
+    "exposure_reduction_observed": true
+  },
+  "acceptance_decision": {
+    "real_paper_order_created": true,
+    "real_paper_fill_observed": true,
+    "real_partial_fill_claimed": false,
+    "web_ui_real_partial_fill_claimed": false,
+    "partial_fill_then_cancel_acceptance_satisfied": false,
+    "blocker_type": "post_repair_runtime_attempt_full_fill_not_partial",
+    "next_action": "do not run another paper attempt without fresh approval; preserve full-fill runtime evidence as non-qualifying for partial-fill acceptance"
+  },
+  "negative_assertions": {
+    "additional_runtime_retry_authorized": false,
+    "cancel_sent": false,
+    "real_partial_fill_claimed": false,
+    "web_ui_real_partial_fill_claimed": false,
+    "full_acceptance_claimed": false,
+    "raw_secret_values_recorded": false,
+    "raw_broker_endpoint_recorded": false,
+    "config_raw_content_recorded": false
+  }
+}

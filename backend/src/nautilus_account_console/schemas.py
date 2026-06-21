@@ -498,6 +498,60 @@ class CommandPartialFillOwnerRepairEvidenceIngestGate(BaseModel):
     negative_assertions: dict
 
 
+class CommandPartialFillOwnerRepairEvidenceIngestAudit(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    schema_: Literal["account-console.p024.partial-fill-owner-repair-evidence-ingest-audit.v1"] = Field(alias="schema")
+    proposal_id: Literal["p024-account-console-paper-command-controls"]
+    account_id: Literal["acct.ctp.paper.19053"]
+    reviewed_at: str
+    status: Literal["phase4zd_owner_repair_evidence_ingested"]
+    verdict: Literal["owner_repair_evidence_recorded_runtime_retry_packet_required"]
+    depends_on: dict
+    owner_repair_evidence: dict
+    post_repair_source_checksums: list[dict]
+    owner_validator_refs: list[dict]
+    ingest_decision: dict
+    remaining_runtime_evidence_required: list[str]
+    negative_assertions: dict
+
+
+class CommandPartialFillPostRepairRuntimeRetryApprovalPacket(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    schema_: Literal["account-console.p024.partial-fill-post-repair-runtime-retry-approval-packet.v1"] = Field(alias="schema")
+    proposal_id: Literal["p024-account-console-paper-command-controls"]
+    account_id: Literal["acct.ctp.paper.19053"]
+    reviewed_at: str
+    status: Literal["phase4ze_post_repair_runtime_retry_approval_packet_ready"]
+    verdict: Literal["one_guarded_post_repair_paper_attempt_authorized"]
+    depends_on: dict
+    operator_approval: dict
+    runtime_retry_guard: dict
+    required_runtime_evidence: list[str]
+    success_formula: dict
+    fallback_if_not_partial: dict
+    negative_assertions_before_runtime: dict
+
+
+class CommandPartialFillPostRepairRuntimeAttemptAudit(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    schema_: Literal["account-console.p024.partial-fill-post-repair-runtime-attempt-audit.v1"] = Field(alias="schema")
+    proposal_id: Literal["p024-account-console-paper-command-controls"]
+    account_id: Literal["acct.ctp.paper.19053"]
+    reviewed_at: str
+    status: Literal["phase4zf_post_repair_runtime_attempt_full_fill_blocker_recorded"]
+    verdict: Literal["real_paper_order_filled_not_partial_fill_no_cancel_remainder"]
+    depends_on: dict
+    owner_runtime_attempt: dict
+    owner_artifact_refs: list[dict]
+    runtime_observation: dict
+    position_readback_delta: dict
+    acceptance_decision: dict
+    negative_assertions: dict
+
+
 class CommandPartialFillOwnerRepairPreflightSourceAudit(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
 

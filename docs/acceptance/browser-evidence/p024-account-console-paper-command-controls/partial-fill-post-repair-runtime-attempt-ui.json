@@ -1,0 +1,32 @@
+{
+  "schema": "account-console.p024.partial-fill-post-repair-runtime-attempt-ui.v1",
+  "proposal_id": "p024-account-console-paper-command-controls",
+  "account_id": "acct.ctp.paper.19053",
+  "route": "/accounts/acct.ctp.paper.19053",
+  "verdict": "pass",
+  "api_post_repair_runtime_attempt": {
+    "schema": "account-console.p024.partial-fill-post-repair-runtime-attempt-audit.v1",
+    "status": "phase4zf_post_repair_runtime_attempt_full_fill_blocker_recorded",
+    "verdict": "real_paper_order_filled_not_partial_fill_no_cancel_remainder",
+    "filled_quantity": 1,
+    "remaining_quantity": 0,
+    "partial_fill_formula_satisfied": false,
+    "real_paper_order_created": true,
+    "partial_fill_then_cancel_acceptance_satisfied": false,
+    "additional_runtime_retry_authorized": false
+  },
+  "browser_checks": {
+    "attempt_panel_visible": true,
+    "full_fill_displayed": true,
+    "partial_fill_displayed_false": true,
+    "retry_displayed_false": true,
+    "position_delta_displayed": true,
+    "artifacts_displayed": true,
+    "sensitive_endpoint_wording_absent": true
+  },
+  "browser_evidence": [
+    {
+      "screenshot": "docs/acceptance/browser-evidence/p024-account-console-paper-command-controls/p024-partial-fill-post-repair-runtime-attempt-ui.png"
+    }
+  ]
+}

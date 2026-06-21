@@ -92,6 +92,9 @@ import type {
   CommandPartialFillOwnerRepairApprovalPacket,
   CommandPartialFillRemainingAcceptanceCurrentState,
   CommandPartialFillOwnerRepairEvidenceIngestGate,
+  CommandPartialFillOwnerRepairEvidenceIngestAudit,
+  CommandPartialFillPostRepairRuntimeRetryApprovalPacket,
+  CommandPartialFillPostRepairRuntimeAttemptAudit,
   CommandPartialFillOwnerRepairExecutionHandoffBundle,
   CommandPartialFillOwnerRepairImplementationPlan,
   CommandPartialFillOwnerRepairPatchPreview,
@@ -137,6 +140,9 @@ import {
   fetchCommandPartialFillOwnerRepairApprovalPacket,
   fetchCommandPartialFillRemainingAcceptanceCurrentState,
   fetchCommandPartialFillOwnerRepairEvidenceIngestGate,
+  fetchCommandPartialFillOwnerRepairEvidenceIngestAudit,
+  fetchCommandPartialFillPostRepairRuntimeRetryApprovalPacket,
+  fetchCommandPartialFillPostRepairRuntimeAttemptAudit,
   fetchCommandPartialFillOwnerRepairExecutionHandoffBundle,
   fetchCommandPartialFillOwnerRepairImplementationPlan,
   fetchCommandPartialFillOwnerRepairPatchPreview,
@@ -1541,6 +1547,18 @@ function AccountWorkbenchTerminalPanel({
     useState<CommandPartialFillOwnerRepairEvidenceIngestGate | null>(null);
   const [partialFillOwnerRepairIngestGateError, setPartialFillOwnerRepairIngestGateError] =
     useState<string | null>(null);
+  const [partialFillOwnerRepairIngestAudit, setPartialFillOwnerRepairIngestAudit] =
+    useState<CommandPartialFillOwnerRepairEvidenceIngestAudit | null>(null);
+  const [partialFillOwnerRepairIngestAuditError, setPartialFillOwnerRepairIngestAuditError] =
+    useState<string | null>(null);
+  const [partialFillPostRepairRuntimeRetryPacket, setPartialFillPostRepairRuntimeRetryPacket] =
+    useState<CommandPartialFillPostRepairRuntimeRetryApprovalPacket | null>(null);
+  const [partialFillPostRepairRuntimeRetryPacketError, setPartialFillPostRepairRuntimeRetryPacketError] =
+    useState<string | null>(null);
+  const [partialFillPostRepairRuntimeAttemptAudit, setPartialFillPostRepairRuntimeAttemptAudit] =
+    useState<CommandPartialFillPostRepairRuntimeAttemptAudit | null>(null);
+  const [partialFillPostRepairRuntimeAttemptAuditError, setPartialFillPostRepairRuntimeAttemptAuditError] =
+    useState<string | null>(null);
   const [partialFillOwnerRepairPreflight, setPartialFillOwnerRepairPreflight] =
     useState<CommandPartialFillOwnerRepairPreflightSourceAudit | null>(null);
   const [partialFillOwnerRepairPreflightError, setPartialFillOwnerRepairPreflightError] =
@@ -1657,6 +1675,12 @@ function AccountWorkbenchTerminalPanel({
       setPartialFillRemainingAcceptanceStateError(null);
       setPartialFillOwnerRepairIngestGate(null);
       setPartialFillOwnerRepairIngestGateError(null);
+      setPartialFillOwnerRepairIngestAudit(null);
+      setPartialFillOwnerRepairIngestAuditError(null);
+      setPartialFillPostRepairRuntimeRetryPacket(null);
+      setPartialFillPostRepairRuntimeRetryPacketError(null);
+      setPartialFillPostRepairRuntimeAttemptAudit(null);
+      setPartialFillPostRepairRuntimeAttemptAuditError(null);
       setPartialFillOwnerRepairPreflight(null);
       setPartialFillOwnerRepairPreflightError(null);
       setPartialFillOwnerRepairPatchPreview(null);
@@ -1679,6 +1703,9 @@ function AccountWorkbenchTerminalPanel({
         ownerRepairApprovalPacketResult,
         remainingAcceptanceStateResult,
         ownerRepairIngestGateResult,
+        ownerRepairIngestAuditResult,
+        postRepairRuntimeRetryPacketResult,
+        postRepairRuntimeAttemptAuditResult,
         ownerRepairPreflightResult,
         ownerRepairPatchPreviewResult,
         ownerRepairExecutionHandoffResult
@@ -1695,6 +1722,9 @@ function AccountWorkbenchTerminalPanel({
           fetchCommandPartialFillOwnerRepairApprovalPacket(summary.account.account_id),
           fetchCommandPartialFillRemainingAcceptanceCurrentState(summary.account.account_id),
           fetchCommandPartialFillOwnerRepairEvidenceIngestGate(summary.account.account_id),
+          fetchCommandPartialFillOwnerRepairEvidenceIngestAudit(summary.account.account_id),
+          fetchCommandPartialFillPostRepairRuntimeRetryApprovalPacket(summary.account.account_id),
+          fetchCommandPartialFillPostRepairRuntimeAttemptAudit(summary.account.account_id),
           fetchCommandPartialFillOwnerRepairPreflightSourceAudit(summary.account.account_id),
           fetchCommandPartialFillOwnerRepairPatchPreview(summary.account.account_id),
           fetchCommandPartialFillOwnerRepairExecutionHandoffBundle(summary.account.account_id)
@@ -1818,6 +1848,39 @@ function AccountWorkbenchTerminalPanel({
             : "partial-fill owner repair ingest gate unavailable";
         setPartialFillOwnerRepairIngestGate(null);
         setPartialFillOwnerRepairIngestGateError(message);
+      }
+      if (ownerRepairIngestAuditResult.status === "fulfilled") {
+        setPartialFillOwnerRepairIngestAudit(ownerRepairIngestAuditResult.value);
+        setPartialFillOwnerRepairIngestAuditError(null);
+      } else {
+        const message =
+          ownerRepairIngestAuditResult.reason instanceof Error
+            ? ownerRepairIngestAuditResult.reason.message
+            : "partial-fill owner repair ingest audit unavailable";
+        setPartialFillOwnerRepairIngestAudit(null);
+        setPartialFillOwnerRepairIngestAuditError(message);
+      }
+      if (postRepairRuntimeRetryPacketResult.status === "fulfilled") {
+        setPartialFillPostRepairRuntimeRetryPacket(postRepairRuntimeRetryPacketResult.value);
+        setPartialFillPostRepairRuntimeRetryPacketError(null);
+      } else {
+        const message =
+          postRepairRuntimeRetryPacketResult.reason instanceof Error
+            ? postRepairRuntimeRetryPacketResult.reason.message
+            : "partial-fill post-repair runtime retry packet unavailable";
+        setPartialFillPostRepairRuntimeRetryPacket(null);
+        setPartialFillPostRepairRuntimeRetryPacketError(message);
+      }
+      if (postRepairRuntimeAttemptAuditResult.status === "fulfilled") {
+        setPartialFillPostRepairRuntimeAttemptAudit(postRepairRuntimeAttemptAuditResult.value);
+        setPartialFillPostRepairRuntimeAttemptAuditError(null);
+      } else {
+        const message =
+          postRepairRuntimeAttemptAuditResult.reason instanceof Error
+            ? postRepairRuntimeAttemptAuditResult.reason.message
+            : "partial-fill post-repair runtime attempt audit unavailable";
+        setPartialFillPostRepairRuntimeAttemptAudit(null);
+        setPartialFillPostRepairRuntimeAttemptAuditError(message);
       }
       if (ownerRepairPreflightResult.status === "fulfilled") {
         setPartialFillOwnerRepairPreflight(ownerRepairPreflightResult.value);
@@ -2730,6 +2793,21 @@ function AccountWorkbenchTerminalPanel({
           <CommandPartialFillOwnerRepairEvidenceIngestGatePanel
             error={partialFillOwnerRepairIngestGateError}
             gate={partialFillOwnerRepairIngestGate}
+          />
+
+          <CommandPartialFillOwnerRepairEvidenceIngestAuditPanel
+            audit={partialFillOwnerRepairIngestAudit}
+            error={partialFillOwnerRepairIngestAuditError}
+          />
+
+          <CommandPartialFillPostRepairRuntimeRetryApprovalPacketPanel
+            error={partialFillPostRepairRuntimeRetryPacketError}
+            packet={partialFillPostRepairRuntimeRetryPacket}
+          />
+
+          <CommandPartialFillPostRepairRuntimeAttemptAuditPanel
+            audit={partialFillPostRepairRuntimeAttemptAudit}
+            error={partialFillPostRepairRuntimeAttemptAuditError}
           />
 
           <CommandPartialFillOwnerRepairPreflightSourceAuditPanel
@@ -5843,6 +5921,255 @@ function CommandPartialFillOwnerRepairEvidenceIngestGatePanel({
         </div>
       ) : (
         <p className="muted">No partial-fill owner repair evidence ingest gate is mounted for this account.</p>
+      )}
+    </section>
+  );
+}
+
+function CommandPartialFillOwnerRepairEvidenceIngestAuditPanel({
+  audit,
+  error
+}: {
+  audit: CommandPartialFillOwnerRepairEvidenceIngestAudit | null;
+  error: string | null;
+}) {
+  return (
+    <section className="terminal-panel" data-testid="account-partial-fill-owner-repair-ingest-audit-panel">
+      <div className="terminal-panel-header">
+        <h3>Repair Evidence Ingested</h3>
+        <StateBadge value={audit ? "ready" : error ? "blocked" : "empty"} />
+      </div>
+      {audit ? (
+        <div className="evidence-stack compact-evidence-stack">
+          <div className="evidence-item">
+            <strong>Status</strong>
+            <span data-testid="account-partial-fill-owner-repair-ingest-audit-status">{audit.status}</span>
+          </div>
+          <div className="evidence-item">
+            <strong>Verdict</strong>
+            <span data-testid="account-partial-fill-owner-repair-ingest-audit-verdict">{audit.verdict}</span>
+          </div>
+          <div className="evidence-item">
+            <strong>Commit</strong>
+            <span data-testid="account-partial-fill-owner-repair-ingest-audit-commit">
+              {audit.owner_repair_evidence.owner_repair_commit_ref}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Owner path</strong>
+            <span data-testid="account-partial-fill-owner-repair-ingest-audit-owner-path">
+              {audit.owner_repair_evidence.owner_repo_path}
+            </span>
+          </div>
+          {audit.post_repair_source_checksums.map((item) => (
+            <div
+              className="evidence-item"
+              data-testid="account-partial-fill-owner-repair-ingest-audit-checksum"
+              key={item.path}
+            >
+              <strong>{item.required_symbol}</strong>
+              <span>{item.sha256}</span>
+            </div>
+          ))}
+          {audit.owner_validator_refs.map((item) => (
+            <div
+              className="evidence-item"
+              data-testid="account-partial-fill-owner-repair-ingest-audit-validator"
+              key={item.evidence_id}
+            >
+              <strong>{item.evidence_id}</strong>
+              <span>
+                exit {item.exit_code} / {item.stdout_tail}
+              </span>
+            </div>
+          ))}
+          <div className="evidence-item">
+            <strong>Repair evidence</strong>
+            <span data-testid="account-partial-fill-owner-repair-ingest-audit-evidence-recorded">
+              {String(audit.ingest_decision.owner_repair_evidence_recorded)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Runtime retry</strong>
+            <span data-testid="account-partial-fill-owner-repair-ingest-audit-runtime-retry">
+              {String(audit.ingest_decision.runtime_retry_authorized)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Real partial fill</strong>
+            <span data-testid="account-partial-fill-owner-repair-ingest-audit-real-partial">
+              {String(audit.negative_assertions.real_partial_fill_claimed)}
+            </span>
+          </div>
+        </div>
+      ) : error ? (
+        <div className="state-callout blocked" data-testid="account-partial-fill-owner-repair-ingest-audit-error">
+          {error}
+        </div>
+      ) : (
+        <p className="muted">No partial-fill owner repair evidence ingest audit is mounted for this account.</p>
+      )}
+    </section>
+  );
+}
+
+function CommandPartialFillPostRepairRuntimeRetryApprovalPacketPanel({
+  packet,
+  error
+}: {
+  packet: CommandPartialFillPostRepairRuntimeRetryApprovalPacket | null;
+  error: string | null;
+}) {
+  return (
+    <section className="terminal-panel" data-testid="account-partial-fill-post-repair-runtime-retry-packet-panel">
+      <div className="terminal-panel-header">
+        <h3>Post-Repair Runtime Retry</h3>
+        <StateBadge value={packet ? "ready" : error ? "blocked" : "empty"} />
+      </div>
+      {packet ? (
+        <div className="evidence-stack compact-evidence-stack">
+          <div className="evidence-item">
+            <strong>Status</strong>
+            <span data-testid="account-partial-fill-post-repair-runtime-retry-packet-status">{packet.status}</span>
+          </div>
+          <div className="evidence-item">
+            <strong>Verdict</strong>
+            <span data-testid="account-partial-fill-post-repair-runtime-retry-packet-verdict">{packet.verdict}</span>
+          </div>
+          <div className="evidence-item">
+            <strong>Authorized</strong>
+            <span data-testid="account-partial-fill-post-repair-runtime-retry-packet-authorized">
+              {String(packet.runtime_retry_guard.runtime_retry_authorized_by_packet)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Max attempts</strong>
+            <span data-testid="account-partial-fill-post-repair-runtime-retry-packet-max-attempts">
+              {packet.runtime_retry_guard.maximum_attempts}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Exposure reduction</strong>
+            <span data-testid="account-partial-fill-post-repair-runtime-retry-packet-exposure-reduction">
+              {String(packet.runtime_retry_guard.exposure_reduction_only)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Owner path</strong>
+            <span data-testid="account-partial-fill-post-repair-runtime-retry-packet-owner-path">
+              {packet.runtime_retry_guard.owner_repo_path}
+            </span>
+          </div>
+          {packet.required_runtime_evidence.map((item) => (
+            <div
+              className="evidence-item"
+              data-testid="account-partial-fill-post-repair-runtime-retry-packet-required"
+              key={item}
+            >
+              <strong>Runtime evidence</strong>
+              <span>{item}</span>
+            </div>
+          ))}
+          <div className="evidence-item">
+            <strong>Runtime invoked</strong>
+            <span data-testid="account-partial-fill-post-repair-runtime-retry-packet-invoked">
+              {String(packet.negative_assertions_before_runtime.owner_runtime_invocation_attempted_by_packet)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Real partial fill</strong>
+            <span data-testid="account-partial-fill-post-repair-runtime-retry-packet-real-partial">
+              {String(packet.negative_assertions_before_runtime.real_partial_fill_claimed)}
+            </span>
+          </div>
+        </div>
+      ) : error ? (
+        <div className="state-callout blocked" data-testid="account-partial-fill-post-repair-runtime-retry-packet-error">
+          {error}
+        </div>
+      ) : (
+        <p className="muted">No post-repair runtime retry approval packet is mounted for this account.</p>
+      )}
+    </section>
+  );
+}
+
+function CommandPartialFillPostRepairRuntimeAttemptAuditPanel({
+  audit,
+  error
+}: {
+  audit: CommandPartialFillPostRepairRuntimeAttemptAudit | null;
+  error: string | null;
+}) {
+  return (
+    <section className="terminal-panel" data-testid="account-partial-fill-post-repair-runtime-attempt-panel">
+      <div className="terminal-panel-header">
+        <h3>Post-Repair Runtime Attempt</h3>
+        <StateBadge value={audit ? "blocked" : error ? "blocked" : "empty"} />
+      </div>
+      {audit ? (
+        <div className="evidence-stack compact-evidence-stack">
+          <div className="evidence-item">
+            <strong>Status</strong>
+            <span data-testid="account-partial-fill-post-repair-runtime-attempt-status">{audit.status}</span>
+          </div>
+          <div className="evidence-item">
+            <strong>Verdict</strong>
+            <span data-testid="account-partial-fill-post-repair-runtime-attempt-verdict">{audit.verdict}</span>
+          </div>
+          <div className="evidence-item">
+            <strong>Order</strong>
+            <span data-testid="account-partial-fill-post-repair-runtime-attempt-order">
+              {String(audit.owner_runtime_attempt.client_order_id)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Filled</strong>
+            <span data-testid="account-partial-fill-post-repair-runtime-attempt-filled">
+              {String(audit.runtime_observation.filled_quantity)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Remaining</strong>
+            <span data-testid="account-partial-fill-post-repair-runtime-attempt-remaining">
+              {String(audit.runtime_observation.remaining_quantity)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Partial fill</strong>
+            <span data-testid="account-partial-fill-post-repair-runtime-attempt-partial">
+              {String(audit.runtime_observation.partial_fill_formula_satisfied)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Retry authorized</strong>
+            <span data-testid="account-partial-fill-post-repair-runtime-attempt-retry">
+              {String(audit.negative_assertions.additional_runtime_retry_authorized)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Position delta</strong>
+            <span data-testid="account-partial-fill-post-repair-runtime-attempt-position-delta">
+              {String(audit.position_readback_delta.delta)}
+            </span>
+          </div>
+          {audit.owner_artifact_refs.map((item) => (
+            <div
+              className="evidence-item"
+              data-testid="account-partial-fill-post-repair-runtime-attempt-artifact"
+              key={item.artifact_id}
+            >
+              <strong>{item.artifact_id}</strong>
+              <span>{item.sha256}</span>
+            </div>
+          ))}
+        </div>
+      ) : error ? (
+        <div className="state-callout blocked" data-testid="account-partial-fill-post-repair-runtime-attempt-error">
+          {error}
+        </div>
+      ) : (
+        <p className="muted">No post-repair runtime attempt audit is mounted for this account.</p>
       )}
     </section>
   );

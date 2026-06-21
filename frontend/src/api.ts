@@ -4,6 +4,9 @@ import type {
   CommandPartialFillOwnerRepairApprovalPacket,
   CommandPartialFillRemainingAcceptanceCurrentState,
   CommandPartialFillOwnerRepairEvidenceIngestGate,
+  CommandPartialFillOwnerRepairEvidenceIngestAudit,
+  CommandPartialFillPostRepairRuntimeRetryApprovalPacket,
+  CommandPartialFillPostRepairRuntimeAttemptAudit,
   CommandPartialFillOwnerRepairExecutionHandoffBundle,
   CommandPartialFillOwnerRepairImplementationPlan,
   CommandPartialFillOwnerRepairPatchPreview,
@@ -282,6 +285,42 @@ export async function fetchCommandPartialFillOwnerRepairEvidenceIngestGate(
   );
   if (!response.ok) {
     throw new Error(`partial-fill owner repair evidence ingest gate failed: ${response.status}`);
+  }
+  return response.json();
+}
+
+export async function fetchCommandPartialFillOwnerRepairEvidenceIngestAudit(
+  accountId: string
+): Promise<CommandPartialFillOwnerRepairEvidenceIngestAudit> {
+  const response = await fetch(
+    `${API_BASE}/api/commands/accounts/${encodeURIComponent(accountId)}/partial-fill-owner-repair-evidence-ingest-audit`
+  );
+  if (!response.ok) {
+    throw new Error(`partial-fill owner repair evidence ingest audit failed: ${response.status}`);
+  }
+  return response.json();
+}
+
+export async function fetchCommandPartialFillPostRepairRuntimeRetryApprovalPacket(
+  accountId: string
+): Promise<CommandPartialFillPostRepairRuntimeRetryApprovalPacket> {
+  const response = await fetch(
+    `${API_BASE}/api/commands/accounts/${encodeURIComponent(accountId)}/partial-fill-post-repair-runtime-retry-approval-packet`
+  );
+  if (!response.ok) {
+    throw new Error(`partial-fill post-repair runtime retry approval packet failed: ${response.status}`);
+  }
+  return response.json();
+}
+
+export async function fetchCommandPartialFillPostRepairRuntimeAttemptAudit(
+  accountId: string
+): Promise<CommandPartialFillPostRepairRuntimeAttemptAudit> {
+  const response = await fetch(
+    `${API_BASE}/api/commands/accounts/${encodeURIComponent(accountId)}/partial-fill-post-repair-runtime-attempt-audit`
+  );
+  if (!response.ok) {
+    throw new Error(`partial-fill post-repair runtime attempt audit failed: ${response.status}`);
   }
   return response.json();
 }
