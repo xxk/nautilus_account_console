@@ -1,7 +1,7 @@
 # P024 Account Console Paper Command Controls
 
 - Proposal ID: `p024-account-console-paper-command-controls`
-- Status: phase3e_runtime_readiness_ui_projection_passed
+- Status: phase4_residual_blocker_audit_passed
 - ADR carrier: yes
 - Primary ADR: ADR-0007
 - Predecessor: [P023 OpenCTP 19053 Paper Command Capability](../p023-openctp-19053-paper-command-capability/README.md)
@@ -50,6 +50,7 @@ P024 does not enable `live_armed`, production admission, capital approval, or Ac
 | Phase 3c runtime handoff request | Web UI prepares owner-runtime submit/cancel handoff requests with blocked owner invocation and no browser-triggered broker order claim | `python scripts\validate_p024_runtime_handoff_browser_evidence.py` |
 | Phase 3d runtime invocation readiness | Owner-runtime readiness package records external write approval scope, owner entrypoint checksums and post-run artifact requirements while runtime remains uninvoked | `python scripts\validate_p024_owner_runtime_invocation_readiness.py` |
 | Phase 3e runtime readiness UI projection | Web UI renders owner-runtime readiness blocker, owner repo refs, entrypoints, approval state and non-claims while `runtime_invocation_attempted=false` | `python scripts\validate_p024_runtime_readiness_browser_evidence.py` |
+| Phase 4 residual blocker closeout | Full P024 gate matrix records accepted scope, non-accepted runtime scope and remaining owner-runtime blockers as a full residual blocker closeout audit | `python scripts\validate_p024_full_acceptance_closeout.py` |
 
 ## Document Map
 
@@ -74,7 +75,8 @@ P024 does not enable `live_armed`, production admission, capital approval, or Ac
 | Runtime handoff request | archive_only | Browser evidence proves submit/cancel prepare owner-runtime run requests while owner runtime invocation, gateway send and broker order creation remain false | phase3c_runtime_handoff_request_passed |
 | Runtime invocation readiness | archive_only | Machine evidence proves owner repo, guarded entrypoints, approval scope and post-run artifact requirements are frozen while external write approval remains required | phase3d_owner_runtime_invocation_readiness_blocked_by_external_approval |
 | Runtime readiness UI projection | archive_only | Browser evidence proves the readiness blocker is visible in Web UI with no owner-runtime invocation, owner write, browser-triggered broker order or raw secret claim | phase3e_runtime_readiness_ui_projection_passed |
-| Architecture / ownership backfill | required before implementation closeout | command gateway owner map | not_started |
-| Proposal-local evidence | archive_only | `acceptance.md`, browser command-controls evidence, runtime closeout projection evidence, P024 partial-fill display evidence, runtime handoff request evidence, owner-runtime invocation readiness evidence and runtime readiness UI projection evidence; runtime Web UI broker command execution remains blocked pending external approval | phase3e_runtime_readiness_ui_projection_passed |
+| Architecture / ownership backfill | required before implementation closeout | command gateway owner map | phase4_owner_boundary_backfill_passed |
+| Phase 4 residual blocker closeout | archive_only | `full-acceptance-closeout.json` maps A1-A14, required gates, non-accepted runtime scope and residual owner-runtime blockers | phase4_residual_blocker_audit_passed |
+| Proposal-local evidence | archive_only | `acceptance.md`, browser command-controls evidence, runtime closeout projection evidence, P024 partial-fill display evidence, runtime handoff request evidence, owner-runtime invocation readiness evidence, runtime readiness UI projection evidence and full acceptance closeout audit; runtime Web UI broker command execution remains blocked pending external approval | phase4_residual_blocker_audit_passed |
 
 No stable rule graduation: proposal-local evidence only until implementation and runtime gates pass.

@@ -60,6 +60,14 @@ P024_OWNER_RUNTIME_READINESS = (
     / "p024-account-console-paper-command-controls"
     / "owner-runtime-invocation-readiness.json"
 )
+P024_FULL_ACCEPTANCE_CLOSEOUT = (
+    ROOT
+    / "docs"
+    / "acceptance"
+    / "p024-account-console-paper-command-controls"
+    / "full-acceptance-closeout.json"
+)
+OWNER_MAP = ROOT / "docs" / "ownership" / "account-console-owner-map.md"
 
 REQUIRED_DOCS = [
     "README.md",
@@ -113,6 +121,7 @@ def validate_proposal_index_and_adr() -> None:
     require("owner-runtime handoff request evidence" in index, "proposal index missing P024 runtime handoff scope")
     require("owner-runtime invocation readiness" in index, "proposal index missing P024 runtime readiness scope")
     require("runtime readiness UI projection" in index, "proposal index missing P024 runtime readiness UI scope")
+    require("residual blocker closeout audit" in index, "proposal index missing P024 closeout audit scope")
 
     adr = read(ADR)
     require("ADR-0007" in adr, "ADR-0007 missing")
@@ -134,13 +143,17 @@ def validate_proposal_index_and_adr() -> None:
         "P024 Phase 3e runtime readiness UI projection is accepted as browser blocker evidence only" in adr,
         "ADR missing P024 runtime readiness UI landing",
     )
+    require(
+        "P024 Phase 4 residual blocker audit is accepted as closeout evidence only" in adr,
+        "ADR missing P024 full closeout audit landing",
+    )
 
 
 def validate_readme() -> None:
     text = read(PROPOSAL / "README.md")
     for phrase in [
         "Proposal ID: `p024-account-console-paper-command-controls`",
-        "Status: phase3e_runtime_readiness_ui_projection_passed",
+        "Status: phase4_residual_blocker_audit_passed",
         "ADR carrier: yes",
         "Primary ADR: ADR-0007",
         "Predecessor: [P023 OpenCTP 19053 Paper Command Capability]",
@@ -156,10 +169,12 @@ def validate_readme() -> None:
         "validate_p024_runtime_handoff_browser_evidence.py",
         "validate_p024_owner_runtime_invocation_readiness.py",
         "validate_p024_runtime_readiness_browser_evidence.py",
+        "validate_p024_full_acceptance_closeout.py",
         "browser_triggered_broker_order=false",
         "runtime_invocation_attempted=false",
         "owner-runtime invocation readiness",
         "runtime readiness UI projection",
+        "full residual blocker closeout audit",
     ]:
         require(phrase in text, f"P024 README missing phrase: {phrase}")
 
@@ -183,11 +198,14 @@ def validate_phase_plan() -> None:
         "completed_readiness_gate_blocked_by_external_approval",
         "phase_3e_runtime_readiness_ui_projection",
         "completed_browser_readiness_projection_gate",
+        "phase_4_closeout",
+        "completed_residual_blocker_audit",
         "Runtime closeout projection",
         "Partial-fill cancel display",
         "Owner-runtime handoff request",
         "Owner-runtime invocation readiness",
         "Runtime readiness UI projection",
+        "Phase 4 Closeout",
         "Phase 1 Backend command API",
         "completed_contract_gate",
         "validate_p024_paper_command_api.py",
@@ -196,11 +214,13 @@ def validate_phase_plan() -> None:
         "validate_p024_runtime_handoff_browser_evidence.py",
         "validate_p024_owner_runtime_invocation_readiness.py",
         "validate_p024_runtime_readiness_browser_evidence.py",
+        "validate_p024_full_acceptance_closeout.py",
         "Browser controls are implemented only for `paper_armed` projection",
         "browser_triggered_broker_order=false",
         "Real partial-fill runtime remains blocked",
         "Web UI owner-runtime handoff requests are accepted only as typed requests",
         "Phase 3e readiness UI projection is complete",
+        "Phase 4 residual blocker audit is complete",
         "external write approval",
     ]:
         require(phrase in text, f"P024 phase plan missing phrase: {phrase}")
@@ -217,6 +237,7 @@ def validate_acceptance() -> None:
         "P024_RUNTIME_HANDOFF_BROWSER_EVIDENCE_OK",
         "P024_OWNER_RUNTIME_INVOCATION_READINESS_OK",
         "P024_RUNTIME_READINESS_BROWSER_EVIDENCE_OK",
+        "P024_FULL_ACCEPTANCE_CLOSEOUT_OK",
         "Implementation/browser evidence is required before implementation closeout",
         "UI Anti-Drift Acceptance",
         "forbidden_actions",
@@ -247,6 +268,9 @@ def validate_acceptance() -> None:
         "owner_repo_write_attempted=false",
         "external owner-runtime approval",
         "Phase 3e Runtime Readiness UI Projection Acceptance",
+        "Phase 4 Full Acceptance Closeout Audit",
+        "phase4_residual_blocker_audit_passed",
+        "accepted_with_residual_owner_runtime_blockers",
         "account-runtime-readiness-panel",
         "account-runtime-readiness-invoked",
         "owner_repo_write_attempted=false",
@@ -588,6 +612,64 @@ def validate_p024_runtime_readiness_ui_evidence() -> None:
         require(claim in non_claims, f"P024 readiness UI missing non-claim: {claim}")
 
 
+def validate_p024_full_acceptance_closeout() -> None:
+    payload = load_json(P024_FULL_ACCEPTANCE_CLOSEOUT)
+    require(payload["schema"] == "account-console.p024.full-acceptance-closeout.v1", "P024 closeout schema mismatch")
+    require(payload["proposal_id"] == "p024-account-console-paper-command-controls", "P024 closeout proposal mismatch")
+    require(payload["account_id"] == "acct.ctp.paper.19053", "P024 closeout account mismatch")
+    require(payload["status"] == "phase4_residual_blocker_audit_passed", "P024 closeout status mismatch")
+    require(
+        payload["verdict"] == "accepted_with_residual_owner_runtime_blockers",
+        "P024 closeout verdict mismatch",
+    )
+    scenarios = {item["id"]: item for item in payload["scenario_matrix"]}
+    require(set(scenarios) == {f"A{index}" for index in range(1, 15)}, "P024 closeout scenario set mismatch")
+    require(
+        scenarios["A4"]["status"] == "blocked_pending_owner_runtime_execution",
+        "P024 closeout A4 must remain blocked",
+    )
+    require(
+        scenarios["A13"]["status"] == "passed_blocked_by_external_approval",
+        "P024 closeout A13 status mismatch",
+    )
+    blockers = {blocker["blocker_id"]: blocker for blocker in payload["residual_blockers"]}
+    require(
+        set(blockers)
+        == {
+            "p024_external_owner_runtime_write_approval_required",
+            "p024_owner_runtime_artifacts_missing",
+            "p024_real_partial_fill_runtime_missing",
+        },
+        "P024 closeout residual blockers mismatch",
+    )
+    negative = payload["negative_assertions"]
+    for key in [
+        "runtime_invocation_attempted",
+        "owner_repo_write_attempted",
+        "browser_triggered_broker_order",
+        "gateway_send_attempted_from_browser",
+        "broker_order_created_from_browser",
+        "live_armed",
+        "account_mirror_write_authority",
+        "raw_secret_values_recorded",
+        "raw_broker_endpoint_recorded",
+        "full_runtime_acceptance_claimed",
+    ]:
+        require(negative[key] is False, f"P024 closeout negative assertion mismatch: {key}")
+
+
+def validate_owner_map_backfill() -> None:
+    owner_map = read(OWNER_MAP)
+    for phrase in [
+        "P024 paper command controls",
+        "owner://nautilus_ctp_adapter",
+        "external approval blocker",
+        "claim browser-triggered broker order",
+        "Account Mirror a command writer",
+    ]:
+        require(phrase in owner_map, f"P024 owner map missing phrase: {phrase}")
+
+
 def validate_p023_predecessor_evidence() -> None:
     payload = load_json(P023_PARTIAL_EVIDENCE)
     require(payload["schema"] == "account-console.p023.partial-fill-order-display.v1", "P023 evidence schema mismatch")
@@ -676,12 +758,14 @@ def main() -> None:
     validate_p024_runtime_handoff_evidence()
     validate_p024_owner_runtime_readiness()
     validate_p024_runtime_readiness_ui_evidence()
+    validate_p024_full_acceptance_closeout()
+    validate_owner_map_backfill()
     validate_p023_predecessor_evidence()
     validate_existing_command_boundary_still_closed()
     validate_backend_command_routes_are_p024_only()
     print(
         "P024_PAPER_COMMAND_CONTROLS_DESIGN_OK: "
-        "status=phase3e_runtime_readiness_ui_projection_passed current_ui_command=guarded runtime_closeout=browser_projection_passed partial_fill_cancel_ui=browser_contract_passed runtime_handoff=browser_handoff_passed runtime_invocation_readiness=blocked_by_external_approval runtime_readiness_ui=browser_projection_passed"
+        "status=phase4_residual_blocker_audit_passed current_ui_command=guarded runtime_closeout=browser_projection_passed partial_fill_cancel_ui=browser_contract_passed runtime_handoff=browser_handoff_passed runtime_invocation_readiness=blocked_by_external_approval runtime_readiness_ui=browser_projection_passed full_closeout=residual_blocker_audit_passed"
     )
 
 

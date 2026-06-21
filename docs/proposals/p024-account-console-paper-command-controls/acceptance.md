@@ -1,7 +1,7 @@
 # P024 Acceptance / Account Console Paper Command Controls
 
 - Proposal ID: `p024-account-console-paper-command-controls`
-- Status: phase3e_runtime_readiness_ui_projection_passed
+- Status: phase4_residual_blocker_audit_passed
 - Primary ADR: ADR-0007
 
 ## Scope
@@ -22,6 +22,7 @@ Out of scope: live trading, replace order, Account Mirror write authority, direc
 | P024 runtime handoff request | `npx playwright test tests/e2e/p024-runtime-handoff-request.spec.ts --project=desktop` then `python scripts\validate_p024_runtime_handoff_browser_evidence.py` | `P024_RUNTIME_HANDOFF_BROWSER_EVIDENCE_OK` | Submit/cancel controls prepare owner-runtime run requests with blocked owner invocation; no browser-triggered broker order claim |
 | P024 owner-runtime invocation readiness | `python scripts\validate_p024_owner_runtime_invocation_readiness.py` | `P024_OWNER_RUNTIME_INVOCATION_READINESS_OK` | Owner repo, guarded script checksums, external write approval scope and post-run artifact requirements are frozen; runtime remains uninvoked |
 | P024 runtime readiness UI projection | `npx playwright test tests/e2e/p024-runtime-invocation-readiness.spec.ts --project=desktop` then `python scripts\validate_p024_runtime_readiness_browser_evidence.py` | `P024_RUNTIME_READINESS_BROWSER_EVIDENCE_OK` | Web UI renders readiness blocker, owner refs, entrypoints, approval state and non-claims without owner runtime invocation |
+| P024 full acceptance closeout audit | `python scripts\validate_p024_full_acceptance_closeout.py` | `P024_FULL_ACCEPTANCE_CLOSEOUT_OK` | A1-A14, accepted scope, non-accepted runtime scope and residual owner-runtime blockers are machine-checked |
 | P023 runtime predecessor | `python scripts\validate_p023_openctp19053_command_run.py --run-dir output\account_command\ctp-paper-19053\p023-armed-20260621t0748z --source-package output\account_capability\ctp-paper-19053\source-package.json` | `P023_OPENCTP19053_COMMAND_RUN_OK` | Predecessor paper command evidence |
 | Proposal docs | `python scripts\check_proposal_docs.py --root . --proposal-id p024-account-console-paper-command-controls` | `PROPOSAL_DOCS_OK` | Proposal structure |
 
@@ -43,6 +44,22 @@ Out of scope: live trading, replace order, Account Mirror write authority, direc
 | A12 | positive | Web UI prepares owner-runtime submit/cancel handoff without invoking broker runtime | Playwright + API route audit + browser evidence JSON | runtime invocation, gateway send or broker order creation is claimed from the browser | phase3c_runtime_handoff_request_passed |
 | A13 | positive | Owner-runtime invocation readiness and external approval scope are frozen | readiness artifact + owner script checksum validator | owner repo path, script checksum, approval scope or non-claims drift | phase3d_owner_runtime_invocation_readiness_blocked_by_external_approval |
 | A14 | positive | Runtime readiness blocker appears in Web UI without broker execution claims | Playwright + API route audit + browser evidence JSON | UI hides blocker, copies raw endpoint/secret data, or claims owner runtime was invoked | phase3e_runtime_readiness_ui_projection_passed |
+
+## Phase 4 Full Acceptance Closeout Audit
+
+P024 Phase 4 is a residual blocker audit, not a claim that real Web UI owner-runtime execution has happened.
+
+Required artifact:
+
+1. `docs/acceptance/p024-account-console-paper-command-controls/full-acceptance-closeout.json`.
+2. `status=phase4_residual_blocker_audit_passed`.
+3. `verdict=accepted_with_residual_owner_runtime_blockers`.
+4. A1-A14 are enumerated with evidence refs or typed blockers.
+5. Non-accepted runtime scope includes new browser-triggered owner-runtime submit/cancel execution, gateway send from Web UI, broker order creation from Web UI, real partial-fill runtime, live mode, Account Mirror write authority and replace/modify orders.
+6. Residual blockers include external owner-runtime write approval, missing owner-runtime artifacts and missing real partial-fill runtime state.
+7. Negative assertions require `runtime_invocation_attempted=false`, `owner_repo_write_attempted=false`, `browser_triggered_broker_order=false`, `gateway_send_attempted_from_browser=false`, `broker_order_created_from_browser=false`, `live_armed=false`, `account_mirror_write_authority=false` and `full_runtime_acceptance_claimed=false`.
+
+Accepted evidence: `python scripts\validate_p024_full_acceptance_closeout.py` returns `P024_FULL_ACCEPTANCE_CLOSEOUT_OK`.
 
 ## Phase 3e Runtime Readiness UI Projection Acceptance
 
@@ -172,4 +189,4 @@ This remains browser/control contract evidence. It does not claim real Web UI Op
 
 ## Evidence Boundary
 
-Implementation/browser evidence is required before implementation closeout. Phase 1, Phase 2, Phase 3a, Phase 3b, Phase 3c, Phase 3d readiness and Phase 3e readiness UI projection gates are accepted; Phase 3 real Web UI submit/cancel runtime execution and Phase 4 closeout remain blocked pending external owner-runtime approval and artifacts.
+Implementation/browser evidence is required before implementation closeout. Phase 1, Phase 2, Phase 3a, Phase 3b, Phase 3c, Phase 3d readiness, Phase 3e readiness UI projection and Phase 4 residual blocker audit gates are accepted; real Web UI submit/cancel runtime execution remains blocked pending external owner-runtime approval and artifacts.

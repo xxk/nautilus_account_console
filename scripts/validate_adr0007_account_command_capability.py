@@ -54,7 +54,7 @@ def validate_adr() -> None:
     for phrase in [
         'adr_id: "0007"',
         "decision_status: proposed",
-        "landing_status: p024_phase3e_runtime_readiness_ui_projection_gate",
+        "landing_status: p024_phase4_residual_blocker_audit_gate",
         "Governed Account Command Capability",
         "Account Mirror never sends commands",
         "Gateway acknowledgement 不是最终账户状态",
@@ -68,10 +68,12 @@ def validate_adr() -> None:
         "P024 Phase 3c owner-runtime handoff request is accepted as browser handoff evidence only",
         "P024 Phase 3d owner-runtime invocation readiness is accepted as a readiness gate only",
         "P024 Phase 3e runtime readiness UI projection is accepted as browser blocker evidence only",
+        "P024 Phase 4 residual blocker audit is accepted as closeout evidence only",
         "browser_triggered_broker_order=false",
         "gateway_send_attempted=false",
         "runtime_invocation_attempted=false",
         "owner_repo_write_attempted=false",
+        "full_runtime_acceptance_claimed=false",
     ]:
         require(phrase in text, f"ADR-0007 missing phrase: {phrase}")
     for phrase in REQUIRED_FLOW:
@@ -137,7 +139,7 @@ def main() -> None:
     validate_backend_has_only_p024_command_routes()
     print(
         "ADR0007_ACCOUNT_COMMAND_CAPABILITY_OK: "
-        "status=proposed landing=p024_phase3e_runtime_readiness_ui_projection_gate"
+        "status=proposed landing=p024_phase4_residual_blocker_audit_gate"
     )
 
 
