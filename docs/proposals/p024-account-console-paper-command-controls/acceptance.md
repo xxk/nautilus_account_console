@@ -150,18 +150,19 @@ The Web UI must render the Phase 3d readiness package as an explicit blocker:
 
 Accepted evidence: `python scripts\validate_p024_runtime_readiness_browser_evidence.py` returns `P024_RUNTIME_READINESS_BROWSER_EVIDENCE_OK`. This is a browser projection of a blocker, not owner-runtime execution.
 
-## Phase 4f Owner Runtime Execution Attempt Audit
+## Phase 4g Owner Runtime Submit/Cancel Callback Closeout
 
 This gate records the real owner-runtime attempt after explicit approval:
 
 1. `docs/acceptance/p024-account-console-paper-command-controls/owner-runtime-execution-attempt-audit.json` uses schema `account-console.p024.owner-runtime-execution-attempt-audit.v1`.
 2. The artifact records `approval_obtained=true` for the approved owner repo path and keeps raw CTP secrets, auth values and broker endpoints out of this worktree.
 3. Owner-owned `scripts/ctp_guarded_paper_order_loop.py` submitted a guarded `rb2610 SELL 1 CLOSEYESTERDAY` exposure-reduction paper order and observed an accepted `OnRtnOrder` with native order identity and `leaves_qty=1`.
-4. Owner-owned `scripts/ctp_guarded_paper_cancel_loop.py` sent cancel with the native order identity and returned native code 0.
-5. Post-cancel owner readback via readonly snapshot, TD order truth smoke and query adapter order snapshot returned zero order events, so `post_cancel_readback_identity_observed=false`.
-6. A4 and Web UI order display correctness against real runtime remain blocked until owner order/trade readback returns the submitted native identity and terminal cancel state.
+4. Owner-owned `scripts/ctp_guarded_paper_cancel_loop.py` was repaired in owner commit `6a50b02` to wait for native cancel callbacks and match by native order identity.
+5. The approved rerun sent cancel with the native order identity and observed terminal status `5` for native order id `2081`, order ref `2`, callback source `OnRtnOrder`.
+6. Post-cancel snapshot preserved rb2610 position quantity at 3 and no trade fill was observed, so simple submit/cancel order-display correctness is accepted against owner-runtime callback truth.
+7. Full acceptance remains blocked by real partial-fill runtime state; P024 still must not claim a real partial-fill sequence unless owner runtime provides stable partial-fill order and trade readbacks.
 
-Accepted evidence: `python scripts\validate_p024_owner_runtime_execution_attempt_audit.py` returns `P024_OWNER_RUNTIME_EXECUTION_ATTEMPT_AUDIT_OK`. This is real owner-runtime submit/cancel attempt evidence, not final order-display acceptance.
+Accepted evidence: `python scripts\validate_p024_owner_runtime_execution_attempt_audit.py` returns `P024_OWNER_RUNTIME_EXECUTION_ATTEMPT_AUDIT_OK`. This is real owner-runtime submit/cancel callback evidence, not real partial-fill runtime evidence.
 
 The previous `external owner-runtime approval` blocker is now satisfied for this single guarded 19053 paper attempt only; it does not grant live readiness, unrestricted order mutation or future owner-repo writes without matching approval.
 
@@ -281,4 +282,4 @@ This remains browser/control contract evidence. It does not claim real Web UI Op
 
 ## Evidence Boundary
 
-Implementation/browser evidence is required before implementation closeout. Phase 1, Phase 2, Phase 3a, Phase 3b, Phase 3c, Phase 3d readiness, Phase 3e readiness UI projection, Phase 4 residual blocker audit, Phase 4a owner-runtime execution approval packet, Phase 4b runtime approval packet UI projection, Phase 4c owner-runtime execution handoff bundle, Phase 4d runtime handoff bundle UI projection, Phase 4e runtime execution gap audit and Phase 4f owner-runtime execution attempt audit gates are accepted; full real Web UI order-display acceptance remains blocked pending post-cancel owner order readback identity and real or owner-approved partial-fill runtime state.
+Implementation/browser evidence is required before implementation closeout. Phase 1, Phase 2, Phase 3a, Phase 3b, Phase 3c, Phase 3d readiness, Phase 3e readiness UI projection, Phase 4 residual blocker audit, Phase 4a owner-runtime execution approval packet, Phase 4b runtime approval packet UI projection, Phase 4c owner-runtime execution handoff bundle, Phase 4d runtime handoff bundle UI projection, Phase 4e runtime execution gap audit and Phase 4g owner-runtime submit/cancel callback closeout gates are accepted; full real partial-fill acceptance remains blocked pending real or owner-approved partial-fill runtime state.

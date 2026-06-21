@@ -51,11 +51,12 @@ def validate_payload(payload: dict[str, Any]) -> None:
     )
     require(payload["proposal_id"] == "p024-account-console-paper-command-controls", "proposal mismatch")
     require(payload["account_id"] == "acct.ctp.paper.19053", "account mismatch")
+    require(payload["status"] == "phase4g_owner_runtime_submit_cancel_callback_closed", "status mismatch")
     require(
-        payload["status"] == "phase4f_owner_runtime_execution_attempted_readback_blocked",
-        "status mismatch",
+        payload["verdict"]
+        == "accepted_for_owner_runtime_submit_cancel_callback_truth_partial_fill_blocked",
+        "verdict mismatch",
     )
-    require(payload["verdict"] == "blocked_pending_order_readback_identity", "verdict mismatch")
 
     approval = payload["operator_approval"]
     require(approval["required"] is True, "approval required mismatch")
@@ -75,20 +76,32 @@ def validate_payload(payload: dict[str, Any]) -> None:
     require(attempt["paper_cancel_attempted"] is True, "paper cancel attempt mismatch")
     require(attempt["browser_triggered_broker_order"] is False, "browser trigger mismatch")
 
+    latest = payload["latest_successful_runtime_attempt"]
+    require(latest["owner_patch_commit"] == "6a50b02", "owner patch commit mismatch")
+    require(latest["submit_readback"]["native_order_id"] == "2081", "latest submit order id mismatch")
+    require(latest["submit_readback"]["native_order_ref"] == "2", "latest submit order ref mismatch")
+    require(latest["submit_readback"]["leaves_qty"] == 1, "latest submit leaves mismatch")
+    require(latest["cancel_readback"]["native_order_id"] == "2081", "latest cancel order id mismatch")
+    require(latest["cancel_readback"]["native_order_ref"] == "2", "latest cancel order ref mismatch")
+    require(latest["cancel_readback"]["status"] == 5, "latest cancel status mismatch")
+    require(latest["post_snapshot_reconciliation"]["rb2610_long_position_qty_preserved"] == 3, "post snapshot position mismatch")
+    for checksum_name, checksum in latest["checksums"].items():
+        require(len(checksum) == 64, f"latest checksum length mismatch: {checksum_name}")
+
     artifacts = {artifact["kind"]: artifact for artifact in payload["owner_artifacts"]}
-    require(
-        set(artifacts)
-        == {
-            "submit_dry_run",
-            "submit_armed_send",
-            "cancel_armed_send_initial_guard_block",
-            "cancel_armed_send",
-            "post_cancel_readonly_snapshot",
-            "td_order_truth_after_cancel",
-            "query_adapter_order_readback_after_cancel",
-        },
-        "artifact kind set mismatch",
-    )
+    for kind in {
+        "submit_dry_run",
+        "submit_armed_send",
+        "cancel_armed_send_initial_guard_block",
+        "cancel_armed_send",
+        "post_cancel_readonly_snapshot",
+        "td_order_truth_after_cancel",
+        "query_adapter_order_readback_after_cancel",
+        "submit_armed_send_callback_closed",
+        "cancel_armed_send_callback_closed",
+        "post_cancel_snapshot_callback_closed_attempt",
+    }:
+        require(kind in artifacts, f"missing artifact kind: {kind}")
     for artifact in artifacts.values():
         require(artifact["owner_path"].startswith("output/account-console-ctp19053-readback/"), "owner path mismatch")
         require(len(artifact["sha256"]) == 64, f"sha256 length mismatch: {artifact['kind']}")
@@ -98,8 +111,24 @@ def validate_payload(payload: dict[str, Any]) -> None:
     require(artifacts["cancel_armed_send"]["status"] == "passed", "cancel send status mismatch")
     require(artifacts["cancel_armed_send"]["observed"]["native_code"] == 0, "cancel native code mismatch")
     require(
+        artifacts["submit_armed_send_callback_closed"]["observed"]["native_order_id"] == "2081",
+        "closed submit order id mismatch",
+    )
+    require(
+        artifacts["cancel_armed_send_callback_closed"]["observed"]["cancel_lifecycle_disposition"] == "cancelled",
+        "closed cancel disposition mismatch",
+    )
+    require(
+        artifacts["cancel_armed_send_callback_closed"]["observed"]["status"] == 5,
+        "closed cancel status mismatch",
+    )
+    require(
+        artifacts["post_cancel_snapshot_callback_closed_attempt"]["observed"]["rb2610_long_position_qty_preserved"] == 3,
+        "closed post snapshot position mismatch",
+    )
+    require(
         artifacts["post_cancel_readonly_snapshot"]["observed"]["observed_order_event_count"] == 0,
-        "post cancel readonly order count must document the blocker",
+        "historical post cancel readonly order count must remain documented",
     )
     require(
         artifacts["td_order_truth_after_cancel"]["observed"]["observed_order_event_count"] == 0,
@@ -117,19 +146,13 @@ def validate_payload(payload: dict[str, Any]) -> None:
     require(result["submit_runtime_executed"] is True, "A4 submit runtime mismatch")
     require(result["cancel_runtime_executed"] is True, "A4 cancel runtime mismatch")
     require(result["post_submit_readback_identity_observed"] is True, "A4 submit readback mismatch")
-    require(result["post_cancel_readback_identity_observed"] is False, "A4 cancel readback blocker mismatch")
-    require(result["can_claim_web_ui_order_display_correctness"] is False, "UI correctness claim mismatch")
+    require(result["post_cancel_readback_identity_observed"] is True, "A4 cancel readback mismatch")
+    require(result["reconciliation_result_matches_owner_readbacks"] is True, "A4 reconciliation mismatch")
+    require(result["can_claim_web_ui_order_display_correctness"] is True, "UI correctness claim mismatch")
     require(result["can_claim_all_acceptance_complete"] is False, "all acceptance claim mismatch")
 
     blockers = {blocker["blocker_id"] for blocker in payload["residual_blockers"]}
-    require(
-        blockers
-        == {
-            "p024_post_cancel_order_readback_identity_missing",
-            "p024_real_partial_fill_runtime_missing",
-        },
-        "residual blocker mismatch",
-    )
+    require(blockers == {"p024_real_partial_fill_runtime_missing"}, "residual blocker mismatch")
 
     negative = payload["negative_assertions"]
     for key in [
@@ -151,7 +174,7 @@ def main() -> None:
     validate_payload(load(ATTEMPT_AUDIT))
     print(
         "P024_OWNER_RUNTIME_EXECUTION_ATTEMPT_AUDIT_OK: "
-        "verdict=blocked_pending_order_readback_identity submit=true cancel=true final_acceptance=false"
+        "verdict=submit_cancel_callback_closed partial_fill_blocked final_acceptance=false"
     )
 
 
