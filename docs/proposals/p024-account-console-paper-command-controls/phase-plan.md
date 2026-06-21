@@ -102,6 +102,10 @@ phases:
     status: completed_final_gap_audit_gate_blocked_by_owner_runtime_execution
     ai_progress: 100
     evidence: "python scripts\\validate_p024_runtime_execution_gap_audit.py; npx playwright test tests/e2e/p024-runtime-execution-gap-audit.spec.ts --project=desktop; python scripts\\validate_p024_runtime_execution_gap_browser_evidence.py"
+  - id: phase_4f_owner_runtime_execution_attempt_audit
+    status: completed_owner_runtime_attempt_blocked_by_order_readback
+    ai_progress: 100
+    evidence: "python scripts\\validate_p024_owner_runtime_execution_attempt_audit.py"
 AI-PHASE-STATUS-END -->
 
 ## Phase Status Board
@@ -123,6 +127,7 @@ AI-PHASE-STATUS-END -->
 | Phase 4c Owner-runtime execution handoff bundle | Freeze post-approval operator sequence, runtime input requirements, owner artifact list and post-handoff gates | completed_handoff_bundle_gate_runtime_not_invoked | `python scripts\validate_p024_owner_runtime_execution_handoff_bundle.py` | Wait for explicit approval and runtime inputs before invoking owner runtime |
 | Phase 4d Runtime handoff bundle UI projection | Render execution handoff bundle in Web UI with no execution allowed or broker order claim | completed_browser_handoff_bundle_projection_gate | `npx playwright test tests/e2e/p024-runtime-execution-handoff-bundle.spec.ts --project=desktop`; `python scripts\validate_p024_runtime_handoff_bundle_browser_evidence.py` | Wait for explicit approval and runtime inputs before invoking owner runtime |
 | Phase 4e Runtime execution gap audit | Render final A4 gap in Web UI without claiming all acceptance complete | completed_final_gap_audit_gate_blocked_by_owner_runtime_execution | `python scripts\validate_p024_runtime_execution_gap_audit.py`; `npx playwright test tests/e2e/p024-runtime-execution-gap-audit.spec.ts --project=desktop`; `python scripts\validate_p024_runtime_execution_gap_browser_evidence.py` | Obtain explicit approval and owner-runtime artifacts before declaring all acceptance complete |
+| Phase 4f Owner-runtime execution attempt audit | Record approved owner-runtime paper submit/cancel attempt and remaining order readback blocker | completed_owner_runtime_attempt_blocked_by_order_readback | `python scripts\validate_p024_owner_runtime_execution_attempt_audit.py` | Repair or rerun owner order/trade readback until post-cancel native identity and terminal state are returned |
 
 ## Runtime / Command Freeze
 
@@ -144,3 +149,4 @@ Phase 0 does not run broker mutation. Phase 1 may add API contracts but must not
 12. Phase 4c owner-runtime execution handoff bundle is complete; `P024_OWNER_RUNTIME_EXECUTION_HANDOFF_BUNDLE_OK` proves the post-approval sequence and runtime input requirements are frozen while `execution_allowed=false` and `runtime_invocation_attempted=false`.
 13. Phase 4d runtime handoff bundle UI projection is complete; `P024_RUNTIME_HANDOFF_BUNDLE_BROWSER_EVIDENCE_OK` proves the handoff bundle is visible in Web UI while `execution_allowed=false`, `owner_repo_write_attempted=false` and `broker_order_created=false`.
 14. Phase 4e runtime execution gap audit is complete; `P024_RUNTIME_EXECUTION_GAP_AUDIT_OK` and `P024_RUNTIME_EXECUTION_GAP_BROWSER_EVIDENCE_OK` prove A4 remains visibly blocked until owner-runtime artifacts exist and `final_acceptance_claimed=false`.
+15. Phase 4f owner-runtime execution attempt audit is complete; `P024_OWNER_RUNTIME_EXECUTION_ATTEMPT_AUDIT_OK` proves explicit approval was obtained and owner-owned submit/cancel scripts ran, while A4 remains blocked because post-cancel order truth/readback returned zero order events.

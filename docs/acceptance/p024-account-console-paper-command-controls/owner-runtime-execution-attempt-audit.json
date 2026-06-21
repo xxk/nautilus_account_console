@@ -1,0 +1,159 @@
+{
+  "schema": "account-console.p024.owner-runtime-execution-attempt-audit.v1",
+  "proposal_id": "p024-account-console-paper-command-controls",
+  "account_id": "acct.ctp.paper.19053",
+  "reviewed_at": "2026-06-21T17:03:00+08:00",
+  "status": "phase4f_owner_runtime_execution_attempted_readback_blocked",
+  "verdict": "blocked_pending_order_readback_identity",
+  "operator_approval": {
+    "required": true,
+    "obtained": true,
+    "approval_path": "D:/Nautilus/nautilus_ctp_adapter",
+    "approved_expected_impact": "create owner-owned runtime/debug/readback/reconciliation artifacts outside this worktree and may submit/cancel one paper order in the 19053 simulation account"
+  },
+  "owner_runtime_refs": {
+    "owner_ref": "owner://nautilus_ctp_adapter",
+    "owner_repo_path": "D:/Nautilus/nautilus_ctp_adapter",
+    "config_ref": "cfgs/local/ctp.openctp.tts.7x24.local.json",
+    "config_raw_content_recorded": false,
+    "submit_entrypoint_ref": "scripts/ctp_guarded_paper_order_loop.py",
+    "cancel_entrypoint_ref": "scripts/ctp_guarded_paper_cancel_loop.py",
+    "order_truth_entrypoint_ref": "scripts/ctp_td_order_truth_smoke.py",
+    "query_adapter_entrypoint_ref": "scripts/ctp_query_adapter_smoke.py"
+  },
+  "runtime_attempt": {
+    "instrument": "rb2610",
+    "action": "SELL 1 CLOSEYESTERDAY",
+    "limit_price": 3400.0,
+    "risk_shape": "exposure_reduction_only",
+    "paper_send_attempted": true,
+    "paper_cancel_attempted": true,
+    "browser_triggered_broker_order": false,
+    "account_console_wrote_broker_runtime": false
+  },
+  "owner_artifacts": [
+    {
+      "kind": "submit_dry_run",
+      "owner_path": "output/account-console-ctp19053-readback/account-console-p024-runtime-20260621T090005Z/guarded_order_dry_run.json",
+      "sha256": "d2fd658680daa8ce8ef18b1616e13c07e0c880437d7eb2ebcbc3167b33a7f335",
+      "status": "passed"
+    },
+    {
+      "kind": "submit_armed_send",
+      "owner_path": "output/account-console-ctp19053-readback/account-console-p024-runtime-20260621T090015Z/guarded_order_armed_send.json",
+      "sha256": "3f3b9f4266a4af0e824c4e937376062d33ea7f3dcd9d1264c53437f544d6e334",
+      "status": "passed",
+      "observed": {
+        "event_source": "OnRtnOrder",
+        "native_order_ref_present": true,
+        "front_id_present": true,
+        "session_id_present": true,
+        "leaves_qty": 1,
+        "order_text": "accepted"
+      }
+    },
+    {
+      "kind": "cancel_armed_send_initial_guard_block",
+      "owner_path": "output/account-console-ctp19053-readback/account-console-p024-runtime-20260621T090026Z/guarded_cancel_armed_send.json",
+      "sha256": "2caed55c2865f097a65f6731538cae4eefc4e10f9f88d49324ec3e15ac54568e",
+      "status": "blocked",
+      "observed": {
+        "failure_reason": "config_validation_failed",
+        "issue": "execution_guardrails.allow_exposure_reduction_order_smoke_must_be_false"
+      }
+    },
+    {
+      "kind": "cancel_armed_send",
+      "owner_path": "output/account-console-ctp19053-readback/account-console-p024-runtime-20260621T090046Z/guarded_cancel_armed_send.json",
+      "sha256": "62b58ab593ef4877637bf5a512b80178eb4f5e0f3ef5b78a0d2c4782ea48bb87",
+      "status": "passed",
+      "observed": {
+        "native_code": 0,
+        "cancel_command_sent": true,
+        "cancel_callback_observed": false,
+        "cancel_lifecycle_disposition": "timeout"
+      }
+    },
+    {
+      "kind": "post_cancel_readonly_snapshot",
+      "owner_path": "output/account-console-ctp19053-readback/account-console-p024-runtime-20260621T090108Z/paper_readonly_snapshot_after_cancel_connect.json",
+      "sha256": "5ae92aa470084867b2c8a6591368b4e493a269b1947141b6a24be04d4e69dd84",
+      "status": "passed",
+      "observed": {
+        "account_query_passed": true,
+        "position_query_passed": true,
+        "instrument_query_passed": true,
+        "observed_order_event_count": 0,
+        "observed_trade_event_count": 0
+      }
+    },
+    {
+      "kind": "td_order_truth_after_cancel",
+      "owner_path": "output/account-console-ctp19053-readback/account-console-p024-runtime-20260621T090134Z/td_order_truth_after_cancel.json",
+      "sha256": "8fe06732a903c0dbda6c9fd2b6d4c682c34c89fd13c42c4b70f9231079434530",
+      "status": "passed",
+      "observed": {
+        "login_success": true,
+        "observed_order_event_count": 0,
+        "observed_trade_event_count": 0
+      }
+    },
+    {
+      "kind": "query_adapter_order_readback_after_cancel",
+      "owner_path": "output/account-console-ctp19053-readback/account-console-p024-runtime-20260621T090148Z/query_adapter_order_readback_after_cancel.json",
+      "sha256": "bfd1d18610fc8c977646507c990f064d8ba86c7c327a421df740745f4b00f860",
+      "status": "passed",
+      "observed": {
+        "positions_query_passed": true,
+        "account_query_passed": true,
+        "instrument_query_passed": true,
+        "order_truth_observed_order_event_count": 0,
+        "order_trade_snapshot_observed_order_event_count": 0,
+        "reconciliation_disposition": "clear"
+      }
+    }
+  ],
+  "a4_acceptance_result": {
+    "scenario": "Submit writes intent/risk/approval/gateway/readback/reconcile refs",
+    "current_status": "blocked_pending_order_readback_identity",
+    "submit_runtime_executed": true,
+    "cancel_runtime_executed": true,
+    "post_submit_readback_identity_observed": true,
+    "post_cancel_readback_identity_observed": false,
+    "order_truth_query_returned_target_order": false,
+    "reconciliation_result_matches_owner_readbacks": false,
+    "can_claim_web_ui_order_display_correctness": false,
+    "can_claim_all_acceptance_complete": false
+  },
+  "residual_blockers": [
+    {
+      "blocker_id": "p024_post_cancel_order_readback_identity_missing",
+      "type": "owner_runtime_order_readback_missing",
+      "owner_ref": "owner://nautilus_ctp_adapter",
+      "next_action": "repair or rerun owner order/trade readback so post-cancel readback returns the submitted native order identity and terminal cancel state"
+    },
+    {
+      "blocker_id": "p024_real_partial_fill_runtime_missing",
+      "type": "owner_runtime_partial_fill_state_missing",
+      "owner_ref": "owner://nautilus_ctp_adapter",
+      "next_action": "provide real or owner-approved partial-fill state with stable order and trade readbacks before claiming partial-fill UI acceptance as runtime truth"
+    }
+  ],
+  "negative_assertions": {
+    "final_acceptance_claimed": false,
+    "browser_triggered_broker_order": false,
+    "account_mirror_write_authority": false,
+    "live_armed": false,
+    "raw_secret_values_recorded": false,
+    "raw_broker_endpoint_recorded": false,
+    "config_raw_content_recorded": false,
+    "web_ui_order_display_correctness_claimed": false
+  },
+  "explicit_non_claims": [
+    "does_not_claim_all_acceptance_complete",
+    "does_not_claim_post_cancel_order_readback_identity_observed",
+    "does_not_claim_web_ui_order_display_correctness_against_real_runtime",
+    "does_not_copy_raw_ctp_secret_or_endpoint",
+    "does_not_use_screenshot_as_order_or_runtime_truth"
+  ]
+}
