@@ -412,6 +412,26 @@ def test_partial_fill_owner_repair_plan_projects_no_retry_gate() -> None:
     assert payload["negative_assertions"]["partial_fill_claimed"] is False
 
 
+def test_partial_fill_owner_repair_ingest_gate_projects_missing_evidence() -> None:
+    client = TestClient(app)
+    response = client.get(
+        "/api/commands/accounts/acct.ctp.paper.19053/partial-fill-owner-repair-evidence-ingest-gate"
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["schema"] == "account-console.p024.partial-fill-owner-repair-evidence-ingest-gate.v1"
+    assert payload["status"] == "phase4t_owner_repair_evidence_ingest_gate_ready"
+    assert payload["verdict"] == "ingest_gate_ready_owner_repair_evidence_missing"
+    assert payload["ingest_scope"]["runtime_retry_allowed_by_ingest_gate"] is False
+    assert payload["ingest_scope"]["accepts_owner_runtime_partial_fill_evidence"] is False
+    assert len(payload["required_owner_repair_evidence"]) == 6
+    assert all(item["current_status"] == "missing" for item in payload["required_owner_repair_evidence"])
+    assert payload["negative_assertions"]["owner_repair_evidence_recorded"] is False
+    assert payload["negative_assertions"]["runtime_retry_authorized"] is False
+    assert payload["negative_assertions"]["full_acceptance_claimed"] is False
+
+
 def test_command_api_rejects_live_mode_and_account_mismatch() -> None:
     client = TestClient(app)
     live = deepcopy(submit_intent())

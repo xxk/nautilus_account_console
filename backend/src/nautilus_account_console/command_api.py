@@ -13,6 +13,7 @@ from .schemas import (
     CommandPartialFillRuntimeExecutionApprovalPacket,
     CommandPartialFillRuntimeExecutionHandoffBundle,
     CommandPartialFillOwnerRepairImplementationPlan,
+    CommandPartialFillOwnerRepairEvidenceIngestGate,
     CommandRuntimeExecutionApprovalPacket,
     CommandRuntimeExecutionGapAudit,
     CommandRuntimeExecutionHandoffBundle,
@@ -76,6 +77,13 @@ PARTIAL_FILL_OWNER_REPAIR_IMPLEMENTATION_PLAN = (
     / "acceptance"
     / "p024-account-console-paper-command-controls"
     / "partial-fill-owner-repair-implementation-plan.json"
+)
+PARTIAL_FILL_OWNER_REPAIR_EVIDENCE_INGEST_GATE = (
+    ROOT
+    / "docs"
+    / "acceptance"
+    / "p024-account-console-paper-command-controls"
+    / "partial-fill-owner-repair-evidence-ingest-gate.json"
 )
 DEFAULT_RUNTIME_RUN_ID = "p023-armed-20260621t0748z"
 REQUIRED_RUNTIME_FILES = [
@@ -610,6 +618,45 @@ def load_partial_fill_owner_repair_implementation_plan(
         if negative.get(key) is not False:
             raise HTTPException(status_code=409, detail=f"partial-fill owner repair implementation plan negative assertion failed: {key}")
     return CommandPartialFillOwnerRepairImplementationPlan(**payload)
+
+
+def load_partial_fill_owner_repair_evidence_ingest_gate(
+    account_id: str,
+) -> CommandPartialFillOwnerRepairEvidenceIngestGate:
+    if account_id != PAPER_ACCOUNT_ID:
+        raise HTTPException(status_code=403, detail="P024 owner repair ingest gate is scoped to acct.ctp.paper.19053 only")
+    if not PARTIAL_FILL_OWNER_REPAIR_EVIDENCE_INGEST_GATE.exists():
+        raise HTTPException(status_code=404, detail="partial-fill owner repair evidence ingest gate not found")
+    text = PARTIAL_FILL_OWNER_REPAIR_EVIDENCE_INGEST_GATE.read_text(encoding="utf-8")
+    if any(fragment.lower() in text.lower() for fragment in SENSITIVE_RUNTIME_FRAGMENTS):
+        raise HTTPException(status_code=409, detail="partial-fill owner repair evidence ingest gate contains forbidden sensitive fragments")
+    payload = json.loads(text)
+    if payload.get("account_id") != PAPER_ACCOUNT_ID:
+        raise HTTPException(status_code=409, detail="partial-fill owner repair evidence ingest gate account_id mismatch")
+    scope = payload.get("ingest_scope") or {}
+    if scope.get("runtime_retry_allowed_by_ingest_gate") is not False:
+        raise HTTPException(status_code=409, detail="partial-fill owner repair evidence ingest gate allowed runtime retry")
+    if scope.get("accepts_owner_runtime_partial_fill_evidence") is not False:
+        raise HTTPException(status_code=409, detail="partial-fill owner repair evidence ingest gate accepted runtime evidence too early")
+    evidence = payload.get("required_owner_repair_evidence") or []
+    if len(evidence) != 6 or any(item.get("current_status") != "missing" for item in evidence):
+        raise HTTPException(status_code=409, detail="partial-fill owner repair evidence ingest gate evidence state drifted")
+    negative = payload.get("negative_assertions") or {}
+    for key in [
+        "owner_repair_evidence_recorded",
+        "owner_repo_write_attempted_by_this_gate",
+        "owner_runtime_invocation_attempted",
+        "runtime_retry_authorized",
+        "partial_fill_runtime_claimed",
+        "web_ui_real_partial_fill_claimed",
+        "full_acceptance_claimed",
+        "raw_secret_values_recorded",
+        "raw_broker_endpoint_recorded",
+        "config_raw_content_recorded",
+    ]:
+        if negative.get(key) is not False:
+            raise HTTPException(status_code=409, detail=f"partial-fill owner repair evidence ingest gate negative assertion failed: {key}")
+    return CommandPartialFillOwnerRepairEvidenceIngestGate(**payload)
 
 
 def accept_submit_intent(account_id: str, intent: OrderIntentRequest) -> CommandApiResult:

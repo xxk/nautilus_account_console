@@ -1,6 +1,7 @@
 import type {
   AccountSnapshot,
   CancelIntentRequest,
+  CommandPartialFillOwnerRepairEvidenceIngestGate,
   CommandPartialFillOwnerRepairImplementationPlan,
   CommandPartialFillRuntimeExecutionApprovalPacket,
   CommandPartialFillRuntimeExecutionHandoffBundle,
@@ -240,6 +241,18 @@ export async function fetchCommandPartialFillOwnerRepairImplementationPlan(
   );
   if (!response.ok) {
     throw new Error(`partial-fill owner repair implementation plan failed: ${response.status}`);
+  }
+  return response.json();
+}
+
+export async function fetchCommandPartialFillOwnerRepairEvidenceIngestGate(
+  accountId: string
+): Promise<CommandPartialFillOwnerRepairEvidenceIngestGate> {
+  const response = await fetch(
+    `${API_BASE}/api/commands/accounts/${encodeURIComponent(accountId)}/partial-fill-owner-repair-evidence-ingest-gate`
+  );
+  if (!response.ok) {
+    throw new Error(`partial-fill owner repair evidence ingest gate failed: ${response.status}`);
   }
   return response.json();
 }

@@ -163,6 +163,14 @@ P024_PARTIAL_FILL_OWNER_REPAIR_PLAN_UI_EVIDENCE = (
     / "p024-account-console-paper-command-controls"
     / "partial-fill-owner-repair-plan-ui.json"
 )
+P024_PARTIAL_FILL_OWNER_REPAIR_INGEST_GATE_UI_EVIDENCE = (
+    ROOT
+    / "docs"
+    / "acceptance"
+    / "browser-evidence"
+    / "p024-account-console-paper-command-controls"
+    / "partial-fill-owner-repair-ingest-gate-ui.json"
+)
 P024_RUNTIME_EXECUTION_GAP_UI_EVIDENCE = (
     ROOT
     / "docs"
@@ -231,6 +239,7 @@ ALLOWED_COMMAND_ROUTES = {
     "/api/commands/accounts/{account_id}/partial-fill-runtime-execution-handoff-bundle": {"GET"},
     "/api/commands/accounts/{account_id}/runtime-execution-gap-audit": {"GET"},
     "/api/commands/accounts/{account_id}/partial-fill-owner-repair-implementation-plan": {"GET"},
+    "/api/commands/accounts/{account_id}/partial-fill-owner-repair-evidence-ingest-gate": {"GET"},
 }
 
 
@@ -327,7 +336,7 @@ def validate_readme() -> None:
     text = read(PROPOSAL / "README.md")
     for phrase in [
         "Proposal ID: `p024-account-console-paper-command-controls`",
-        "Status: phase4t_owner_repair_evidence_ingest_gate_ready",
+        "Status: phase4u_owner_repair_ingest_gate_ui_projection_passed",
         "ADR carrier: yes",
         "Primary ADR: ADR-0007",
         "Predecessor: [P023 OpenCTP 19053 Paper Command Capability]",
@@ -361,6 +370,7 @@ def validate_readme() -> None:
         "validate_p024_partial_fill_owner_repair_implementation_plan.py",
         "validate_p024_partial_fill_owner_repair_plan_browser_evidence.py",
         "validate_p024_partial_fill_owner_repair_evidence_ingest_gate.py",
+        "validate_p024_partial_fill_owner_repair_ingest_gate_browser_evidence.py",
         "validate_p024_partial_fill_runtime_approval_packet_browser_evidence.py",
         "validate_p024_partial_fill_runtime_handoff_bundle_browser_evidence.py",
         "browser_triggered_broker_order=false",
@@ -386,6 +396,7 @@ def validate_readme() -> None:
         "owner close-offset repair implementation plan",
         "owner repair plan UI projection",
         "owner repair evidence ingest gate",
+        "owner repair ingest gate UI projection",
     ]:
         require(phrase in text, f"P024 README missing phrase: {phrase}")
 
@@ -484,6 +495,7 @@ def validate_phase_plan() -> None:
         "Phase 4r owner close-offset repair implementation plan is ready",
         "Phase 4s owner repair plan UI projection is complete",
         "Phase 4t owner repair evidence ingest gate is ready",
+        "Phase 4u owner repair ingest gate UI projection is complete",
         "external write approval",
     ]:
         require(phrase in text, f"P024 phase plan missing phrase: {phrase}")
@@ -514,6 +526,8 @@ def validate_acceptance() -> None:
         "P024_PARTIAL_FILL_RUNTIME_EXECUTION_HANDOFF_BUNDLE_OK",
         "P024_PARTIAL_FILL_RUNTIME_EXECUTION_ATTEMPT_AUDIT_OK",
         "P024_PARTIAL_FILL_CLOSE_OFFSET_OWNER_RULE_GAP_AUDIT_OK",
+        "P024_PARTIAL_FILL_OWNER_REPAIR_EVIDENCE_INGEST_GATE_OK",
+        "P024_PARTIAL_FILL_OWNER_REPAIR_INGEST_GATE_BROWSER_EVIDENCE_OK",
         "P024_PARTIAL_FILL_RUNTIME_HANDOFF_BUNDLE_BROWSER_EVIDENCE_OK",
         "Implementation/browser evidence is required before implementation closeout",
         "UI Anti-Drift Acceptance",
@@ -569,6 +583,8 @@ def validate_acceptance() -> None:
         "partial-fill-runtime-handoff-bundle-ui.json",
         "partial-fill-runtime-execution-attempt-audit.json",
         "partial-fill-close-offset-owner-rule-gap-audit.json",
+        "partial-fill-owner-repair-evidence-ingest-gate.json",
+        "partial-fill-owner-repair-ingest-gate-ui.json",
         "runtime-execution-gap-audit.json",
         "account-runtime-execution-gap-panel",
         "account-runtime-execution-gap-final-claimed",
@@ -585,6 +601,9 @@ def validate_acceptance() -> None:
         "up to one small exposure-reduction paper order",
         "Partial-fill runtime approval packet appears in Web UI",
         "Partial-fill runtime handoff bundle appears in Web UI",
+        "P024 partial-fill owner repair ingest gate UI projection",
+        "A25",
+        "phase4u_owner_repair_ingest_gate_ui_projection_passed",
     ]:
         require(phrase in text, f"P024 acceptance missing phrase: {phrase}")
 
@@ -1608,6 +1627,46 @@ def validate_p024_partial_fill_owner_repair_evidence_ingest_gate() -> None:
         require(negative[key] is False, f"P024 owner repair ingest negative assertion mismatch: {key}")
 
 
+def validate_p024_partial_fill_owner_repair_ingest_gate_ui_evidence() -> None:
+    payload = load_json(P024_PARTIAL_FILL_OWNER_REPAIR_INGEST_GATE_UI_EVIDENCE)
+    require(
+        payload["schema"] == "account-console.p024.partial-fill-owner-repair-ingest-gate-ui.v1",
+        "P024 owner repair ingest UI schema mismatch",
+    )
+    require(payload["verdict"] == "pass", "P024 owner repair ingest UI verdict mismatch")
+    gate = payload["api_owner_repair_ingest_gate"]
+    require(
+        gate["schema"] == "account-console.p024.partial-fill-owner-repair-evidence-ingest-gate.v1",
+        "P024 owner repair ingest UI API schema mismatch",
+    )
+    require(
+        gate["status"] == "phase4t_owner_repair_evidence_ingest_gate_ready",
+        "P024 owner repair ingest UI API status mismatch",
+    )
+    require(gate["required_evidence_count"] == 6, "P024 owner repair ingest UI evidence count mismatch")
+    require(gate["update_count"] == 5, "P024 owner repair ingest UI update count mismatch")
+    require(gate["reject_rule_count"] == 6, "P024 owner repair ingest UI reject count mismatch")
+    require(gate["runtime_retry_allowed"] is False, "P024 owner repair ingest UI retry mismatch")
+    require(gate["runtime_evidence_allowed"] is False, "P024 owner repair ingest UI runtime evidence mismatch")
+    require(gate["owner_repair_evidence_recorded"] is False, "P024 owner repair ingest UI recorded mismatch")
+    require(gate["full_acceptance_claimed"] is False, "P024 owner repair ingest UI full claim mismatch")
+    checks = payload["browser_checks"]
+    for key in [
+        "ingest_gate_panel_visible",
+        "runtime_retry_displayed_false",
+        "runtime_evidence_displayed_false",
+        "required_evidence_displayed",
+        "update_items_displayed",
+        "reject_rules_displayed",
+        "owner_repair_evidence_recorded_displayed_false",
+        "full_acceptance_claimed_displayed_false",
+        "sensitive_endpoint_wording_absent",
+    ]:
+        require(checks[key] is True, f"P024 owner repair ingest UI check mismatch: {key}")
+    screenshot_refs = payload.get("browser_evidence") or []
+    require(screenshot_refs, "P024 owner repair ingest UI screenshot ref missing")
+
+
 def validate_p024_runtime_execution_gap_audit() -> None:
     payload = load_json(P024_RUNTIME_EXECUTION_GAP_AUDIT)
     require(
@@ -2185,6 +2244,7 @@ def main() -> None:
     validate_p024_partial_fill_owner_repair_implementation_plan()
     validate_p024_partial_fill_owner_repair_plan_ui_evidence()
     validate_p024_partial_fill_owner_repair_evidence_ingest_gate()
+    validate_p024_partial_fill_owner_repair_ingest_gate_ui_evidence()
     validate_p024_runtime_execution_gap_audit()
     validate_p024_runtime_execution_gap_ui_evidence()
     validate_p024_full_acceptance_closeout()
@@ -2200,7 +2260,7 @@ def main() -> None:
     validate_backend_command_routes_are_p024_only()
     print(
         "P024_PAPER_COMMAND_CONTROLS_DESIGN_OK: "
-        "status=phase4t_owner_repair_evidence_ingest_gate_ready current_ui_command=guarded runtime_closeout=browser_projection_passed partial_fill_cancel_ui=browser_contract_passed runtime_handoff=browser_handoff_passed runtime_invocation_readiness=blocked_by_external_approval runtime_readiness_ui=browser_projection_passed full_closeout=residual_blocker_audit_passed approval_packet=ready_runtime_not_invoked runtime_approval_packet_ui=browser_projection_passed handoff_bundle=ready_runtime_not_invoked runtime_handoff_bundle_ui=browser_projection_passed runtime_execution_gap=blocked_final_claim_false partial_fill_runtime=blocked_until_owner_runtime_partial_fill_state_available partial_fill_artifact_scan=no_qualifying_candidate partial_fill_approval=ready_runtime_not_invoked partial_fill_approval_ui=browser_projection_passed partial_fill_handoff=ready_runtime_not_invoked partial_fill_handoff_ui=browser_projection_passed partial_fill_attempt=rejected_before_partial_fill_not_partial_fill close_yesterday_owner_rule_gap=blocked_retry_not_authorized owner_repair_approval=required_before_retry remaining_acceptance=owner_repair_and_real_partial_fill_missing owner_repair_plan=ready_no_owner_write owner_repair_plan_ui=browser_projection_passed owner_repair_ingest_gate=ready_missing_evidence"
+        "status=phase4u_owner_repair_ingest_gate_ui_projection_passed current_ui_command=guarded runtime_closeout=browser_projection_passed partial_fill_cancel_ui=browser_contract_passed runtime_handoff=browser_handoff_passed runtime_invocation_readiness=blocked_by_external_approval runtime_readiness_ui=browser_projection_passed full_closeout=residual_blocker_audit_passed approval_packet=ready_runtime_not_invoked runtime_approval_packet_ui=browser_projection_passed handoff_bundle=ready_runtime_not_invoked runtime_handoff_bundle_ui=browser_projection_passed runtime_execution_gap=blocked_final_claim_false partial_fill_runtime=blocked_until_owner_runtime_partial_fill_state_available partial_fill_artifact_scan=no_qualifying_candidate partial_fill_approval=ready_runtime_not_invoked partial_fill_approval_ui=browser_projection_passed partial_fill_handoff=ready_runtime_not_invoked partial_fill_handoff_ui=browser_projection_passed partial_fill_attempt=rejected_before_partial_fill_not_partial_fill close_yesterday_owner_rule_gap=blocked_retry_not_authorized owner_repair_approval=required_before_retry remaining_acceptance=owner_repair_and_real_partial_fill_missing owner_repair_plan=ready_no_owner_write owner_repair_plan_ui=browser_projection_passed owner_repair_ingest_gate=ready_missing_evidence owner_repair_ingest_gate_ui=browser_projection_passed"
     )
 
 

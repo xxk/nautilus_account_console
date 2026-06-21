@@ -1,0 +1,35 @@
+{
+  "schema": "account-console.p024.partial-fill-owner-repair-ingest-gate-ui.v1",
+  "proposal_id": "p024-account-console-paper-command-controls",
+  "account_id": "acct.ctp.paper.19053",
+  "route": "/accounts/acct.ctp.paper.19053",
+  "verdict": "pass",
+  "api_owner_repair_ingest_gate": {
+    "schema": "account-console.p024.partial-fill-owner-repair-evidence-ingest-gate.v1",
+    "status": "phase4t_owner_repair_evidence_ingest_gate_ready",
+    "verdict": "ingest_gate_ready_owner_repair_evidence_missing",
+    "required_evidence_count": 6,
+    "update_count": 5,
+    "reject_rule_count": 6,
+    "runtime_retry_allowed": false,
+    "runtime_evidence_allowed": false,
+    "owner_repair_evidence_recorded": false,
+    "full_acceptance_claimed": false
+  },
+  "browser_checks": {
+    "ingest_gate_panel_visible": true,
+    "runtime_retry_displayed_false": true,
+    "runtime_evidence_displayed_false": true,
+    "required_evidence_displayed": true,
+    "update_items_displayed": true,
+    "reject_rules_displayed": true,
+    "owner_repair_evidence_recorded_displayed_false": true,
+    "full_acceptance_claimed_displayed_false": true,
+    "sensitive_endpoint_wording_absent": true
+  },
+  "browser_evidence": [
+    {
+      "screenshot": "docs/acceptance/browser-evidence/p024-account-console-paper-command-controls/p024-partial-fill-owner-repair-ingest-gate-ui.png"
+    }
+  ]
+}

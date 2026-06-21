@@ -12,6 +12,7 @@ from .command_api import (
     accept_cancel_intent,
     accept_submit_intent,
     load_partial_fill_owner_repair_implementation_plan,
+    load_partial_fill_owner_repair_evidence_ingest_gate,
     load_partial_fill_runtime_execution_approval_packet,
     load_partial_fill_runtime_execution_handoff_bundle,
     load_runtime_execution_approval_packet,
@@ -34,6 +35,7 @@ from .schemas import (
     AccountSnapshot,
     CancelIntentRequest,
     CommandApiResult,
+    CommandPartialFillOwnerRepairEvidenceIngestGate,
     CommandPartialFillOwnerRepairImplementationPlan,
     CommandPartialFillRuntimeExecutionApprovalPacket,
     CommandPartialFillRuntimeExecutionHandoffBundle,
@@ -330,6 +332,17 @@ def command_partial_fill_owner_repair_implementation_plan(
     account_id: str,
 ) -> CommandPartialFillOwnerRepairImplementationPlan:
     return load_partial_fill_owner_repair_implementation_plan(account_id)
+
+
+@app.get(
+    "/api/commands/accounts/{account_id}/partial-fill-owner-repair-evidence-ingest-gate",
+    response_model=CommandPartialFillOwnerRepairEvidenceIngestGate,
+    response_model_exclude_none=True,
+)
+def command_partial_fill_owner_repair_evidence_ingest_gate(
+    account_id: str,
+) -> CommandPartialFillOwnerRepairEvidenceIngestGate:
+    return load_partial_fill_owner_repair_evidence_ingest_gate(account_id)
 
 
 @app.get("/api/accounts/{account_id}", response_model=AccountDetail)

@@ -89,6 +89,7 @@ import type {
   AccountKind,
   CancelIntentRequest,
   CommandApiResult,
+  CommandPartialFillOwnerRepairEvidenceIngestGate,
   CommandPartialFillOwnerRepairImplementationPlan,
   CommandPartialFillRuntimeExecutionApprovalPacket,
   CommandPartialFillRuntimeExecutionHandoffBundle,
@@ -128,6 +129,7 @@ import type {
 } from "./types";
 import {
   cancelPaperOrderIntent,
+  fetchCommandPartialFillOwnerRepairEvidenceIngestGate,
   fetchCommandPartialFillOwnerRepairImplementationPlan,
   fetchCommandPartialFillRuntimeExecutionApprovalPacket,
   fetchCommandPartialFillRuntimeExecutionHandoffBundle,
@@ -1517,6 +1519,10 @@ function AccountWorkbenchTerminalPanel({
   const [partialFillOwnerRepairPlan, setPartialFillOwnerRepairPlan] =
     useState<CommandPartialFillOwnerRepairImplementationPlan | null>(null);
   const [partialFillOwnerRepairPlanError, setPartialFillOwnerRepairPlanError] = useState<string | null>(null);
+  const [partialFillOwnerRepairIngestGate, setPartialFillOwnerRepairIngestGate] =
+    useState<CommandPartialFillOwnerRepairEvidenceIngestGate | null>(null);
+  const [partialFillOwnerRepairIngestGateError, setPartialFillOwnerRepairIngestGateError] =
+    useState<string | null>(null);
   const [runtimeCloseout, setRuntimeCloseout] = useState<CommandRuntimeCloseout | null>(null);
   const [runtimeCloseoutError, setRuntimeCloseoutError] = useState<string | null>(null);
   const paperArmed = isP024PaperArmed(mirrorReadback);
@@ -1615,6 +1621,8 @@ function AccountWorkbenchTerminalPanel({
       setRuntimeExecutionGapAuditError(null);
       setPartialFillOwnerRepairPlan(null);
       setPartialFillOwnerRepairPlanError(null);
+      setPartialFillOwnerRepairIngestGate(null);
+      setPartialFillOwnerRepairIngestGateError(null);
       return;
     }
     let active = true;
@@ -1627,7 +1635,8 @@ function AccountWorkbenchTerminalPanel({
         partialFillApprovalResult,
         partialFillHandoffResult,
         gapAuditResult,
-        ownerRepairPlanResult
+        ownerRepairPlanResult,
+        ownerRepairIngestGateResult
       ] =
         await Promise.allSettled([
           fetchCommandRuntimeCloseout(summary.account.account_id),
@@ -1637,7 +1646,8 @@ function AccountWorkbenchTerminalPanel({
           fetchCommandPartialFillRuntimeExecutionApprovalPacket(summary.account.account_id),
           fetchCommandPartialFillRuntimeExecutionHandoffBundle(summary.account.account_id),
           fetchCommandRuntimeExecutionGapAudit(summary.account.account_id),
-          fetchCommandPartialFillOwnerRepairImplementationPlan(summary.account.account_id)
+          fetchCommandPartialFillOwnerRepairImplementationPlan(summary.account.account_id),
+          fetchCommandPartialFillOwnerRepairEvidenceIngestGate(summary.account.account_id)
         ]);
       if (!active) {
         return;
@@ -1725,6 +1735,17 @@ function AccountWorkbenchTerminalPanel({
             : "partial-fill owner repair plan unavailable";
         setPartialFillOwnerRepairPlan(null);
         setPartialFillOwnerRepairPlanError(message);
+      }
+      if (ownerRepairIngestGateResult.status === "fulfilled") {
+        setPartialFillOwnerRepairIngestGate(ownerRepairIngestGateResult.value);
+        setPartialFillOwnerRepairIngestGateError(null);
+      } else {
+        const message =
+          ownerRepairIngestGateResult.reason instanceof Error
+            ? ownerRepairIngestGateResult.reason.message
+            : "partial-fill owner repair ingest gate unavailable";
+        setPartialFillOwnerRepairIngestGate(null);
+        setPartialFillOwnerRepairIngestGateError(message);
       }
     }
     void loadRuntimeEvidence();
@@ -2589,6 +2610,11 @@ function AccountWorkbenchTerminalPanel({
           <CommandPartialFillOwnerRepairImplementationPlanPanel
             error={partialFillOwnerRepairPlanError}
             plan={partialFillOwnerRepairPlan}
+          />
+
+          <CommandPartialFillOwnerRepairEvidenceIngestGatePanel
+            error={partialFillOwnerRepairIngestGateError}
+            gate={partialFillOwnerRepairIngestGate}
           />
 
           <CommandRuntimeCloseoutPanel closeout={runtimeCloseout} error={runtimeCloseoutError} />
@@ -5380,6 +5406,103 @@ function CommandPartialFillOwnerRepairImplementationPlanPanel({
         </div>
       ) : (
         <p className="muted">No partial-fill owner repair plan is mounted for this account.</p>
+      )}
+    </section>
+  );
+}
+
+function CommandPartialFillOwnerRepairEvidenceIngestGatePanel({
+  gate,
+  error
+}: {
+  gate: CommandPartialFillOwnerRepairEvidenceIngestGate | null;
+  error: string | null;
+}) {
+  return (
+    <section className="terminal-panel" data-testid="account-partial-fill-owner-repair-ingest-gate-panel">
+      <div className="terminal-panel-header">
+        <h3>Repair Evidence Ingest</h3>
+        <StateBadge value={gate ? "blocked" : error ? "blocked" : "empty"} />
+      </div>
+      {gate ? (
+        <div className="evidence-stack compact-evidence-stack">
+          <div className="evidence-item">
+            <strong>Status</strong>
+            <span data-testid="account-partial-fill-owner-repair-ingest-gate-status">{gate.status}</span>
+          </div>
+          <div className="evidence-item">
+            <strong>Verdict</strong>
+            <span data-testid="account-partial-fill-owner-repair-ingest-gate-verdict">{gate.verdict}</span>
+          </div>
+          <div className="evidence-item">
+            <strong>Owner path</strong>
+            <span data-testid="account-partial-fill-owner-repair-ingest-gate-owner-path">
+              {gate.ingest_scope.owner_repo_path}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Runtime retry</strong>
+            <span data-testid="account-partial-fill-owner-repair-ingest-gate-runtime-retry">
+              {String(gate.ingest_scope.runtime_retry_allowed_by_ingest_gate)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Runtime evidence</strong>
+            <span data-testid="account-partial-fill-owner-repair-ingest-gate-runtime-evidence">
+              {String(gate.ingest_scope.accepts_owner_runtime_partial_fill_evidence)}
+            </span>
+          </div>
+          {gate.required_owner_repair_evidence.map((item) => (
+            <div
+              className="evidence-item"
+              data-testid="account-partial-fill-owner-repair-ingest-gate-required"
+              key={item.evidence_id}
+            >
+              <strong>{item.evidence_id}</strong>
+              <span>
+                {item.current_status} / {item.required_shape}
+              </span>
+            </div>
+          ))}
+          {gate.post_ingest_required_account_console_updates.map((item) => (
+            <div
+              className="evidence-item"
+              data-testid="account-partial-fill-owner-repair-ingest-gate-update"
+              key={item}
+            >
+              <strong>Update</strong>
+              <span>{item}</span>
+            </div>
+          ))}
+          {gate.reject_evidence_if.map((item) => (
+            <div
+              className="evidence-item"
+              data-testid="account-partial-fill-owner-repair-ingest-gate-reject"
+              key={item}
+            >
+              <strong>Reject</strong>
+              <span>{item}</span>
+            </div>
+          ))}
+          <div className="evidence-item">
+            <strong>Repair evidence</strong>
+            <span data-testid="account-partial-fill-owner-repair-ingest-gate-evidence-recorded">
+              {String(gate.negative_assertions.owner_repair_evidence_recorded)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Full acceptance</strong>
+            <span data-testid="account-partial-fill-owner-repair-ingest-gate-full-claimed">
+              {String(gate.negative_assertions.full_acceptance_claimed)}
+            </span>
+          </div>
+        </div>
+      ) : error ? (
+        <div className="state-callout blocked" data-testid="account-partial-fill-owner-repair-ingest-gate-error">
+          {error}
+        </div>
+      ) : (
+        <p className="muted">No partial-fill owner repair evidence ingest gate is mounted for this account.</p>
       )}
     </section>
   );

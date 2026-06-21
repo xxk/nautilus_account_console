@@ -1,7 +1,7 @@
 # P024 Phase Plan / Account Console Paper Command Controls
 
 - Proposal ID: `p024-account-console-paper-command-controls`
-- Status: phase4t_owner_repair_evidence_ingest_gate_ready
+- Status: phase4u_owner_repair_ingest_gate_ui_projection_passed
 - Primary ADR: ADR-0007
 
 ## Artifact Trust Boundary
@@ -40,7 +40,7 @@ Primary ADR: ADR-0007
 <!-- AI-PHASE-STATUS-BEGIN
 reviewed_at: 2026-06-21
 reviewer: codex
-overall_status: phase4t_owner_repair_evidence_ingest_gate_ready
+overall_status: phase4u_owner_repair_ingest_gate_ui_projection_passed
 phases:
   - id: phase_0_design_gate
     status: completed
@@ -142,6 +142,10 @@ phases:
     status: ingest_gate_ready_owner_repair_evidence_missing
     ai_progress: 100
     evidence: "python scripts\\validate_p024_partial_fill_owner_repair_evidence_ingest_gate.py"
+  - id: phase_4u_owner_repair_ingest_gate_ui_projection
+    status: completed_browser_owner_repair_ingest_projection_gate
+    ai_progress: 100
+    evidence: "npx playwright test tests/e2e/p024-partial-fill-owner-repair-ingest-gate.spec.ts --project=desktop; python scripts\\validate_p024_partial_fill_owner_repair_ingest_gate_browser_evidence.py"
 AI-PHASE-STATUS-END -->
 
 ## Phase Status Board
@@ -177,6 +181,7 @@ AI-PHASE-STATUS-END -->
 | Phase 4r Owner close-offset repair implementation plan | Plan the exact owner guarded-loop predicate, wording and focused test changes for CLOSEYESTERDAY offset 4 while no owner write is attempted | owner_repair_plan_ready_no_owner_write | `python scripts\validate_p024_partial_fill_owner_repair_implementation_plan.py` | After exact owner repair approval, implement the planned owner patch and run owner validators before any runtime retry |
 | Phase 4s Owner repair plan UI projection | Render the phase4r plan in Web UI with owner path, CLOSEYESTERDAY source gap, planned changes, validators and no-write/no-retry flags | completed_browser_owner_repair_plan_projection_gate | `npx playwright test tests/e2e/p024-partial-fill-owner-repair-plan.spec.ts --project=desktop`; `python scripts\validate_p024_partial_fill_owner_repair_plan_browser_evidence.py` | Obtain exact owner repair approval before implementing the planned owner patch |
 | Phase 4t Owner repair evidence ingest gate | Freeze owner repair evidence intake requirements for owner commit, source checksums, focused tests, owner validators and account-console follow-up audit | ingest_gate_ready_owner_repair_evidence_missing | `python scripts\validate_p024_partial_fill_owner_repair_evidence_ingest_gate.py` | After exact owner repair approval and owner patch, record evidence against this gate before any runtime retry |
+| Phase 4u Owner repair ingest gate UI projection | Render the phase4t ingest gate in Web UI with required repair evidence, post-ingest updates, reject rules and no-retry/no-full-acceptance flags | completed_browser_owner_repair_ingest_projection_gate | `npx playwright test tests/e2e/p024-partial-fill-owner-repair-ingest-gate.spec.ts --project=desktop`; `python scripts\validate_p024_partial_fill_owner_repair_ingest_gate_browser_evidence.py` | After owner repair evidence exists, ingest it through this gate and then update account-console acceptance packets |
 
 ## Runtime / Command Freeze
 
@@ -212,6 +217,7 @@ Phase 0 does not run broker mutation. Phase 1 may add API contracts but must not
 26. Phase 4r owner close-offset repair implementation plan is ready; `P024_PARTIAL_FILL_OWNER_REPAIR_IMPLEMENTATION_PLAN_OK` proves the owner patch target is `build_close_offset_owner_rule_semantics`, the missing focused case is CLOSEYESTERDAY offset 4 versus rejected OnRspOrderInsert offset 1, and no owner write or runtime retry is authorized by the plan.
 27. Phase 4s owner repair plan UI projection is complete; `P024_PARTIAL_FILL_OWNER_REPAIR_PLAN_BROWSER_EVIDENCE_OK` proves the plan renders in Web UI while owner write, runtime retry, partial-fill claim and full acceptance claim remain false.
 28. Phase 4t owner repair evidence ingest gate is ready; `P024_PARTIAL_FILL_OWNER_REPAIR_EVIDENCE_INGEST_GATE_OK` proves the post-repair commit/checksum/validator evidence shape is frozen while owner repair evidence remains missing and runtime retry remains false.
+29. Phase 4u owner repair ingest gate UI projection is complete; `P024_PARTIAL_FILL_OWNER_REPAIR_INGEST_GATE_BROWSER_EVIDENCE_OK` proves the owner repair evidence intake requirements render in Web UI while repair evidence, runtime retry and full acceptance remain false.
 
 
 

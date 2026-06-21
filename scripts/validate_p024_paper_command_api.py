@@ -28,6 +28,7 @@ ALLOWED_COMMAND_ROUTES = {
     "/api/commands/accounts/{account_id}/partial-fill-runtime-execution-handoff-bundle": {"GET"},
     "/api/commands/accounts/{account_id}/runtime-execution-gap-audit": {"GET"},
     "/api/commands/accounts/{account_id}/partial-fill-owner-repair-implementation-plan": {"GET"},
+    "/api/commands/accounts/{account_id}/partial-fill-owner-repair-evidence-ingest-gate": {"GET"},
 }
 
 
@@ -350,6 +351,35 @@ def validate_api_behavior() -> None:
         "partial-fill owner repair plan claim mismatch",
     )
 
+    ingest_gate_response = client.get(
+        f"/api/commands/accounts/{ACCOUNT_ID}/partial-fill-owner-repair-evidence-ingest-gate"
+    )
+    require(
+        ingest_gate_response.status_code == 200,
+        f"partial-fill owner repair ingest gate status mismatch: {ingest_gate_response.status_code}",
+    )
+    ingest_gate_payload = ingest_gate_response.json()
+    require(
+        ingest_gate_payload["schema"] == "account-console.p024.partial-fill-owner-repair-evidence-ingest-gate.v1",
+        "partial-fill owner repair ingest gate schema mismatch",
+    )
+    require(
+        ingest_gate_payload["status"] == "phase4t_owner_repair_evidence_ingest_gate_ready",
+        "partial-fill owner repair ingest gate status mismatch",
+    )
+    require(
+        ingest_gate_payload["ingest_scope"]["runtime_retry_allowed_by_ingest_gate"] is False,
+        "partial-fill owner repair ingest gate retry flag mismatch",
+    )
+    require(
+        len(ingest_gate_payload["required_owner_repair_evidence"]) == 6,
+        "partial-fill owner repair ingest gate evidence count mismatch",
+    )
+    require(
+        ingest_gate_payload["negative_assertions"]["owner_repair_evidence_recorded"] is False,
+        "partial-fill owner repair ingest gate recorded flag mismatch",
+    )
+
     live_intent = submit_intent()
     live_intent["mode"] = "live_armed"
     live_response = client.post(f"/api/commands/accounts/{ACCOUNT_ID}/submit-intents", json=live_intent)
@@ -364,7 +394,7 @@ def main() -> None:
     validate_api_behavior()
     print(
         "P024_PAPER_COMMAND_API_OK: "
-        "phase=1 routes=12 status=accepted_for_risk runtime_handoff=blocked runtime_closeout=reconciled runtime_readiness=blocked runtime_approval_packet=ready runtime_handoff_bundle=ready partial_fill_runtime_approval_packet=ready partial_fill_runtime_handoff_bundle=ready runtime_execution_gap=blocked owner_repair_plan=ready mirror_read_only=true"
+        "phase=1 routes=13 status=accepted_for_risk runtime_handoff=blocked runtime_closeout=reconciled runtime_readiness=blocked runtime_approval_packet=ready runtime_handoff_bundle=ready partial_fill_runtime_approval_packet=ready partial_fill_runtime_handoff_bundle=ready runtime_execution_gap=blocked owner_repair_plan=ready owner_repair_ingest_gate=ready mirror_read_only=true"
     )
 
 

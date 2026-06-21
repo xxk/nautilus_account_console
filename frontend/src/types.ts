@@ -707,6 +707,46 @@ export interface CommandPartialFillOwnerRepairImplementationPlan {
   };
 }
 
+export interface CommandPartialFillOwnerRepairEvidenceIngestGate {
+  schema: "account-console.p024.partial-fill-owner-repair-evidence-ingest-gate.v1";
+  proposal_id: "p024-account-console-paper-command-controls";
+  account_id: "acct.ctp.paper.19053";
+  reviewed_at: string;
+  status: "phase4t_owner_repair_evidence_ingest_gate_ready";
+  verdict: "ingest_gate_ready_owner_repair_evidence_missing";
+  depends_on: Record<string, unknown>;
+  ingest_scope: {
+    owner_repo_ref: string;
+    owner_repo_path: string;
+    raw_secret_values_allowed: false;
+    raw_broker_endpoint_allowed: false;
+    config_raw_content_allowed: false;
+    runtime_retry_allowed_by_ingest_gate: false;
+    accepts_owner_code_repair_evidence: true;
+    accepts_owner_runtime_partial_fill_evidence: false;
+  };
+  required_owner_repair_evidence: Array<{
+    evidence_id: string;
+    required_shape: string;
+    current_status: "missing";
+    must_include: string[];
+  }>;
+  post_ingest_required_account_console_updates: string[];
+  reject_evidence_if: string[];
+  negative_assertions: {
+    owner_repair_evidence_recorded: false;
+    owner_repo_write_attempted_by_this_gate: false;
+    owner_runtime_invocation_attempted: false;
+    runtime_retry_authorized: false;
+    partial_fill_runtime_claimed: false;
+    web_ui_real_partial_fill_claimed: false;
+    full_acceptance_claimed: false;
+    raw_secret_values_recorded: false;
+    raw_broker_endpoint_recorded: false;
+    config_raw_content_recorded: false;
+  };
+}
+
 export type AccountHealthPanelFixtureState =
   | "happy_path"
   | "empty"

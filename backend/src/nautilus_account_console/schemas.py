@@ -447,6 +447,23 @@ class CommandPartialFillOwnerRepairImplementationPlan(BaseModel):
     negative_assertions: dict
 
 
+class CommandPartialFillOwnerRepairEvidenceIngestGate(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    schema_: Literal["account-console.p024.partial-fill-owner-repair-evidence-ingest-gate.v1"] = Field(alias="schema")
+    proposal_id: Literal["p024-account-console-paper-command-controls"]
+    account_id: Literal["acct.ctp.paper.19053"]
+    reviewed_at: str
+    status: Literal["phase4t_owner_repair_evidence_ingest_gate_ready"]
+    verdict: Literal["ingest_gate_ready_owner_repair_evidence_missing"]
+    depends_on: dict
+    ingest_scope: dict
+    required_owner_repair_evidence: list[dict]
+    post_ingest_required_account_console_updates: list[str]
+    reject_evidence_if: list[str]
+    negative_assertions: dict
+
+
 class Health(BaseModel):
     ok: bool
     service: str
