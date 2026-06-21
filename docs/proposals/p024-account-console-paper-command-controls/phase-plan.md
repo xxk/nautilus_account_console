@@ -1,7 +1,7 @@
 # P024 Phase Plan / Account Console Paper Command Controls
 
 - Proposal ID: `p024-account-console-paper-command-controls`
-- Status: phase4w_owner_repair_preflight_ui_projection_passed
+- Status: phase4x_owner_repair_patch_preview_ready
 - Primary ADR: ADR-0007
 
 ## Artifact Trust Boundary
@@ -40,7 +40,7 @@ Primary ADR: ADR-0007
 <!-- AI-PHASE-STATUS-BEGIN
 reviewed_at: 2026-06-21
 reviewer: codex
-overall_status: phase4w_owner_repair_preflight_ui_projection_passed
+overall_status: phase4x_owner_repair_patch_preview_ready
 phases:
   - id: phase_0_design_gate
     status: completed
@@ -154,6 +154,10 @@ phases:
     status: completed_browser_owner_repair_preflight_projection_gate
     ai_progress: 100
     evidence: "npx playwright test tests/e2e/p024-partial-fill-owner-repair-preflight.spec.ts --project=desktop; python scripts\\validate_p024_partial_fill_owner_repair_preflight_browser_evidence.py"
+  - id: phase_4x_owner_repair_patch_preview
+    status: patch_preview_ready_owner_write_not_authorized
+    ai_progress: 100
+    evidence: "python scripts\\validate_p024_partial_fill_owner_repair_patch_preview.py"
 AI-PHASE-STATUS-END -->
 
 ## Phase Status Board
@@ -192,6 +196,7 @@ AI-PHASE-STATUS-END -->
 | Phase 4u Owner repair ingest gate UI projection | Render the phase4t ingest gate in Web UI with required repair evidence, post-ingest updates, reject rules and no-retry/no-full-acceptance flags | completed_browser_owner_repair_ingest_projection_gate | `npx playwright test tests/e2e/p024-partial-fill-owner-repair-ingest-gate.spec.ts --project=desktop`; `python scripts\validate_p024_partial_fill_owner_repair_ingest_gate_browser_evidence.py` | After owner repair evidence exists, ingest it through this gate and then update account-console acceptance packets |
 | Phase 4v Owner repair preflight source audit | Read current owner source checksums and prove the scripts-only approval cannot be treated as owner code repair or runtime retry authority | owner_repair_still_required_before_runtime_retry | `python scripts\validate_p024_partial_fill_owner_repair_preflight_source_audit.py` | Obtain exact owner repair approval, then repair CLOSEYESTERDAY offset 4 semantics and run owner validators |
 | Phase 4w Owner repair preflight UI projection | Render the phase4v read-only source audit in Web UI with owner checksum refs, approval insufficiency and blind-retry rejection | completed_browser_owner_repair_preflight_projection_gate | `npx playwright test tests/e2e/p024-partial-fill-owner-repair-preflight.spec.ts --project=desktop`; `python scripts\validate_p024_partial_fill_owner_repair_preflight_browser_evidence.py` | Obtain exact owner repair approval before owner code repair or runtime retry |
+| Phase 4x Owner repair patch preview | Freeze the exact owner source/test patch shape for CLOSEYESTERDAY offset 4 semantics while no owner write is attempted | patch_preview_ready_owner_write_not_authorized | `python scripts\validate_p024_partial_fill_owner_repair_patch_preview.py` | Apply the preview only after exact owner repair approval, then run owner validators and ingest evidence |
 
 ## Runtime / Command Freeze
 
@@ -230,6 +235,7 @@ Phase 0 does not run broker mutation. Phase 1 may add API contracts but must not
 29. Phase 4u owner repair ingest gate UI projection is complete; `P024_PARTIAL_FILL_OWNER_REPAIR_INGEST_GATE_BROWSER_EVIDENCE_OK` proves the owner repair evidence intake requirements render in Web UI while repair evidence, runtime retry and full acceptance remain false.
 30. Phase 4v owner repair preflight source audit is complete; `P024_PARTIAL_FILL_OWNER_REPAIR_PREFLIGHT_SOURCE_AUDIT_OK` proves current owner source checksums still require CLOSEYESTERDAY offset 4 repair evidence and a scripts-only approval must not trigger a blind retry.
 31. Phase 4w owner repair preflight UI projection is complete; `P024_PARTIAL_FILL_OWNER_REPAIR_PREFLIGHT_BROWSER_EVIDENCE_OK` proves the source audit renders in Web UI while owner write, runtime invocation, repair approval and full acceptance remain false.
+32. Phase 4x owner repair patch preview is ready; `P024_PARTIAL_FILL_OWNER_REPAIR_PATCH_PREVIEW_OK` proves the intended CLOSEYESTERDAY offset 4 owner source/test patch shape is frozen while owner write, runtime retry and full acceptance remain false.
 
 
 

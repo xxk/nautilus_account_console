@@ -1,7 +1,7 @@
 # P024 UI Design / Paper Command Controls
 
 - Proposal ID: `p024-account-console-paper-command-controls`
-- Status: phase4w_owner_repair_preflight_ui_projection_passed
+- Status: phase4x_owner_repair_patch_preview_ready
 
 ## Design Intent
 
