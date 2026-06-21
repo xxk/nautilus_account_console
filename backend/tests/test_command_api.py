@@ -432,6 +432,26 @@ def test_partial_fill_owner_repair_ingest_gate_projects_missing_evidence() -> No
     assert payload["negative_assertions"]["full_acceptance_claimed"] is False
 
 
+def test_partial_fill_owner_repair_preflight_source_audit_projects_blind_retry_rejected() -> None:
+    client = TestClient(app)
+    response = client.get(
+        "/api/commands/accounts/acct.ctp.paper.19053/partial-fill-owner-repair-preflight-source-audit"
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["schema"] == "account-console.p024.partial-fill-owner-repair-preflight-source-audit.v1"
+    assert payload["status"] == "phase4v_owner_repair_preflight_source_audited"
+    assert payload["verdict"] == "owner_repair_still_required_before_runtime_retry"
+    assert payload["owner_repo"]["write_attempted_by_audit"] is False
+    assert len(payload["source_checks"]) == 3
+    assert payload["operator_approval_delta"]["sufficient_for_owner_code_repair"] is False
+    assert payload["operator_approval_delta"]["sufficient_for_post_repair_runtime_retry"] is False
+    assert payload["next_required_action"]["blind_script_retry_rejected"] is True
+    assert payload["negative_assertions"]["owner_runtime_invocation_attempted"] is False
+    assert payload["negative_assertions"]["full_acceptance_claimed"] is False
+
+
 def test_command_api_rejects_live_mode_and_account_mismatch() -> None:
     client = TestClient(app)
     live = deepcopy(submit_intent())

@@ -91,6 +91,7 @@ import type {
   CommandApiResult,
   CommandPartialFillOwnerRepairEvidenceIngestGate,
   CommandPartialFillOwnerRepairImplementationPlan,
+  CommandPartialFillOwnerRepairPreflightSourceAudit,
   CommandPartialFillRuntimeExecutionApprovalPacket,
   CommandPartialFillRuntimeExecutionHandoffBundle,
   CommandRuntimeCloseout,
@@ -131,6 +132,7 @@ import {
   cancelPaperOrderIntent,
   fetchCommandPartialFillOwnerRepairEvidenceIngestGate,
   fetchCommandPartialFillOwnerRepairImplementationPlan,
+  fetchCommandPartialFillOwnerRepairPreflightSourceAudit,
   fetchCommandPartialFillRuntimeExecutionApprovalPacket,
   fetchCommandPartialFillRuntimeExecutionHandoffBundle,
   fetchCommandRuntimeExecutionApprovalPacket,
@@ -1523,6 +1525,10 @@ function AccountWorkbenchTerminalPanel({
     useState<CommandPartialFillOwnerRepairEvidenceIngestGate | null>(null);
   const [partialFillOwnerRepairIngestGateError, setPartialFillOwnerRepairIngestGateError] =
     useState<string | null>(null);
+  const [partialFillOwnerRepairPreflight, setPartialFillOwnerRepairPreflight] =
+    useState<CommandPartialFillOwnerRepairPreflightSourceAudit | null>(null);
+  const [partialFillOwnerRepairPreflightError, setPartialFillOwnerRepairPreflightError] =
+    useState<string | null>(null);
   const [runtimeCloseout, setRuntimeCloseout] = useState<CommandRuntimeCloseout | null>(null);
   const [runtimeCloseoutError, setRuntimeCloseoutError] = useState<string | null>(null);
   const paperArmed = isP024PaperArmed(mirrorReadback);
@@ -1623,6 +1629,8 @@ function AccountWorkbenchTerminalPanel({
       setPartialFillOwnerRepairPlanError(null);
       setPartialFillOwnerRepairIngestGate(null);
       setPartialFillOwnerRepairIngestGateError(null);
+      setPartialFillOwnerRepairPreflight(null);
+      setPartialFillOwnerRepairPreflightError(null);
       return;
     }
     let active = true;
@@ -1636,7 +1644,8 @@ function AccountWorkbenchTerminalPanel({
         partialFillHandoffResult,
         gapAuditResult,
         ownerRepairPlanResult,
-        ownerRepairIngestGateResult
+        ownerRepairIngestGateResult,
+        ownerRepairPreflightResult
       ] =
         await Promise.allSettled([
           fetchCommandRuntimeCloseout(summary.account.account_id),
@@ -1647,7 +1656,8 @@ function AccountWorkbenchTerminalPanel({
           fetchCommandPartialFillRuntimeExecutionHandoffBundle(summary.account.account_id),
           fetchCommandRuntimeExecutionGapAudit(summary.account.account_id),
           fetchCommandPartialFillOwnerRepairImplementationPlan(summary.account.account_id),
-          fetchCommandPartialFillOwnerRepairEvidenceIngestGate(summary.account.account_id)
+          fetchCommandPartialFillOwnerRepairEvidenceIngestGate(summary.account.account_id),
+          fetchCommandPartialFillOwnerRepairPreflightSourceAudit(summary.account.account_id)
         ]);
       if (!active) {
         return;
@@ -1746,6 +1756,17 @@ function AccountWorkbenchTerminalPanel({
             : "partial-fill owner repair ingest gate unavailable";
         setPartialFillOwnerRepairIngestGate(null);
         setPartialFillOwnerRepairIngestGateError(message);
+      }
+      if (ownerRepairPreflightResult.status === "fulfilled") {
+        setPartialFillOwnerRepairPreflight(ownerRepairPreflightResult.value);
+        setPartialFillOwnerRepairPreflightError(null);
+      } else {
+        const message =
+          ownerRepairPreflightResult.reason instanceof Error
+            ? ownerRepairPreflightResult.reason.message
+            : "partial-fill owner repair preflight source audit unavailable";
+        setPartialFillOwnerRepairPreflight(null);
+        setPartialFillOwnerRepairPreflightError(message);
       }
     }
     void loadRuntimeEvidence();
@@ -2615,6 +2636,11 @@ function AccountWorkbenchTerminalPanel({
           <CommandPartialFillOwnerRepairEvidenceIngestGatePanel
             error={partialFillOwnerRepairIngestGateError}
             gate={partialFillOwnerRepairIngestGate}
+          />
+
+          <CommandPartialFillOwnerRepairPreflightSourceAuditPanel
+            audit={partialFillOwnerRepairPreflight}
+            error={partialFillOwnerRepairPreflightError}
           />
 
           <CommandRuntimeCloseoutPanel closeout={runtimeCloseout} error={runtimeCloseoutError} />
@@ -5503,6 +5529,99 @@ function CommandPartialFillOwnerRepairEvidenceIngestGatePanel({
         </div>
       ) : (
         <p className="muted">No partial-fill owner repair evidence ingest gate is mounted for this account.</p>
+      )}
+    </section>
+  );
+}
+
+function CommandPartialFillOwnerRepairPreflightSourceAuditPanel({
+  audit,
+  error
+}: {
+  audit: CommandPartialFillOwnerRepairPreflightSourceAudit | null;
+  error: string | null;
+}) {
+  return (
+    <section className="terminal-panel" data-testid="account-partial-fill-owner-repair-preflight-panel">
+      <div className="terminal-panel-header">
+        <h3>Repair Preflight</h3>
+        <StateBadge value={audit ? "blocked" : error ? "blocked" : "empty"} />
+      </div>
+      {audit ? (
+        <div className="evidence-stack compact-evidence-stack">
+          <div className="evidence-item">
+            <strong>Status</strong>
+            <span data-testid="account-partial-fill-owner-repair-preflight-status">{audit.status}</span>
+          </div>
+          <div className="evidence-item">
+            <strong>Verdict</strong>
+            <span data-testid="account-partial-fill-owner-repair-preflight-verdict">{audit.verdict}</span>
+          </div>
+          <div className="evidence-item">
+            <strong>Owner path</strong>
+            <span data-testid="account-partial-fill-owner-repair-preflight-owner-path">
+              {audit.owner_repo.owner_repo_path}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Owner head</strong>
+            <span data-testid="account-partial-fill-owner-repair-preflight-head">{audit.owner_repo.head_ref}</span>
+          </div>
+          <div className="evidence-item">
+            <strong>Owner write</strong>
+            <span data-testid="account-partial-fill-owner-repair-preflight-owner-write">
+              {String(audit.owner_repo.write_attempted_by_audit)}
+            </span>
+          </div>
+          {audit.source_checks.map((item) => (
+            <div
+              className="evidence-item"
+              data-testid="account-partial-fill-owner-repair-preflight-source"
+              key={item.path}
+            >
+              <strong>{item.path}</strong>
+              <span>
+                {item.sha256.slice(0, 12)} / {item.current_gap}
+              </span>
+            </div>
+          ))}
+          <div className="evidence-item">
+            <strong>Repair approval</strong>
+            <span data-testid="account-partial-fill-owner-repair-preflight-repair-approval">
+              {String(audit.operator_approval_delta.sufficient_for_owner_code_repair)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Retry approval</strong>
+            <span data-testid="account-partial-fill-owner-repair-preflight-retry-approval">
+              {String(audit.operator_approval_delta.sufficient_for_post_repair_runtime_retry)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Blind retry</strong>
+            <span data-testid="account-partial-fill-owner-repair-preflight-blind-retry">
+              {String(audit.next_required_action.blind_script_retry_rejected)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Runtime invoked</strong>
+            <span data-testid="account-partial-fill-owner-repair-preflight-runtime-invoked">
+              {String(audit.negative_assertions.owner_runtime_invocation_attempted)}
+            </span>
+          </div>
+          <div className="evidence-item">
+            <strong>Full acceptance</strong>
+            <span data-testid="account-partial-fill-owner-repair-preflight-full-claimed">
+              {String(audit.negative_assertions.full_acceptance_claimed)}
+            </span>
+          </div>
+        </div>
+      ) : error ? (
+        <div className="state-callout blocked" data-testid="account-partial-fill-owner-repair-preflight-error">
+          {error}
+        </div>
+      ) : (
+        <p className="muted">No partial-fill owner repair preflight source audit is mounted for this account.</p>
       )}
     </section>
   );

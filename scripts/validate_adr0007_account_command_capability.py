@@ -40,6 +40,7 @@ ALLOWED_COMMAND_ROUTES = {
     "/api/commands/accounts/{account_id}/runtime-execution-gap-audit": {"GET"},
     "/api/commands/accounts/{account_id}/partial-fill-owner-repair-implementation-plan": {"GET"},
     "/api/commands/accounts/{account_id}/partial-fill-owner-repair-evidence-ingest-gate": {"GET"},
+    "/api/commands/accounts/{account_id}/partial-fill-owner-repair-preflight-source-audit": {"GET"},
 }
 
 

@@ -747,6 +747,51 @@ export interface CommandPartialFillOwnerRepairEvidenceIngestGate {
   };
 }
 
+export interface CommandPartialFillOwnerRepairPreflightSourceAudit {
+  schema: "account-console.p024.partial-fill-owner-repair-preflight-source-audit.v1";
+  proposal_id: "p024-account-console-paper-command-controls";
+  account_id: "acct.ctp.paper.19053";
+  reviewed_at: string;
+  status: "phase4v_owner_repair_preflight_source_audited";
+  verdict: "owner_repair_still_required_before_runtime_retry";
+  owner_repo: {
+    owner_repo_ref: string;
+    owner_repo_path: string;
+    head_ref: string;
+    write_attempted_by_audit: false;
+  };
+  source_checks: Array<{
+    path: string;
+    sha256: string;
+    required_symbol_present: boolean;
+    current_gap: string;
+  }>;
+  operator_approval_delta: {
+    latest_user_approval_observed_scope: string;
+    sufficient_for_owner_code_repair: false;
+    sufficient_for_post_repair_runtime_retry: false;
+    required_exact_approval_before_owner_write_or_retry: string;
+  };
+  next_required_action: {
+    owner_code_repair_allowed_by_current_audit: false;
+    owner_runtime_retry_allowed_by_current_audit: false;
+    blind_script_retry_rejected: true;
+    reason: string;
+  };
+  negative_assertions: {
+    owner_repo_write_attempted: false;
+    owner_code_repair_claimed: false;
+    owner_validator_pass_claimed: false;
+    owner_runtime_invocation_attempted: false;
+    post_repair_runtime_retry_authorized: false;
+    real_partial_fill_claimed: false;
+    full_acceptance_claimed: false;
+    raw_secret_values_recorded: false;
+    raw_broker_endpoint_recorded: false;
+    config_raw_content_recorded: false;
+  };
+}
+
 export type AccountHealthPanelFixtureState =
   | "happy_path"
   | "empty"

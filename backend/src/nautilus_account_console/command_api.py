@@ -14,6 +14,7 @@ from .schemas import (
     CommandPartialFillRuntimeExecutionHandoffBundle,
     CommandPartialFillOwnerRepairImplementationPlan,
     CommandPartialFillOwnerRepairEvidenceIngestGate,
+    CommandPartialFillOwnerRepairPreflightSourceAudit,
     CommandRuntimeExecutionApprovalPacket,
     CommandRuntimeExecutionGapAudit,
     CommandRuntimeExecutionHandoffBundle,
@@ -84,6 +85,13 @@ PARTIAL_FILL_OWNER_REPAIR_EVIDENCE_INGEST_GATE = (
     / "acceptance"
     / "p024-account-console-paper-command-controls"
     / "partial-fill-owner-repair-evidence-ingest-gate.json"
+)
+PARTIAL_FILL_OWNER_REPAIR_PREFLIGHT_SOURCE_AUDIT = (
+    ROOT
+    / "docs"
+    / "acceptance"
+    / "p024-account-console-paper-command-controls"
+    / "partial-fill-owner-repair-preflight-source-audit.json"
 )
 DEFAULT_RUNTIME_RUN_ID = "p023-armed-20260621t0748z"
 REQUIRED_RUNTIME_FILES = [
@@ -657,6 +665,51 @@ def load_partial_fill_owner_repair_evidence_ingest_gate(
         if negative.get(key) is not False:
             raise HTTPException(status_code=409, detail=f"partial-fill owner repair evidence ingest gate negative assertion failed: {key}")
     return CommandPartialFillOwnerRepairEvidenceIngestGate(**payload)
+
+
+def load_partial_fill_owner_repair_preflight_source_audit(
+    account_id: str,
+) -> CommandPartialFillOwnerRepairPreflightSourceAudit:
+    if account_id != PAPER_ACCOUNT_ID:
+        raise HTTPException(status_code=403, detail="P024 owner repair preflight audit is scoped to acct.ctp.paper.19053 only")
+    if not PARTIAL_FILL_OWNER_REPAIR_PREFLIGHT_SOURCE_AUDIT.exists():
+        raise HTTPException(status_code=404, detail="partial-fill owner repair preflight source audit not found")
+    text = PARTIAL_FILL_OWNER_REPAIR_PREFLIGHT_SOURCE_AUDIT.read_text(encoding="utf-8")
+    if any(fragment.lower() in text.lower() for fragment in SENSITIVE_RUNTIME_FRAGMENTS):
+        raise HTTPException(status_code=409, detail="partial-fill owner repair preflight source audit contains forbidden sensitive fragments")
+    payload = json.loads(text)
+    if payload.get("account_id") != PAPER_ACCOUNT_ID:
+        raise HTTPException(status_code=409, detail="partial-fill owner repair preflight source audit account_id mismatch")
+    owner = payload.get("owner_repo") or {}
+    if owner.get("write_attempted_by_audit") is not False:
+        raise HTTPException(status_code=409, detail="partial-fill owner repair preflight source audit attempted owner write")
+    checks = payload.get("source_checks") or []
+    if len(checks) != 3 or any(not item.get("sha256") or item.get("required_symbol_present") is not True for item in checks):
+        raise HTTPException(status_code=409, detail="partial-fill owner repair preflight source audit source checks drifted")
+    approval = payload.get("operator_approval_delta") or {}
+    if approval.get("sufficient_for_owner_code_repair") is not False:
+        raise HTTPException(status_code=409, detail="partial-fill owner repair preflight source audit allowed owner repair")
+    if approval.get("sufficient_for_post_repair_runtime_retry") is not False:
+        raise HTTPException(status_code=409, detail="partial-fill owner repair preflight source audit allowed runtime retry")
+    next_action = payload.get("next_required_action") or {}
+    if next_action.get("blind_script_retry_rejected") is not True:
+        raise HTTPException(status_code=409, detail="partial-fill owner repair preflight source audit did not reject blind retry")
+    negative = payload.get("negative_assertions") or {}
+    for key in [
+        "owner_repo_write_attempted",
+        "owner_code_repair_claimed",
+        "owner_validator_pass_claimed",
+        "owner_runtime_invocation_attempted",
+        "post_repair_runtime_retry_authorized",
+        "real_partial_fill_claimed",
+        "full_acceptance_claimed",
+        "raw_secret_values_recorded",
+        "raw_broker_endpoint_recorded",
+        "config_raw_content_recorded",
+    ]:
+        if negative.get(key) is not False:
+            raise HTTPException(status_code=409, detail=f"partial-fill owner repair preflight source audit negative assertion failed: {key}")
+    return CommandPartialFillOwnerRepairPreflightSourceAudit(**payload)
 
 
 def accept_submit_intent(account_id: str, intent: OrderIntentRequest) -> CommandApiResult:

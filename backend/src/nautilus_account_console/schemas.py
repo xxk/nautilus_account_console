@@ -464,6 +464,22 @@ class CommandPartialFillOwnerRepairEvidenceIngestGate(BaseModel):
     negative_assertions: dict
 
 
+class CommandPartialFillOwnerRepairPreflightSourceAudit(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    schema_: Literal["account-console.p024.partial-fill-owner-repair-preflight-source-audit.v1"] = Field(alias="schema")
+    proposal_id: Literal["p024-account-console-paper-command-controls"]
+    account_id: Literal["acct.ctp.paper.19053"]
+    reviewed_at: str
+    status: Literal["phase4v_owner_repair_preflight_source_audited"]
+    verdict: Literal["owner_repair_still_required_before_runtime_retry"]
+    owner_repo: dict
+    source_checks: list[dict]
+    operator_approval_delta: dict
+    next_required_action: dict
+    negative_assertions: dict
+
+
 class Health(BaseModel):
     ok: bool
     service: str

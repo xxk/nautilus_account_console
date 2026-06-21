@@ -88,6 +88,7 @@ ALLOWED_GOVERNED_COMMAND_ROUTES = {
     "/api/commands/accounts/{account_id}/runtime-execution-gap-audit": {"GET"},
     "/api/commands/accounts/{account_id}/partial-fill-owner-repair-implementation-plan": {"GET"},
     "/api/commands/accounts/{account_id}/partial-fill-owner-repair-evidence-ingest-gate": {"GET"},
+    "/api/commands/accounts/{account_id}/partial-fill-owner-repair-preflight-source-audit": {"GET"},
 }
 PASS_SIGNAL = "P019_API_BOUNDARY_OK: mirror_only=true governed_command_routes=p024_only direct_broker_routes=absent"
 

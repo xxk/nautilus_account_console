@@ -1,7 +1,7 @@
 # P024 Phase Plan / Account Console Paper Command Controls
 
 - Proposal ID: `p024-account-console-paper-command-controls`
-- Status: phase4v_owner_repair_preflight_source_audited
+- Status: phase4w_owner_repair_preflight_ui_projection_passed
 - Primary ADR: ADR-0007
 
 ## Artifact Trust Boundary
@@ -40,7 +40,7 @@ Primary ADR: ADR-0007
 <!-- AI-PHASE-STATUS-BEGIN
 reviewed_at: 2026-06-21
 reviewer: codex
-overall_status: phase4v_owner_repair_preflight_source_audited
+overall_status: phase4w_owner_repair_preflight_ui_projection_passed
 phases:
   - id: phase_0_design_gate
     status: completed
@@ -150,6 +150,10 @@ phases:
     status: owner_repair_still_required_before_runtime_retry
     ai_progress: 100
     evidence: "python scripts\\validate_p024_partial_fill_owner_repair_preflight_source_audit.py"
+  - id: phase_4w_owner_repair_preflight_ui_projection
+    status: completed_browser_owner_repair_preflight_projection_gate
+    ai_progress: 100
+    evidence: "npx playwright test tests/e2e/p024-partial-fill-owner-repair-preflight.spec.ts --project=desktop; python scripts\\validate_p024_partial_fill_owner_repair_preflight_browser_evidence.py"
 AI-PHASE-STATUS-END -->
 
 ## Phase Status Board
@@ -187,6 +191,7 @@ AI-PHASE-STATUS-END -->
 | Phase 4t Owner repair evidence ingest gate | Freeze owner repair evidence intake requirements for owner commit, source checksums, focused tests, owner validators and account-console follow-up audit | ingest_gate_ready_owner_repair_evidence_missing | `python scripts\validate_p024_partial_fill_owner_repair_evidence_ingest_gate.py` | After exact owner repair approval and owner patch, record evidence against this gate before any runtime retry |
 | Phase 4u Owner repair ingest gate UI projection | Render the phase4t ingest gate in Web UI with required repair evidence, post-ingest updates, reject rules and no-retry/no-full-acceptance flags | completed_browser_owner_repair_ingest_projection_gate | `npx playwright test tests/e2e/p024-partial-fill-owner-repair-ingest-gate.spec.ts --project=desktop`; `python scripts\validate_p024_partial_fill_owner_repair_ingest_gate_browser_evidence.py` | After owner repair evidence exists, ingest it through this gate and then update account-console acceptance packets |
 | Phase 4v Owner repair preflight source audit | Read current owner source checksums and prove the scripts-only approval cannot be treated as owner code repair or runtime retry authority | owner_repair_still_required_before_runtime_retry | `python scripts\validate_p024_partial_fill_owner_repair_preflight_source_audit.py` | Obtain exact owner repair approval, then repair CLOSEYESTERDAY offset 4 semantics and run owner validators |
+| Phase 4w Owner repair preflight UI projection | Render the phase4v read-only source audit in Web UI with owner checksum refs, approval insufficiency and blind-retry rejection | completed_browser_owner_repair_preflight_projection_gate | `npx playwright test tests/e2e/p024-partial-fill-owner-repair-preflight.spec.ts --project=desktop`; `python scripts\validate_p024_partial_fill_owner_repair_preflight_browser_evidence.py` | Obtain exact owner repair approval before owner code repair or runtime retry |
 
 ## Runtime / Command Freeze
 
@@ -224,6 +229,7 @@ Phase 0 does not run broker mutation. Phase 1 may add API contracts but must not
 28. Phase 4t owner repair evidence ingest gate is ready; `P024_PARTIAL_FILL_OWNER_REPAIR_EVIDENCE_INGEST_GATE_OK` proves the post-repair commit/checksum/validator evidence shape is frozen while owner repair evidence remains missing and runtime retry remains false.
 29. Phase 4u owner repair ingest gate UI projection is complete; `P024_PARTIAL_FILL_OWNER_REPAIR_INGEST_GATE_BROWSER_EVIDENCE_OK` proves the owner repair evidence intake requirements render in Web UI while repair evidence, runtime retry and full acceptance remain false.
 30. Phase 4v owner repair preflight source audit is complete; `P024_PARTIAL_FILL_OWNER_REPAIR_PREFLIGHT_SOURCE_AUDIT_OK` proves current owner source checksums still require CLOSEYESTERDAY offset 4 repair evidence and a scripts-only approval must not trigger a blind retry.
+31. Phase 4w owner repair preflight UI projection is complete; `P024_PARTIAL_FILL_OWNER_REPAIR_PREFLIGHT_BROWSER_EVIDENCE_OK` proves the source audit renders in Web UI while owner write, runtime invocation, repair approval and full acceptance remain false.
 
 
 

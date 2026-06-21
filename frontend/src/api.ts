@@ -3,6 +3,7 @@ import type {
   CancelIntentRequest,
   CommandPartialFillOwnerRepairEvidenceIngestGate,
   CommandPartialFillOwnerRepairImplementationPlan,
+  CommandPartialFillOwnerRepairPreflightSourceAudit,
   CommandPartialFillRuntimeExecutionApprovalPacket,
   CommandPartialFillRuntimeExecutionHandoffBundle,
   CommandApiResult,
@@ -253,6 +254,18 @@ export async function fetchCommandPartialFillOwnerRepairEvidenceIngestGate(
   );
   if (!response.ok) {
     throw new Error(`partial-fill owner repair evidence ingest gate failed: ${response.status}`);
+  }
+  return response.json();
+}
+
+export async function fetchCommandPartialFillOwnerRepairPreflightSourceAudit(
+  accountId: string
+): Promise<CommandPartialFillOwnerRepairPreflightSourceAudit> {
+  const response = await fetch(
+    `${API_BASE}/api/commands/accounts/${encodeURIComponent(accountId)}/partial-fill-owner-repair-preflight-source-audit`
+  );
+  if (!response.ok) {
+    throw new Error(`partial-fill owner repair preflight source audit failed: ${response.status}`);
   }
   return response.json();
 }

@@ -29,6 +29,7 @@ ALLOWED_COMMAND_ROUTES = {
     "/api/commands/accounts/{account_id}/runtime-execution-gap-audit": {"GET"},
     "/api/commands/accounts/{account_id}/partial-fill-owner-repair-implementation-plan": {"GET"},
     "/api/commands/accounts/{account_id}/partial-fill-owner-repair-evidence-ingest-gate": {"GET"},
+    "/api/commands/accounts/{account_id}/partial-fill-owner-repair-preflight-source-audit": {"GET"},
 }
 
 
@@ -380,6 +381,39 @@ def validate_api_behavior() -> None:
         "partial-fill owner repair ingest gate recorded flag mismatch",
     )
 
+    preflight_response = client.get(
+        f"/api/commands/accounts/{ACCOUNT_ID}/partial-fill-owner-repair-preflight-source-audit"
+    )
+    require(
+        preflight_response.status_code == 200,
+        f"partial-fill owner repair preflight status mismatch: {preflight_response.status_code}",
+    )
+    preflight_payload = preflight_response.json()
+    require(
+        preflight_payload["schema"] == "account-console.p024.partial-fill-owner-repair-preflight-source-audit.v1",
+        "partial-fill owner repair preflight schema mismatch",
+    )
+    require(
+        preflight_payload["status"] == "phase4v_owner_repair_preflight_source_audited",
+        "partial-fill owner repair preflight status mismatch",
+    )
+    require(
+        preflight_payload["operator_approval_delta"]["sufficient_for_owner_code_repair"] is False,
+        "partial-fill owner repair preflight repair approval mismatch",
+    )
+    require(
+        preflight_payload["operator_approval_delta"]["sufficient_for_post_repair_runtime_retry"] is False,
+        "partial-fill owner repair preflight retry approval mismatch",
+    )
+    require(
+        preflight_payload["next_required_action"]["blind_script_retry_rejected"] is True,
+        "partial-fill owner repair preflight blind retry mismatch",
+    )
+    require(
+        preflight_payload["negative_assertions"]["owner_runtime_invocation_attempted"] is False,
+        "partial-fill owner repair preflight invocation flag mismatch",
+    )
+
     live_intent = submit_intent()
     live_intent["mode"] = "live_armed"
     live_response = client.post(f"/api/commands/accounts/{ACCOUNT_ID}/submit-intents", json=live_intent)
@@ -394,7 +428,7 @@ def main() -> None:
     validate_api_behavior()
     print(
         "P024_PAPER_COMMAND_API_OK: "
-        "phase=1 routes=13 status=accepted_for_risk runtime_handoff=blocked runtime_closeout=reconciled runtime_readiness=blocked runtime_approval_packet=ready runtime_handoff_bundle=ready partial_fill_runtime_approval_packet=ready partial_fill_runtime_handoff_bundle=ready runtime_execution_gap=blocked owner_repair_plan=ready owner_repair_ingest_gate=ready mirror_read_only=true"
+        "phase=1 routes=14 status=accepted_for_risk runtime_handoff=blocked runtime_closeout=reconciled runtime_readiness=blocked runtime_approval_packet=ready runtime_handoff_bundle=ready partial_fill_runtime_approval_packet=ready partial_fill_runtime_handoff_bundle=ready runtime_execution_gap=blocked owner_repair_plan=ready owner_repair_ingest_gate=ready owner_repair_preflight=blind_retry_rejected mirror_read_only=true"
     )
 
 
