@@ -41,8 +41,9 @@ No controls are reserved or visible in disabled mode.
 | `account-command-reconciliation-ref` | reconciliation ref |
 | `account-command-blocker` | fail-closed blocker |
 | `account-runtime-closeout-panel` | read-only runtime closeout evidence panel |
-| `account-runtime-closeout-run-id` | owner-backed runtime run id |
-| `account-runtime-closeout-status` | runtime closeout reconciliation status |
+| `account-runtime-closeout-error` | runtime closeout blocker callout when owner evidence is missing |
+| `account-runtime-closeout-run-id` | owner-backed runtime run id; present only when owner evidence passes |
+| `account-runtime-closeout-status` | runtime closeout reconciliation status; present only when owner evidence passes |
 | `account-runtime-closeout-manifest-checksum` | closeout manifest checksum |
 | `account-runtime-closeout-gateway-send` | predecessor runtime gateway send observed flag |
 | `account-runtime-closeout-web-trigger` | browser-triggered broker order flag; must remain false |
@@ -136,31 +137,13 @@ No controls are reserved or visible in disabled mode.
 | `account-runtime-execution-gap-artifact-count` | required owner artifact count |
 | `account-runtime-execution-gap-required` | concrete items required before all acceptance can be claimed |
 | `account-runtime-execution-gap-blocker` | residual blockers preventing final runtime acceptance |
-| `account-partial-fill-owner-repair-approval-packet-panel` | owner repair approval packet projection panel |
-| `account-partial-fill-owner-repair-approval-packet-status` | repair approval packet status; must remain packet-ready rather than executed |
-| `account-partial-fill-owner-repair-approval-packet-verdict` | repair approval packet verdict requiring owner repair approval before retry |
-| `account-partial-fill-owner-repair-approval-packet-owner-path` | owner repo path requiring exact repair approval |
-| `account-partial-fill-owner-repair-approval-packet-obtained` | owner repair approval obtained flag; must remain false until exact approval is supplied |
-| `account-partial-fill-owner-repair-approval-packet-current-matches` | current scripts-only approval match flag; must remain false for repair-first next action |
-| `account-partial-fill-owner-repair-approval-packet-runtime-retry` | runtime retry allowed flag; must remain false before owner repair evidence and fresh retry packet |
-| `account-partial-fill-owner-repair-approval-packet-exact-text` | exact owner repair approval text required before owner source/test writes |
-| `account-partial-fill-owner-repair-approval-packet-change` | expected owner-side repair changes after approval |
-| `account-partial-fill-owner-repair-approval-packet-validator` | owner validator commands required before retry |
-| `account-partial-fill-owner-repair-approval-packet-blocker` | residual owner repair and real partial-fill blockers |
-| `account-partial-fill-owner-repair-approval-packet-owner-write` | owner write attempted flag; must remain false in this projection |
-| `account-partial-fill-owner-repair-approval-packet-additional-order` | additional paper order authorization flag; must remain false in this projection |
-| `account-partial-fill-owner-repair-approval-packet-partial-claimed` | partial-fill claim flag; must remain false until real owner runtime evidence exists |
-| `account-partial-fill-owner-repair-approval-packet-full-claimed` | full acceptance claim flag; must remain false |
-| `account-partial-fill-remaining-acceptance-panel` | remaining acceptance state projection panel |
-| `account-partial-fill-remaining-acceptance-status` | remaining acceptance audit status |
-| `account-partial-fill-remaining-acceptance-verdict` | not-fully-accepted verdict |
-| `account-partial-fill-remaining-acceptance-full-claimed` | full acceptance claim flag; must remain false |
-| `account-partial-fill-remaining-acceptance-owner-repair-allowed` | owner repair allowed flag; must remain false until exact approval |
-| `account-partial-fill-remaining-acceptance-runtime-retry` | runtime retry allowed flag; must remain false until owner repair evidence and fresh retry approval |
-| `account-partial-fill-remaining-acceptance-latest-attempt` | latest real partial-fill attempt classification |
-| `account-partial-fill-remaining-acceptance-requirement` | each R1-R5 missing requirement row |
-| `account-partial-fill-remaining-acceptance-evidence-group` | accepted evidence groups that do not complete full acceptance |
-| `account-partial-fill-remaining-acceptance-real-partial-claimed` | real partial-fill claim flag; must remain false |
+| `partial-fill-owner-repair-approval-packet-ui.json` | archive-only historical browser evidence for the retired owner repair approval packet panel |
+| `partial-fill-remaining-acceptance-state-ui.json` | archive-only historical browser evidence for the retired remaining acceptance panel |
+| `partial-fill-owner-repair-plan-ui.json` | archive-only historical browser evidence for the retired owner repair plan panel |
+| `partial-fill-owner-repair-ingest-gate-ui.json` | archive-only historical browser evidence for the retired owner repair ingest gate panel |
+| `partial-fill-owner-repair-preflight-ui.json` | archive-only historical browser evidence for the retired owner repair preflight panel |
+| `partial-fill-owner-repair-patch-preview-ui.json` | archive-only historical browser evidence for the retired owner repair patch preview panel |
+| `partial-fill-owner-repair-execution-handoff-ui.json` | archive-only historical browser evidence for the retired owner repair execution handoff panel |
 | `account-partial-fill-remaining-acceptance-web-ui-claimed` | Web UI real partial-fill claim flag; must remain false |
 
 ## Layout Rules
@@ -178,6 +161,7 @@ No controls are reserved or visible in disabled mode.
 11. Partial-fill runtime approval and handoff panels are read-only: they show exact approval text, success formulas, fallback classifications and blockers, but never render a browser-side broker execution trigger.
 12. Owner repair approval packet projection is read-only: it shows the exact owner repair approval text and why the current scripts-only approval is insufficient, while owner write, runtime retry, partial-fill claim and full acceptance remain false.
 13. Remaining acceptance state projection is read-only: it shows R1-R5 missing requirements and accepted evidence groups, but does not turn blocker evidence into owner repair, runtime retry or full acceptance authority.
+14. The owner-repair execution-lane UI projections are retired from the live runtime surface after closeout; only archive-only historical browser evidence remains machine-checkable for ingest gate, preflight, patch preview and execution handoff.
 
 ## Disabled Mode
 

@@ -15,7 +15,7 @@ EVIDENCE = EVIDENCE_DIR / "partial-fill-runtime-approval-packet-ui.json"
 SCREENSHOT = EVIDENCE_DIR / "p024-partial-fill-runtime-approval-packet-ui.png"
 APP = ROOT / "frontend" / "src" / "App.tsx"
 API = ROOT / "frontend" / "src" / "api.ts"
-TYPES = ROOT / "frontend" / "src" / "types.ts"
+HISTORICAL_TYPES = ROOT / "frontend" / "src" / "types-historical-p024.ts"
 SPEC = ROOT / "frontend" / "tests" / "e2e" / "p024-partial-fill-runtime-execution-approval-packet.spec.ts"
 ACCOUNT_ID = "acct.ctp.paper.19053"
 
@@ -109,52 +109,23 @@ def validate_backend_endpoint() -> None:
     from nautilus_account_console.main import app
 
     route = "/api/commands/accounts/{account_id}/partial-fill-runtime-execution-approval-packet"
-    found = False
-    for item in app.routes:
-        if getattr(item, "path", "") == route:
-            found = True
-            require(getattr(item, "methods", set()) == {"GET"}, "partial-fill approval packet route must be GET-only")
-    require(found, "partial-fill approval packet route missing")
+    require(all(getattr(item, "path", "") != route for item in app.routes), "partial-fill approval packet route should be retired")
 
     client = TestClient(app)
     response = client.get(f"/api/commands/accounts/{ACCOUNT_ID}/partial-fill-runtime-execution-approval-packet")
-    require(response.status_code == 200, "partial-fill approval packet API does not return 200")
-    payload = response.json()
-    require(payload["status"] == "phase4j_partial_fill_runtime_execution_approval_packet_ready", "API status mismatch")
-    require(payload["required_operator_approval"]["required"] is True, "API approval required mismatch")
-    require(payload["required_operator_approval"]["obtained"] is False, "API approval obtained mismatch")
-    require(
-        "P024 partial-fill acceptance" in payload["required_operator_approval"]["exact_approval_text"],
-        "API exact approval text mismatch",
-    )
-    negative = payload["negative_assertions"]
-    require(negative["runtime_invocation_attempted"] is False, "API invocation flag mismatch")
-    require(negative["owner_repo_write_attempted"] is False, "API owner write flag mismatch")
-    require(negative["new_order_submitted"] is False, "API new order flag mismatch")
-    require(negative["cancel_sent"] is False, "API cancel flag mismatch")
+    require(response.status_code == 404, "partial-fill approval packet API retirement mismatch")
 
 
 def validate_frontend_hooks() -> None:
     app_text = APP.read_text(encoding="utf-8")
     api_text = API.read_text(encoding="utf-8")
-    types_text = TYPES.read_text(encoding="utf-8")
+    types_text = HISTORICAL_TYPES.read_text(encoding="utf-8")
     spec_text = SPEC.read_text(encoding="utf-8")
-    for phrase in [
-        "CommandPartialFillRuntimeExecutionApprovalPacketPanel",
-        "account-partial-fill-runtime-approval-packet-panel",
-        "account-partial-fill-runtime-approval-packet-status",
-        "account-partial-fill-runtime-approval-packet-exact-text",
-        "account-partial-fill-runtime-approval-packet-formula",
-        "account-partial-fill-runtime-approval-packet-new-order",
-        "account-partial-fill-runtime-approval-packet-cancel-sent",
-        "account-partial-fill-runtime-approval-packet-blocker",
-    ]:
-        require(phrase in app_text, f"frontend app missing {phrase}")
-    for phrase in [
-        "fetchCommandPartialFillRuntimeExecutionApprovalPacket",
-        "partial-fill-runtime-execution-approval-packet",
-    ]:
-        require(phrase in api_text, f"frontend API missing {phrase}")
+    require("account-partial-fill-runtime-approval-packet-panel" not in app_text, "retired frontend panel should be removed")
+    require(
+        "fetchCommandPartialFillRuntimeExecutionApprovalPacket" not in api_text,
+        "retired frontend API fetch should be removed",
+    )
     require(
         "interface CommandPartialFillRuntimeExecutionApprovalPacket" in types_text,
         "frontend type missing partial-fill approval packet interface",
@@ -177,7 +148,7 @@ def main() -> None:
     validate_frontend_hooks()
     print(
         "P024_PARTIAL_FILL_RUNTIME_APPROVAL_PACKET_BROWSER_EVIDENCE_OK: "
-        "partial_fill_runtime_approval_packet_ui=pass approval_obtained=false new_order_submitted=false cancel_sent=false"
+        "partial_fill_runtime_approval_packet_ui=archive_only_historical_evidence route=retired_404 approval_obtained=false new_order_submitted=false cancel_sent=false"
     )
 
 

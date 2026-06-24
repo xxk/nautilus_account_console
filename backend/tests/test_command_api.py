@@ -58,7 +58,7 @@ def assert_pre_gateway_result(payload: dict, action: str) -> None:
     assert payload["account_id"] == "acct.ctp.paper.19053"
     assert payload["action"] == action
     assert payload["mode"] == "paper_armed"
-    assert payload["status"] == "accepted_for_risk"
+    assert payload["status"] == "risk_gate_pending"
     assert payload["command_id"].startswith(f"command.p024.{action}.")
     assert payload["intent_ref"].startswith("api://p024/acct-ctp-paper-19053/")
     assert payload["idempotency_enforced"] is True
@@ -80,12 +80,8 @@ def test_submit_intent_accepts_paper_armed_contract_without_gateway_send() -> No
     client = TestClient(app)
     response = client.post("/api/commands/accounts/acct.ctp.paper.19053/submit-intents", json=submit_intent())
 
-    assert response.status_code == 202
-    payload = response.json()
-    assert_pre_gateway_result(payload, "submit")
-    assert "risk_decision_ref" not in payload
-    assert "approval_decision_ref" not in payload
-    assert payload["readback_refs"] == []
+    assert response.status_code == 403
+    assert response.json()["detail"] == "command_capability_not_mounted"
 
 
 def test_submit_intent_is_idempotent_by_key() -> None:
@@ -93,54 +89,27 @@ def test_submit_intent_is_idempotent_by_key() -> None:
     first = client.post("/api/commands/accounts/acct.ctp.paper.19053/submit-intents", json=submit_intent())
     second = client.post("/api/commands/accounts/acct.ctp.paper.19053/submit-intents", json=submit_intent())
 
-    assert first.status_code == 202
-    assert second.status_code == 202
+    assert first.status_code == 403
+    assert second.status_code == 403
     assert second.json() == first.json()
-    assert second.json()["runtime_duplicate_send_attempted"] is False
 
 
 def test_cancel_intent_requires_readback_identity_and_stays_pre_gateway() -> None:
     client = TestClient(app)
     response = client.post("/api/commands/accounts/acct.ctp.paper.19053/cancel-intents", json=cancel_intent())
 
-    assert response.status_code == 202
-    payload = response.json()
-    assert_pre_gateway_result(payload, "cancel")
-    assert payload["readback_refs"] == [
-        "output/account_command/ctp-paper-19053/p023-armed-20260621t0748z/post_submit_readback.json"
-    ]
+    assert response.status_code == 403
+    assert response.json()["detail"] == "command_capability_not_mounted"
 
 
-def test_runtime_closeout_reads_reconciled_owner_artifacts_without_browser_send() -> None:
+def test_runtime_closeout_fails_closed_without_owner_runtime_evidence() -> None:
     client = TestClient(app)
     response = client.get(
         "/api/commands/accounts/acct.ctp.paper.19053/runtime-closeouts/p023-armed-20260621t0748z"
     )
 
-    assert response.status_code == 200
-    payload = response.json()
-    assert payload["schema_version"] == "account_command.runtime_closeout.v1"
-    assert payload["proposal_id"] == "p024-account-console-paper-command-controls"
-    assert payload["account_id"] == "acct.ctp.paper.19053"
-    assert payload["run_id"] == "p023-armed-20260621t0748z"
-    assert payload["mode"] == "paper_armed"
-    assert payload["status"] == "reconciled"
-    assert payload["runtime_gateway_send_observed"] is True
-    assert payload["broker_order_created"] is True
-    assert payload["browser_triggered_broker_order"] is False
-    assert payload["gateway_ack_is_final_state"] is False
-    assert payload["raw_secret_values_recorded"] is False
-    assert payload["raw_broker_endpoint_recorded"] is False
-    assert len(payload["intent_refs"]) == 2
-    assert len(payload["risk_decision_refs"]) == 2
-    assert len(payload["approval_decision_refs"]) == 2
-    assert len(payload["gateway_event_refs"]) == 2
-    assert len(payload["readback_refs"]) == 2
-    assert payload["reconciliation_ref"].endswith("reconciliation_result.json")
-    assert payload["closeout_manifest_checksum"].startswith("sha256:")
-    assert payload["command_audit_checksum"].startswith("sha256:")
-    assert payload["artifact_checksums"][payload["command_audit_ref"]] == payload["command_audit_checksum"]
-    assert "web_ui_trigger_of_new_runtime_order_still_pending" in payload["explicit_non_claims"]
+    assert response.status_code == 409
+    assert response.json()["detail"] == "runtime closeout missing owner runtime evidence"
 
 
 def test_runtime_closeout_rejects_scope_and_unsafe_run_id() -> None:
@@ -190,12 +159,8 @@ def test_submit_runtime_run_request_prepares_owner_handoff_without_invocation() 
         json=submit_intent(),
     )
 
-    assert response.status_code == 202
-    payload = response.json()
-    assert_runtime_run_request(payload, "submit")
-    assert payload["owner_runtime_entrypoint_ref"] == "scripts/ctp_guarded_paper_order_loop.py"
-    assert payload["source_preflight_ref"] == submit_intent()["preflight_ref"]
-    assert "readback_ref" not in payload
+    assert response.status_code == 403
+    assert response.json()["detail"] == "command_capability_not_mounted"
 
 
 def test_cancel_runtime_run_request_prepares_owner_handoff_without_invocation() -> None:
@@ -205,12 +170,56 @@ def test_cancel_runtime_run_request_prepares_owner_handoff_without_invocation() 
         json=cancel_intent(),
     )
 
-    assert response.status_code == 202
+    assert response.status_code == 403
+    assert response.json()["detail"] == "command_capability_not_mounted"
+
+
+def test_command_plane_projection_declares_mirror_as_canonical_owner() -> None:
+    client = TestClient(app)
+    response = client.get("/api/commands/accounts/acct.ctp.paper.19053/projection")
+
+    assert response.status_code == 200
     payload = response.json()
-    assert_runtime_run_request(payload, "cancel")
-    assert payload["owner_runtime_entrypoint_ref"] == "scripts/ctp_guarded_paper_cancel_loop.py"
-    assert payload["source_preflight_ref"] == cancel_intent()["readback_ref"]
-    assert payload["readback_ref"] == cancel_intent()["readback_ref"]
+    assert payload["schema_version"] == "account_command.command_plane_projection.v1"
+    assert payload["proposal_id"] == "p024-account-console-paper-command-controls"
+    assert payload["account_id"] == "acct.ctp.paper.19053"
+    assert payload["projection_owner"] == "account-console-backend.mirror_projection"
+    assert payload["canonical_source"] == "/api/mirror/accounts/{account_id}"
+    assert payload["legacy_read_surface_state"] == "legacy_read_only_until_mirror_convergence"
+    assert "/api/commands/accounts/{account_id}/runtime-closeouts/{run_id}" in payload["legacy_read_surfaces"]
+    assert "/api/commands/accounts/{account_id}/partial-fill-runtime-execution-approval-packet" not in payload["legacy_read_surfaces"]
+    assert any(
+        item["route"] == "/api/commands/accounts/{account_id}/partial-fill-runtime-execution-approval-packet"
+        and item["archive_evidence_only"] is True
+        for item in payload["retired_archive_surfaces"]
+    )
+    assert "/api/commands/accounts/{account_id}/submit-intents" in payload["action_surfaces"]
+    assert "legacy_read_surfaces_are_projection_only" in payload["retirement_guardrails"]
+    assert "retired_archive_surfaces_must_not_be_treated_as_live_routes" in payload["retirement_guardrails"]
+    assert any(
+        item["route"] == "/api/commands/accounts/{account_id}/runtime-execution-gap-audit"
+        and item["category"] == "retain_blocker_projection"
+        and item["execution_state"] == "active_blocker_projection"
+        and item["panel_ids"] == ["account-runtime-execution-gap-panel"]
+        for item in payload["retirement_slices"]
+    )
+    assert any(
+        item["route"] == "/api/commands/accounts/{account_id}/partial-fill-owner-repair-patch-preview"
+        and item["category"] == "retire_when_panels_removed"
+        and item["execution_state"] == "retired_archive_only"
+        and item["panel_ids"] == ["account-partial-fill-owner-repair-patch-preview-panel"]
+        for item in payload["retirement_slices"]
+    )
+    assert payload["retirement_batches"][0]["batch_id"] == "batch.partial_fill_post_repair_closeout_panels"
+    assert payload["retirement_batches"][0]["execution_state"] == "completed_safe_retirement"
+    assert payload["retirement_batches"][0]["route_count"] == 3
+    assert payload["retirement_batches"][0]["panel_count"] == 3
+    assert payload["source_ref"]
+    assert payload["source_checksum"].startswith("sha256:")
+    assert payload["projection_checkpoint_id"].startswith("sha256:")
+    assert payload["projection_checksum"].startswith("sha256:")
+    assert payload["boundaries"]["order_action"] is False
+    assert "does_not_make_legacy_command_reads_canonical_command_truth" in payload["explicit_non_claims"]
 
 
 def test_runtime_invocation_readiness_projects_external_approval_blocker() -> None:
@@ -303,24 +312,7 @@ def test_partial_fill_runtime_execution_approval_packet_projects_exact_operator_
         "/api/commands/accounts/acct.ctp.paper.19053/partial-fill-runtime-execution-approval-packet"
     )
 
-    assert response.status_code == 200
-    payload = response.json()
-    assert payload["schema"] == "account-console.p024.partial-fill-runtime-execution-approval-packet.v1"
-    assert payload["status"] == "phase4j_partial_fill_runtime_execution_approval_packet_ready"
-    assert payload["required_operator_approval"]["required"] is True
-    assert payload["required_operator_approval"]["obtained"] is False
-    assert "P024 partial-fill acceptance" in payload["required_operator_approval"]["exact_approval_text"]
-    assert payload["attempt_constraints"]["risk_shape"] == "exposure_reduction_only"
-    assert payload["attempt_constraints"]["maximum_submit_attempts"] == 1
-    assert payload["attempt_constraints"]["maximum_order_quantity"] == 3
-    assert payload["attempt_constraints"]["partial_fill_success_formula"] == "0 < filled_quantity < submitted_quantity"
-    assert payload["planned_execution"]["runtime_invocation_attempted"] is False
-    assert payload["planned_execution"]["owner_repo_write_attempted"] is False
-    assert payload["planned_execution"]["new_order_submitted"] is False
-    assert payload["planned_execution"]["cancel_sent"] is False
-    assert payload["negative_assertions"]["approval_obtained"] is False
-    assert payload["negative_assertions"]["new_order_submitted"] is False
-    assert payload["negative_assertions"]["browser_fixture_promoted_to_runtime_truth"] is False
+    assert response.status_code == 404
 
 
 def test_partial_fill_runtime_execution_handoff_bundle_projects_blocked_sequence() -> None:
@@ -329,33 +321,7 @@ def test_partial_fill_runtime_execution_handoff_bundle_projects_blocked_sequence
         "/api/commands/accounts/acct.ctp.paper.19053/partial-fill-runtime-execution-handoff-bundle"
     )
 
-    assert response.status_code == 200
-    payload = response.json()
-    assert payload["schema"] == "account-console.p024.partial-fill-runtime-execution-handoff-bundle.v1"
-    assert payload["status"] == "phase4k_partial_fill_runtime_execution_handoff_bundle_ready"
-    assert payload["execution_guard"]["execution_allowed"] is False
-    assert payload["execution_guard"]["approval_required"] is True
-    assert payload["execution_guard"]["approval_obtained"] is False
-    assert "P024 partial-fill acceptance" in payload["execution_guard"]["exact_approval_text_required"]
-    inputs = {item["field"]: item for item in payload["runtime_input_requirements"]}
-    assert inputs["quantity"]["allowed_values"] == [2, 3]
-    assert [item["step"] for item in payload["operator_sequence"]][:3] == [
-        "pre_approval_gate",
-        "owner_pre_snapshot",
-        "submit_partial_fill_attempt",
-    ]
-    assert "0 < filled_quantity < submitted_quantity" in payload["success_criteria"]["non_ui_runtime"]
-    assert "cancel pending is not rendered as final" in payload["success_criteria"]["web_ui_runtime"]
-    assert set(payload["fallback_classifications"]) == {
-        "fully_filled_not_partial_fill_then_cancel",
-        "cancelled_without_fill_not_partial_fill",
-        "rejected_or_timeout_not_partial_fill",
-        "owner_runtime_artifact_incomplete",
-    }
-    assert payload["negative_assertions"]["execution_allowed"] is False
-    assert payload["negative_assertions"]["new_order_submitted"] is False
-    assert payload["negative_assertions"]["cancel_sent"] is False
-    assert payload["negative_assertions"]["full_acceptance_claimed"] is False
+    assert response.status_code == 404
 
 
 def test_runtime_execution_gap_audit_projects_final_acceptance_blocker() -> None:
@@ -388,28 +354,7 @@ def test_partial_fill_owner_repair_plan_projects_no_retry_gate() -> None:
         "/api/commands/accounts/acct.ctp.paper.19053/partial-fill-owner-repair-implementation-plan"
     )
 
-    assert response.status_code == 200
-    payload = response.json()
-    assert payload["schema"] == "account-console.p024.partial-fill-owner-repair-implementation-plan.v1"
-    assert payload["status"] == "phase4r_owner_close_offset_repair_implementation_plan_ready"
-    assert payload["verdict"] == "owner_repair_plan_ready_no_owner_write_attempted"
-    assert payload["owner_read_context"]["owner_repo_write_attempted"] is False
-    assert len(payload["planned_owner_changes_after_exact_approval"]) == 3
-    assert [item["change_id"] for item in payload["planned_owner_changes_after_exact_approval"]] == [
-        "owner_rule_generalize_close_offset_submit_observed",
-        "owner_rule_wording_include_close_yesterday",
-        "focused_close_yesterday_test",
-    ]
-    assert {item["stage"] for item in payload["post_repair_validator_sequence"]} == {
-        "owner_unit_focus",
-        "owner_integration_regression",
-        "account_console_repair_plan_gate",
-        "account_console_design_gate",
-    }
-    assert payload["post_repair_runtime_attempt_gate"]["runtime_attempt_allowed_by_this_plan"] is False
-    assert payload["negative_assertions"]["owner_repo_write_attempted_by_this_plan"] is False
-    assert payload["negative_assertions"]["runtime_retry_authorized"] is False
-    assert payload["negative_assertions"]["partial_fill_claimed"] is False
+    assert response.status_code == 404
 
 
 def test_partial_fill_owner_repair_approval_packet_projects_required_exact_approval() -> None:
@@ -418,20 +363,7 @@ def test_partial_fill_owner_repair_approval_packet_projects_required_exact_appro
         "/api/commands/accounts/acct.ctp.paper.19053/partial-fill-owner-repair-approval-packet"
     )
 
-    assert response.status_code == 200
-    payload = response.json()
-    assert payload["schema"] == "account-console.p024.partial-fill-owner-repair-approval-packet.v1"
-    assert payload["status"] == "phase4p_owner_close_offset_repair_approval_packet_ready"
-    assert payload["verdict"] == "owner_repair_approval_required_before_retry"
-    assert payload["current_thread_approval_assessment"]["matches_current_next_action"] is False
-    assert payload["required_owner_repair_approval"]["required"] is True
-    assert payload["required_owner_repair_approval"]["obtained"] is False
-    assert "repair owner close-offset semantics for P024" in payload["required_owner_repair_approval"]["exact_approval_text_required"]
-    assert payload["retry_gate"]["runtime_invocation_allowed"] is False
-    assert payload["retry_gate"]["additional_partial_fill_order_authorized"] is False
-    assert payload["negative_assertions"]["owner_repo_write_attempted_by_this_packet"] is False
-    assert payload["negative_assertions"]["owner_runtime_invocation_attempted"] is False
-    assert payload["negative_assertions"]["full_acceptance_claimed"] is False
+    assert response.status_code == 404
 
 
 def test_partial_fill_remaining_acceptance_current_state_projects_r1_to_r5() -> None:
@@ -440,24 +372,7 @@ def test_partial_fill_remaining_acceptance_current_state_projects_r1_to_r5() -> 
         "/api/commands/accounts/acct.ctp.paper.19053/partial-fill-remaining-acceptance-current-state"
     )
 
-    assert response.status_code == 200
-    payload = response.json()
-    assert payload["schema"] == "account-console.p024.partial-fill-remaining-acceptance-current-state.v1"
-    assert payload["status"] == "phase4q_remaining_acceptance_current_state_audited"
-    assert payload["verdict"] == "not_fully_accepted_pending_owner_repair_and_real_partial_fill"
-    requirements = {item["requirement_id"]: item for item in payload["remaining_acceptance_requirements"]}
-    assert set(requirements) == {
-        "R1_owner_repair_approval",
-        "R2_owner_close_offset_repair",
-        "R3_owner_validators",
-        "R4_post_repair_partial_fill_runtime",
-        "R5_web_ui_real_partial_fill_projection",
-    }
-    assert all(item["current_status"] == "missing" for item in requirements.values())
-    assert payload["next_authorized_action"]["owner_code_repair_allowed"] is False
-    assert payload["next_authorized_action"]["owner_runtime_retry_allowed"] is False
-    assert payload["negative_assertions"]["full_acceptance_claimed"] is False
-    assert payload["negative_assertions"]["web_ui_real_partial_fill_claimed"] is False
+    assert response.status_code == 404
 
 
 def test_partial_fill_owner_repair_ingest_gate_projects_missing_evidence() -> None:
@@ -466,18 +381,7 @@ def test_partial_fill_owner_repair_ingest_gate_projects_missing_evidence() -> No
         "/api/commands/accounts/acct.ctp.paper.19053/partial-fill-owner-repair-evidence-ingest-gate"
     )
 
-    assert response.status_code == 200
-    payload = response.json()
-    assert payload["schema"] == "account-console.p024.partial-fill-owner-repair-evidence-ingest-gate.v1"
-    assert payload["status"] == "phase4t_owner_repair_evidence_ingest_gate_ready"
-    assert payload["verdict"] == "ingest_gate_ready_owner_repair_evidence_missing"
-    assert payload["ingest_scope"]["runtime_retry_allowed_by_ingest_gate"] is False
-    assert payload["ingest_scope"]["accepts_owner_runtime_partial_fill_evidence"] is False
-    assert len(payload["required_owner_repair_evidence"]) == 6
-    assert all(item["current_status"] == "missing" for item in payload["required_owner_repair_evidence"])
-    assert payload["negative_assertions"]["owner_repair_evidence_recorded"] is False
-    assert payload["negative_assertions"]["runtime_retry_authorized"] is False
-    assert payload["negative_assertions"]["full_acceptance_claimed"] is False
+    assert response.status_code == 404
 
 
 def test_partial_fill_owner_repair_preflight_source_audit_projects_blind_retry_rejected() -> None:
@@ -486,18 +390,7 @@ def test_partial_fill_owner_repair_preflight_source_audit_projects_blind_retry_r
         "/api/commands/accounts/acct.ctp.paper.19053/partial-fill-owner-repair-preflight-source-audit"
     )
 
-    assert response.status_code == 200
-    payload = response.json()
-    assert payload["schema"] == "account-console.p024.partial-fill-owner-repair-preflight-source-audit.v1"
-    assert payload["status"] == "phase4v_owner_repair_preflight_source_audited"
-    assert payload["verdict"] == "owner_repair_still_required_before_runtime_retry"
-    assert payload["owner_repo"]["write_attempted_by_audit"] is False
-    assert len(payload["source_checks"]) == 3
-    assert payload["operator_approval_delta"]["sufficient_for_owner_code_repair"] is False
-    assert payload["operator_approval_delta"]["sufficient_for_post_repair_runtime_retry"] is False
-    assert payload["next_required_action"]["blind_script_retry_rejected"] is True
-    assert payload["negative_assertions"]["owner_runtime_invocation_attempted"] is False
-    assert payload["negative_assertions"]["full_acceptance_claimed"] is False
+    assert response.status_code == 404
 
 
 def test_partial_fill_owner_repair_patch_preview_projects_no_write_no_retry() -> None:
@@ -506,22 +399,7 @@ def test_partial_fill_owner_repair_patch_preview_projects_no_write_no_retry() ->
         "/api/commands/accounts/acct.ctp.paper.19053/partial-fill-owner-repair-patch-preview"
     )
 
-    assert response.status_code == 200
-    payload = response.json()
-    assert payload["schema"] == "account-console.p024.partial-fill-owner-repair-patch-preview.v1"
-    assert payload["status"] == "phase4x_owner_repair_patch_preview_ready"
-    assert payload["verdict"] == "patch_preview_ready_owner_write_not_authorized"
-    assert payload["owner_baseline"]["owner_repo_write_attempted_by_preview"] is False
-    assert len(payload["previewed_owner_patch"]) == 3
-    assert {item["patch_id"] for item in payload["previewed_owner_patch"]} == {
-        "generalize_close_offset_submit_observed",
-        "expand_owner_rule_wording",
-        "add_close_yesterday_focused_test",
-    }
-    assert payload["post_patch_runtime_gate"]["runtime_retry_authorized_by_preview"] is False
-    assert payload["post_patch_runtime_gate"]["fresh_runtime_retry_approval_required_after_patch"] is True
-    assert payload["negative_assertions"]["owner_patch_applied"] is False
-    assert payload["negative_assertions"]["full_acceptance_claimed"] is False
+    assert response.status_code == 404
 
 
 def test_partial_fill_owner_repair_execution_handoff_projects_no_execution() -> None:
@@ -530,19 +408,7 @@ def test_partial_fill_owner_repair_execution_handoff_projects_no_execution() -> 
         "/api/commands/accounts/acct.ctp.paper.19053/partial-fill-owner-repair-execution-handoff-bundle"
     )
 
-    assert response.status_code == 200
-    payload = response.json()
-    assert payload["schema"] == "account-console.p024.partial-fill-owner-repair-execution-handoff-bundle.v1"
-    assert payload["status"] == "phase4z_owner_repair_execution_handoff_bundle_ready"
-    assert payload["verdict"] == "handoff_bundle_ready_owner_write_not_invoked"
-    assert payload["execution_guard"]["execution_allowed"] is False
-    assert payload["execution_guard"]["owner_repo_write_allowed_by_this_bundle"] is False
-    assert payload["execution_guard"]["runtime_retry_authorized_by_this_bundle"] is False
-    assert payload["execution_guard"]["requires_exact_owner_repair_approval"] is True
-    assert len(payload["operator_sequence_after_exact_approval"]) == 7
-    assert len(payload["required_post_handoff_artifacts"]) == 7
-    assert payload["negative_assertions"]["owner_patch_applied"] is False
-    assert payload["negative_assertions"]["full_acceptance_claimed"] is False
+    assert response.status_code == 404
 
 
 def test_command_api_rejects_live_mode_and_account_mismatch() -> None:

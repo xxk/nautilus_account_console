@@ -4,21 +4,21 @@ export default defineConfig({
   testDir: "./tests/e2e",
   outputDir: "../docs/acceptance/browser-evidence/frontend-test-output",
   use: {
-    baseURL: "http://127.0.0.1:5174",
+    baseURL: "http://127.0.0.1:5274",
     trace: "retain-on-failure"
   },
   webServer: [
     {
       command:
-        "python -m uvicorn nautilus_account_console.main:app --host 127.0.0.1 --port 8775 --app-dir ../backend/src",
+        "python -m uvicorn nautilus_account_console.main:app --host 127.0.0.1 --port 8875 --app-dir ../backend/src",
       reuseExistingServer: true,
-      url: "http://127.0.0.1:8775/healthz"
+      url: "http://127.0.0.1:8875/healthz"
     },
     {
       command:
-        "set NAC_API_BASE=http://127.0.0.1:8775&& node node_modules/vite/bin/vite.js --host 127.0.0.1 --port 5174",
+        "set NAC_API_BASE=http://127.0.0.1:8875&& node node_modules/vite/bin/vite.js --host 127.0.0.1 --port 5274",
       reuseExistingServer: true,
-      url: "http://127.0.0.1:5174"
+      url: "http://127.0.0.1:5274"
     }
   ],
   projects: [

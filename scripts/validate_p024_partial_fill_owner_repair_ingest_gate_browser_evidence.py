@@ -65,17 +65,9 @@ def validate_route() -> None:
     from nautilus_account_console.main import app
 
     route = "/api/commands/accounts/{account_id}/partial-fill-owner-repair-evidence-ingest-gate"
-    found = False
-    for item in app.routes:
-        if getattr(item, "path", "") == route:
-            found = True
-            require(getattr(item, "methods", set()) == {"GET"}, "ingest gate route must be GET-only")
-    require(found, "ingest gate route missing")
+    require(all(getattr(item, "path", "") != route for item in app.routes), "ingest gate route should be retired")
     response = TestClient(app).get(f"/api/commands/accounts/{ACCOUNT_ID}/partial-fill-owner-repair-evidence-ingest-gate")
-    require(response.status_code == 200, "ingest gate API does not return 200")
-    payload = response.json()
-    require(payload["ingest_scope"]["runtime_retry_allowed_by_ingest_gate"] is False, "API retry flag mismatch")
-    require(payload["negative_assertions"]["owner_repair_evidence_recorded"] is False, "API evidence flag mismatch")
+    require(response.status_code == 404, "ingest gate API retirement mismatch")
 
 
 def main() -> None:
@@ -83,7 +75,7 @@ def main() -> None:
     validate_route()
     print(
         "P024_PARTIAL_FILL_OWNER_REPAIR_INGEST_GATE_BROWSER_EVIDENCE_OK: "
-        "ui=pass evidence_missing=true runtime_retry=false"
+        "ui=archive_only_historical_evidence route=retired_404 evidence_missing=true runtime_retry=false"
     )
 
 

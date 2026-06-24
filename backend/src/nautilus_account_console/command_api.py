@@ -2,15 +2,22 @@ from __future__ import annotations
 
 import json
 import re
-from hashlib import sha256
 from pathlib import Path
 
-from fastapi import HTTPException
+from fastapi import FastAPI, HTTPException
 
+from .command_actions import (
+    accept_cancel_intent,
+    accept_submit_intent,
+    prepare_cancel_runtime_run_request,
+    prepare_submit_runtime_run_request,
+)
 from .schemas import (
-    CancelIntentRequest,
+    CommandPlaneProjection,
+    CommandReadRetirementBatch,
+    CommandRetiredArchiveSurface,
+    CommandReadRetirementSlice,
     CommandPartialFillOwnerRepairApprovalPacket,
-    CommandApiResult,
     CommandPartialFillRuntimeExecutionApprovalPacket,
     CommandPartialFillRuntimeExecutionHandoffBundle,
     CommandPartialFillOwnerRepairImplementationPlan,
@@ -26,11 +33,10 @@ from .schemas import (
     CommandRuntimeExecutionGapAudit,
     CommandRuntimeExecutionHandoffBundle,
     CommandRuntimeInvocationReadiness,
-    CommandBlocker,
     CommandRuntimeCloseout,
-    CommandRuntimeRunRequest,
-    OrderIntentRequest,
 )
+from .account_mirror import AccountMirrorStore
+from .source_bridge import load_capability_bundles
 
 
 PAPER_ACCOUNT_ID = "acct.ctp.paper.19053"
@@ -168,135 +174,333 @@ REQUIRED_RUNTIME_FILES = [
 ]
 SENSITIVE_RUNTIME_FRAGMENTS = ["tcp://", "trading.openctp", "Password", "AuthCode", "BrokerID", "UserID"]
 
-
-def _require_paper_scope(account_id: str, intent_account_id: str, mode: str) -> None:
-    if account_id != intent_account_id:
-        raise HTTPException(status_code=409, detail="path account_id does not match intent account_id")
-    if account_id != PAPER_ACCOUNT_ID:
-        raise HTTPException(status_code=403, detail="P024 command API is scoped to acct.ctp.paper.19053 only")
-    if mode != "paper_armed":
-        raise HTTPException(status_code=403, detail="P024 accepts paper_armed intents only")
-
-
-def _command_id(account_id: str, action: str, idempotency_key: str) -> str:
-    digest = sha256(f"{PROPOSAL_ID}|{account_id}|{action}|{idempotency_key}".encode("utf-8")).hexdigest()[:24]
-    return f"command.p024.{action}.{digest}"
-
-
-def _intent_ref(account_id: str, action: str, command_id: str) -> str:
-    safe_account = account_id.replace(".", "-")
-    return f"api://p024/{safe_account}/{action}/{command_id}/intent"
-
-
-def _canonical_checksum(payload: dict) -> str:
-    data = json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
-    return "sha256:" + sha256(data).hexdigest()
-
-
-def _pre_gateway_blockers(action: str, source_ref: str) -> list[CommandBlocker]:
-    return [
-        CommandBlocker(
-            blocker_id=f"p024_{action}_risk_decision_required",
-            type="risk_decision_required",
-            stage="risk",
-            reason="intent accepted by API contract gate; risk decision is required before gateway send",
-            source_ref=source_ref,
-            next_action="produce RiskDecision evidence before gateway send",
-        ),
-        CommandBlocker(
-            blocker_id=f"p024_{action}_approval_decision_required",
-            type="approval_decision_required",
-            stage="approval",
-            reason="intent accepted by API contract gate; approval decision is required before gateway send",
-            source_ref=source_ref,
-            next_action="produce ApprovalDecision evidence before gateway send",
-        ),
-    ]
-
-
-def _owner_runtime_blockers(action: str, source_ref: str, entrypoint_ref: str) -> list[CommandBlocker]:
-    return [
-        CommandBlocker(
-            blocker_id=f"p024_{action}_owner_runtime_invocation_required",
-            type="owner_runtime_invocation_required",
-            stage="owner_runtime",
-            reason="Web UI prepared a typed owner-runtime run request; Account Console does not invoke the broker runner.",
-            source_ref=source_ref,
-            next_action=f"invoke owner://nautilus_ctp_adapter {entrypoint_ref} with explicit operator approval",
-        ),
-        CommandBlocker(
-            blocker_id=f"p024_{action}_external_write_approval_required",
-            type="external_write_approval_required",
-            stage="owner_runtime",
-            reason="The guarded OpenCTP runner may write owner-runtime artifacts outside this worktree.",
-            source_ref=source_ref,
-            next_action="approve owner-repo runtime writes before running the guarded paper command loop",
-        ),
-        CommandBlocker(
-            blocker_id=f"p024_{action}_post_run_ingest_required",
-            type="post_run_ingest_required",
-            stage="readback",
-            reason="A real owner-runtime run must be ingested and reconciled before UI can claim broker execution.",
-            source_ref=source_ref,
-            next_action="ingest owner runtime artifacts with refs, checksums, redaction report and reconciliation result",
-        ),
-    ]
-
-
-def _runtime_handoff_entrypoint(action: str) -> str:
-    if action == "cancel":
-        return "scripts/ctp_guarded_paper_cancel_loop.py"
-    return "scripts/ctp_guarded_paper_order_loop.py"
-
-
-def _runtime_run_request(
-    *,
-    account_id: str,
-    action: str,
-    command_id: str,
-    intent_id: str,
-    intent_ref: str,
-    idempotency_key: str,
-    source_preflight_ref: str,
-    readback_ref: str | None,
-) -> CommandRuntimeRunRequest:
-    entrypoint_ref = _runtime_handoff_entrypoint(action)
-    payload = {
-        "schema_version": "account_command.owner_runtime_run_request.v1",
-        "proposal_id": PROPOSAL_ID,
-        "account_id": account_id,
-        "action": action,
-        "mode": "paper_armed",
-        "status": "blocked_until_owner_runtime_invocation",
-        "command_id": command_id,
-        "intent_id": intent_id,
-        "intent_ref": intent_ref,
-        "idempotency_key": idempotency_key,
-        "owner_runtime_owner_ref": "owner://nautilus_ctp_adapter",
-        "owner_runtime_repo_ref": "owner-repo://nautilus_ctp_adapter",
-        "owner_runtime_entrypoint_ref": entrypoint_ref,
-        "owner_runtime_config_ref": "cfgs/local/ctp.openctp.tts.7x24.local.json",
-        "source_preflight_ref": source_preflight_ref,
-        "readback_ref": readback_ref,
-        "expected_output_root_ref": f"output/account_command/ctp-paper-19053/p024-ui-{action}-{command_id}",
-        "runtime_invocation_attempted": False,
-        "browser_triggered_broker_order": False,
-        "gateway_send_attempted": False,
-        "broker_order_created": False,
-        "raw_secret_values_recorded": False,
-        "raw_broker_endpoint_recorded": False,
-        "external_write_approval_required": True,
-        "blockers": [blocker.model_dump() for blocker in _owner_runtime_blockers(action, intent_ref, entrypoint_ref)],
-        "explicit_non_claims": [
-            "does_not_invoke_owner_runtime",
-            "does_not_send_broker_order_from_browser",
-            "does_not_store_raw_ctp_secret_or_endpoint",
-            "does_not_claim_live_readiness",
-            "does_not_make_gateway_ack_final_state",
+LEGACY_COMMAND_READ_SURFACES = [
+    "/api/commands/accounts/{account_id}/runtime-closeouts/{run_id}",
+    "/api/commands/accounts/{account_id}/runtime-invocation-readiness",
+    "/api/commands/accounts/{account_id}/runtime-execution-approval-packet",
+    "/api/commands/accounts/{account_id}/runtime-execution-handoff-bundle",
+    "/api/commands/accounts/{account_id}/runtime-execution-gap-audit",
+]
+RETIRED_ARCHIVE_COMMAND_SURFACES = [
+    CommandRetiredArchiveSurface(
+        route="/api/commands/accounts/{account_id}/partial-fill-runtime-execution-approval-packet",
+        archive_evidence_only=True,
+        panel_ids=["account-partial-fill-runtime-approval-packet-panel"],
+        historical_contract_ref="docs/acceptance/browser-evidence/p024-account-console-paper-command-controls/partial-fill-runtime-approval-packet-ui.json",
+        retirement_assertion="live_route_and_panel_retired_archive_evidence_only",
+    ),
+    CommandRetiredArchiveSurface(
+        route="/api/commands/accounts/{account_id}/partial-fill-runtime-execution-handoff-bundle",
+        archive_evidence_only=True,
+        panel_ids=["account-partial-fill-runtime-handoff-bundle-panel"],
+        historical_contract_ref="docs/acceptance/browser-evidence/p024-account-console-paper-command-controls/partial-fill-runtime-handoff-bundle-ui.json",
+        retirement_assertion="live_route_and_panel_retired_archive_evidence_only",
+    ),
+    CommandRetiredArchiveSurface(
+        route="/api/commands/accounts/{account_id}/partial-fill-owner-repair-approval-packet",
+        archive_evidence_only=True,
+        panel_ids=["account-partial-fill-owner-repair-approval-packet-panel"],
+        historical_contract_ref="docs/acceptance/browser-evidence/p024-account-console-paper-command-controls/partial-fill-owner-repair-approval-packet-ui.json",
+        retirement_assertion="live_route_and_panel_retired_archive_evidence_only",
+    ),
+    CommandRetiredArchiveSurface(
+        route="/api/commands/accounts/{account_id}/partial-fill-remaining-acceptance-current-state",
+        archive_evidence_only=True,
+        panel_ids=["account-partial-fill-remaining-acceptance-panel"],
+        historical_contract_ref="docs/acceptance/browser-evidence/p024-account-console-paper-command-controls/partial-fill-remaining-acceptance-state-ui.json",
+        retirement_assertion="live_route_and_panel_retired_archive_evidence_only",
+    ),
+    CommandRetiredArchiveSurface(
+        route="/api/commands/accounts/{account_id}/partial-fill-owner-repair-implementation-plan",
+        archive_evidence_only=True,
+        panel_ids=["account-partial-fill-owner-repair-plan-panel"],
+        historical_contract_ref="docs/acceptance/browser-evidence/p024-account-console-paper-command-controls/partial-fill-owner-repair-plan-ui.json",
+        retirement_assertion="live_route_and_panel_retired_archive_evidence_only",
+    ),
+    CommandRetiredArchiveSurface(
+        route="/api/commands/accounts/{account_id}/partial-fill-owner-repair-evidence-ingest-gate",
+        archive_evidence_only=True,
+        panel_ids=["account-partial-fill-owner-repair-ingest-gate-panel"],
+        historical_contract_ref="docs/acceptance/browser-evidence/p024-account-console-paper-command-controls/partial-fill-owner-repair-ingest-gate-ui.json",
+        retirement_assertion="live_route_and_panel_retired_archive_evidence_only",
+    ),
+    CommandRetiredArchiveSurface(
+        route="/api/commands/accounts/{account_id}/partial-fill-owner-repair-evidence-ingest-audit",
+        archive_evidence_only=True,
+        panel_ids=["account-partial-fill-owner-repair-ingest-audit-panel"],
+        historical_contract_ref="docs/acceptance/p024-account-console-paper-command-controls/partial-fill-owner-repair-evidence-ingest-audit.json",
+        retirement_assertion="live_route_and_panel_retired_archive_evidence_only",
+    ),
+    CommandRetiredArchiveSurface(
+        route="/api/commands/accounts/{account_id}/partial-fill-post-repair-runtime-retry-approval-packet",
+        archive_evidence_only=True,
+        panel_ids=["account-partial-fill-post-repair-runtime-retry-packet-panel"],
+        historical_contract_ref="docs/acceptance/p024-account-console-paper-command-controls/partial-fill-post-repair-runtime-retry-approval-packet.json",
+        retirement_assertion="live_route_and_panel_retired_archive_evidence_only",
+    ),
+    CommandRetiredArchiveSurface(
+        route="/api/commands/accounts/{account_id}/partial-fill-post-repair-runtime-attempt-audit",
+        archive_evidence_only=True,
+        panel_ids=["account-partial-fill-post-repair-runtime-attempt-panel"],
+        historical_contract_ref="docs/acceptance/p024-account-console-paper-command-controls/partial-fill-post-repair-runtime-attempt-audit.json",
+        retirement_assertion="live_route_and_panel_retired_archive_evidence_only",
+    ),
+    CommandRetiredArchiveSurface(
+        route="/api/commands/accounts/{account_id}/partial-fill-owner-repair-preflight-source-audit",
+        archive_evidence_only=True,
+        panel_ids=["account-partial-fill-owner-repair-preflight-panel"],
+        historical_contract_ref="docs/acceptance/browser-evidence/p024-account-console-paper-command-controls/partial-fill-owner-repair-preflight-ui.json",
+        retirement_assertion="live_route_and_panel_retired_archive_evidence_only",
+    ),
+    CommandRetiredArchiveSurface(
+        route="/api/commands/accounts/{account_id}/partial-fill-owner-repair-patch-preview",
+        archive_evidence_only=True,
+        panel_ids=["account-partial-fill-owner-repair-patch-preview-panel"],
+        historical_contract_ref="docs/acceptance/browser-evidence/p024-account-console-paper-command-controls/partial-fill-owner-repair-patch-preview-ui.json",
+        retirement_assertion="live_route_and_panel_retired_archive_evidence_only",
+    ),
+    CommandRetiredArchiveSurface(
+        route="/api/commands/accounts/{account_id}/partial-fill-owner-repair-execution-handoff-bundle",
+        archive_evidence_only=True,
+        panel_ids=["account-partial-fill-owner-repair-execution-handoff-panel"],
+        historical_contract_ref="docs/acceptance/browser-evidence/p024-account-console-paper-command-controls/partial-fill-owner-repair-execution-handoff-ui.json",
+        retirement_assertion="live_route_and_panel_retired_archive_evidence_only",
+    ),
+]
+ACTION_COMMAND_SURFACES = [
+    "/api/commands/accounts/{account_id}/submit-intents",
+    "/api/commands/accounts/{account_id}/cancel-intents",
+    "/api/commands/accounts/{account_id}/runtime-run-requests/submit",
+    "/api/commands/accounts/{account_id}/runtime-run-requests/cancel",
+]
+LEGACY_COMMAND_RETIREMENT_SLICES = [
+    CommandReadRetirementSlice(
+        route="/api/commands/accounts/{account_id}/runtime-closeouts/{run_id}",
+        category="retain_blocker_projection",
+        execution_state="active_blocker_projection",
+        panel_ids=["account-runtime-closeout-panel"],
+        rationale="owner-runtime artifact closeout stays useful as a typed blocker/read-only audit surface",
+        successor_surface="/api/commands/accounts/{account_id}/projection",
+    ),
+    CommandReadRetirementSlice(
+        route="/api/commands/accounts/{account_id}/runtime-invocation-readiness",
+        category="retain_blocker_projection",
+        execution_state="active_blocker_projection",
+        panel_ids=["account-runtime-readiness-panel"],
+        rationale="external approval and owner-runtime readiness remain blocker-only governance surfaces",
+        successor_surface="/api/commands/accounts/{account_id}/projection",
+    ),
+    CommandReadRetirementSlice(
+        route="/api/commands/accounts/{account_id}/runtime-execution-approval-packet",
+        category="retain_blocker_projection",
+        execution_state="active_blocker_projection",
+        panel_ids=["account-runtime-approval-packet-panel"],
+        rationale="exact approval packet is a governance blocker packet, not durable command truth",
+        successor_surface="/api/commands/accounts/{account_id}/projection",
+    ),
+    CommandReadRetirementSlice(
+        route="/api/commands/accounts/{account_id}/runtime-execution-handoff-bundle",
+        category="retain_blocker_projection",
+        execution_state="active_blocker_projection",
+        panel_ids=["account-runtime-handoff-bundle-panel"],
+        rationale="handoff sequence remains a read-only blocker packet until owner-runtime execution is out of band",
+        successor_surface="/api/commands/accounts/{account_id}/projection",
+    ),
+    CommandReadRetirementSlice(
+        route="/api/commands/accounts/{account_id}/runtime-execution-gap-audit",
+        category="retain_blocker_projection",
+        execution_state="active_blocker_projection",
+        panel_ids=["account-runtime-execution-gap-panel"],
+        rationale="gap audit is explicit non-acceptance evidence and should stay separate from mirror command status",
+        successor_surface="/api/commands/accounts/{account_id}/projection",
+    ),
+    CommandReadRetirementSlice(
+        route="/api/commands/accounts/{account_id}/partial-fill-runtime-execution-approval-packet",
+        category="retire_when_panels_removed",
+        execution_state="retired_archive_only",
+        panel_ids=["account-partial-fill-runtime-approval-packet-panel"],
+        rationale="partial-fill attempt packet is panel-specific governance state, not durable command truth",
+        successor_surface="/api/commands/accounts/{account_id}/projection",
+    ),
+    CommandReadRetirementSlice(
+        route="/api/commands/accounts/{account_id}/partial-fill-runtime-execution-handoff-bundle",
+        category="retire_when_panels_removed",
+        execution_state="retired_archive_only",
+        panel_ids=["account-partial-fill-runtime-handoff-bundle-panel"],
+        rationale="partial-fill handoff is panel-specific governance flow and is now retired as archive-only historical evidence",
+        successor_surface="/api/commands/accounts/{account_id}/projection",
+    ),
+    CommandReadRetirementSlice(
+        route="/api/commands/accounts/{account_id}/partial-fill-owner-repair-approval-packet",
+        category="retire_when_panels_removed",
+        execution_state="retired_archive_only",
+        panel_ids=["account-partial-fill-owner-repair-approval-packet-panel"],
+        rationale="owner repair approval packet is a temporary governance lane for partial-fill recovery only",
+        successor_surface="/api/commands/accounts/{account_id}/projection",
+    ),
+    CommandReadRetirementSlice(
+        route="/api/commands/accounts/{account_id}/partial-fill-remaining-acceptance-current-state",
+        category="retire_when_panels_removed",
+        execution_state="retired_archive_only",
+        panel_ids=["account-partial-fill-remaining-acceptance-panel"],
+        rationale="remaining-acceptance audit tracked temporary acceptance debt and is now retired as archive-only historical evidence",
+        successor_surface="/api/commands/accounts/{account_id}/projection",
+    ),
+    CommandReadRetirementSlice(
+        route="/api/commands/accounts/{account_id}/partial-fill-owner-repair-implementation-plan",
+        category="retire_when_panels_removed",
+        execution_state="retired_archive_only",
+        panel_ids=["account-partial-fill-owner-repair-plan-panel"],
+        rationale="owner repair implementation plan is a temporary remediation document surface",
+        successor_surface="/api/commands/accounts/{account_id}/projection",
+    ),
+    CommandReadRetirementSlice(
+        route="/api/commands/accounts/{account_id}/partial-fill-owner-repair-evidence-ingest-gate",
+        category="retire_when_panels_removed",
+        execution_state="retired_archive_only",
+        panel_ids=["account-partial-fill-owner-repair-ingest-gate-panel"],
+        rationale="ingest gate is a temporary evidence-governance surface for repair closeout",
+        successor_surface="/api/commands/accounts/{account_id}/projection",
+    ),
+    CommandReadRetirementSlice(
+        route="/api/commands/accounts/{account_id}/partial-fill-owner-repair-evidence-ingest-audit",
+        category="retire_when_panels_removed",
+        execution_state="retired_archive_only",
+        panel_ids=["account-partial-fill-owner-repair-ingest-audit-panel"],
+        rationale="ingest audit exists only to bridge owner repair evidence into this proposal lane",
+        successor_surface="/api/commands/accounts/{account_id}/projection",
+    ),
+    CommandReadRetirementSlice(
+        route="/api/commands/accounts/{account_id}/partial-fill-post-repair-runtime-retry-approval-packet",
+        category="retire_when_panels_removed",
+        execution_state="retired_archive_only",
+        panel_ids=["account-partial-fill-post-repair-runtime-retry-packet-panel"],
+        rationale="post-repair retry packet is a one-off governance surface for a consumed retry lane",
+        successor_surface="/api/commands/accounts/{account_id}/projection",
+    ),
+    CommandReadRetirementSlice(
+        route="/api/commands/accounts/{account_id}/partial-fill-post-repair-runtime-attempt-audit",
+        category="retire_when_panels_removed",
+        execution_state="retired_archive_only",
+        panel_ids=["account-partial-fill-post-repair-runtime-attempt-panel"],
+        rationale="post-repair attempt audit is specific to the temporary recovery/validation lane",
+        successor_surface="/api/commands/accounts/{account_id}/projection",
+    ),
+    CommandReadRetirementSlice(
+        route="/api/commands/accounts/{account_id}/partial-fill-owner-repair-preflight-source-audit",
+        category="retire_when_panels_removed",
+        execution_state="retired_archive_only",
+        panel_ids=["account-partial-fill-owner-repair-preflight-panel"],
+        rationale="preflight source audit is temporary recovery governance state",
+        successor_surface="/api/commands/accounts/{account_id}/projection",
+    ),
+    CommandReadRetirementSlice(
+        route="/api/commands/accounts/{account_id}/partial-fill-owner-repair-patch-preview",
+        category="retire_when_panels_removed",
+        execution_state="retired_archive_only",
+        panel_ids=["account-partial-fill-owner-repair-patch-preview-panel"],
+        rationale="patch preview is temporary remediation planning state",
+        successor_surface="/api/commands/accounts/{account_id}/projection",
+    ),
+    CommandReadRetirementSlice(
+        route="/api/commands/accounts/{account_id}/partial-fill-owner-repair-execution-handoff-bundle",
+        category="retire_when_panels_removed",
+        execution_state="retired_archive_only",
+        panel_ids=["account-partial-fill-owner-repair-execution-handoff-panel"],
+        rationale="repair execution handoff is a temporary repair-governance surface",
+        successor_surface="/api/commands/accounts/{account_id}/projection",
+    ),
+]
+LEGACY_COMMAND_RETIREMENT_BATCHES = [
+    CommandReadRetirementBatch(
+        batch_id="batch.partial_fill_post_repair_closeout_panels",
+        execution_state="completed_safe_retirement",
+        route_count=3,
+        panel_count=3,
+        routes=[
+            "/api/commands/accounts/{account_id}/partial-fill-owner-repair-evidence-ingest-audit",
+            "/api/commands/accounts/{account_id}/partial-fill-post-repair-runtime-retry-approval-packet",
+            "/api/commands/accounts/{account_id}/partial-fill-post-repair-runtime-attempt-audit",
         ],
-    }
-    payload["run_request_checksum"] = _canonical_checksum(payload)
-    return CommandRuntimeRunRequest(**payload)
+        panel_ids=[
+            "account-partial-fill-owner-repair-ingest-audit-panel",
+            "account-partial-fill-post-repair-runtime-retry-packet-panel",
+            "account-partial-fill-post-repair-runtime-attempt-panel",
+        ],
+        preconditions=[
+            "canonical_projection_retirement_slicing_present",
+            "frontend_legacy_suite_loader_is_single_entrypoint",
+            "p024_acceptance_docs_migrate_batch_to_archive_or_remove_panel_lane",
+        ],
+        rationale="These post-repair closeout panels describe a consumed temporary recovery lane and are the safest first grouped retirement target.",
+    ),
+    CommandReadRetirementBatch(
+        batch_id="batch.partial_fill_pre_repair_attempt_planning_panels",
+        execution_state="completed_safe_retirement",
+        route_count=2,
+        panel_count=2,
+        routes=[
+            "/api/commands/accounts/{account_id}/partial-fill-runtime-execution-approval-packet",
+            "/api/commands/accounts/{account_id}/partial-fill-runtime-execution-handoff-bundle",
+        ],
+        panel_ids=[
+            "account-partial-fill-runtime-approval-packet-panel",
+            "account-partial-fill-runtime-handoff-bundle-panel",
+        ],
+        preconditions=[
+            "owner_repair_lane_is_canonical_next_step",
+            "archive_only_artifact_validators_remain",
+            "p024_acceptance_docs_migrate_phase4l_and_phase4m_ui_projection_to_archive_only",
+        ],
+        rationale="These panels described the superseded pre-repair attempt planning lane and are now retired from the active runtime UI as archive-only historical evidence.",
+    ),
+    CommandReadRetirementBatch(
+        batch_id="batch.partial_fill_owner_repair_planning_panels",
+        execution_state="completed_safe_retirement",
+        route_count=3,
+        panel_count=3,
+        routes=[
+            "/api/commands/accounts/{account_id}/partial-fill-owner-repair-approval-packet",
+            "/api/commands/accounts/{account_id}/partial-fill-remaining-acceptance-current-state",
+            "/api/commands/accounts/{account_id}/partial-fill-owner-repair-implementation-plan",
+        ],
+        panel_ids=[
+            "account-partial-fill-owner-repair-approval-packet-panel",
+            "account-partial-fill-remaining-acceptance-panel",
+            "account-partial-fill-owner-repair-plan-panel",
+        ],
+        preconditions=[
+            "archive_only_acceptance_rows_present_for_phase4p_phase4q_phase4r",
+            "owner_repair_ingest_gate_is_canonical_active_follow_on_lane",
+            "frontend_runtime_ui_no_longer_mounts_owner_repair_planning_panels",
+        ],
+        rationale="These planning and approval panels described a superseded temporary owner-repair governance lane and are now retired as archive-only historical evidence.",
+    ),
+    CommandReadRetirementBatch(
+        batch_id="batch.partial_fill_owner_repair_execution_lane_panels",
+        execution_state="completed_safe_retirement",
+        route_count=4,
+        panel_count=4,
+        routes=[
+            "/api/commands/accounts/{account_id}/partial-fill-owner-repair-evidence-ingest-gate",
+            "/api/commands/accounts/{account_id}/partial-fill-owner-repair-preflight-source-audit",
+            "/api/commands/accounts/{account_id}/partial-fill-owner-repair-patch-preview",
+            "/api/commands/accounts/{account_id}/partial-fill-owner-repair-execution-handoff-bundle",
+        ],
+        panel_ids=[
+            "account-partial-fill-owner-repair-ingest-gate-panel",
+            "account-partial-fill-owner-repair-preflight-panel",
+            "account-partial-fill-owner-repair-patch-preview-panel",
+            "account-partial-fill-owner-repair-execution-handoff-panel",
+        ],
+        preconditions=[
+            "archive_only_acceptance_rows_present_for_phase4u_phase4w_phase4y_phase4za",
+            "owner_repair_ingest_audit_and_retry_artifacts_are_machine_checked",
+            "frontend_runtime_ui_no_longer_mounts_owner_repair_execution_lane_panels",
+        ],
+        rationale="These execution-lane panels described a completed temporary repair governance sequence and are now retired as archive-only historical evidence.",
+    ),
+]
 
 
 def _file_checksum(path: Path) -> str:
@@ -328,6 +532,67 @@ def _runtime_run_dir(run_id: str) -> Path:
     if not str(run_dir).startswith(str(root)):
         raise HTTPException(status_code=400, detail="runtime run_id escaped command evidence root")
     return run_dir
+
+
+def load_command_plane_projection(account_id: str) -> CommandPlaneProjection:
+    bundles = load_capability_bundles()
+    projections = AccountMirrorStore().list_projections_from_bundles(bundles)
+    projection = next((item for item in projections if item.account_id == account_id), None)
+    if projection is None:
+        raise HTTPException(status_code=404, detail="command plane projection not found")
+
+    return CommandPlaneProjection(
+        schema_version="account_command.command_plane_projection.v1",
+        proposal_id=PROPOSAL_ID,
+        account_id=projection.account_id,
+        projection_owner="account-console-backend.mirror_projection",
+        canonical_source="/api/mirror/accounts/{account_id}",
+        legacy_read_surface_state="legacy_read_only_until_mirror_convergence",
+        legacy_read_surfaces=list(LEGACY_COMMAND_READ_SURFACES),
+        retired_archive_surfaces=list(RETIRED_ARCHIVE_COMMAND_SURFACES),
+        action_surfaces=list(ACTION_COMMAND_SURFACES),
+        retirement_guardrails=[
+            "legacy_read_surfaces_are_projection_only",
+            "legacy_read_surfaces_must_not_become_canonical_command_truth",
+            "retired_archive_surfaces_must_not_be_treated_as_live_routes",
+            "retire_legacy_reads_by_migrating_consumers_to_mirror_owned_projection",
+        ],
+        retirement_slices=list(LEGACY_COMMAND_RETIREMENT_SLICES),
+        retirement_batches=list(LEGACY_COMMAND_RETIREMENT_BATCHES),
+        source_ref=projection.source_ref,
+        source_checksum=projection.source_checksum,
+        projection_checkpoint_id=projection.projection_checkpoint_id,
+        projection_checksum=projection.projection_checksum,
+        blockers=list(projection.blockers),
+        boundaries=dict(projection.boundaries),
+        explicit_non_claims=[
+            "does_not_promote_command_api_receipts_to_canonical_command_status",
+            "does_not_make_legacy_command_reads_canonical_command_truth",
+            "does_not_grant_account_console_broker_write_authority",
+        ],
+    )
+
+
+def register_legacy_command_read_routes(app: FastAPI) -> None:
+    for route in LEGACY_COMMAND_READ_ROUTE_REGISTRY:
+        loader = route["loader"]
+        path = str(route["path"])
+        if path.endswith("/{run_id}"):
+            app.add_api_route(
+                path,
+                cast(Callable[..., CommandRuntimeCloseout], loader),
+                methods=["GET"],
+                response_model=cast(type[CommandRuntimeCloseout], route["response_model"]),
+                response_model_exclude_none=True,
+            )
+            continue
+        app.add_api_route(
+            path,
+            cast(Callable[..., object], loader),
+            methods=["GET"],
+            response_model=route["response_model"],
+            response_model_exclude_none=True,
+        )
 
 
 def load_runtime_closeout(account_id: str, run_id: str = DEFAULT_RUNTIME_RUN_ID) -> CommandRuntimeCloseout:
@@ -370,6 +635,21 @@ def load_runtime_closeout(account_id: str, run_id: str = DEFAULT_RUNTIME_RUN_ID)
         raise HTTPException(status_code=409, detail="runtime closeout recorded raw broker endpoint")
     if submit_gateway.get("paper_send_armed") is not True or cancel_gateway.get("cancel_send_armed") is not True:
         raise HTTPException(status_code=409, detail="runtime closeout gateway send evidence is not armed paper runtime")
+    owner_evidence = manifest.get("owner_runtime_evidence") or audit.get("owner_runtime_evidence") or {}
+    if owner_evidence.get("owner_repo_ref") != "owner-repo://nautilus_ctp_adapter":
+        raise HTTPException(status_code=409, detail="runtime closeout missing owner runtime evidence")
+    if owner_evidence.get("raw_secret_values_recorded") is not False:
+        raise HTTPException(status_code=409, detail="runtime closeout owner evidence recorded raw secrets")
+    owner_artifacts = owner_evidence.get("artifact_refs")
+    if not isinstance(owner_artifacts, list) or not owner_artifacts:
+        raise HTTPException(status_code=409, detail="runtime closeout owner artifact refs missing")
+    for item in owner_artifacts:
+        if not isinstance(item, dict):
+            raise HTTPException(status_code=409, detail="runtime closeout owner artifact ref invalid")
+        if item.get("owner_repo_ref") != "owner-repo://nautilus_ctp_adapter":
+            raise HTTPException(status_code=409, detail="runtime closeout owner artifact ref mismatch")
+        if not str(item.get("checksum") or "").startswith("sha256:"):
+            raise HTTPException(status_code=409, detail="runtime closeout owner artifact checksum missing")
 
     artifact_refs = manifest.get("artifact_refs")
     if not isinstance(artifact_refs, dict) or not artifact_refs:
@@ -1067,88 +1347,38 @@ def load_partial_fill_owner_repair_execution_handoff_bundle(
     return CommandPartialFillOwnerRepairExecutionHandoffBundle(**payload)
 
 
-def accept_submit_intent(account_id: str, intent: OrderIntentRequest) -> CommandApiResult:
-    _require_paper_scope(account_id, intent.account_id, intent.mode)
-    command_id = _command_id(account_id, intent.action, intent.idempotency_key)
-    intent_ref = _intent_ref(account_id, intent.action, command_id)
-    return CommandApiResult(
-        schema_version="account_command.command_api_result.v1",
-        proposal_id=PROPOSAL_ID,
-        account_id=account_id,
-        action="submit",
-        mode=intent.mode,
-        status="accepted_for_risk",
-        command_id=command_id,
-        intent_id=intent.intent_id,
-        intent_ref=intent_ref,
-        idempotency_key=intent.idempotency_key,
-        idempotency_enforced=True,
-        next_required_stage="risk_decision",
-        blockers=_pre_gateway_blockers("submit", intent_ref),
-        gateway_ack_is_final_state=False,
-        gateway_send_attempted=False,
-        broker_order_created=False,
-        runtime_duplicate_send_attempted=False,
-        raw_secret_values_recorded=False,
-        raw_broker_endpoint_recorded=False,
-    )
-
-
-def accept_cancel_intent(account_id: str, intent: CancelIntentRequest) -> CommandApiResult:
-    _require_paper_scope(account_id, intent.account_id, intent.mode)
-    command_id = _command_id(account_id, intent.action, intent.idempotency_key)
-    intent_ref = _intent_ref(account_id, intent.action, command_id)
-    return CommandApiResult(
-        schema_version="account_command.command_api_result.v1",
-        proposal_id=PROPOSAL_ID,
-        account_id=account_id,
-        action="cancel",
-        mode=intent.mode,
-        status="accepted_for_risk",
-        command_id=command_id,
-        intent_id=intent.intent_id,
-        intent_ref=intent_ref,
-        idempotency_key=intent.idempotency_key,
-        idempotency_enforced=True,
-        next_required_stage="risk_decision",
-        blockers=_pre_gateway_blockers("cancel", intent_ref),
-        readback_refs=[intent.readback_ref],
-        gateway_ack_is_final_state=False,
-        gateway_send_attempted=False,
-        broker_order_created=False,
-        runtime_duplicate_send_attempted=False,
-        raw_secret_values_recorded=False,
-        raw_broker_endpoint_recorded=False,
-    )
-
-
-def prepare_submit_runtime_run_request(account_id: str, intent: OrderIntentRequest) -> CommandRuntimeRunRequest:
-    _require_paper_scope(account_id, intent.account_id, intent.mode)
-    command_id = _command_id(account_id, intent.action, intent.idempotency_key)
-    intent_ref = _intent_ref(account_id, intent.action, command_id)
-    return _runtime_run_request(
-        account_id=account_id,
-        action="submit",
-        command_id=command_id,
-        intent_id=intent.intent_id,
-        intent_ref=intent_ref,
-        idempotency_key=intent.idempotency_key,
-        source_preflight_ref=intent.preflight_ref,
-        readback_ref=None,
-    )
-
-
-def prepare_cancel_runtime_run_request(account_id: str, intent: CancelIntentRequest) -> CommandRuntimeRunRequest:
-    _require_paper_scope(account_id, intent.account_id, intent.mode)
-    command_id = _command_id(account_id, intent.action, intent.idempotency_key)
-    intent_ref = _intent_ref(account_id, intent.action, command_id)
-    return _runtime_run_request(
-        account_id=account_id,
-        action="cancel",
-        command_id=command_id,
-        intent_id=intent.intent_id,
-        intent_ref=intent_ref,
-        idempotency_key=intent.idempotency_key,
-        source_preflight_ref=intent.readback_ref,
-        readback_ref=intent.readback_ref,
-    )
+def register_legacy_command_read_routes(app: FastAPI) -> None:
+    for path, response_model, loader in [
+        (
+            "/api/commands/accounts/{account_id}/runtime-closeouts/{run_id}",
+            CommandRuntimeCloseout,
+            load_runtime_closeout,
+        ),
+        (
+            "/api/commands/accounts/{account_id}/runtime-invocation-readiness",
+            CommandRuntimeInvocationReadiness,
+            load_runtime_invocation_readiness,
+        ),
+        (
+            "/api/commands/accounts/{account_id}/runtime-execution-approval-packet",
+            CommandRuntimeExecutionApprovalPacket,
+            load_runtime_execution_approval_packet,
+        ),
+        (
+            "/api/commands/accounts/{account_id}/runtime-execution-handoff-bundle",
+            CommandRuntimeExecutionHandoffBundle,
+            load_runtime_execution_handoff_bundle,
+        ),
+        (
+            "/api/commands/accounts/{account_id}/runtime-execution-gap-audit",
+            CommandRuntimeExecutionGapAudit,
+            load_runtime_execution_gap_audit,
+        ),
+    ]:
+        app.add_api_route(
+            path,
+            loader,
+            methods=["GET"],
+            response_model=response_model,
+            response_model_exclude_none=True,
+        )

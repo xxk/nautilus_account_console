@@ -3,7 +3,7 @@ status: proposed
 owner: architecture
 adr_id: "0007"
 decision_status: proposed
-landing_status: p024_phase4e_runtime_execution_gap_audit_gate
+landing_status: p024_governed_capability_authority_gate
 ---
 
 # ADR-0007: Governed Account Command Capability / 受治理的账户下单与撤单能力
@@ -11,11 +11,11 @@ landing_status: p024_phase4e_runtime_execution_gap_audit_gate
 - 日期：`2026-06-21`
 - ADR 类型：standard
 - 决策状态：proposed
-- 落地状态：p024_phase4e_runtime_execution_gap_audit_gate
+- 落地状态：p024_governed_capability_authority_gate
 - 适用范围：`nautilus_account_console` Account Capability Fabric, Account Workbench, future Command Gateway, CTP / IB TWS / future broker command paths
 - 决策问题：Account Console 是否可以实现账户下单、撤单能力；如果可以，命令 authority、risk/approval、broker session、readback reconciliation 与 UI 安全边界应该如何分层？
 - 当前倾向：proposed；接受一个受治理的 command capability，但不得由 Account Mirror 或 UI 直接写 broker。命令必须通过 `OrderIntent -> RiskDecision -> ApprovalDecision -> ExecutionGateway -> ExecutionEvent -> AccountMirrorReadback -> ReconciliationResult`。
-- 最终决策：pending；P024 Phase 1 backend intent API, Phase 2 frontend guarded controls, Phase 3a owner-backed runtime closeout projection, Phase 3b partial-fill cancel UI display contract, Phase 3c owner-runtime handoff request, Phase 3d owner-runtime invocation readiness, Phase 3e runtime readiness UI projection, Phase 4 residual blocker audit, Phase 4a owner-runtime execution approval packet, Phase 4b runtime approval packet UI projection, Phase 4c owner-runtime execution handoff bundle, Phase 4d runtime handoff bundle UI projection and Phase 4e runtime execution gap audit gates exist for paper submit/cancel intent/display flows, but real Web UI risk/approval/gateway runtime send/live evidence are not complete and Account Mirror remains read-only.
+- 最终决策：pending；P024 backend command routes now fail closed unless an explicit command capability bundle grants authority. P024 runtime closeout no longer treats repo-local `output/` as broker/runtime truth unless owner-runtime evidence from `owner-repo://nautilus_ctp_adapter` is present. Existing P024 UI/runtime packet routes remain blocker/handoff/readiness projections; real Web UI risk/approval/gateway runtime send/live evidence are not complete and Account Mirror remains read-only.
 - Required predecessor: ADR-0004 command boundary and ADR-0005 read-only broker observation boundary.
 - First successor proposal: [P023 OpenCTP 19053 Paper Command Capability Acceptance Design](../proposals/p023-openctp-19053-paper-command-capability/README.md)
 - Second successor proposal: [P024 Account Console Paper Command Controls](../proposals/p024-account-console-paper-command-controls/README.md)
@@ -208,9 +208,9 @@ ADR-0007 is proposed only. Current repository behavior remains observation-only:
 1. Account Mirror command capability stays disabled.
 2. Existing OpenCTP 19053 UI shows orders/fills by read-only query only.
 3. No submit/cancel/replace UI controls are accepted by this ADR draft.
-4. P024 Phase 1 backend command API is accepted as a contract gate only: it accepts paper `OrderIntent` / `CancelIntent`, returns `accepted_for_risk`, records risk/approval blockers and requires `gateway_send_attempted=false`.
-5. P024 Phase 2 frontend guarded controls are accepted as browser contract evidence only: disabled projections show no controls, `paper_armed` projections mount submit/cancel controls, and browser actions call the Phase 1 API without gateway send.
-6. P024 Phase 3a runtime closeout projection is accepted as read-only Web UI evidence: the Account Console renders owner-backed P023 OpenCTP 19053 paper submit/cancel closeout artifacts, checksums and non-claims while preserving `browser_triggered_broker_order=false`.
+4. P024 governed capability authority gate supersedes the earlier Phase 1 intent-acceptance shape: backend `submit-intents`, `cancel-intents` and owner-runtime run-request routes must fail closed with `command_capability_not_mounted` unless the selected account bundle declares `command.enabled=true`, `command.mode=paper_armed`, action membership, `authority_ref=owner-repo://nautilus_ctp_adapter` and a checksum.
+5. P024 browser controls remain projection-only and must not be treated as authority. A UI state or mocked `paper_armed` projection cannot authorize backend intent acceptance unless the backend capability authority gate passes.
+6. P024 runtime closeout projection is accepted only when positive runtime claims are backed by owner-runtime evidence. Repo-local `output/account_command/...` artifacts without `owner_runtime_evidence.owner_repo_ref=owner-repo://nautilus_ctp_adapter` must produce a typed blocker and must not return `runtime_gateway_send_observed=true` or `broker_order_created=true`.
 7. P024 Phase 3b partial-fill cancel UI display is accepted as browser display-contract evidence only: S1 working, S2 partial, S3 cancel pending and S4 remaining cancelled keep stable order/fill identities and correct quantity formulas while preserving a typed runtime partial-fill blocker.
 8. P024 Phase 3c owner-runtime handoff request is accepted as browser handoff evidence only: submit/cancel controls prepare typed run requests for `ctp_guarded_paper_order_loop.py` and `ctp_guarded_paper_cancel_loop.py`, while `runtime_invocation_attempted=false`, `browser_triggered_broker_order=false` and `gateway_send_attempted=false` remain required.
 9. P024 Phase 3d owner-runtime invocation readiness is accepted as a readiness gate only: owner repo path, guarded entrypoint checksums, external write approval scope and post-run artifact requirements are frozen while real owner-runtime invocation remains blocked pending explicit approval.

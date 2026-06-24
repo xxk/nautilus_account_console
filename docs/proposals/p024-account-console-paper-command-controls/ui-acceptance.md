@@ -30,62 +30,51 @@
 | UI-21 | post-repair runtime retry packet projection | one-attempt authorization, exposure-reduction guard, runtime requirements and false pre-runtime claims render in UI | phase4ze_post_repair_runtime_retry_approval_packet_ready |
 | UI-22 | post-repair runtime attempt audit projection | full-fill outcome, zero remainder, false partial-fill acceptance and retry-consumed state render in UI | phase4zf_post_repair_runtime_attempt_full_fill_blocker_recorded |
 
+## Retired Owner-Repair Execution Lane
+
+Archive-only historical browser evidence is retained for the retired owner-repair execution-lane panels. The live routes and UI panels for ingest gate, preflight, patch preview and execution handoff remain retired from the runtime surface.
+
 ## UI-19 Remaining Acceptance State Projection
+Archive-only historical browser evidence is retained for this retired panel; the live route and UI panel remain retired from the runtime surface.
 
-The browser test must load `/accounts/acct.ctp.paper.19053`, call the read-only remaining acceptance endpoint, and verify:
+Historical browser evidence must remain machine-checkable without remounting the retired live route or panel. The governing validator verifies archive evidence, route retirement, and panel removal:
 
-1. `account-partial-fill-remaining-acceptance-panel` is visible.
-2. `account-partial-fill-remaining-acceptance-status` is `phase4q_remaining_acceptance_current_state_audited`.
-3. `account-partial-fill-remaining-acceptance-verdict` is `not_fully_accepted_pending_owner_repair_and_real_partial_fill`.
-4. `account-partial-fill-remaining-acceptance-requirement` displays exactly R1-R5 and every row is `missing`.
-5. `account-partial-fill-remaining-acceptance-evidence-group` displays accepted-but-insufficient evidence groups.
-6. `account-partial-fill-remaining-acceptance-owner-repair-allowed`, `account-partial-fill-remaining-acceptance-runtime-retry`, `account-partial-fill-remaining-acceptance-full-claimed`, `account-partial-fill-remaining-acceptance-real-partial-claimed` and `account-partial-fill-remaining-acceptance-web-ui-claimed` are all `false`.
+1. Historical browser evidence records `account-partial-fill-remaining-acceptance-panel`, `phase4q_remaining_acceptance_current_state_audited`, R1-R5 missing, and all owner-repair/runtime-retry/full-acceptance claims false.
+2. The live route returns `404`.
+3. The live panel remains absent from the runtime UI surface.
 
 Accepted evidence: `python scripts\validate_p024_partial_fill_remaining_acceptance_state_browser_evidence.py` returns `P024_PARTIAL_FILL_REMAINING_ACCEPTANCE_STATE_BROWSER_EVIDENCE_OK`.
 
 ## UI-18 Owner Repair Approval Packet Projection
+Archive-only historical browser evidence is retained for this retired panel; the live route and UI panel remain retired from the runtime surface.
 
-The browser test must load `/accounts/acct.ctp.paper.19053`, call the read-only owner repair approval packet endpoint, and verify:
+Historical browser evidence must remain machine-checkable without remounting the retired live route or panel. The governing validator verifies archive evidence, route retirement, and panel removal:
 
-1. `account-partial-fill-owner-repair-approval-packet-panel` is visible.
-2. `account-partial-fill-owner-repair-approval-packet-status` is `phase4p_owner_close_offset_repair_approval_packet_ready`.
-3. `account-partial-fill-owner-repair-approval-packet-verdict` is `owner_repair_approval_required_before_retry`.
-4. `account-partial-fill-owner-repair-approval-packet-obtained` and `account-partial-fill-owner-repair-approval-packet-current-matches` are `false`.
-5. `account-partial-fill-owner-repair-approval-packet-runtime-retry`, `account-partial-fill-owner-repair-approval-packet-owner-write`, `account-partial-fill-owner-repair-approval-packet-additional-order`, `account-partial-fill-owner-repair-approval-packet-partial-claimed` and `account-partial-fill-owner-repair-approval-packet-full-claimed` are all `false`.
-6. `account-partial-fill-owner-repair-approval-packet-exact-text` includes `repair owner close-offset semantics for P024`.
-7. `account-partial-fill-owner-repair-approval-packet-change` shows the owner repair changes.
-8. `account-partial-fill-owner-repair-approval-packet-validator` shows owner validators required before retry.
-9. `account-partial-fill-owner-repair-approval-packet-blocker` shows owner repair approval, close-offset gap and real partial-fill runtime blockers.
+1. Historical browser evidence records `account-partial-fill-owner-repair-approval-packet-panel`, `phase4p_owner_close_offset_repair_approval_packet_ready`, current approval mismatch, and all owner-write/runtime-retry/partial-fill/full-acceptance claims false.
+2. The live route returns `404`.
+3. The live panel remains absent from the runtime UI surface.
 
 Accepted evidence: `python scripts\validate_p024_partial_fill_owner_repair_approval_packet_browser_evidence.py` returns `P024_PARTIAL_FILL_OWNER_REPAIR_APPROVAL_PACKET_BROWSER_EVIDENCE_OK`.
 
 ## UI-17 Partial-Fill Runtime Handoff Bundle Projection
+Archive-only historical browser evidence is retained for this retired panel; the live route and UI panel remain retired from the runtime surface.
 
-The browser test must load `/accounts/acct.ctp.paper.19053`, call the read-only partial-fill runtime handoff bundle endpoint, and verify:
+Historical browser evidence must remain machine-checkable without remounting the retired live route or panel. The governing validator verifies archive evidence, route retirement, and panel removal:
 
-1. `account-partial-fill-runtime-handoff-bundle-panel` is visible.
-2. `account-partial-fill-runtime-handoff-bundle-status` is `phase4k_partial_fill_runtime_execution_handoff_bundle_ready`.
-3. `account-partial-fill-runtime-handoff-bundle-execution-allowed` and `account-partial-fill-runtime-handoff-bundle-approval-obtained` are `false`.
-4. `account-partial-fill-runtime-handoff-bundle-invoked`, `account-partial-fill-runtime-handoff-bundle-owner-write`, `account-partial-fill-runtime-handoff-bundle-new-order` and `account-partial-fill-runtime-handoff-bundle-cancel-sent` are all `false`.
-5. `account-partial-fill-runtime-handoff-bundle-input` shows fresh owner pre-snapshot, quantity, owner-reviewed limit price and owner readback identity requirements.
-6. `account-partial-fill-runtime-handoff-bundle-step` shows the gated submit, classify, cancel, readback and ingest sequence.
-7. `account-partial-fill-runtime-handoff-bundle-success` includes `0 < filled_quantity < submitted_quantity`, terminal cancel and remaining quantity formulas.
-8. `account-partial-fill-runtime-handoff-bundle-fallback` includes fully filled, cancelled-without-fill, rejected/timeout and incomplete-artifact classifications.
+1. Historical browser evidence records `account-partial-fill-runtime-handoff-bundle-panel`, `phase4k_partial_fill_runtime_execution_handoff_bundle_ready`, execution disallowed, and all runtime invocation / new-order / cancel-sent claims false.
+2. The live route returns `404`.
+3. The live panel remains absent from the runtime UI surface.
 
 Accepted evidence: `python scripts\validate_p024_partial_fill_runtime_handoff_bundle_browser_evidence.py` returns `P024_PARTIAL_FILL_RUNTIME_HANDOFF_BUNDLE_BROWSER_EVIDENCE_OK`.
 
 ## UI-16 Partial-Fill Runtime Approval Packet Projection
+Archive-only historical browser evidence is retained for this retired panel; the live route and UI panel remain retired from the runtime surface.
 
-The browser test must load `/accounts/acct.ctp.paper.19053`, call the read-only partial-fill runtime approval packet endpoint, and verify:
+Historical browser evidence must remain machine-checkable without remounting the retired live route or panel. The governing validator verifies archive evidence, route retirement, and panel removal:
 
-1. `account-partial-fill-runtime-approval-packet-panel` is visible.
-2. `account-partial-fill-runtime-approval-packet-status` is `phase4j_partial_fill_runtime_execution_approval_packet_ready`.
-3. `account-partial-fill-runtime-approval-packet-owner-path` is `D:/Nautilus/nautilus_ctp_adapter`.
-4. `account-partial-fill-runtime-approval-packet-required` is `true` and `account-partial-fill-runtime-approval-packet-obtained` is `false`.
-5. `account-partial-fill-runtime-approval-packet-invoked`, `account-partial-fill-runtime-approval-packet-owner-write`, `account-partial-fill-runtime-approval-packet-new-order` and `account-partial-fill-runtime-approval-packet-cancel-sent` are all `false`.
-6. `account-partial-fill-runtime-approval-packet-exact-text` displays the exact P024 partial-fill approval text.
-7. `account-partial-fill-runtime-approval-packet-formula` displays the partial-fill, terminal cancel and remaining quantity formulas.
-8. `account-partial-fill-runtime-approval-packet-blocker` includes external approval and missing real partial-fill runtime artifact blockers.
+1. Historical browser evidence records `account-partial-fill-runtime-approval-packet-panel`, `phase4j_partial_fill_runtime_execution_approval_packet_ready`, approval unobtained, and all invocation / owner-write / new-order / cancel-sent claims false.
+2. The live route returns `404`.
+3. The live panel remains absent from the runtime UI surface.
 
 Accepted evidence: `python scripts\validate_p024_partial_fill_runtime_approval_packet_browser_evidence.py` returns `P024_PARTIAL_FILL_RUNTIME_APPROVAL_PACKET_BROWSER_EVIDENCE_OK`.
 
@@ -166,12 +155,10 @@ Accepted evidence: `python scripts\validate_p024_runtime_handoff_browser_evidenc
 The browser test must load `/accounts/acct.ctp.paper.19053` with the P024 runtime closeout endpoint available and verify:
 
 1. `account-runtime-closeout-panel` is visible.
-2. `account-runtime-closeout-run-id` is `p023-armed-20260621t0748z`.
-3. `account-runtime-closeout-status` is `reconciled`.
-4. `account-runtime-closeout-gateway-send` is `true` only as predecessor runtime evidence.
-5. `account-runtime-closeout-web-trigger`, `account-runtime-closeout-raw-secret` and `account-runtime-closeout-gateway-final` are all `false`.
-6. Command status refs for audit, risk, approval, gateway, readback and reconciliation are visible.
-7. No UI text claims live readiness, gateway ack final state or browser-submitted broker order.
+2. `account-runtime-closeout-error` contains `runtime closeout request failed: 409`.
+3. Success-only fields such as `account-runtime-closeout-run-id`, `account-runtime-closeout-status`, `account-runtime-closeout-gateway-send`, `account-runtime-closeout-web-trigger`, `account-runtime-closeout-raw-secret`, `account-runtime-closeout-gateway-final`, `account-runtime-closeout-artifact-count` and `account-runtime-closeout-non-claim` are absent.
+4. `account-command-status-panel` remains read-only and empty, with no command audit, gateway, readback or reconciliation refs mounted from the blocked closeout path.
+5. No UI text claims live readiness, gateway ack final state or browser-submitted broker order.
 
 Accepted evidence: `python scripts\validate_p024_runtime_closeout_browser_evidence.py` returns `P024_RUNTIME_CLOSEOUT_BROWSER_EVIDENCE_OK`.
 
