@@ -48,29 +48,18 @@ def validate_payload(payload: dict[str, Any]) -> None:
     require(payload["account_id"] == "acct.ctp.paper.19053", "account mismatch")
     require(payload["verdict"] == "pass", "verdict mismatch")
     require(payload["disabled_controls_absent"] is True, "disabled controls must be absent")
-    require(payload["paper_armed_controls_visible"] is True, "paper_armed controls must be visible")
-    require(payload["submit_result_status"] == "accepted_for_risk", "submit status mismatch")
-    require(payload["cancel_result_status"] == "accepted_for_risk", "cancel status mismatch")
+    require(payload["paper_armed_controls_visible"] is False, "paper_armed controls must not be visible without capability")
+    require(payload["submit_result_status"] == "command_capability_not_mounted", "submit blocker mismatch")
+    require(payload["cancel_result_status"] == "command_capability_not_mounted", "cancel blocker mismatch")
     require(payload["gateway_send_attempted"] is False, "gateway send must stay false")
     require(payload["broker_order_created"] is False, "broker order must stay false")
     require(payload["gateway_ack_is_final_state"] is False, "gateway ack final flag must stay false")
-    require(payload["cancel_uses_readback_identity"] is True, "cancel readback identity missing")
+    require(payload["cancel_uses_readback_identity"] is False, "cancel readback identity must not be used when blocked")
 
     submit = payload["submitted_request"]
     cancel = payload["cancel_request"]
-    require(submit["schema_version"] == "account_command.order_intent.v1", "submit schema mismatch")
-    require(submit["mode"] == "paper_armed", "submit mode mismatch")
-    require(submit["action"] == "submit", "submit action mismatch")
-    require(submit["idempotency_key"], "submit idempotency missing")
-    require(submit["raw_secret_values_recorded"] is False, "submit raw secret flag mismatch")
-    require(submit["raw_broker_endpoint_recorded"] is False, "submit endpoint flag mismatch")
-    require(cancel["schema_version"] == "account_command.cancel_intent.v1", "cancel schema mismatch")
-    require(cancel["mode"] == "paper_armed", "cancel mode mismatch")
-    require(cancel["action"] == "cancel", "cancel action mismatch")
-    require(cancel["venue_order_id"] == "ctp19053-ui-order-001", "cancel venue identity mismatch")
-    require(str(cancel["readback_ref"]).startswith("readback://"), "cancel readback ref mismatch")
-    require(cancel["raw_secret_values_recorded"] is False, "cancel raw secret flag mismatch")
-    require(cancel["raw_broker_endpoint_recorded"] is False, "cancel endpoint flag mismatch")
+    require(submit is None, "submit request must not be emitted when blocked")
+    require(cancel is None, "cancel request must not be emitted when blocked")
 
     non_claims = set(payload.get("explicit_non_claims") or [])
     for claim in [
@@ -78,6 +67,7 @@ def validate_payload(payload: dict[str, Any]) -> None:
         "does_not_claim_real_openctp_runtime_command_from_ui",
         "does_not_enable_live_armed",
         "does_not_use_screenshot_as_command_truth",
+        "does_not_treat_paper_armed_ui_projection_as_authority",
     ]:
         require(claim in non_claims, f"missing non-claim: {claim}")
 
@@ -114,7 +104,7 @@ def main() -> None:
     validate_frontend_hooks()
     print(
         "P024_UI_COMMAND_CONTROLS_BROWSER_EVIDENCE_OK: "
-        "disabled_absent=true paper_armed_controls=true gateway_send_attempted=false"
+        "disabled_absent=true command_capability_not_mounted=true gateway_send_attempted=false"
     )
 
 

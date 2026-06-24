@@ -41,7 +41,7 @@ test("P019 U3028269 real UI parity is blocked until same-slice TWS API source pa
   page
 }, testInfo) => {
   const projectionResponse = await page.request.get(
-    `http://127.0.0.1:8775/api/mirror/accounts/${encodeURIComponent(accountId)}`
+    `http://127.0.0.1:8875/api/mirror/accounts/${encodeURIComponent(accountId)}`
   );
   expect(projectionResponse.ok()).toBeTruthy();
   const projection = await projectionResponse.json();

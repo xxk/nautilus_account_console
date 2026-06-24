@@ -8,7 +8,7 @@ const evidencePath = path.join(evidenceDir, "partial-fill-owner-repair-plan-ui.j
 
 test("P024 Web UI renders owner repair plan without allowing retry", async ({ page }, testInfo) => {
   const apiResponse = await page.request.get(
-    `http://127.0.0.1:8775/api/commands/accounts/${accountId}/partial-fill-owner-repair-implementation-plan`
+    `http://127.0.0.1:8875/api/commands/accounts/${accountId}/partial-fill-owner-repair-implementation-plan`
   );
   expect(apiResponse.ok()).toBe(true);
   const plan = (await apiResponse.json()) as Record<string, any>;

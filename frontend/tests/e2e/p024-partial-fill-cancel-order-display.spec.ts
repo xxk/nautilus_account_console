@@ -274,7 +274,13 @@ function projectionForStage(stage: StageExpectation) {
     account_domain: "paper",
     capabilities: {
       observation: { enabled: true, mirror_state: "ready" },
-      command: { enabled: true, mode: "paper_armed", allowed_actions: ["submit", "cancel"] }
+      command: {
+        enabled: true,
+        mode: "paper_armed",
+        allowed_actions: ["submit", "cancel"],
+        authority_ref: "owner-repo://nautilus_ctp_adapter",
+        capability_checksum: "sha256:5656565656565656565656565656565656565656565656565656565656565656"
+      }
     },
     balances: [
       {
@@ -340,7 +346,7 @@ function commandResult(request: Record<string, unknown>) {
     account_id: accountId,
     action: "cancel",
     mode: "paper_armed",
-    status: "accepted_for_risk",
+    status: "risk_gate_pending",
     command_id: "command.p024.partial-fill-cancel.ui-test-001",
     intent_id: request.intent_id,
     intent_ref: "api://p024/acct-ctp-paper-19053/cancel/partial-fill-cancel-ui-test/intent",
@@ -588,6 +594,7 @@ test("P024 Web UI displays partial-fill then cancel order lifecycle correctly", 
       await expect(row.getByTestId("account-cancel-pending-ref")).toContainText("command-audit://");
       await expect(row.getByTestId("account-remaining-cancel-quantity")).toHaveCount(0);
       await expect(page.getByTestId("account-cancel-order-button")).toHaveCount(0);
+      await expect(page.getByTestId("account-command-status-panel")).toBeVisible();
       await expect(page.getByTestId("account-command-audit-ref")).toContainText("command-audit://");
       await expect(page.getByTestId("account-command-gateway-final-state")).toHaveText("false");
     }
@@ -699,9 +706,11 @@ test("P024 Web UI displays partial-fill then cancel order lifecycle correctly", 
 
     if (stage.id === "S2") {
       await page.getByTestId("account-cancel-order-button").click();
-      await expect(page.getByTestId("account-command-audit-ref")).toContainText("api://p024/");
-      await expect(page.getByTestId("account-command-readback-ref")).toContainText(orderSourceRef(stage));
-      await expect(page.getByTestId("account-command-gateway-final-state")).toHaveText("false");
+      await expect(page.getByTestId("account-command-intent-receipt-panel")).toBeVisible();
+      await expect(page.getByTestId("account-command-intent-ref")).toContainText("api://p024/");
+      await expect(page.getByTestId("account-command-intent-status")).toHaveText("risk_gate_pending");
+      await expect(page.getByTestId("account-command-intent-next-stage")).toHaveText("risk_decision");
+      await expect(page.getByTestId("account-command-intent-gateway-final-state")).toHaveText("false");
       if (testInfo.project.name === "desktop") {
         await page.screenshot({ fullPage: true, path: path.join(evidenceDir, "p024-cancel-intent-accepted.png") });
       }
@@ -764,8 +773,8 @@ test("P024 Web UI displays partial-fill then cancel order lifecycle correctly", 
           verdict: "browser_order_display_contract_pass_runtime_partial_fill_blocked",
           ui_order_display_verdict: "pass",
           partial_cancel_display_verdict: "pass",
-          ui_command_control_verdict: "paper_armed_cancel_intent_accepted_for_risk",
-          runtime_partial_fill_verdict: "typed_blocker_until_real_or_owner_approved_partial_fill_state",
+          ui_command_control_verdict: "historical_fixture_governed_cancel_intent_display_only",
+          runtime_partial_fill_verdict: "historical_fixture_governed_blocked_until_owner_evidence",
           stages: observedStages,
           partial_cancel_display_checks: partialCancelDisplayChecks,
           cancel_request: cancelRequest,

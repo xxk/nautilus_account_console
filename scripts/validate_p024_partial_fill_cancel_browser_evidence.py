@@ -9,6 +9,7 @@ ROOT = Path(__file__).resolve().parents[1]
 EVIDENCE_DIR = ROOT / "docs" / "acceptance" / "browser-evidence" / "p024-account-console-paper-command-controls"
 ORDER_DISPLAY = EVIDENCE_DIR / "partial-fill-cancel-order-display.json"
 APP = ROOT / "frontend" / "src" / "App.tsx"
+FRONTEND_SRC = ROOT / "frontend" / "src"
 SPEC = ROOT / "frontend" / "tests" / "e2e" / "p024-partial-fill-cancel-order-display.spec.ts"
 REQUIRED_SCREENSHOTS = [
     "p024-working-order-display.png",
@@ -63,12 +64,12 @@ def validate_order_display(payload: dict[str, Any]) -> None:
     require(payload["ui_order_display_verdict"] == "pass", "order display verdict mismatch")
     require(payload["partial_cancel_display_verdict"] == "pass", "partial-cancel display verdict mismatch")
     require(
-        payload["ui_command_control_verdict"] == "paper_armed_cancel_intent_accepted_for_risk",
+        payload["ui_command_control_verdict"] == "historical_fixture_governed_cancel_intent_display_only",
         "command control verdict mismatch",
     )
     require(
         payload["runtime_partial_fill_verdict"]
-        == "typed_blocker_until_real_or_owner_approved_partial_fill_state",
+        == "historical_fixture_governed_blocked_until_owner_evidence",
         "runtime partial-fill blocker mismatch",
     )
     require(payload["raw_secret_values_recorded"] is False, "raw secret flag mismatch")
@@ -234,7 +235,7 @@ def validate_command_artifacts(payload: dict[str, Any]) -> None:
 
 
 def validate_frontend_hooks() -> None:
-    app_text = APP.read_text(encoding="utf-8")
+    production_text = "\n".join(path.read_text(encoding="utf-8") for path in FRONTEND_SRC.glob("*.tsx"))
     spec_text = SPEC.read_text(encoding="utf-8")
     for phrase in [
         "account-order-filled-quantity",
@@ -246,7 +247,7 @@ def validate_frontend_hooks() -> None:
         "account-command-readback-ref",
         "account-command-reconciliation-ref",
     ]:
-        require(phrase in app_text, f"frontend app missing {phrase}")
+        require(phrase in production_text, f"frontend owner surface missing {phrase}")
     for phrase in [
         "p024-partial-fill-display.png",
         "p024-cancel-pending-display.png",
@@ -269,7 +270,7 @@ def main() -> None:
     validate_frontend_hooks()
     print(
         "P024_PARTIAL_FILL_CANCEL_BROWSER_EVIDENCE_OK: "
-        "ui_order_display=pass partial_cancel_display=pass runtime_partial_fill=typed_blocker"
+        "ui_order_display=pass partial_cancel_display=pass runtime_partial_fill=historical_blocked"
     )
 
 

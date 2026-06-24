@@ -8,7 +8,7 @@ const evidencePath = path.join(evidenceDir, "partial-fill-owner-repair-execution
 
 test("P024 Web UI renders owner repair execution handoff", async ({ page }, testInfo) => {
   const apiResponse = await page.request.get(
-    `http://127.0.0.1:8775/api/commands/accounts/${accountId}/partial-fill-owner-repair-execution-handoff-bundle`
+    `http://127.0.0.1:8875/api/commands/accounts/${accountId}/partial-fill-owner-repair-execution-handoff-bundle`
   );
   expect(apiResponse.ok()).toBe(true);
   const bundle = (await apiResponse.json()) as Record<string, any>;

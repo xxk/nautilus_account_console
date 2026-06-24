@@ -8,7 +8,7 @@ const evidencePath = path.join(evidenceDir, "partial-fill-remaining-acceptance-s
 
 test("P024 Web UI renders remaining acceptance state", async ({ page }, testInfo) => {
   const apiResponse = await page.request.get(
-    `http://127.0.0.1:8775/api/commands/accounts/${accountId}/partial-fill-remaining-acceptance-current-state`
+    `http://127.0.0.1:8875/api/commands/accounts/${accountId}/partial-fill-remaining-acceptance-current-state`
   );
   expect(apiResponse.ok()).toBe(true);
   const state = (await apiResponse.json()) as Record<string, any>;

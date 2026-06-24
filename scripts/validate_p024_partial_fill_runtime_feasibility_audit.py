@@ -53,7 +53,7 @@ def validate_payload(payload: dict[str, Any]) -> None:
     require(payload["account_id"] == "acct.ctp.paper.19053", "account mismatch")
     require(payload["status"] == "phase4h_real_partial_fill_runtime_feasibility_blocked", "status mismatch")
     require(
-        payload["verdict"] == "blocked_until_owner_runtime_partial_fill_state_available",
+        payload["verdict"] == "typed_blocker_owner_partial_fill_runtime_evidence_missing",
         "verdict mismatch",
     )
 
@@ -168,7 +168,7 @@ def main() -> None:
     validate_payload(load(AUDIT))
     print(
         "P024_PARTIAL_FILL_RUNTIME_FEASIBILITY_AUDIT_OK: "
-        "verdict=blocked_until_owner_runtime_partial_fill_state_available"
+        "verdict=typed_blocker_owner_partial_fill_runtime_evidence_missing"
     )
 
 

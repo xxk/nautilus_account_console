@@ -48,23 +48,11 @@ def validate_payload(payload: dict[str, Any]) -> None:
     require(payload["proposal_id"] == "p024-account-console-paper-command-controls", "proposal mismatch")
     require(payload["account_id"] == ACCOUNT_ID, "account mismatch")
     require(payload["run_id"] == RUN_ID, "run mismatch")
-    require(payload["verdict"] == "pass", "verdict mismatch")
-    require(payload["api_schema"] == "account_command.runtime_closeout.v1", "API schema mismatch")
-    require(payload["api_status"] == "reconciled", "API status mismatch")
-    require(payload["api_mode"] == "paper_armed", "API mode mismatch")
-    require(str(payload["closeout_manifest_ref"]).endswith("closeout_manifest.json"), "manifest ref mismatch")
-    require(str(payload["closeout_manifest_checksum"]).startswith("sha256:"), "manifest checksum mismatch")
-    require(str(payload["command_audit_ref"]).endswith("command_audit.json"), "audit ref mismatch")
-    require(str(payload["command_audit_checksum"]).startswith("sha256:"), "audit checksum mismatch")
-    require(payload["intent_ref_count"] == 2, "intent ref count mismatch")
-    require(payload["risk_ref_count"] == 2, "risk ref count mismatch")
-    require(payload["approval_ref_count"] == 2, "approval ref count mismatch")
-    require(payload["gateway_ref_count"] == 2, "gateway ref count mismatch")
-    require(payload["readback_ref_count"] == 2, "readback ref count mismatch")
-    require(str(payload["reconciliation_ref"]).endswith("reconciliation_result.json"), "reconciliation ref mismatch")
-    require(payload["artifact_checksum_count"] == 13, "artifact checksum count mismatch")
-    require(payload["runtime_gateway_send_observed"] is True, "runtime gateway send flag mismatch")
-    require(payload["broker_order_created"] is True, "broker order flag mismatch")
+    require(payload["verdict"] == "blocked_pending_owner_runtime_evidence", "verdict mismatch")
+    require(payload["api_status_code"] == 409, "API status code mismatch")
+    require(payload["api_blocker"] == "runtime closeout missing owner runtime evidence", "API blocker mismatch")
+    require(payload["runtime_gateway_send_observed"] is False, "runtime gateway send must not be claimed")
+    require(payload["broker_order_created"] is False, "broker order must not be claimed")
     require(payload["browser_triggered_broker_order"] is False, "browser trigger flag mismatch")
     require(payload["gateway_ack_is_final_state"] is False, "gateway final flag mismatch")
     require(payload["raw_secret_values_recorded"] is False, "raw secret flag mismatch")
@@ -72,7 +60,7 @@ def validate_payload(payload: dict[str, Any]) -> None:
     checks = payload.get("browser_checks") or {}
     for check in [
         "runtime_panel_visible",
-        "command_status_refs_visible",
+        "owner_evidence_blocker_visible",
         "browser_trigger_displayed_false",
         "gateway_final_displayed_false",
         "live_ready_wording_absent",
@@ -84,7 +72,8 @@ def validate_payload(payload: dict[str, Any]) -> None:
         "does_not_store_raw_ctp_secret_or_endpoint",
         "does_not_claim_live_readiness",
         "does_not_make_gateway_ack_final_state",
-        "web_ui_trigger_of_new_runtime_order_still_pending",
+        "does_not_promote_repo_local_output_to_runtime_truth",
+        "owner_runtime_evidence_required_before_positive_claim",
     ]:
         require(claim in non_claims, f"missing non-claim: {claim}")
 
@@ -105,11 +94,9 @@ def validate_backend_endpoint() -> None:
 
     client = TestClient(app)
     response = client.get(f"/api/commands/accounts/{ACCOUNT_ID}/runtime-closeouts/{RUN_ID}")
-    require(response.status_code == 200, "runtime closeout API does not return 200")
+    require(response.status_code == 409, "runtime closeout API must fail closed without owner evidence")
     payload = response.json()
-    require(payload["status"] == "reconciled", "runtime closeout API status mismatch")
-    require(payload["browser_triggered_broker_order"] is False, "runtime closeout API browser trigger mismatch")
-    require(payload["gateway_ack_is_final_state"] is False, "runtime closeout API gateway final mismatch")
+    require(payload["detail"] == "runtime closeout missing owner runtime evidence", "runtime closeout blocker mismatch")
 
 
 def validate_frontend_hooks() -> None:
@@ -119,9 +106,9 @@ def validate_frontend_hooks() -> None:
     for phrase in [
         "CommandRuntimeCloseoutPanel",
         "account-runtime-closeout-panel",
-        "account-runtime-closeout-run-id",
+        "account-runtime-closeout-error",
         "account-runtime-closeout-web-trigger",
-        "runtimeCloseoutToStatus",
+        "const commandStatus = mirrorReadback?.selected.command_status ?? null;",
     ]:
         require(phrase in app_text, f"frontend app missing {phrase}")
     for phrase in ["fetchCommandRuntimeCloseout", "runtime-closeouts"]:
@@ -138,7 +125,7 @@ def main() -> None:
     validate_frontend_hooks()
     print(
         "P024_RUNTIME_CLOSEOUT_BROWSER_EVIDENCE_OK: "
-        "runtime_closeout=pass browser_triggered_broker_order=false gateway_ack_final=false"
+        "runtime_closeout=blocked_pending_owner_runtime_evidence browser_triggered_broker_order=false gateway_ack_final=false"
     )
 
 
