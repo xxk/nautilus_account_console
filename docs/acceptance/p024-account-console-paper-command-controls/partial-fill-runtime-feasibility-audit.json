@@ -4,7 +4,7 @@
   "account_id": "acct.ctp.paper.19053",
   "reviewed_at": "2026-06-21T17:56:00+08:00",
   "status": "phase4h_real_partial_fill_runtime_feasibility_blocked",
-  "verdict": "blocked_until_owner_runtime_partial_fill_state_available",
+  "verdict": "typed_blocker_owner_partial_fill_runtime_evidence_missing",
   "operator_approval_scope": {
     "approval_path": "D:/Nautilus/nautilus_ctp_adapter",
     "approved_for_one_submit_cancel_attempt": true,

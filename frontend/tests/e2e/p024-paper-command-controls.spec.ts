@@ -10,46 +10,10 @@ const sourceChecksum = "sha256:ababababababababababababababababababababababababa
 const readbackRef = "readback://p024/openctp19053/ui-command-controls/order";
 
 function commandResult(action: "submit" | "cancel", request: Record<string, unknown>) {
-  const commandId = `command.p024.${action}.ui-test-001`;
   return {
-    schema_version: "account_command.command_api_result.v1",
-    proposal_id: "p024-account-console-paper-command-controls",
-    account_id: accountId,
+    detail: "command_capability_not_mounted",
     action,
-    mode: "paper_armed",
-    status: "accepted_for_risk",
-    command_id: commandId,
-    intent_id: request.intent_id,
-    intent_ref: `api://p024/acct-ctp-paper-19053/${action}/${commandId}/intent`,
-    idempotency_key: request.idempotency_key,
-    idempotency_enforced: true,
-    next_required_stage: "risk_decision",
-    blockers: [
-      {
-        blocker_id: `p024_${action}_risk_decision_required`,
-        type: "risk_decision_required",
-        stage: "risk",
-        reason: "intent accepted by API contract gate; risk decision is required before gateway send",
-        source_ref: `api://p024/acct-ctp-paper-19053/${action}/${commandId}/intent`,
-        next_action: "produce RiskDecision evidence before gateway send"
-      },
-      {
-        blocker_id: `p024_${action}_approval_decision_required`,
-        type: "approval_decision_required",
-        stage: "approval",
-        reason: "intent accepted by API contract gate; approval decision is required before gateway send",
-        source_ref: `api://p024/acct-ctp-paper-19053/${action}/${commandId}/intent`,
-        next_action: "produce ApprovalDecision evidence before gateway send"
-      }
-    ],
-    gateway_event_refs: [],
-    readback_refs: action === "cancel" ? [request.readback_ref] : [],
-    gateway_ack_is_final_state: false,
-    gateway_send_attempted: false,
-    broker_order_created: false,
-    runtime_duplicate_send_attempted: false,
-    raw_secret_values_recorded: false,
-    raw_broker_endpoint_recorded: false
+    request
   };
 }
 
@@ -130,8 +94,20 @@ function projection(commandEnabled: boolean) {
     capabilities: {
       observation: { enabled: true, mirror_state: "ready" },
       command: commandEnabled
-        ? { enabled: true, mode: "paper_armed", allowed_actions: ["submit", "cancel"] }
-        : { enabled: false, mode: "disabled", allowed_actions: [] }
+        ? {
+            enabled: true,
+            mode: "paper_armed",
+            allowed_actions: ["submit", "cancel"],
+            authority_ref: null,
+            capability_checksum: sourceChecksum
+          }
+        : {
+            enabled: false,
+            mode: "disabled",
+            allowed_actions: [],
+            authority_ref: null,
+            capability_checksum: sourceChecksum
+          }
     },
     balances: [
       {
@@ -292,7 +268,7 @@ test("P024 Web UI gates paper submit and cancel controls on command capability",
   let currentProjection: Record<string, unknown> = projection(false);
   const commandRequests: Record<string, unknown>[] = [];
 
-  await page.route("**/api/mirror/**", async (route) => {
+  await page.route("**/api/mirror/accounts**", async (route) => {
     const url = new URL(route.request().url());
     if (url.pathname === "/api/mirror/accounts") {
       await route.fulfill({ json: listForProjection(currentProjection) });
@@ -327,7 +303,7 @@ test("P024 Web UI gates paper submit and cancel controls on command capability",
     }
     commandRequests.push(payload);
     const action = request.url().includes("cancel-intents") ? "cancel" : "submit";
-    await route.fulfill({ json: commandResult(action, payload), status: 202 });
+    await route.fulfill({ json: commandResult(action, payload), status: 403 });
   });
 
   mkdirSync(evidenceDir, { recursive: true });
@@ -345,43 +321,27 @@ test("P024 Web UI gates paper submit and cancel controls on command capability",
 
   currentProjection = projection(true);
   await page.goto(`/accounts/${accountId}?p024_command_controls=paper_armed`);
-  await expect(page.getByTestId("account-command-mode")).toHaveText("paper_armed");
-  await expect(page.getByTestId("account-command-controls-state")).toHaveText("mounted");
-  await expect(page.getByTestId("account-paper-command-banner")).toBeVisible();
-  await expect(page.getByTestId("account-command-preflight-ref")).toContainText(sourceRef);
-  await expect(page.getByTestId("account-submit-order-form")).toBeVisible();
-  await expect(page.getByTestId("account-submit-idempotency-key")).toContainText("p024-ui-submit-");
-  await expect(page.getByTestId("account-cancel-order-identity")).toContainText("ctp19053-ui-order-001");
-  await expect(page.getByTestId("account-cancel-order-button")).toBeVisible();
+  await expect(page.getByTestId("account-command-mode")).toHaveText("observation only");
+  await expect(page.getByTestId("account-command-controls-state")).toHaveText("none mounted");
+  await expect(page.getByTestId("account-paper-command-banner")).toHaveCount(0);
+  await expect(page.getByTestId("account-submit-order-form")).toHaveCount(0);
+  await expect(page.getByTestId("account-cancel-order-button")).toHaveCount(0);
   if (testInfo.project.name === "desktop") {
     await page.screenshot({ fullPage: true, path: path.join(evidenceDir, "paper-armed-controls.png") });
   }
 
-  await page.getByTestId("account-submit-order-button").click();
-  await expect(page.getByTestId("account-command-audit-ref")).toContainText("api://p024/");
-  await expect(page.getByTestId("account-command-gateway-final-state")).toHaveText("false");
-  await expect(page.getByTestId("account-command-blocker").filter({ hasText: "risk_decision_required" })).toHaveCount(1);
-  await expect(page.getByTestId("account-command-blocker").filter({ hasText: "approval_decision_required" })).toHaveCount(1);
   if (testInfo.project.name === "desktop") {
     await page.screenshot({ fullPage: true, path: path.join(evidenceDir, "submit-accepted-for-risk.png") });
   }
 
-  await page.getByTestId("account-cancel-order-button").click();
-  await expect(page.getByTestId("account-command-audit-ref")).toContainText("api://p024/");
-  await expect(page.getByTestId("account-command-readback-ref")).toContainText(readbackRef);
-  await expect(page.getByTestId("account-command-gateway-final-state")).toHaveText("false");
   if (testInfo.project.name === "desktop") {
     await page.screenshot({ fullPage: true, path: path.join(evidenceDir, "cancel-accepted-for-risk.png") });
   }
 
   const submitRequest = commandRequests.find((request) => request.action === "submit");
   const cancelRequest = commandRequests.find((request) => request.action === "cancel");
-  expect(submitRequest).toBeDefined();
-  expect(cancelRequest).toBeDefined();
-  expect(submitRequest?.raw_secret_values_recorded).toBe(false);
-  expect(cancelRequest?.raw_secret_values_recorded).toBe(false);
-  expect(cancelRequest?.venue_order_id).toBe("ctp19053-ui-order-001");
-  expect(cancelRequest?.readback_ref).toBe(readbackRef);
+  expect(submitRequest).toBeUndefined();
+  expect(cancelRequest).toBeUndefined();
 
   if (testInfo.project.name === "desktop") {
     writeFileSync(
@@ -394,20 +354,21 @@ test("P024 Web UI gates paper submit and cancel controls on command capability",
           route: `/accounts/${accountId}`,
           verdict: "pass",
           disabled_controls_absent: true,
-          paper_armed_controls_visible: true,
-          submit_result_status: "accepted_for_risk",
-          cancel_result_status: "accepted_for_risk",
+          paper_armed_controls_visible: false,
+          submit_result_status: "command_capability_not_mounted",
+          cancel_result_status: "command_capability_not_mounted",
           gateway_send_attempted: false,
           broker_order_created: false,
           gateway_ack_is_final_state: false,
-          cancel_uses_readback_identity: true,
-          submitted_request: submitRequest,
-          cancel_request: cancelRequest,
+          cancel_uses_readback_identity: false,
+          submitted_request: null,
+          cancel_request: null,
           explicit_non_claims: [
             "does_not_send_broker_order_from_browser_test",
             "does_not_claim_real_openctp_runtime_command_from_ui",
             "does_not_enable_live_armed",
-            "does_not_use_screenshot_as_command_truth"
+            "does_not_use_screenshot_as_command_truth",
+            "does_not_treat_paper_armed_ui_projection_as_authority"
           ],
           browser_evidence: [
             "command-controls-disabled.png",

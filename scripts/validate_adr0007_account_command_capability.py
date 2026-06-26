@@ -31,23 +31,12 @@ ALLOWED_COMMAND_ROUTES = {
     "/api/commands/accounts/{account_id}/cancel-intents": {"POST"},
     "/api/commands/accounts/{account_id}/runtime-run-requests/submit": {"POST"},
     "/api/commands/accounts/{account_id}/runtime-run-requests/cancel": {"POST"},
+    "/api/commands/accounts/{account_id}/projection": {"GET"},
     "/api/commands/accounts/{account_id}/runtime-closeouts/{run_id}": {"GET"},
     "/api/commands/accounts/{account_id}/runtime-invocation-readiness": {"GET"},
     "/api/commands/accounts/{account_id}/runtime-execution-approval-packet": {"GET"},
     "/api/commands/accounts/{account_id}/runtime-execution-handoff-bundle": {"GET"},
-    "/api/commands/accounts/{account_id}/partial-fill-runtime-execution-approval-packet": {"GET"},
-    "/api/commands/accounts/{account_id}/partial-fill-runtime-execution-handoff-bundle": {"GET"},
     "/api/commands/accounts/{account_id}/runtime-execution-gap-audit": {"GET"},
-    "/api/commands/accounts/{account_id}/partial-fill-owner-repair-approval-packet": {"GET"},
-    "/api/commands/accounts/{account_id}/partial-fill-remaining-acceptance-current-state": {"GET"},
-    "/api/commands/accounts/{account_id}/partial-fill-owner-repair-implementation-plan": {"GET"},
-    "/api/commands/accounts/{account_id}/partial-fill-owner-repair-evidence-ingest-gate": {"GET"},
-    "/api/commands/accounts/{account_id}/partial-fill-owner-repair-evidence-ingest-audit": {"GET"},
-    "/api/commands/accounts/{account_id}/partial-fill-post-repair-runtime-retry-approval-packet": {"GET"},
-    "/api/commands/accounts/{account_id}/partial-fill-post-repair-runtime-attempt-audit": {"GET"},
-    "/api/commands/accounts/{account_id}/partial-fill-owner-repair-preflight-source-audit": {"GET"},
-    "/api/commands/accounts/{account_id}/partial-fill-owner-repair-patch-preview": {"GET"},
-    "/api/commands/accounts/{account_id}/partial-fill-owner-repair-execution-handoff-bundle": {"GET"},
 }
 
 
@@ -69,16 +58,18 @@ def validate_adr() -> None:
     for phrase in [
         'adr_id: "0007"',
         "decision_status: proposed",
-        "landing_status: p024_phase4e_runtime_execution_gap_audit_gate",
+        "landing_status: p024_governed_capability_authority_gate",
         "Governed Account Command Capability",
         "Account Mirror never sends commands",
         "Gateway acknowledgement 不是最终账户状态",
         "`paper_armed`",
         "`live_armed`",
         "Phase 0: ADR/proposal/contract skeleton, no command implementation.",
-        "P024 Phase 1 backend command API is accepted as a contract gate only",
-        "P024 Phase 2 frontend guarded controls are accepted as browser contract evidence only",
-        "P024 Phase 3a runtime closeout projection is accepted as read-only Web UI evidence",
+        "P024 governed capability authority gate supersedes the earlier Phase 1 intent-acceptance shape",
+        "command_capability_not_mounted",
+        "authority_ref=owner-repo://nautilus_ctp_adapter",
+        "P024 browser controls remain projection-only and must not be treated as authority",
+        "P024 runtime closeout projection is accepted only when positive runtime claims are backed by owner-runtime evidence",
         "P024 Phase 3b partial-fill cancel UI display is accepted as browser display-contract evidence only",
         "P024 Phase 3c owner-runtime handoff request is accepted as browser handoff evidence only",
         "P024 Phase 3d owner-runtime invocation readiness is accepted as a readiness gate only",
@@ -91,6 +82,8 @@ def validate_adr() -> None:
         "P024 Phase 4e runtime execution gap audit is accepted as final blocker evidence only",
         "browser_triggered_broker_order=false",
         "gateway_send_attempted=false",
+        "runtime_gateway_send_observed=true",
+        "broker_order_created=true",
         "runtime_invocation_attempted=false",
         "owner_repo_write_attempted=false",
         "full_runtime_acceptance_claimed=false",
@@ -159,7 +152,7 @@ def main() -> None:
     validate_backend_has_only_p024_command_routes()
     print(
         "ADR0007_ACCOUNT_COMMAND_CAPABILITY_OK: "
-        "status=proposed landing=p024_phase4e_runtime_execution_gap_audit_gate"
+        "status=proposed landing=p024_governed_capability_authority_gate"
     )
 
 

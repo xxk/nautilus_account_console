@@ -8,7 +8,7 @@ const evidencePath = path.join(evidenceDir, "partial-fill-post-repair-runtime-at
 
 test("P024 Web UI renders post-repair runtime attempt audit", async ({ page }, testInfo) => {
   const apiResponse = await page.request.get(
-    `http://127.0.0.1:8775/api/commands/accounts/${accountId}/partial-fill-post-repair-runtime-attempt-audit`
+    `http://127.0.0.1:8875/api/commands/accounts/${accountId}/partial-fill-post-repair-runtime-attempt-audit`
   );
   expect(apiResponse.ok()).toBe(true);
   const audit = (await apiResponse.json()) as Record<string, any>;

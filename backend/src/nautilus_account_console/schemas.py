@@ -226,7 +226,7 @@ class CommandApiResult(BaseModel):
     account_id: str
     action: Literal["submit", "cancel"]
     mode: str
-    status: Literal["accepted_for_risk", "blocked"]
+    status: Literal["risk_gate_pending", "blocked"]
     command_id: str
     intent_id: str
     intent_ref: str
@@ -245,6 +245,60 @@ class CommandApiResult(BaseModel):
     runtime_duplicate_send_attempted: Literal[False]
     raw_secret_values_recorded: Literal[False]
     raw_broker_endpoint_recorded: Literal[False]
+
+
+class CommandReadRetirementSlice(BaseModel):
+    route: str
+    category: Literal[
+        "retain_blocker_projection",
+        "converge_to_mirror_projection",
+        "retire_when_panels_removed",
+    ]
+    execution_state: Literal["active_blocker_projection", "retired_archive_only"]
+    panel_ids: list[str]
+    rationale: str
+    successor_surface: str
+
+
+class CommandReadRetirementBatch(BaseModel):
+    batch_id: str
+    execution_state: Literal["planned_safe_retirement", "completed_safe_retirement"]
+    route_count: int
+    panel_count: int
+    routes: list[str]
+    panel_ids: list[str]
+    preconditions: list[str]
+    rationale: str
+
+
+class CommandRetiredArchiveSurface(BaseModel):
+    route: str
+    archive_evidence_only: Literal[True]
+    panel_ids: list[str]
+    historical_contract_ref: str
+    retirement_assertion: str
+
+
+class CommandPlaneProjection(BaseModel):
+    schema_version: Literal["account_command.command_plane_projection.v1"]
+    proposal_id: Literal["p024-account-console-paper-command-controls"]
+    account_id: str
+    projection_owner: Literal["account-console-backend.mirror_projection"]
+    canonical_source: Literal["/api/mirror/accounts/{account_id}"]
+    legacy_read_surface_state: Literal["legacy_read_only_until_mirror_convergence"]
+    legacy_read_surfaces: list[str]
+    retired_archive_surfaces: list[CommandRetiredArchiveSurface]
+    action_surfaces: list[str]
+    retirement_guardrails: list[str]
+    retirement_slices: list[CommandReadRetirementSlice]
+    retirement_batches: list[CommandReadRetirementBatch]
+    source_ref: str
+    source_checksum: str
+    projection_checkpoint_id: str
+    projection_checksum: str
+    blockers: list[dict]
+    boundaries: dict
+    explicit_non_claims: list[str]
 
 
 class CommandRuntimeCloseout(BaseModel):

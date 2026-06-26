@@ -1,19 +1,8 @@
 import type {
   AccountSnapshot,
   CancelIntentRequest,
-  CommandPartialFillOwnerRepairApprovalPacket,
-  CommandPartialFillRemainingAcceptanceCurrentState,
-  CommandPartialFillOwnerRepairEvidenceIngestGate,
-  CommandPartialFillOwnerRepairEvidenceIngestAudit,
-  CommandPartialFillPostRepairRuntimeRetryApprovalPacket,
-  CommandPartialFillPostRepairRuntimeAttemptAudit,
-  CommandPartialFillOwnerRepairExecutionHandoffBundle,
-  CommandPartialFillOwnerRepairImplementationPlan,
-  CommandPartialFillOwnerRepairPatchPreview,
-  CommandPartialFillOwnerRepairPreflightSourceAudit,
-  CommandPartialFillRuntimeExecutionApprovalPacket,
-  CommandPartialFillRuntimeExecutionHandoffBundle,
   CommandApiResult,
+  CommandPlaneProjection,
   CommandRuntimeCloseout,
   CommandRuntimeExecutionApprovalPacket,
   CommandRuntimeExecutionGapAudit,
@@ -158,6 +147,91 @@ export async function prepareCancelRuntimeRunRequest(
   return response.json();
 }
 
+export async function fetchCommandPlaneProjection(accountId: string): Promise<CommandPlaneProjection> {
+  const response = await fetch(`${API_BASE}/api/commands/accounts/${encodeURIComponent(accountId)}/projection`);
+  if (!response.ok) {
+    throw new Error(`command plane projection request failed: ${response.status}`);
+  }
+  return response.json();
+}
+
+export const LEGACY_COMMAND_READ_DESCRIPTOR = {
+  owner: "account-console-backend.command-plane-retirement-registry",
+  state: "legacy_read_only_until_mirror_convergence",
+  retirementGuardrails: [
+    "use_canonical_command_plane_projection_for_owner_decisions",
+    "consume_projection_registered_legacy_reads_through_one_loader_only",
+    "retire_legacy_command_reads_by_backend_owned_slice_registry_without_new_frontend_call_sites"
+  ]
+} as const;
+
+type LegacyCommandPanelResult<T> = {
+  data: T | null;
+  error: string | null;
+};
+
+export type LegacyCommandReadSuite = {
+  descriptor: typeof LEGACY_COMMAND_READ_DESCRIPTOR;
+  routesLoaded: string[];
+  runtimeCloseout?: LegacyCommandPanelResult<CommandRuntimeCloseout>;
+  runtimeReadiness?: LegacyCommandPanelResult<CommandRuntimeInvocationReadiness>;
+  runtimeApprovalPacket?: LegacyCommandPanelResult<CommandRuntimeExecutionApprovalPacket>;
+  runtimeHandoffBundle?: LegacyCommandPanelResult<CommandRuntimeExecutionHandoffBundle>;
+  runtimeExecutionGapAudit?: LegacyCommandPanelResult<CommandRuntimeExecutionGapAudit>;
+};
+
+const LEGACY_COMMAND_READ_REGISTRY = {
+  "/api/commands/accounts/{account_id}/runtime-closeouts/{run_id}": {
+    slot: "runtimeCloseout",
+    load: fetchCommandRuntimeCloseout
+  },
+  "/api/commands/accounts/{account_id}/runtime-invocation-readiness": {
+    slot: "runtimeReadiness",
+    load: fetchCommandRuntimeInvocationReadiness
+  },
+  "/api/commands/accounts/{account_id}/runtime-execution-approval-packet": {
+    slot: "runtimeApprovalPacket",
+    load: fetchCommandRuntimeExecutionApprovalPacket
+  },
+  "/api/commands/accounts/{account_id}/runtime-execution-handoff-bundle": {
+    slot: "runtimeHandoffBundle",
+    load: fetchCommandRuntimeExecutionHandoffBundle
+  },
+  "/api/commands/accounts/{account_id}/runtime-execution-gap-audit": {
+    slot: "runtimeExecutionGapAudit",
+    load: fetchCommandRuntimeExecutionGapAudit
+  },
+} as const;
+
+function toLegacyCommandPanelResult<T>(
+  settled: PromiseSettledResult<T> | undefined,
+  unavailableMessage: string
+): LegacyCommandPanelResult<T> {
+  if (!settled) {
+    return {
+      data: null,
+      error: unavailableMessage
+    };
+  }
+  if (settled.status === "fulfilled") {
+    return {
+      data: settled.value,
+      error: null
+    };
+  }
+  return {
+    data: null,
+    error: settled.reason instanceof Error ? settled.reason.message : unavailableMessage
+  };
+}
+
+function getScheduledResult(
+  settledBySlot: ReadonlyMap<string, PromiseSettledResult<unknown>>,
+  slot: string
+): PromiseSettledResult<unknown> | undefined {
+  return settledBySlot.get(slot);
+}
+
 export async function fetchCommandRuntimeCloseout(
   accountId: string,
   runId = "p023-armed-20260621t0748z"
@@ -207,30 +281,6 @@ export async function fetchCommandRuntimeExecutionHandoffBundle(
   return response.json();
 }
 
-export async function fetchCommandPartialFillRuntimeExecutionApprovalPacket(
-  accountId: string
-): Promise<CommandPartialFillRuntimeExecutionApprovalPacket> {
-  const response = await fetch(
-    `${API_BASE}/api/commands/accounts/${encodeURIComponent(accountId)}/partial-fill-runtime-execution-approval-packet`
-  );
-  if (!response.ok) {
-    throw new Error(`partial-fill runtime execution approval packet failed: ${response.status}`);
-  }
-  return response.json();
-}
-
-export async function fetchCommandPartialFillRuntimeExecutionHandoffBundle(
-  accountId: string
-): Promise<CommandPartialFillRuntimeExecutionHandoffBundle> {
-  const response = await fetch(
-    `${API_BASE}/api/commands/accounts/${encodeURIComponent(accountId)}/partial-fill-runtime-execution-handoff-bundle`
-  );
-  if (!response.ok) {
-    throw new Error(`partial-fill runtime execution handoff bundle failed: ${response.status}`);
-  }
-  return response.json();
-}
-
 export async function fetchCommandRuntimeExecutionGapAudit(accountId: string): Promise<CommandRuntimeExecutionGapAudit> {
   const response = await fetch(
     `${API_BASE}/api/commands/accounts/${encodeURIComponent(accountId)}/runtime-execution-gap-audit`
@@ -241,124 +291,63 @@ export async function fetchCommandRuntimeExecutionGapAudit(accountId: string): P
   return response.json();
 }
 
-export async function fetchCommandPartialFillOwnerRepairImplementationPlan(
-  accountId: string
-): Promise<CommandPartialFillOwnerRepairImplementationPlan> {
-  const response = await fetch(
-    `${API_BASE}/api/commands/accounts/${encodeURIComponent(accountId)}/partial-fill-owner-repair-implementation-plan`
-  );
-  if (!response.ok) {
-    throw new Error(`partial-fill owner repair implementation plan failed: ${response.status}`);
-  }
-  return response.json();
-}
+export async function fetchLegacyCommandReadSuite(
+  accountId: string,
+  projection: CommandPlaneProjection
+): Promise<LegacyCommandReadSuite> {
+  const scheduledLoads = projection.retirement_slices
+    .map((slice) => {
+      const registration = LEGACY_COMMAND_READ_REGISTRY[slice.route as keyof typeof LEGACY_COMMAND_READ_REGISTRY];
+      if (!registration) {
+        return null;
+      }
+      return {
+        route: slice.route,
+        slot: registration.slot,
+        request: registration.load(accountId)
+      };
+    })
+    .filter((item): item is NonNullable<typeof item> => item !== null);
 
-export async function fetchCommandPartialFillOwnerRepairApprovalPacket(
-  accountId: string
-): Promise<CommandPartialFillOwnerRepairApprovalPacket> {
-  const response = await fetch(
-    `${API_BASE}/api/commands/accounts/${encodeURIComponent(accountId)}/partial-fill-owner-repair-approval-packet`
-  );
-  if (!response.ok) {
-    throw new Error(`partial-fill owner repair approval packet failed: ${response.status}`);
-  }
-  return response.json();
-}
+  const settled = await Promise.allSettled(scheduledLoads.map((item) => item.request));
+  const suite: LegacyCommandReadSuite = {
+    descriptor: LEGACY_COMMAND_READ_DESCRIPTOR,
+    routesLoaded: scheduledLoads.map((item) => item.route)
+  };
 
-export async function fetchCommandPartialFillRemainingAcceptanceCurrentState(
-  accountId: string
-): Promise<CommandPartialFillRemainingAcceptanceCurrentState> {
-  const response = await fetch(
-    `${API_BASE}/api/commands/accounts/${encodeURIComponent(accountId)}/partial-fill-remaining-acceptance-current-state`
+  const settledBySlot = new Map(
+    scheduledLoads.map((item, index) => [item.slot, settled[index]] as const)
   );
-  if (!response.ok) {
-    throw new Error(`partial-fill remaining acceptance current state failed: ${response.status}`);
-  }
-  return response.json();
-}
 
-export async function fetchCommandPartialFillOwnerRepairEvidenceIngestGate(
-  accountId: string
-): Promise<CommandPartialFillOwnerRepairEvidenceIngestGate> {
-  const response = await fetch(
-    `${API_BASE}/api/commands/accounts/${encodeURIComponent(accountId)}/partial-fill-owner-repair-evidence-ingest-gate`
+  suite.runtimeCloseout = toLegacyCommandPanelResult(
+    getScheduledResult(settledBySlot, "runtimeCloseout") as PromiseSettledResult<CommandRuntimeCloseout> | undefined,
+    "runtime closeout not scheduled by command-plane retirement registry"
   );
-  if (!response.ok) {
-    throw new Error(`partial-fill owner repair evidence ingest gate failed: ${response.status}`);
-  }
-  return response.json();
-}
-
-export async function fetchCommandPartialFillOwnerRepairEvidenceIngestAudit(
-  accountId: string
-): Promise<CommandPartialFillOwnerRepairEvidenceIngestAudit> {
-  const response = await fetch(
-    `${API_BASE}/api/commands/accounts/${encodeURIComponent(accountId)}/partial-fill-owner-repair-evidence-ingest-audit`
+  suite.runtimeReadiness = toLegacyCommandPanelResult(
+    getScheduledResult(settledBySlot, "runtimeReadiness") as
+      | PromiseSettledResult<CommandRuntimeInvocationReadiness>
+      | undefined,
+    "runtime readiness not scheduled by command-plane retirement registry"
   );
-  if (!response.ok) {
-    throw new Error(`partial-fill owner repair evidence ingest audit failed: ${response.status}`);
-  }
-  return response.json();
-}
-
-export async function fetchCommandPartialFillPostRepairRuntimeRetryApprovalPacket(
-  accountId: string
-): Promise<CommandPartialFillPostRepairRuntimeRetryApprovalPacket> {
-  const response = await fetch(
-    `${API_BASE}/api/commands/accounts/${encodeURIComponent(accountId)}/partial-fill-post-repair-runtime-retry-approval-packet`
+  suite.runtimeApprovalPacket = toLegacyCommandPanelResult(
+    getScheduledResult(settledBySlot, "runtimeApprovalPacket") as
+      | PromiseSettledResult<CommandRuntimeExecutionApprovalPacket>
+      | undefined,
+    "runtime approval packet not scheduled by command-plane retirement registry"
   );
-  if (!response.ok) {
-    throw new Error(`partial-fill post-repair runtime retry approval packet failed: ${response.status}`);
-  }
-  return response.json();
-}
-
-export async function fetchCommandPartialFillPostRepairRuntimeAttemptAudit(
-  accountId: string
-): Promise<CommandPartialFillPostRepairRuntimeAttemptAudit> {
-  const response = await fetch(
-    `${API_BASE}/api/commands/accounts/${encodeURIComponent(accountId)}/partial-fill-post-repair-runtime-attempt-audit`
+  suite.runtimeHandoffBundle = toLegacyCommandPanelResult(
+    getScheduledResult(settledBySlot, "runtimeHandoffBundle") as
+      | PromiseSettledResult<CommandRuntimeExecutionHandoffBundle>
+      | undefined,
+    "runtime handoff bundle not scheduled by command-plane retirement registry"
   );
-  if (!response.ok) {
-    throw new Error(`partial-fill post-repair runtime attempt audit failed: ${response.status}`);
-  }
-  return response.json();
-}
-
-export async function fetchCommandPartialFillOwnerRepairPreflightSourceAudit(
-  accountId: string
-): Promise<CommandPartialFillOwnerRepairPreflightSourceAudit> {
-  const response = await fetch(
-    `${API_BASE}/api/commands/accounts/${encodeURIComponent(accountId)}/partial-fill-owner-repair-preflight-source-audit`
+  suite.runtimeExecutionGapAudit = toLegacyCommandPanelResult(
+    getScheduledResult(settledBySlot, "runtimeExecutionGapAudit") as
+      | PromiseSettledResult<CommandRuntimeExecutionGapAudit>
+      | undefined,
+    "runtime execution gap audit not scheduled by command-plane retirement registry"
   );
-  if (!response.ok) {
-    throw new Error(`partial-fill owner repair preflight source audit failed: ${response.status}`);
-  }
-  return response.json();
-}
-
-export async function fetchCommandPartialFillOwnerRepairPatchPreview(
-  accountId: string
-): Promise<CommandPartialFillOwnerRepairPatchPreview> {
-  const response = await fetch(
-    `${API_BASE}/api/commands/accounts/${encodeURIComponent(accountId)}/partial-fill-owner-repair-patch-preview`
-  );
-  if (!response.ok) {
-    throw new Error(`partial-fill owner repair patch preview failed: ${response.status}`);
-  }
-  return response.json();
-}
-
-export async function fetchCommandPartialFillOwnerRepairExecutionHandoffBundle(
-  accountId: string
-): Promise<CommandPartialFillOwnerRepairExecutionHandoffBundle> {
-  const response = await fetch(
-    `${API_BASE}/api/commands/accounts/${encodeURIComponent(accountId)}/partial-fill-owner-repair-execution-handoff-bundle`
-  );
-  if (!response.ok) {
-    throw new Error(`partial-fill owner repair execution handoff bundle failed: ${response.status}`);
-  }
-  return response.json();
+  return suite;
 }
 
 export function openEventStream(

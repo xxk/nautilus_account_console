@@ -5,7 +5,7 @@
 - Proposal ID: `p021-account-console-owner-fork-governance`
 - Status: implementation_gate_passed
 - Created: 2026-06-20
-- Updated: 2026-06-20
+- Updated: 2026-06-23
 - Owner: account-console-governance / account-console-architecture
 - Source audit: local architecture review on `nautilus_account_console`
 - Owner map anchor: [Account Console owner map](../../ownership/account-console-owner-map.md)
@@ -14,19 +14,23 @@
 
 P021 is the governance proposal for owner ambiguity, fork risk and second-implementation risk found during the local architecture review of Account Console.
 
-The proposal does not declare the current implementation broken. It records four concrete risk lanes and turns them into phase-bound governance work with contract-lock expectations:
+The proposal does not declare the current implementation broken. It records six concrete risk lanes and turns them into phase-bound governance work with contract-lock expectations:
 
 1. Route-context generation is split between backend modules.
 2. Real source-package paths are hard-coded under repo-local `output/`.
 3. A synthetic-ready Playwright test constructs a full Account Mirror projection and can look like a second projector.
 4. Frontend route and fixture registries are centralized in a large `App.tsx`; this is still a single point today, but it needs guardrails before feature growth creates a fork.
+5. Frontend command status must not be synthesized from transient `/api/commands/*` receipts or runtime closeout payloads.
+6. Backend command action intake and command-plane read projection need explicit owner split and a single canonical command-status source.
+7. Frontend legacy governance panels must be held as one governed suite contract, not scattered per-panel owner state in `App.tsx`.
+8. Legacy command-read route exposure must be registered from the backend command-plane owner inventory, not hand-maintained in parallel inside `main.py`.
 
 ## 2. Scope / 范围
 
 In scope:
 
 1. Record every discovered owner/fork/second-implementation issue in `issue-list.md`.
-2. Define phase-by-phase remediation for route-context ownership, source-package provider ownership, synthetic-test boundary and frontend registry governance.
+2. Define phase-by-phase remediation for route-context ownership, source-package provider ownership, synthetic-test boundary, frontend registry governance and command-plane owner convergence.
 3. Add acceptance rows that prevent these risks from closing through prose-only evidence.
 4. Keep the Account Console read-only observation boundary intact.
 
@@ -53,6 +57,18 @@ Owner Boundary:
     - frontend/tests/README.md
     - backend/src/nautilus_account_console/source_bridge.py
     - backend/src/nautilus_account_console/account_mirror.py
+    - backend/src/nautilus_account_console/command_actions.py
+    - backend/src/nautilus_account_console/command_api.py
+    - frontend/src/app-registry.ts
+    - frontend/src/account-workbench-routing.ts
+    - frontend/src/fixture-selection.ts
+    - frontend/src/account-workbench-adapters.ts
+    - frontend/src/command-plane.ts
+    - frontend/src/command-plane-panels.tsx
+    - frontend/src/command-surface-panels.tsx
+    - frontend/src/account-workbench-panels.tsx
+    - frontend/src/account-workbench-terminal.tsx
+    - frontend/src/ui-primitives.tsx
     - frontend/src/App.tsx
   canonical_source_refs:
     - contracts/source_artifacts/account_sources/
@@ -77,6 +93,18 @@ Owner Boundary:
     - repo-local output path as canonical source owner
     - full mock Account Mirror projector in browser tests
     - feature-specific route branches outside the canonical workbench route registry
+    - fixture and workbench registries drifting back into ad hoc App.tsx constants instead of the canonical frontend registry module
+    - account workbench route parsing and mirror-eligibility checks drifting back into ad hoc App.tsx regex branches instead of the canonical routing owner module
+    - fixture default state and fixture-map lookup drifting back into ad hoc App.tsx hook state instead of the canonical fixture-selection owner module
+    - mirror read-model adaptation drifting back into ad hoc App.tsx helpers instead of the canonical workbench adapter owner module
+    - command-plane governance loading and retirement summary derivation drifting back into ad hoc App.tsx state/effects
+    - runtime governance panel rendering and shared badge/copy primitives drifting back into App.tsx instead of dedicated frontend owner modules
+    - command action/read panel rendering drifting back into App.tsx instead of a dedicated command-surface owner module
+    - account workbench terminal rendering drifting back into App.tsx instead of a dedicated terminal owner module
+    - account workbench orders/positions panel rendering drifting back into App.tsx instead of a dedicated domain panel owner module
+    - frontend-local command_status synthesis from transient command receipts
+    - backend legacy command reads becoming canonical command-plane truth
+    - main.py hand-maintained legacy governance routes drifting from the backend command-plane retirement registry
 ```
 
 ## 4. Review Verdict / 评审结论
@@ -98,7 +126,9 @@ Owner Boundary:
 | P021-I1 | Backend route-context fallback is duplicated in `source_bridge.py` and `account_mirror.py` | closed | Phase 1 |
 | P021-I2 | Source-package paths under `output/account_capability/**` are hard-coded into backend modules | accepted_with_guardrails | Phase 2 |
 | P021-I3 | Synthetic-ready Playwright test mocks a full ready projection and can become a second projector | closed | Phase 3 |
-| P021-I4 | Frontend `App.tsx` owns route/fixture/panel registry in one large module; currently single but fragile | accepted_with_guardrails | Phase 4 |
+| P021-I4 | Frontend owner convergence must keep route classification, fixture selection, read-model adaptation and panel rendering out of `App.tsx` | accepted_with_guardrails | Phase 4 |
+| P021-I5 | Frontend command-status synthesis created a second command-state owner | closed | Phase 5 |
+| P021-I6 | Backend command plane lacked explicit split between action intake and canonical read projection | accepted_with_guardrails | Phase 6 |
 
 See [issue-list.md](issue-list.md) for per-issue evidence, rejection rules and carry-forward status.
 
@@ -120,4 +150,7 @@ See [issue-list.md](issue-list.md) for per-issue evidence, rejection rules and c
 | Source package provider boundary | required | backend source package loading path | accepted_with_guardrails |
 | Browser synthetic-test boundary | required | `frontend/tests/e2e/` | passed |
 | Frontend registry governance | required | `frontend/src/` and `frontend/tests/README.md` | accepted_with_guardrails |
+| Frontend command-status owner convergence | required | `frontend/src/App.tsx` composition root, canonical frontend owner modules and anti-fork validator | passed |
+| Backend command-plane owner convergence | required | `backend/src/nautilus_account_console/command_actions.py`, `command_api.py`, `main.py` | passed |
+| Legacy command-read retirement slicing | required | canonical projection route, frontend suite loader, governed legacy panel suite, P021 validator | passed |
 | Proposal-local evidence | archive_only | `acceptance.md`, `issue-list.md` | present |
