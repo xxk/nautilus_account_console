@@ -8,7 +8,7 @@ const evidencePath = path.join(evidenceDir, "partial-fill-owner-repair-approval-
 
 test("P024 Web UI renders owner repair approval packet", async ({ page }, testInfo) => {
   const apiResponse = await page.request.get(
-    `http://127.0.0.1:8875/api/commands/accounts/${accountId}/partial-fill-owner-repair-approval-packet`
+    `http://127.0.0.1:8775/api/commands/accounts/${accountId}/partial-fill-owner-repair-approval-packet`
   );
   expect(apiResponse.ok()).toBe(true);
   const packet = (await apiResponse.json()) as Record<string, any>;

@@ -9,8 +9,8 @@
   "verdict": "browser_order_display_contract_pass_runtime_partial_fill_blocked",
   "ui_order_display_verdict": "pass",
   "partial_cancel_display_verdict": "pass",
-  "ui_command_control_verdict": "historical_fixture_governed_cancel_intent_display_only",
-  "runtime_partial_fill_verdict": "historical_fixture_governed_blocked_until_owner_evidence",
+  "ui_command_control_verdict": "paper_armed_cancel_intent_accepted_for_risk",
+  "runtime_partial_fill_verdict": "typed_blocker_until_real_or_owner_approved_partial_fill_state",
   "stages": [
     {
       "stage": "S1",

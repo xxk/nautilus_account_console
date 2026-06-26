@@ -8,7 +8,7 @@ const evidencePath = path.join(evidenceDir, "runtime-approval-packet-ui.json");
 
 test("P024 Web UI renders owner-runtime execution approval packet without invoking runtime", async ({ page }, testInfo) => {
   const apiResponse = await page.request.get(
-    `http://127.0.0.1:8875/api/commands/accounts/${accountId}/runtime-execution-approval-packet`
+    `http://127.0.0.1:8775/api/commands/accounts/${accountId}/runtime-execution-approval-packet`
   );
   expect(apiResponse.ok()).toBe(true);
   const packet = (await apiResponse.json()) as Record<string, unknown>;

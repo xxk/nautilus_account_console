@@ -19,68 +19,6 @@ This ledger is the required carry-forward surface for owner ambiguity, fork risk
 
 ## Issues
 
-### P021-I5: Frontend command-status synthesis creates a second command-state owner
-
-| Field | Value |
-| --- | --- |
-| Status | `closed` |
-| Risk type | second implementation |
-| Current owner | account-console-frontend |
-| Affected files | `frontend/src/App.tsx`; `frontend/src/types.ts` |
-| Evidence | production UI previously synthesized `command_status` from `/api/commands/*` responses and runtime closeout payloads instead of rendering only mirror-owned command state |
-| Why it matters | command truth can drift between mirror projection, command endpoints and frontend-local reconstruction |
-| Required phase | Phase 5 |
-| Acceptance rows | A5, N5 |
-
-Required governance:
-
-1. Frontend renders canonical mirror-owned `command_status` only.
-2. Transient command API receipts are displayed separately and must not be promoted to `command_status`.
-3. Anti-fork validation must reject new frontend-local `command_status` synthesizers.
-
-Closeout evidence:
-
-1. `frontend/src/App.tsx` no longer contains production `commandResultToStatus` or `runtimeCloseoutToStatus` helpers.
-2. `Command Status` reads only `mirrorReadback.selected.command_status`.
-3. `python scripts\validate_p021_owner_fork_governance.py` rejects reintroduction of frontend-local command-status synthesis.
-
-Must not:
-
-1. Build `command_status` in React from `CommandApiResult`.
-2. Build `command_status` in React from runtime closeout payloads.
-3. Let UI-local receipts outrank mirror-owned command status.
-
-### P021-I6: Backend command plane lacks explicit owner split between action intake and read projection
-
-| Field | Value |
-| --- | --- |
-| Status | `accepted_with_guardrails` |
-| Risk type | second implementation |
-| Current owner | account-console-backend |
-| Affected files | `backend/src/nautilus_account_console/command_api.py`; `backend/src/nautilus_account_console/main.py` |
-| Evidence | one module previously owned both action-intake handlers and long-lived command/readiness/handoff/closeout projection loaders |
-| Why it matters | command actions and command read models can drift into two implicit owners and make safe retirement of legacy surfaces harder |
-| Required phase | Phase 6 |
-| Acceptance rows | A2, A5, N2, N5 |
-
-Required governance:
-
-1. Action intake owner and command read-projection owner are separate modules with explicit boundaries.
-2. `main.py` wires action routes from the action owner and read routes from the read owner.
-3. Future retirement of legacy command-plane surfaces happens by owner boundary, not by editing a mixed module.
-
-Closeout evidence:
-
-1. `backend/src/nautilus_account_console/command_actions.py` owns submit/cancel intake and runtime handoff preparation only.
-2. `backend/src/nautilus_account_console/command_api.py` remains the read-projection owner for closeout/readiness/handoff/audit packets.
-3. Validators and tests continue to pass after the split.
-
-Must not:
-
-1. Recombine action-intake and long-lived read projection logic without an explicit owner decision.
-2. Let one helper silently mint both transient action receipts and canonical command truth.
-3. Treat this module split by itself as proof that the second backend plane is retired.
-
 ### P021-I1: Backend route_context fallback has two owners
 
 | Field | Value |
@@ -173,38 +111,36 @@ Must not:
 2. Use mocked API response as formal source package evidence.
 3. Create feature-specific UI route implementation in tests.
 
-### P021-I4: Frontend owner convergence must stay out of App.tsx
+### P021-I4: Frontend App.tsx registry is single today but fragile
 
 | Field | Value |
 | --- | --- |
 | Status | `accepted_with_guardrails` |
 | Risk type | future fork risk |
 | Current owner | account-console-frontend |
-| Affected files | `frontend/src/App.tsx`; `frontend/src/app-registry.ts`; `frontend/src/account-workbench-routing.ts`; `frontend/src/fixture-selection.ts`; `frontend/src/account-workbench-adapters.ts`; `frontend/src/account-workbench-terminal.tsx`; `frontend/tests/README.md` |
-| Evidence | historical `App.tsx` concentration was reduced by extracting canonical registry, routing, fixture-selection, adapter and terminal owner modules; the remaining risk is governance drift back into `App.tsx` |
-| Why it matters | future feature work can accidentally reintroduce second route registries, second fixture selectors or second read-model adapters if the extracted owner boundaries are not guarded |
+| Affected files | `frontend/src/App.tsx`; `frontend/src/types.ts`; `frontend/tests/README.md` |
+| Evidence | `App.tsx` holds many fixture maps, route checks and panel render paths in one large module |
+| Why it matters | future feature work can accidentally add feature-specific second route or fixture registries |
 | Required phase | Phase 4 |
 | Acceptance rows | A5, N5 |
 
 Required governance:
 
 1. Preserve one canonical production route/fixture registry.
-2. Keep route classification, fixture selection, mirror read-model adaptation and terminal rendering in dedicated owner modules instead of `App.tsx`.
+2. Extract or document registry ownership before more panels are added.
 3. Guard against production imports from `frontend/tests` and test-owned routes.
 
 Closeout evidence:
 
-1. The current production route registry remains single-owner in `frontend/src/app-registry.ts`.
-2. `frontend/src/account-workbench-routing.ts`, `frontend/src/fixture-selection.ts`, `frontend/src/account-workbench-adapters.ts` and `frontend/src/account-workbench-terminal.tsx` remain the canonical extracted owners.
-3. `frontend/tests/README.md` records the no-second-route-registry rule.
-4. `python scripts\validate_p021_owner_fork_governance.py` rejects test route registries, production imports from tests and owner drift back into `App.tsx`.
+1. The current production route registry remains single-owner in `frontend/src/App.tsx`.
+2. `frontend/tests/README.md` records the no-second-route-registry rule.
+3. `python scripts\validate_p021_owner_fork_governance.py` rejects test route registries and production imports from tests.
 
 Must not:
 
 1. Add top-level routes that duplicate Account Workbench panels.
 2. Create route registration inside tests.
 3. Let per-feature files become hidden route registries.
-4. Reintroduce fixture-state defaults, route regex trees or mirror read-model factories directly inside `App.tsx`.
 
 ## Carry-Forward Rules
 

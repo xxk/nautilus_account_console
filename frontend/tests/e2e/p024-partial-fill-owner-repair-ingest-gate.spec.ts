@@ -8,7 +8,7 @@ const evidencePath = path.join(evidenceDir, "partial-fill-owner-repair-ingest-ga
 
 test("P024 Web UI renders owner repair evidence ingest gate", async ({ page }, testInfo) => {
   const apiResponse = await page.request.get(
-    `http://127.0.0.1:8875/api/commands/accounts/${accountId}/partial-fill-owner-repair-evidence-ingest-gate`
+    `http://127.0.0.1:8775/api/commands/accounts/${accountId}/partial-fill-owner-repair-evidence-ingest-gate`
   );
   expect(apiResponse.ok()).toBe(true);
   const gate = (await apiResponse.json()) as Record<string, any>;

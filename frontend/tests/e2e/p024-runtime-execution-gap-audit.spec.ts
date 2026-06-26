@@ -8,7 +8,7 @@ const evidencePath = path.join(evidenceDir, "runtime-execution-gap-audit-ui.json
 
 test("P024 Web UI renders final runtime execution gap without claiming full acceptance", async ({ page }, testInfo) => {
   const apiResponse = await page.request.get(
-    `http://127.0.0.1:8875/api/commands/accounts/${accountId}/runtime-execution-gap-audit`
+    `http://127.0.0.1:8775/api/commands/accounts/${accountId}/runtime-execution-gap-audit`
   );
   expect(apiResponse.ok()).toBe(true);
   const audit = (await apiResponse.json()) as Record<string, unknown>;

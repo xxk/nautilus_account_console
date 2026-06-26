@@ -3,7 +3,7 @@
 - Proposal ID: `p021-account-console-owner-fork-governance`
 - Status: implementation_gate_passed
 - Created: 2026-06-20
-- Updated: 2026-06-23
+- Updated: 2026-06-20
 - Linked proposal: [README.md](README.md)
 - Linked acceptance: [acceptance.md](acceptance.md)
 - Issue ledger: [issue-list.md](issue-list.md)
@@ -64,15 +64,11 @@ phases:
   - id: phase_4_frontend_registry_governance
     status: accepted_with_guardrails
     ai_progress: 100
-    evidence: "frontend tests README rule and P021 validator reject second test route registries; extracted owner modules now hold registry, routing, fixture selection, adapters and terminal rendering"
+    evidence: "frontend tests README rule and P021 validator reject second test route registries"
   - id: phase_5_closeout
     status: completed
     ai_progress: 100
-    evidence: "frontend command-status synthesis retired; receipt UI separated from canonical mirror-owned command status"
-  - id: phase_6_backend_command_plane_owner_convergence
-    status: accepted_with_guardrails
-    ai_progress: 100
-    evidence: "command_actions.py owns action intake; canonical command-plane projection route declares mirror owner; retirement slicing, archive-only inventory and validators/docs are aligned"
+    evidence: "P021 owner/fork governance validator, proposal docs gate, owner boundary gate and backend tests"
 AI-PHASE-STATUS-END -->
 
 ## Phase Status Board / Phase 状态表
@@ -83,9 +79,8 @@ AI-PHASE-STATUS-END -->
 | Phase 1 Route-context owner convergence | Replace duplicated fallback route-context logic with one canonical resolver or one canonical owner path | `completed` | 100% | canonical `route_context.py`; source_bridge/account_mirror delegate | Preserve compatibility wrapper only |
 | Phase 2 Source-package provider boundary | Make real source package loading owner-explicit and not hard-coded as Account Console truth | `accepted_with_guardrails` | 100% | source refs/checksums preserved; issue ledger rejects Account Console truth ownership | Keep external owner evidence boundary |
 | Phase 3 Synthetic-test boundary | Prevent synthetic-ready e2e mocks from becoming a second projector or formal evidence | `completed` | 100% | synthetic test asserts no account/capital/broker/runtime truth | Keep display-contract-only evidence |
-| Phase 4 Frontend registry governance | Keep one canonical route/fixture registry while reducing `App.tsx` growth risk | `accepted_with_guardrails` | 100% | README rule plus validator guard for test route registries; `app-registry.ts`, `account-workbench-routing.ts`, `fixture-selection.ts`, `account-workbench-adapters.ts` and `account-workbench-terminal.tsx` now hold extracted owners | Preserve owner map and anti-fork validator as the retirement guard |
-| Phase 5 Frontend command-status owner convergence | Retire frontend-local command-status synthesis and keep transient receipts non-canonical | `completed` | 100% | `command_status` reads only mirror projection; receipt panel shows transient intent API result separately | Preserve receipt vs canonical status split |
-| Phase 6 Backend command-plane owner convergence | Make backend action intake and canonical command projection explicit while marking legacy reads non-canonical | `accepted_with_guardrails` | 100% | `command_actions.py` owns actions; `/api/commands/accounts/{account_id}/projection` declares mirror as canonical owner; legacy read retirement slicing and archive-only inventory are governed | Preserve validator-backed guardrails against owner drift |
+| Phase 4 Frontend registry governance | Keep one canonical route/fixture registry while reducing `App.tsx` growth risk | `accepted_with_guardrails` | 100% | README rule plus validator guard for test route registries | Extract later only if feature growth requires it |
+| Phase 5 Closeout | Verify all issue rows closed or typed-blocked with carry-forward | `completed` | 100% | P021 validator, proposal docs gate, owner boundary gate, backend tests | Commit closeout |
 
 ## Phase 0: Proposal Convergence
 
@@ -107,7 +102,7 @@ Record all discovered owner/fork/second-implementation risks in a proposal-bound
 
 ### Exit Conditions
 
-1. All six discovered issues are listed in `issue-list.md`.
+1. All four discovered issues are listed in `issue-list.md`.
 2. Each issue maps to a phase and at least one acceptance row.
 3. Proposal docs gate passes for P021.
 
@@ -242,29 +237,21 @@ Keep a single canonical frontend route/fixture registry while reducing the risk 
 ### Dependencies
 
 1. `frontend/src/App.tsx`
-2. `frontend/src/app-registry.ts`
-3. `frontend/src/account-workbench-routing.ts`
-4. `frontend/src/fixture-selection.ts`
-5. `frontend/src/account-workbench-adapters.ts`
-6. `frontend/src/account-workbench-terminal.tsx`
-7. `frontend/src/types.ts`
-8. `frontend/tests/README.md`
-9. Account Workbench e2e tests.
+2. `frontend/src/types.ts`
+3. `frontend/tests/README.md`
+4. Account Workbench e2e tests.
 
 ### Deliverables
 
 1. A documented or extracted canonical registry owner.
 2. Tests or source review guard rejecting feature-specific second route registries.
 3. No production code imports from `frontend/tests`.
-4. `App.tsx` consumes registry state from a canonical frontend registry module instead of owning large ad hoc registry constants.
-5. `App.tsx` consumes account workbench route classification, fixture selection, read-model adaptation and terminal rendering from dedicated owner modules instead of owning those implementations directly.
 
 ### Exit Conditions
 
 1. P021-I4 is marked `closed` or `accepted_with_guardrails`.
 2. New panels have one route/fixture registration path.
 3. Existing e2e tests continue to exercise canonical routes.
-4. `App.tsx` acts as a composition root and no longer remains a second owner for account workbench route parsing, fixture selection or mirror read-model adaptation.
 
 ### Fail-fast / Negative Cases
 
@@ -280,78 +267,7 @@ cd frontend
 npm run build
 ```
 
-## Phase 5: Frontend Command-Status Owner Convergence
-
-### Goal
-
-Retire frontend-local command-status synthesis so `command_status` is rendered only from the mirror-owned projection, while transient command receipts remain explicitly non-canonical.
-
-### Dependencies
-
-1. `frontend/src/App.tsx` composition root
-2. `frontend/src/types.ts`
-3. P024 command-control browser evidence and E2E coverage
-
-### Deliverables
-
-1. No production helper synthesizes `command_status` from `CommandApiResult` or runtime closeout payloads.
-2. UI displays transient submit/cancel acceptance as a separate receipt surface.
-3. Anti-fork validation rejects reintroduction of frontend-local command-status synthesis.
-
-### Exit Conditions
-
-1. P021-I5 is marked `closed`.
-2. `Command Status` reads only `mirrorReadback.selected.command_status`.
-3. Runtime closeout and partial-fill E2E evidence keep receipt state separate from canonical command status.
-
-### Verification
-
-```powershell
-python scripts\validate_p021_owner_fork_governance.py
-cd frontend
-npx playwright test p024-partial-fill-cancel-order-display.spec.ts --project=desktop
-npx playwright test p024-runtime-closeout-evidence.spec.ts --project=desktop
-```
-
-## Phase 6: Backend Command-Plane Owner Convergence
-
-### Goal
-
-Make backend command action intake and command-plane read projection explicit owners, and publish one canonical command-plane projection contract that points at mirror-owned durable command truth.
-
-### Dependencies
-
-1. `backend/src/nautilus_account_console/command_actions.py`
-2. `backend/src/nautilus_account_console/command_api.py`
-3. `backend/src/nautilus_account_console/main.py`
-4. `backend/src/nautilus_account_console/account_mirror.py`
-
-### Deliverables
-
-1. Action-intake helpers stay isolated in `command_actions.py`.
-2. Read projection owner exposes `/api/commands/accounts/{account_id}/projection`.
-3. Canonical command-plane projection declares mirror as durable `command_status` owner and marks legacy read surfaces as non-canonical.
-4. Frontend consumes legacy command read surfaces only through one centralized suite loader.
-5. Canonical projection classifies each legacy read surface as retain-blocker or retire-with-panel.
-6. Each retire-with-panel surface is mapped to the exact frontend panel that must be removed or converged before route retirement.
-7. The first safe retirement batch is explicitly named with routes, panels and preconditions before any route deletion begins.
-8. Validators and proposal docs reject drift back to mixed ownership.
-
-### Exit Conditions
-
-1. P021-I6 is `closed` or `accepted_with_guardrails` with explicit retirement next step for legacy reads.
-2. `main.py` wires action and read owners separately.
-3. Backend tests and P021/P024 validators pass.
-
-### Verification
-
-```powershell
-python -m pytest backend\tests\test_command_api.py backend\tests\test_source_bridge.py backend\tests\test_mirror_api.py
-python scripts\validate_p021_owner_fork_governance.py
-python scripts\validate_p024_paper_command_api.py
-```
-
-## Phase 7: Closeout
+## Phase 5: Closeout
 
 ### Goal
 

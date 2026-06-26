@@ -45,18 +45,7 @@ The `owner` field displayed in UI rows means operational responsibility for a bl
 | Admission/approval/capital decisions | external approval/capital owner | no local writer | formal approval/capital artifacts outside this repo | display request/projection or blocker only | create local approval, admission or capital allocator |
 | Broker/live state | broker/runtime owner | no local writer | broker/runtime APIs/artifacts outside this repo | display normalized broker/probe projections only | call broker action or certify tradability |
 | Broker observation session capability | `account-console-broker-observation-session` accepted by ADR-0005 | `contracts/broker_observation/**`, `docs/proposals/p019-broker-observation-session-foundation/**`, `output/account_capability/ib-live-u3028269/**` evidence refs | governed read-only observation capability, not broker/runtime truth | define contracts, validators, read-only source packages, durable observation evidence and Account Mirror projections with command disabled | own broker/runtime/account/order truth, store raw secrets, expose command authority, or claim complete execution history from partial evidence |
-| P024 paper command controls | `account-console-command-contracts` + `account-console-frontend` + external `owner://nautilus_ctp_adapter` runtime owner | `docs/proposals/p024-account-console-paper-command-controls/**`, `docs/acceptance/p024-account-console-paper-command-controls/**`, `docs/acceptance/browser-evidence/p024-account-console-paper-command-controls/**` | guarded paper intent API, browser command-control projection, owner-runtime handoff/readiness refs, residual blocker audit, owner-runtime execution approval packet, runtime approval packet UI projection, owner-runtime execution handoff bundle, runtime handoff bundle UI projection and runtime execution gap audit | accept paper intent/control/display/handoff/readiness/approval-packet/UI-projection/handoff-bundle/browser-handoff-bundle/gap-audit gates; render owner refs/checksums/blockers; preserve external approval blocker before owner-runtime execution; treat `/api/mirror/accounts/{account_id}` as canonical durable command-status owner, treat backend command-plane projection as the retirement registry owner, and hold frontend legacy governance panels as one governed suite contract instead of scattered per-panel state | call broker/runtime directly, write owner repo without approval, claim browser-triggered broker order, store raw secrets/endpoints, make Account Mirror a command writer, let legacy `/api/commands/*` read surfaces become canonical command truth, or let `App.tsx` become a second legacy-governance registry |
-
-### Frontend Canonical UI Owners / 前端规范 Owner 模块
-
-| Frontend concern | Canonical owner | Path | App.tsx allowed role | Must not drift back to |
-| --- | --- | --- | --- | --- |
-| Workbench and fixture registry | `account-console-frontend.registry-owner` | `frontend/src/app-registry.ts` | consume exported registries and labels | ad hoc registry constants in `frontend/src/App.tsx` |
-| Account Workbench route classification | `account-console-frontend.routing-owner` | `frontend/src/account-workbench-routing.ts` | consume classified route state and mirror-route eligibility | route regex trees and path parsing in `frontend/src/App.tsx` |
-| Fixture state selection and fixture lookup | `account-console-frontend.fixture-selection-owner` | `frontend/src/fixture-selection.ts` | consume canonical fixture state and selected fixture payloads | per-panel fixture default hooks and direct `fixtureMap[...]` lookup in `frontend/src/App.tsx` |
-| Mirror read-model adaptation | `account-console-frontend.read-model-adapter-owner` | `frontend/src/account-workbench-adapters.ts` | consume canonical mirror-to-panel projections and command helper adapters | mirror blocker/boundary/read-model factories in `frontend/src/App.tsx` |
-| Account Workbench terminal surface | `account-console-frontend.terminal-owner` | `frontend/src/account-workbench-terminal.tsx` | mount the terminal owner with explicit props | terminal rendering, terminal-local formatting, or command banner logic in `frontend/src/App.tsx` |
-| Composition root | `account-console-frontend.composition-root` | `frontend/src/App.tsx` | compose owner modules, route top-level workbenches, wire filters and mirror fetch lifecycle | becoming a second registry, second router, second adapter, second fixture selector or second terminal owner |
+| P024 paper command controls | `account-console-command-contracts` + `account-console-frontend` + external `owner://nautilus_ctp_adapter` runtime owner | `docs/proposals/p024-account-console-paper-command-controls/**`, `docs/acceptance/p024-account-console-paper-command-controls/**`, `docs/acceptance/browser-evidence/p024-account-console-paper-command-controls/**` | guarded paper intent API, browser command-control projection, owner-runtime handoff/readiness refs, residual blocker audit, owner-runtime execution approval packet, runtime approval packet UI projection, owner-runtime execution handoff bundle, runtime handoff bundle UI projection and runtime execution gap audit | accept paper intent/control/display/handoff/readiness/approval-packet/UI-projection/handoff-bundle/browser-handoff-bundle/gap-audit gates; render owner refs/checksums/blockers; preserve external approval blocker before owner-runtime execution | call broker/runtime directly, write owner repo without approval, claim browser-triggered broker order, store raw secrets/endpoints, make Account Mirror a command writer |
 
 ## 4. Tracer Edge Authority / Tracer 边权限
 
@@ -93,7 +82,7 @@ Screenshots prove rendering only. They never prove account, runtime, broker, adm
 | UI slice proposal | `account-console-ui` | `docs/proposals/p001-daily-closeout-account-health-panel/` |
 | Panel contract | `account-console-contracts` | `contracts/ui/panels/account_health_panel.contract.json` |
 | Fixture projections | `account-console-contracts` + `account-console-ui` | `contracts/ui/fixtures/daily_closeout/account_health_*.json` |
-| Browser rendering | `account-console-frontend` | `frontend/src/App.tsx` composition root plus canonical owner modules under `frontend/src/` |
+| Browser rendering | `account-console-frontend` | `frontend/src/App.tsx` |
 | Selector/browser acceptance | `account-console-frontend` + `account-console-ui` | `frontend/tests/e2e/account-health-panel.spec.ts` |
 | Backend runtime/query owner | not touched by P001 fixture slice | typed blocker if live read model endpoint is required |
 | External source evidence | external strategy/runtime owner | external refs remain `source_ref` only |
@@ -122,7 +111,7 @@ P009 E93 implementation/browser evidence may render this fixture as a read-only 
 | UI slice proposal | `account-console-ui` | `docs/proposals/p004-account-workbench-summary-panel/` |
 | Account Summary panel contract | `account-console-contracts` | `contracts/ui/panels/account_summary_panel.contract.json` |
 | Account Summary fixture projections | `account-console-contracts` + `account-console-ui` | `contracts/ui/fixtures/account_workbench/account_summary_*.json` |
-| Browser rendering | `account-console-frontend` | `frontend/src/App.tsx` composition root plus canonical owner modules under `frontend/src/` |
+| Browser rendering | `account-console-frontend` | `frontend/src/App.tsx` |
 | Selector/browser acceptance | `account-console-frontend` + `account-console-ui` | `frontend/tests/e2e/account-summary-panel.spec.ts`; `docs/acceptance/2026-06-14-p004-phase2-summary-ui-browser-evidence.json` |
 | Backend runtime/query owner | not touched by P004 Phase 2 fixture slice | typed blocker if live read model endpoint is required |
 | External source evidence | external strategy/runtime owner | external refs remain `source_ref` only |
@@ -137,7 +126,7 @@ P004 Phase 2 is accepted as a read-only Account Summary UI projection slice only
 | Order detail panel contract | `account-console-contracts` | `contracts/ui/panels/account_order_detail_panel.contract.json` |
 | Orders and lifecycle fixture projections | `account-console-contracts` + `account-console-ui` | `contracts/ui/fixtures/account_workbench/account_orders_*.json`; `contracts/ui/fixtures/account_workbench/account_order_detail_*.json` |
 | External lifecycle/report provenance | external strategy/runtime owner, currently `nautilus_ctp_adapter` for E100 projection refs | external source refs only |
-| Browser rendering | `account-console-frontend` | `frontend/src/App.tsx` composition root plus canonical owner modules under `frontend/src/`; `frontend/tests/e2e/account-orders-panel.spec.ts`; `docs/acceptance/2026-06-14-p004-phase3-orders-ui-browser-evidence.json` |
+| Browser rendering | `account-console-frontend` | `frontend/src/App.tsx`; `frontend/tests/e2e/account-orders-panel.spec.ts`; `docs/acceptance/2026-06-14-p004-phase3-orders-ui-browser-evidence.json` |
 
 P004 Phase 3 is accepted as a read-only orders/order-detail UI projection slice only. It does not accept order truth, account truth, broker truth, Paper readiness, Live readiness, admission, capital, production state or full Account Console UI completion.
 
@@ -149,7 +138,7 @@ P004 Phase 3 is accepted as a read-only orders/order-detail UI projection slice 
 | Positions fixture projections | `account-console-contracts` + `account-console-ui` | `contracts/ui/fixtures/account_workbench/account_positions_*.json` |
 | External position lifecycle context | external strategy/runtime owner, currently `nautilus_ctp_adapter` for E100 projection refs | external source refs only |
 | Carryover and settlement refs | external settlement/carryover owner | typed blocked or partial fixture when refs are missing |
-| Browser rendering | `account-console-frontend` | `frontend/src/App.tsx` composition root plus canonical owner modules under `frontend/src/`; `frontend/tests/e2e/account-positions-panel.spec.ts`; `docs/acceptance/2026-06-14-p004-phase4-positions-ui-browser-evidence.json` |
+| Browser rendering | `account-console-frontend` | `frontend/src/App.tsx`; `frontend/tests/e2e/account-positions-panel.spec.ts`; `docs/acceptance/2026-06-14-p004-phase4-positions-ui-browser-evidence.json` |
 
 P004 Phase 4 is accepted as a read-only positions UI projection slice only. It does not accept position truth, account truth, order truth, ledger truth, broker truth, Paper readiness, Live readiness, admission, capital, production state or full Account Console UI completion.
 
@@ -162,7 +151,7 @@ P004 Phase 4 is accepted as a read-only positions UI projection slice only. It d
 | Settlement fixture projections | `account-console-contracts` + `account-console-ui` | `contracts/ui/fixtures/account_workbench/account_settlement_*.json` |
 | Equity fixture projections | `account-console-contracts` + `account-console-ui` | `contracts/ui/fixtures/account_workbench/account_equity_*.json` |
 | External settlement/carryover/equity ledger refs | external settlement/ledger owner | typed blocked or partial fixture when refs are missing |
-| Browser rendering | `account-console-frontend` | `frontend/src/App.tsx` composition root plus canonical owner modules under `frontend/src/`; `frontend/tests/e2e/account-settlement-equity-panel.spec.ts`; `docs/acceptance/2026-06-14-p004-phase5-settlement-equity-ui-browser-evidence.json` |
+| Browser rendering | `account-console-frontend` | `frontend/src/App.tsx`; `frontend/tests/e2e/account-settlement-equity-panel.spec.ts`; `docs/acceptance/2026-06-14-p004-phase5-settlement-equity-ui-browser-evidence.json` |
 
 P004 Phase 5 is accepted as a read-only settlement/equity UI projection slice only. It does not accept settlement truth, equity truth, account truth, position truth, order truth, ledger truth, broker truth, Paper readiness, Live readiness, admission, capital, production state or full Account Console UI completion.
 
@@ -175,7 +164,7 @@ P004 Phase 5 is accepted as a read-only settlement/equity UI projection slice on
 | Reconcile fixture projections | `account-console-contracts` + `account-console-ui` | `contracts/ui/fixtures/account_workbench/account_reconcile_*.json` |
 | Incidents fixture projections | `account-console-contracts` + `account-console-ui` | `contracts/ui/fixtures/account_workbench/account_incidents_*.json` |
 | External reconcile, incident and repair refs | external reconcile/incident owner | typed blocked or partial fixture when refs are missing |
-| Browser rendering | `account-console-frontend` | `frontend/src/App.tsx` composition root plus canonical owner modules under `frontend/src/`; `frontend/src/types.ts`; `docs/acceptance/2026-06-14-p004-phase6-reconcile-incidents-ui-browser-evidence.json` |
+| Browser rendering | `account-console-frontend` | `frontend/src/App.tsx`, `frontend/src/types.ts`, `docs/acceptance/2026-06-14-p004-phase6-reconcile-incidents-ui-browser-evidence.json` |
 
 P004 Phase 6 is accepted as a read-only reconcile/incidents UI projection slice only. It does not accept reconcile truth, incident truth, account truth, order truth, ledger truth, broker truth, Paper readiness, Live readiness, admission, capital, production state or full Account Console UI completion.
 
@@ -186,7 +175,7 @@ P004 Phase 6 is accepted as a read-only reconcile/incidents UI projection slice 
 | Evidence panel contract | `account-console-contracts` | `contracts/ui/panels/account_evidence_panel.contract.json` |
 | Evidence fixture projections | `account-console-contracts` + `account-console-ui` | `contracts/ui/fixtures/account_workbench/account_evidence_*.json` |
 | Schema/checksum/source refs | external evidence/source owner | typed blocked or partial fixture when refs are missing |
-| Browser rendering | `account-console-frontend` | `frontend/src/App.tsx` composition root plus canonical owner modules under `frontend/src/`; `frontend/src/types.ts`; `docs/acceptance/2026-06-15-p004-phase7-evidence-ui-browser-evidence.json` |
+| Browser rendering | `account-console-frontend` | `frontend/src/App.tsx`, `frontend/src/types.ts`, `docs/acceptance/2026-06-15-p004-phase7-evidence-ui-browser-evidence.json` |
 
 P004 Phase 7 is accepted as a read-only evidence UI projection slice only. It does not accept evidence truth, account truth, order truth, ledger truth, broker truth, Paper readiness, Live readiness, admission, capital, production state or full Account Console UI completion.
 

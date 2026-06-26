@@ -69,9 +69,17 @@ def validate_route() -> None:
     from nautilus_account_console.main import app
 
     route = "/api/commands/accounts/{account_id}/partial-fill-owner-repair-preflight-source-audit"
-    require(all(getattr(item, "path", "") != route for item in app.routes), "preflight route should be retired")
+    found = False
+    for item in app.routes:
+        if getattr(item, "path", "") == route:
+            found = True
+            require(getattr(item, "methods", set()) == {"GET"}, "preflight route must be GET-only")
+    require(found, "preflight route missing")
     response = TestClient(app).get(f"/api/commands/accounts/{ACCOUNT_ID}/partial-fill-owner-repair-preflight-source-audit")
-    require(response.status_code == 404, "preflight API retirement mismatch")
+    require(response.status_code == 200, "preflight API does not return 200")
+    payload = response.json()
+    require(payload["next_required_action"]["blind_script_retry_rejected"] is True, "API blind retry mismatch")
+    require(payload["negative_assertions"]["owner_runtime_invocation_attempted"] is False, "API runtime flag mismatch")
 
 
 def main() -> None:
@@ -79,7 +87,7 @@ def main() -> None:
     validate_route()
     print(
         "P024_PARTIAL_FILL_OWNER_REPAIR_PREFLIGHT_BROWSER_EVIDENCE_OK: "
-        "ui=archive_only_historical_evidence route=retired_404 blind_retry_rejected=true owner_write=false"
+        "ui=pass blind_retry_rejected=true owner_write=false"
     )
 
 

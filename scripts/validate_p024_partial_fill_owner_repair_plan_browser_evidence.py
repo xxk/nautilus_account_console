@@ -20,7 +20,7 @@ SCREENSHOT = EVIDENCE_DIR / "p024-partial-fill-owner-repair-plan-ui.png"
 SPEC = ROOT / "frontend" / "tests" / "e2e" / "p024-partial-fill-owner-repair-plan.spec.ts"
 APP = ROOT / "frontend" / "src" / "App.tsx"
 API = ROOT / "frontend" / "src" / "api.ts"
-HISTORICAL_TYPES = ROOT / "frontend" / "src" / "types-historical-p024.ts"
+TYPES = ROOT / "frontend" / "src" / "types.ts"
 ACCOUNT_ID = "acct.ctp.paper.19053"
 
 
@@ -98,21 +98,33 @@ def validate_route_and_frontend() -> None:
     from nautilus_account_console.main import app
 
     route = "/api/commands/accounts/{account_id}/partial-fill-owner-repair-implementation-plan"
-    require(all(getattr(item, "path", "") != route for item in app.routes), "owner repair plan route should be retired")
+    found = False
+    for item in app.routes:
+        if getattr(item, "path", "") == route:
+            found = True
+            require(getattr(item, "methods", set()) == {"GET"}, "owner repair plan route must be GET-only")
+    require(found, "owner repair plan route missing")
     response = TestClient(app).get(f"/api/commands/accounts/{ACCOUNT_ID}/partial-fill-owner-repair-implementation-plan")
-    require(response.status_code == 404, "owner repair plan API retirement mismatch")
+    require(response.status_code == 200, "owner repair plan API does not return 200")
+    api_payload = response.json()
+    require(
+        api_payload["post_repair_runtime_attempt_gate"]["runtime_attempt_allowed_by_this_plan"] is False,
+        "API runtime retry flag mismatch",
+    )
+    require(api_payload["negative_assertions"]["partial_fill_claimed"] is False, "API partial fill claim mismatch")
 
     app_text = read(APP)
     api_text = read(API)
-    types_text = read(HISTORICAL_TYPES)
+    types_text = read(TYPES)
     spec_text = read(SPEC)
     for phrase in [
+        "fetchCommandPartialFillOwnerRepairImplementationPlan",
         "CommandPartialFillOwnerRepairImplementationPlan",
-        "partial-fill-owner-repair-implementation-plan",
-        ]:
+        "account-partial-fill-owner-repair-plan-panel",
+        "account-partial-fill-owner-repair-plan-runtime-retry",
+        "account-partial-fill-owner-repair-plan-validator",
+    ]:
         require(phrase in app_text or phrase in api_text or phrase in types_text or phrase in spec_text, f"frontend phrase missing: {phrase}")
-    require("fetchCommandPartialFillOwnerRepairImplementationPlan" not in api_text, "retired frontend API fetch should be removed")
-    require("account-partial-fill-owner-repair-plan-panel" not in app_text, "retired frontend panel should be removed")
     for phrase in [
         "partial-fill-owner-repair-implementation-plan",
         "partial-fill-owner-repair-plan-ui.json",
@@ -128,7 +140,7 @@ def main() -> None:
     validate_route_and_frontend()
     print(
         "P024_PARTIAL_FILL_OWNER_REPAIR_PLAN_BROWSER_EVIDENCE_OK: "
-        "ui=archive_only_historical_evidence route=retired_404 owner_write=false runtime_retry=false"
+        "ui=pass owner_write=false runtime_retry=false"
     )
 
 

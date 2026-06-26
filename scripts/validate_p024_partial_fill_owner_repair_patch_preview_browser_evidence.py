@@ -68,9 +68,17 @@ def validate_route() -> None:
     from nautilus_account_console.main import app
 
     route = "/api/commands/accounts/{account_id}/partial-fill-owner-repair-patch-preview"
-    require(all(getattr(item, "path", "") != route for item in app.routes), "patch preview route should be retired")
+    found = False
+    for item in app.routes:
+        if getattr(item, "path", "") == route:
+            found = True
+            require(getattr(item, "methods", set()) == {"GET"}, "patch preview route must be GET-only")
+    require(found, "patch preview route missing")
     response = TestClient(app).get(f"/api/commands/accounts/{ACCOUNT_ID}/partial-fill-owner-repair-patch-preview")
-    require(response.status_code == 404, "patch preview API retirement mismatch")
+    require(response.status_code == 200, "patch preview API does not return 200")
+    payload = response.json()
+    require(payload["post_patch_runtime_gate"]["runtime_retry_authorized_by_preview"] is False, "API retry flag mismatch")
+    require(payload["negative_assertions"]["owner_patch_applied"] is False, "API patch flag mismatch")
 
 
 def main() -> None:
@@ -78,7 +86,7 @@ def main() -> None:
     validate_route()
     print(
         "P024_PARTIAL_FILL_OWNER_REPAIR_PATCH_PREVIEW_BROWSER_EVIDENCE_OK: "
-        "ui=archive_only_historical_evidence route=retired_404 owner_write=false runtime_retry=false"
+        "ui=pass owner_write=false runtime_retry=false"
     )
 
 

@@ -79,7 +79,7 @@ The implementation should split the current monolithic Account Workbench UI into
 15. `EvidenceRail`
 16. `MissingRegionBlocker`
 
-These components should land through canonical owner modules such as `frontend/src/account-workbench-terminal.tsx`, `frontend/src/account-workbench-adapters.ts`, `frontend/src/account-workbench-routing.ts` and `frontend/src/fixture-selection.ts`. `frontend/src/App.tsx` is the composition root and must not be the lasting owner for these regions.
+These components may live in `frontend/src/App.tsx` during first landing if a low-risk split is needed, but final implementation should move them into dedicated files under `frontend/src/account-workbench/`.
 
 ## 5. Implementation Phases / 实现阶段
 

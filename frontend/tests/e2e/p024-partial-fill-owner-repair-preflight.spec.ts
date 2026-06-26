@@ -8,7 +8,7 @@ const evidencePath = path.join(evidenceDir, "partial-fill-owner-repair-preflight
 
 test("P024 Web UI renders owner repair preflight source audit", async ({ page }, testInfo) => {
   const apiResponse = await page.request.get(
-    `http://127.0.0.1:8875/api/commands/accounts/${accountId}/partial-fill-owner-repair-preflight-source-audit`
+    `http://127.0.0.1:8775/api/commands/accounts/${accountId}/partial-fill-owner-repair-preflight-source-audit`
   );
   expect(apiResponse.ok()).toBe(true);
   const audit = (await apiResponse.json()) as Record<string, any>;

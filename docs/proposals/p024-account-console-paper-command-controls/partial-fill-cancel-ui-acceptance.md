@@ -94,7 +94,7 @@ P024 has proposal-scoped browser display-contract evidence:
 3. Validator: `python scripts\validate_p024_partial_fill_cancel_browser_evidence.py`.
 4. Pass signal: `P024_PARTIAL_FILL_CANCEL_BROWSER_EVIDENCE_OK`.
 
-This evidence verifies Web UI display correctness only. It preserves `historical_fixture_governed_blocked_until_owner_evidence` and does not claim real partial-fill runtime, live readiness or broker truth.
+This evidence verifies Web UI display correctness only. It preserves `typed_blocker_until_real_or_owner_approved_partial_fill_state` and does not claim real partial-fill runtime, live readiness or broker truth.
 
 ## Predecessor Evidence
 

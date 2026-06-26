@@ -74,18 +74,28 @@ def validate_route() -> None:
     from nautilus_account_console.main import app
 
     route = "/api/commands/accounts/{account_id}/partial-fill-owner-repair-approval-packet"
-    require(all(getattr(item, "path", "") != route for item in app.routes), "approval packet route should be retired")
+    found = False
+    for item in app.routes:
+        if getattr(item, "path", "") == route:
+            found = True
+            require(getattr(item, "methods", set()) == {"GET"}, "approval packet route must be GET-only")
+    require(found, "approval packet route missing")
     response = TestClient(app).get(f"/api/commands/accounts/{ACCOUNT_ID}/partial-fill-owner-repair-approval-packet")
-    require(response.status_code == 404, "approval packet API retirement mismatch")
+    require(response.status_code == 200, "approval packet API does not return 200")
+    payload = response.json()
+    require(payload["required_owner_repair_approval"]["obtained"] is False, "API approval obtained mismatch")
+    require("repair owner close-offset semantics for P024" in payload["required_owner_repair_approval"]["exact_approval_text_required"], "API exact approval text mismatch")
+    require(payload["retry_gate"]["runtime_invocation_allowed"] is False, "API runtime retry mismatch")
+    require(payload["negative_assertions"]["owner_repo_write_attempted_by_this_packet"] is False, "API owner write mismatch")
+    require(payload["negative_assertions"]["full_acceptance_claimed"] is False, "API full claim mismatch")
 
 
 def validate_frontend_contract() -> None:
-    frontend_type = (ROOT / "frontend" / "src" / "types-historical-p024.ts").read_text(encoding="utf-8")
+    frontend_type = (ROOT / "frontend" / "src" / "types.ts").read_text(encoding="utf-8")
     frontend_app = (ROOT / "frontend" / "src" / "App.tsx").read_text(encoding="utf-8")
-    frontend_api = (ROOT / "frontend" / "src" / "api.ts").read_text(encoding="utf-8")
     require("interface CommandPartialFillOwnerRepairApprovalPacket" in frontend_type, "frontend type missing approval packet")
-    require("account-partial-fill-owner-repair-approval-packet-panel" not in frontend_app, "retired frontend panel should be removed")
-    require("fetchCommandPartialFillOwnerRepairApprovalPacket" not in frontend_api, "retired frontend API fetch should be removed")
+    require("account-partial-fill-owner-repair-approval-packet-panel" in frontend_app, "frontend panel test id missing")
+    require("fetchCommandPartialFillOwnerRepairApprovalPacket" in frontend_app, "frontend fetch missing")
 
 
 def main() -> None:
@@ -94,7 +104,7 @@ def main() -> None:
     validate_frontend_contract()
     print(
         "P024_PARTIAL_FILL_OWNER_REPAIR_APPROVAL_PACKET_BROWSER_EVIDENCE_OK: "
-        "ui=archive_only_historical_evidence route=retired_404 approval=false runtime_retry=false owner_write=false"
+        "ui=pass approval=false runtime_retry=false owner_write=false"
     )
 
 

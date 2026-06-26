@@ -74,18 +74,28 @@ def validate_route() -> None:
     from nautilus_account_console.main import app
 
     route = "/api/commands/accounts/{account_id}/partial-fill-remaining-acceptance-current-state"
-    require(all(getattr(item, "path", "") != route for item in app.routes), "remaining acceptance route should be retired")
+    found = False
+    for item in app.routes:
+        if getattr(item, "path", "") == route:
+            found = True
+            require(getattr(item, "methods", set()) == {"GET"}, "remaining acceptance route must be GET-only")
+    require(found, "remaining acceptance route missing")
     response = TestClient(app).get(f"/api/commands/accounts/{ACCOUNT_ID}/partial-fill-remaining-acceptance-current-state")
-    require(response.status_code == 404, "remaining acceptance API retirement mismatch")
+    require(response.status_code == 200, "remaining acceptance API does not return 200")
+    payload = response.json()
+    requirements = {item["requirement_id"]: item for item in payload["remaining_acceptance_requirements"]}
+    require(set(requirements) == EXPECTED_REQUIREMENTS, "API requirement ids mismatch")
+    require(all(item["current_status"] == "missing" for item in requirements.values()), "API requirement state mismatch")
+    require(payload["negative_assertions"]["full_acceptance_claimed"] is False, "API full claim mismatch")
+    require(payload["negative_assertions"]["web_ui_real_partial_fill_claimed"] is False, "API Web UI claim mismatch")
 
 
 def validate_frontend_contract() -> None:
-    frontend_type = (ROOT / "frontend" / "src" / "types-historical-p024.ts").read_text(encoding="utf-8")
+    frontend_type = (ROOT / "frontend" / "src" / "types.ts").read_text(encoding="utf-8")
     frontend_app = (ROOT / "frontend" / "src" / "App.tsx").read_text(encoding="utf-8")
-    frontend_api = (ROOT / "frontend" / "src" / "api.ts").read_text(encoding="utf-8")
     require("interface CommandPartialFillRemainingAcceptanceCurrentState" in frontend_type, "frontend type missing remaining state")
-    require("account-partial-fill-remaining-acceptance-panel" not in frontend_app, "retired frontend panel should be removed")
-    require("fetchCommandPartialFillRemainingAcceptanceCurrentState" not in frontend_api, "retired frontend API fetch should be removed")
+    require("account-partial-fill-remaining-acceptance-panel" in frontend_app, "frontend panel test id missing")
+    require("fetchCommandPartialFillRemainingAcceptanceCurrentState" in frontend_app, "frontend fetch missing")
 
 
 def main() -> None:
@@ -94,7 +104,7 @@ def main() -> None:
     validate_frontend_contract()
     print(
         "P024_PARTIAL_FILL_REMAINING_ACCEPTANCE_STATE_BROWSER_EVIDENCE_OK: "
-        "ui=archive_only_historical_evidence route=retired_404 requirements=5 full_acceptance=false"
+        "ui=pass requirements=5 full_acceptance=false"
     )
 
 
