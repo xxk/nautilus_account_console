@@ -1,10 +1,16 @@
 ---
 change-id: 20260629__adr0010-wi2-browser-evidence-retirement
-status: in_progress
+status: completed
 topic-id: adr0010-wi2
 ---
 
 # ADR-0010 WI-2 Browser Evidence Retirement - nautilus_account_console
+
+> Completed. Historical browser evidence JSON and pytest scratch artifacts are
+> retired from the source layer; the guard in
+> `backend/tests/test_adr0010_wi2_generated_artifact_retirement.py` prevents
+> tracked `output/**`, `.pytest_tmp/**`, and browser/acceptance evidence JSON
+> from returning.
 
 ## Scope
 
