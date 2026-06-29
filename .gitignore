@@ -12,6 +12,7 @@ docs/acceptance/browser-evidence/
 docs/proposals/*/*.html
 docs/acceptance/browser-evidence/frontend-test-output/
 docs/acceptance/browser-evidence/*/test-output/
+output/
 .env
 .env.*
 *.log
