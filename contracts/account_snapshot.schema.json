@@ -1,30 +1,110 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://nautilus.local/contracts/account_snapshot.schema.json",
+  "$defs": {
+    "AccountKind": {
+      "enum": [
+        "sandbox_paper",
+        "real_feed_sandbox_paper",
+        "broker_paper_probe",
+        "live_broker",
+        "backtest_replay"
+      ],
+      "title": "AccountKind",
+      "type": "string"
+    }
+  },
+  "properties": {
+    "account_id": {
+      "title": "Account Id",
+      "type": "string"
+    },
+    "account_kind": {
+      "$ref": "#/$defs/AccountKind"
+    },
+    "portfolio_uid": {
+      "title": "Portfolio Uid",
+      "type": "string"
+    },
+    "session_id": {
+      "title": "Session Id",
+      "type": "string"
+    },
+    "equity": {
+      "title": "Equity",
+      "type": "number"
+    },
+    "available_cash": {
+      "title": "Available Cash",
+      "type": "number"
+    },
+    "margin_used": {
+      "title": "Margin Used",
+      "type": "number"
+    },
+    "position_count": {
+      "default": 0,
+      "title": "Position Count",
+      "type": "integer"
+    },
+    "open_order_count": {
+      "default": 0,
+      "title": "Open Order Count",
+      "type": "integer"
+    },
+    "fill_count_today": {
+      "default": 0,
+      "title": "Fill Count Today",
+      "type": "integer"
+    },
+    "event_lag_ms": {
+      "default": 0.0,
+      "title": "Event Lag Ms",
+      "type": "number"
+    },
+    "health": {
+      "default": "event_stream_live",
+      "title": "Health",
+      "type": "string"
+    },
+    "blocker_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Blocker Id"
+    },
+    "last_seq": {
+      "default": 0,
+      "title": "Last Seq",
+      "type": "integer"
+    },
+    "source_ref": {
+      "title": "Source Ref",
+      "type": "string"
+    },
+    "checksum": {
+      "title": "Checksum",
+      "type": "string"
+    }
+  },
+  "required": [
+    "account_id",
+    "account_kind",
+    "portfolio_uid",
+    "session_id",
+    "equity",
+    "available_cash",
+    "margin_used",
+    "source_ref",
+    "checksum"
+  ],
   "title": "AccountSnapshot",
   "type": "object",
-  "required": ["account_id", "account_kind", "equity", "available_cash", "margin_used", "last_seq", "checksum"],
-  "properties": {
-    "account_id": { "type": "string" },
-    "account_kind": {
-      "type": "string",
-      "enum": ["sandbox_paper", "real_feed_sandbox_paper", "broker_paper_probe", "live_broker", "backtest_replay"]
-    },
-    "portfolio_uid": { "type": "string" },
-    "session_id": { "type": "string" },
-    "equity": { "type": "number" },
-    "available_cash": { "type": "number" },
-    "margin_used": { "type": "number" },
-    "position_count": { "type": "integer", "minimum": 0 },
-    "open_order_count": { "type": "integer", "minimum": 0 },
-    "fill_count_today": { "type": "integer", "minimum": 0 },
-    "event_lag_ms": { "type": "number" },
-    "health": { "type": "string" },
-    "blocker_id": { "type": "string" },
-    "last_seq": { "type": "integer", "minimum": 0 },
-    "source_ref": { "type": "string" },
-    "checksum": { "type": "string" }
-  },
   "additionalProperties": false
 }
-

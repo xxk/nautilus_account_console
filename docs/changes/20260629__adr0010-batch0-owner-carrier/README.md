@@ -33,8 +33,9 @@ Sample paths:
 | RC-1 Batch entry gate | pending | pending | pending | slot-created |
 | RC-2 WI-2 inventory classification | inventory above | pending | pending | slot-created |
 | RC-3 WI-2 post-retirement guard | pending | pending | pending | slot-created |
+| RC-5 WI-7 codegen drift guard | remove or stale `scripts/generate_account_contracts.py --check` output | `python scripts\generate_account_contracts.py --check` + `python -m pytest backend\tests -q` | `cd frontend && npm ci && npm run build` | WI-7 passed |
 | RC-6 Evidence replay | pending | pending | pending | slot-created |
 
 ## Rollback Boundary
 
-WI-2 evidence retirement and WI-7 codegen drift work must be separate changes.
+WI-2 evidence retirement and WI-7 codegen drift work must be separate changes. WI-7 landed in `docs/changes/20260629__adr0010__wi7-account-contract-codegen-drift/`.
