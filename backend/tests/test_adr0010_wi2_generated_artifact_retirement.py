@@ -45,3 +45,18 @@ def test_adr0010_wi2_output_artifacts_are_ignored() -> None:
         capture_output=True,
     )
     assert result.returncode == 0
+
+
+def test_adr0010_active_adr_templates_do_not_propagate_misspelled_dslresearch_path() -> None:
+    templates = [
+        ROOT / "docs" / "adr" / "ADR模板_ADR Template.md",
+        ROOT / "docs" / "templates" / "dslresearch-reference" / "docs" / "adr" / "ADR模板_ADR Template.md",
+    ]
+
+    offenders = [
+        str(path.relative_to(ROOT))
+        for path in templates
+        if "DSLReserach" in path.read_text(encoding="utf-8")
+    ]
+
+    assert offenders == []
