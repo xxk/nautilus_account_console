@@ -1,6 +1,7 @@
 .venv/
 __pycache__/
 .pytest_cache/
+.pytest_tmp/
 *.pyc
 target/
 node_modules/
@@ -8,8 +9,13 @@ dist/
 frontend/dist/
 frontend/dist-*/
 frontend/tsconfig.tsbuildinfo
+docs/acceptance/browser-evidence/
+docs/acceptance/*browser-evidence.json
+docs/acceptance/*acceptance-evidence.json
+docs/proposals/*/*.html
 docs/acceptance/browser-evidence/frontend-test-output/
 docs/acceptance/browser-evidence/*/test-output/
+output/
 .env
 .env.*
 *.log

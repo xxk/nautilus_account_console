@@ -1,22 +1,72 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://nautilus.local/contracts/account_event.schema.json",
+  "$defs": {
+    "AccountKind": {
+      "enum": [
+        "sandbox_paper",
+        "real_feed_sandbox_paper",
+        "broker_paper_probe",
+        "live_broker",
+        "backtest_replay"
+      ],
+      "title": "AccountKind",
+      "type": "string"
+    }
+  },
+  "properties": {
+    "event_id": {
+      "title": "Event Id",
+      "type": "string"
+    },
+    "seq": {
+      "minimum": 0,
+      "title": "Seq",
+      "type": "integer"
+    },
+    "ts_event": {
+      "format": "date-time",
+      "title": "Ts Event",
+      "type": "string"
+    },
+    "account_id": {
+      "title": "Account Id",
+      "type": "string"
+    },
+    "account_kind": {
+      "$ref": "#/$defs/AccountKind"
+    },
+    "event_type": {
+      "title": "Event Type",
+      "type": "string"
+    },
+    "source_ref": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Source Ref"
+    },
+    "checksum": {
+      "title": "Checksum",
+      "type": "string"
+    }
+  },
+  "required": [
+    "event_id",
+    "seq",
+    "ts_event",
+    "account_id",
+    "account_kind",
+    "event_type",
+    "checksum"
+  ],
   "title": "AccountEvent",
   "type": "object",
-  "required": ["event_id", "seq", "ts_event", "account_id", "account_kind", "event_type", "checksum"],
-  "properties": {
-    "event_id": { "type": "string" },
-    "seq": { "type": "integer", "minimum": 0 },
-    "ts_event": { "type": "string", "format": "date-time" },
-    "account_id": { "type": "string" },
-    "account_kind": {
-      "type": "string",
-      "enum": ["sandbox_paper", "real_feed_sandbox_paper", "broker_paper_probe", "live_broker", "backtest_replay"]
-    },
-    "event_type": { "type": "string" },
-    "source_ref": { "type": "string" },
-    "checksum": { "type": "string" }
-  },
-  "additionalProperties": true
+  "additionalProperties": false
 }
-

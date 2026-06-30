@@ -33,6 +33,17 @@ class AccountSnapshot(BaseModel):
     checksum: str
 
 
+class AccountEvent(BaseModel):
+    event_id: str
+    seq: int = Field(ge=0)
+    ts_event: datetime
+    account_id: str
+    account_kind: AccountKind
+    event_type: str
+    source_ref: str | None = None
+    checksum: str
+
+
 class OrderEvent(BaseModel):
     event_id: str
     seq: int = Field(ge=0)
