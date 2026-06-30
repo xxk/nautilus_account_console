@@ -1,52 +1,250 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://nautilus.local/contracts/order_event.schema.json",
-  "title": "OrderEvent",
-  "type": "object",
+  "$defs": {
+    "AccountKind": {
+      "enum": [
+        "sandbox_paper",
+        "real_feed_sandbox_paper",
+        "broker_paper_probe",
+        "live_broker",
+        "backtest_replay"
+      ],
+      "title": "AccountKind",
+      "type": "string"
+    }
+  },
+  "properties": {
+    "event_id": {
+      "title": "Event Id",
+      "type": "string"
+    },
+    "seq": {
+      "minimum": 0,
+      "title": "Seq",
+      "type": "integer"
+    },
+    "ts_event": {
+      "format": "date-time",
+      "title": "Ts Event",
+      "type": "string"
+    },
+    "ts_recv": {
+      "format": "date-time",
+      "title": "Ts Recv",
+      "type": "string"
+    },
+    "account_id": {
+      "title": "Account Id",
+      "type": "string"
+    },
+    "account_kind": {
+      "$ref": "#/$defs/AccountKind"
+    },
+    "portfolio_uid": {
+      "title": "Portfolio Uid",
+      "type": "string"
+    },
+    "strategy_id": {
+      "title": "Strategy Id",
+      "type": "string"
+    },
+    "instrument_id": {
+      "title": "Instrument Id",
+      "type": "string"
+    },
+    "client_order_id": {
+      "title": "Client Order Id",
+      "type": "string"
+    },
+    "venue_order_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Venue Order Id"
+    },
+    "event_type": {
+      "title": "Event Type",
+      "type": "string"
+    },
+    "order_status": {
+      "title": "Order Status",
+      "type": "string"
+    },
+    "side": {
+      "title": "Side",
+      "type": "string"
+    },
+    "price": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Price"
+    },
+    "quantity": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Quantity"
+    },
+    "filled_qty": {
+      "default": 0.0,
+      "title": "Filled Qty",
+      "type": "number"
+    },
+    "last_px": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Last Px"
+    },
+    "last_qty": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Last Qty"
+    },
+    "leaves_qty": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Leaves Qty"
+    },
+    "reason": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Reason"
+    },
+    "latency_ms": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Latency Ms"
+    },
+    "report_msg_type": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Report Msg Type"
+    },
+    "report_msg_ref": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Report Msg Ref"
+    },
+    "report_msg_checksum": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Report Msg Checksum"
+    },
+    "report_msg_excerpt": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Report Msg Excerpt"
+    },
+    "source_ref": {
+      "title": "Source Ref",
+      "type": "string"
+    },
+    "checksum": {
+      "title": "Checksum",
+      "type": "string"
+    }
+  },
   "required": [
     "event_id",
     "seq",
     "ts_event",
+    "ts_recv",
     "account_id",
     "account_kind",
+    "portfolio_uid",
+    "strategy_id",
+    "instrument_id",
     "client_order_id",
     "event_type",
     "order_status",
+    "side",
+    "source_ref",
     "checksum"
   ],
-  "properties": {
-    "event_id": { "type": "string" },
-    "seq": { "type": "integer", "minimum": 0 },
-    "ts_event": { "type": "string", "format": "date-time" },
-    "ts_recv": { "type": "string", "format": "date-time" },
-    "account_id": { "type": "string" },
-    "account_kind": {
-      "type": "string",
-      "enum": ["sandbox_paper", "real_feed_sandbox_paper", "broker_paper_probe", "live_broker", "backtest_replay"]
-    },
-    "portfolio_uid": { "type": "string" },
-    "strategy_id": { "type": "string" },
-    "instrument_id": { "type": "string" },
-    "client_order_id": { "type": "string" },
-    "venue_order_id": { "type": "string" },
-    "event_type": { "type": "string" },
-    "order_status": { "type": "string" },
-    "side": { "type": "string" },
-    "price": { "type": "number" },
-    "quantity": { "type": "number" },
-    "filled_qty": { "type": "number" },
-    "last_px": { "type": "number" },
-    "last_qty": { "type": "number" },
-    "leaves_qty": { "type": "number" },
-    "reason": { "type": "string" },
-    "latency_ms": { "type": "number" },
-    "report_msg_type": { "type": "string" },
-    "report_msg_ref": { "type": "string" },
-    "report_msg_checksum": { "type": "string" },
-    "report_msg_excerpt": { "type": "string" },
-    "source_ref": { "type": "string" },
-    "checksum": { "type": "string" }
-  },
+  "title": "OrderEvent",
+  "type": "object",
   "additionalProperties": false
 }
-

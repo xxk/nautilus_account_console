@@ -14,7 +14,7 @@ landing_status: not_started
 - 落地状态：not_started / planned / active / completed / retired
 - 落地摘要：not_started / planned via Pxxx / active via change YYYYMMDD__... / completed via Pxxx Phase N
 - 覆盖摘要：decision 0/N, implementation 0/N, retirement 0/N 或 不适用；默认优先用 `0/N`，不要用百分比，除非分母在文中被明确冻结且不会引起歧义
-- 适用范围：`D:\Nautilus\DSLReserach`
+- 适用范围：`D:\Nautilus\DSLResearch`
 - 决策问题：一句话写清“要决定什么”。
 - 当前倾向：一句话写当前推荐候选；若仍在评审中，可写“评审中”。
 - 最终决策：仅在 Section 4 确认后填写；pre-decision 阶段写 `待决策`。
