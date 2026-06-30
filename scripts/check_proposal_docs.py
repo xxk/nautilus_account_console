@@ -55,7 +55,9 @@ def validate_workflow_contract(root: Path) -> None:
     require_terms(
         manifest,
         [
-            "schema_id: account_console_proposal_workflow_stage_contract",
+            "schema_id: proposal_workflow_stage_contract",
+            "canonical_source: docs/workflows/proposal-gates/proposal_gate_manifest.yaml",
+            "contract_id: account_console_proposal_workflow_contract",
             "PG-S0-SCAFFOLD",
             "PG-S1-WORKFLOW-CONTRACT",
             "PG-S2-UI-DESIGN-ACCEPTANCE",

@@ -1,21 +1,22 @@
 # Proposal Workflow Stage Contract / Proposal 工作流阶段契约
 
-This directory ports the DSLresearch proposal workflow gate pattern into `nautilus_account_console`, with account-console-specific boundaries.
+This directory keeps the local Account Console proposal workflow contract. It is not a workspace-level Shared Contract source.
 
-本目录把 DSLresearch 的 proposal workflow gate 模式裁剪到 Account Console，保留 proposal 文档约束，不复制 research runtime / Case Authority 语义。
+本目录保留 Account Console proposal workflow 本地契约；本仓不放置全仓 shared contract 权威，也不作为其兼容入口。
 
 | File | Reader | Purpose |
 | --- | --- | --- |
-| `proposal_gate_manifest.yaml` | machine / gate owner | Stage Contract manifest; defines Stage, advance Gate, Checks, Proof Items and fail signals |
+| `proposal_gate_manifest.yaml` | machine / local contract | Local Account Console proposal workflow contract |
 | `proposal_gate_board.md` | human / reviewer / AI operator | Human-readable board with the same Stage/Gate ids and semantics |
 
 ## Authority Boundary
 
-1. `proposal_gate_manifest.yaml` is the machine-readable source for Account Console proposal workflow stages.
-2. `proposal_gate_board.md` is a human-readable projection and must not add gates absent from the manifest.
-3. Runtime/source/account truth owners remain external or owner-specific; proposal gates cannot mint those truths.
-4. UI design gates cannot be counted as browser-verified implementation closeout.
-5. If this workflow conflicts with [Account Console owner map](../../ownership/account-console-owner-map.md), the owner map wins and this workflow must be fixed.
+1. Local `proposal_gate_manifest.yaml` is Account Console's local proposal workflow contract, not a Shared Contract alias/source.
+2. `proposal_gate_board.md` is a human-readable local projection and must not create gates absent from the local manifest plus Account Console owner boundaries.
+3. Workspace projections must not list this directory as a Shared Contract source.
+4. Runtime/source/account truth owners remain external or owner-specific; proposal gates cannot mint those truths.
+5. UI design gates cannot be counted as browser-verified implementation closeout.
+6. If this workflow conflicts with [Account Console owner map](../../ownership/account-console-owner-map.md), the owner map wins and this workflow must be fixed.
 
 ## Two-Term Boundary
 
