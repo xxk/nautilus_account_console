@@ -1,4 +1,5 @@
 from pathlib import Path
+import json
 
 import pytest
 
@@ -68,6 +69,17 @@ def test_source_bridge_bundles_project_through_account_mirror() -> None:
 def test_source_bridge_rejects_command_bearing_source_artifact() -> None:
     with pytest.raises(SourceBridgeError):
         load_source_artifact(Path(DEFAULT_ARTIFACT_DIR) / "invalid_direct_command_source.json")
+
+
+def test_source_bridge_rejects_missing_route_context_instead_of_fallback(tmp_path: Path) -> None:
+    source_path = Path(DEFAULT_ARTIFACT_DIR) / "nautilus_paper_demo_source.json"
+    payload = json.loads(source_path.read_text(encoding="utf-8"))
+    payload.pop("route_context", None)
+    candidate = tmp_path / "missing-route-context.json"
+    candidate.write_text(json.dumps(payload), encoding="utf-8")
+
+    with pytest.raises(SourceBridgeError, match="route_context"):
+        load_source_artifact(candidate)
 
 
 def test_route_context_rejects_market_data_as_account_truth() -> None:

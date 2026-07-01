@@ -17,65 +17,6 @@ class SourceBridgeError(ValueError):
     pass
 
 
-def _fallback_route_context(payload: dict[str, Any]) -> dict[str, Any]:
-    account_id = str(payload["account_id"])
-    if account_id == "simulated-001":
-        return {
-            "state": "projected",
-            "route_id": "route.p079.stage2.simulated-001",
-            "account_alias": str(payload.get("account_uid", "sandbox-paper.simulated-001")),
-            "market_data_source": "ctp_md.025292",
-            "execution_adapter": "nautilus_sandbox_paper_simulated_runtime",
-            "account_truth": "nautilus_sandbox_paper_simulated_ledger",
-            "risk_domain": "sandbox",
-            "evidence_partition": "p079.stage2/simulated-001/025292-md-only",
-            "context_ref": str(payload.get("upstream_contract_ref", payload["source_ref"])),
-            "context_checksum": payload["source_checksum"],
-            "blocker_id": "simulated001_stage2_fixture_only",
-        }
-    if account_id == "acct.ctp.paper.19053":
-        return {
-            "state": "projected",
-            "route_id": "route.ctp.paper.19053.account-readonly",
-            "account_alias": "19053",
-            "market_data_source": "not_in_scope_for_account_readback",
-            "execution_adapter": "ctp_td.19053.readonly_projection",
-            "account_truth": "nautilus_ctp_adapter_source_package",
-            "risk_domain": "paper",
-            "evidence_partition": "account/acct.ctp.paper.19053/source-package",
-            "context_ref": payload["source_ref"],
-            "context_checksum": payload["source_checksum"],
-            "blocker_id": None,
-        }
-    if account_id == "acct.ctp.live.025292":
-        return {
-            "state": "projected",
-            "route_id": "route.ctp.live.025292.account-readonly",
-            "account_alias": "025292",
-            "market_data_source": "not_in_scope_for_account_readback",
-            "execution_adapter": "ctp_td.025292.readonly_projection",
-            "account_truth": "nautilus_ctp_adapter_source_package",
-            "risk_domain": "live",
-            "evidence_partition": "account/acct.ctp.live.025292/source-package",
-            "context_ref": payload["source_ref"],
-            "context_checksum": payload["source_checksum"],
-            "blocker_id": None,
-        }
-    return {
-        "state": "projected",
-        "route_id": f"route.{account_id.removeprefix('acct.')}.readonly",
-        "account_alias": str(payload["display_alias"]),
-        "market_data_source": "not_in_scope_for_account_readback",
-        "execution_adapter": str(payload["source_kind"]),
-        "account_truth": str(payload["source_owner"]),
-        "risk_domain": str(payload["account_domain"]),
-        "evidence_partition": f"account/{account_id}/source-package",
-        "context_ref": payload["source_ref"],
-        "context_checksum": payload["source_checksum"],
-        "blocker_id": None,
-    }
-
-
 def _blocked_route_context(
     *,
     account_id: str,
@@ -159,14 +100,18 @@ def load_source_artifact(path: Path) -> dict[str, Any]:
             raise SourceBridgeError(f"{path}: ledger_type must be simulated_sandbox_ledger")
     if not payload.get("source_ref") or not str(payload.get("source_checksum", "")).startswith("sha256:"):
         raise SourceBridgeError(f"{path}: source_ref and source_checksum are required")
-    route_context = payload.get("route_context") or _fallback_route_context(payload)
+    route_context = payload.get("route_context")
+    if route_context is None:
+        raise SourceBridgeError(f"{path}: route_context is required")
     validate_route_context(route_context, account_id)
     payload["route_context"] = route_context
     return payload
 
 
 def source_artifact_to_capability_bundle(payload: dict[str, Any]) -> dict[str, Any]:
-    route_context = payload.get("route_context") or _fallback_route_context(payload)
+    route_context = payload.get("route_context")
+    if route_context is None:
+        raise SourceBridgeError(f"{payload['account_id']}: route_context is required")
     validate_route_context(route_context, str(payload["account_id"]))
     source_ref = {
         "owner": payload["source_owner"],

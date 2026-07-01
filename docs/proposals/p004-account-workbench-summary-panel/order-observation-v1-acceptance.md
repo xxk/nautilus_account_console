@@ -7,10 +7,7 @@
 - Parent UI design: [P004 UI Design](./ui-design.md)
 - Parent UI acceptance: [P004 UI Acceptance](./ui-acceptance.md)
 - Static preview: [Account Console order observation preview](../../design/account-console-order-observation-preview.html)
-- Preview screenshots, design review only:
-  - [desktop](../../design/account-console-order-observation-preview-desktop.png)
-  - [tablet](../../design/account-console-order-observation-preview-tablet.png)
-  - [mobile](../../design/account-console-order-observation-preview-mobile.png)
+- Preview screenshots: retired from source control; design review uses the static preview HTML plus executable UI/browser evidence.
 
 ## 1. V1 Scope / V1 范围
 
@@ -104,7 +101,7 @@ For V1 closeout, desktop evidence is the only blocking browser requirement.
 | --- | --- | --- |
 | Desktop | 1440 x 900 | primary navigation, account list, exception summary, order table, lifecycle and evidence refs visible |
 
-Tablet and mobile screenshots may be kept as design previews, but they are not V1 acceptance gates.
+Tablet and mobile visual checks may be generated into ignored browser-evidence output during a review run, but they are not V1 acceptance gates and must not be checked in as source.
 
 V1 explicitly defers:
 

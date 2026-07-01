@@ -16,6 +16,19 @@
   "observed_at": "2026-06-15T00:00:01Z",
   "source_ref": "contracts/source_artifacts/samples/ctp_live_025292_sample_source.json",
   "source_checksum": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+  "route_context": {
+    "state": "projected",
+    "route_id": "route.ctp.live.025292.account-readonly",
+    "account_alias": "025292",
+    "market_data_source": "not_in_scope_for_account_readback",
+    "execution_adapter": "ctp_td.025292.readonly_projection",
+    "account_truth": "nautilus_ctp_adapter_source_package",
+    "risk_domain": "live",
+    "evidence_partition": "account/acct.ctp.live.025292/source-package",
+    "context_ref": "contracts/source_artifacts/samples/ctp_live_025292_sample_source.json",
+    "context_checksum": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+    "blocker_id": null
+  },
   "balances": [
     {
       "currency": "CNY",

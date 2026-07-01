@@ -30,6 +30,10 @@ def test_adr0010_wi2_browser_evidence_artifacts_are_not_tracked() -> None:
     ) == []
 
 
+def test_adr0010_wi2_design_preview_screenshots_are_not_tracked() -> None:
+    assert _tracked("docs/design/*preview*.png") == []
+
+
 def test_adr0010_wi2_output_artifacts_are_ignored() -> None:
     result = subprocess.run(
         [

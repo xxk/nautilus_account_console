@@ -79,6 +79,27 @@ test.describe("T001 Account Terminal Workbench", () => {
     await captureEvidence(page, testInfo.project.name, "ctp19053-api-readback");
   });
 
+  test("fails closed instead of using fixture fallback when mirror API is unavailable", async ({ page }) => {
+    await page.route("**/api/mirror/**", async (route) => {
+      await route.fulfill({
+        status: 503,
+        contentType: "application/json",
+        body: JSON.stringify({ detail: "mirror unavailable for fail-closed acceptance" }),
+      });
+    });
+
+    await page.goto("/accounts/acct.ctp.paper.19053");
+
+    await expect(page.getByTestId("terminal-workbench-shell")).toBeVisible();
+    await expect(page.getByTestId("account-readback-mode")).toContainText("typed blocker");
+    await expect(page.getByTestId("account-readback-mode")).not.toContainText(/fixture fallback/i);
+    await expect(page.getByTestId("account-source-health-panel")).toContainText("typed_blocker");
+    await expect(page.getByTestId("account-blocker-row")).toContainText("mirror_api_unavailable");
+    await expect(page.getByLabel("Fixture")).toHaveCount(0);
+    await expect(page.getByTestId("account-selector")).not.toContainText("happy path");
+    await expect(page.getByText(forbiddenCommandText)).toHaveCount(0);
+  });
+
   test("keeps blocked 025292 live account fail-closed in UI", async ({ page }, testInfo) => {
     await page.goto("/accounts/acct.ctp.live.025292");
 

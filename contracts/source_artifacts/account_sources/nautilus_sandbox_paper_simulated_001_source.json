@@ -23,6 +23,19 @@
   "observed_at": "2026-06-16T00:00:00Z",
   "source_ref": "contracts/source_artifacts/account_sources/nautilus_sandbox_paper_simulated_001_source.json",
   "source_checksum": "sha256:2222222222222222222222222222222222222222222222222222222222222222",
+  "route_context": {
+    "state": "projected",
+    "route_id": "route.p079.stage2.simulated-001",
+    "account_alias": "sandbox-paper.simulated-001",
+    "market_data_source": "ctp_md.025292",
+    "execution_adapter": "nautilus_sandbox_paper_simulated_runtime",
+    "account_truth": "nautilus_sandbox_paper_simulated_ledger",
+    "risk_domain": "sandbox",
+    "evidence_partition": "p079.stage2/simulated-001/025292-md-only",
+    "context_ref": "D:/Nautilus/_worktrees/r1-heartbeat-driver-contract/nautilus_strategies/docs/changes/20260615__paper__p079-stage2-025292-market-data-only-simulated-001-planning/evidence/stage2_environment_account_contract.json",
+    "context_checksum": "sha256:2222222222222222222222222222222222222222222222222222222222222222",
+    "blocker_id": "simulated001_stage2_fixture_only"
+  },
   "balances": [
     {
       "currency": "CNY",

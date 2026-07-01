@@ -629,6 +629,168 @@ function mirrorOrdersReadModel(readback: MirrorWorkbenchReadback): AccountOrders
   };
 }
 
+function mirrorUnavailableBlocker(reason: string): AccountSummaryBlocker {
+  return {
+    blocker_id: "mirror_api_unavailable",
+    severity: "high",
+    kind: "mirror_api_unavailable",
+    owner: "account-console-backend",
+    next_action: "Restore /api/mirror/accounts readback before rendering account projection values.",
+    source_ref: "/api/mirror/accounts",
+    checksum: "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+  };
+}
+
+function mirrorUnavailableContext(routeAccountId: string, reason: string) {
+  return {
+    trading_day: "blocked",
+    session_id: routeAccountId || "unknown_account",
+    run_id: reason,
+    reducer_checkpoint_id: "mirror_api_unavailable",
+    reducer_checkpoint_ts: "unavailable",
+    stream_state: "blocked" as const,
+    projection_owner: "account-console-contracts" as const,
+    source_authority: "typed_blocker" as const
+  };
+}
+
+function mirrorUnavailableBoundaries() {
+  return {
+    read_only_projection: true,
+    runtime_truth: false,
+    ledger_truth: false,
+    ui_truth: false,
+    paper_ready: false,
+    live_ready: false,
+    broker_tradable: false,
+    admission_truth: false,
+    capital_truth: false,
+    broker_truth: false,
+    action_controls: false,
+    account_truth: false,
+    order_truth: false
+  };
+}
+
+function mirrorUnavailableSourceRefs(reason: string) {
+  return [
+    {
+      kind: "typed_blocker",
+      owner: "account-console-backend",
+      source_ref: "/api/mirror/accounts",
+      checksum: "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+      authority: `Mirror API unavailable: ${reason}`
+    }
+  ];
+}
+
+function mirrorUnavailableSummaryReadModel(
+  routeAccountId: string,
+  reason: string
+): AccountSummaryPanelReadModel {
+  return {
+    schema_version: "account_summary_panel.v1",
+    workbench: "Account Workbench",
+    panel: "Account Summary Panel",
+    route: "/accounts/{account_id}",
+    fixture_state: "blocked",
+    context: mirrorUnavailableContext(routeAccountId, reason),
+    account: {
+      account_id: routeAccountId || "unknown_account",
+      account_alias: routeAccountId || "unknown account",
+      account_kind: "sandbox_paper",
+      portfolio_uid: "mirror_api_unavailable",
+      display_state: "blocked",
+      base_currency: "CNY"
+    },
+    balances: {
+      cash: null,
+      frozen_cash: null,
+      available_cash: null,
+      buying_power: null
+    },
+    pnl: {
+      realized: null,
+      unrealized: null,
+      fees: null,
+      taxes: null
+    },
+    margin: {
+      initial_margin: null,
+      maintenance_margin: null,
+      margin_ratio: null
+    },
+    settlement: {
+      state: "blocked",
+      latest_settlement_ref: null,
+      position_carryover_ref: null
+    },
+    positions: [],
+    blockers: [mirrorUnavailableBlocker(reason)],
+    source_refs: mirrorUnavailableSourceRefs(reason),
+    boundaries: mirrorUnavailableBoundaries(),
+    rejection_rules: [
+      "Do not use deterministic fixtures as a runtime fallback for mirror API failures.",
+      "Do not infer account values when /api/mirror/accounts is unavailable."
+    ]
+  };
+}
+
+function mirrorUnavailablePositionsReadModel(
+  routeAccountId: string,
+  reason: string
+): AccountPositionsPanelReadModel {
+  const summary = mirrorUnavailableSummaryReadModel(routeAccountId, reason);
+  return {
+    schema_version: "account_positions_panel.v1",
+    workbench: "Account Workbench",
+    panel: "Account Positions Panel",
+    route: "/accounts/{account_id}/positions",
+    fixture_state: "blocked",
+    context: summary.context,
+    account: {
+      account_id: summary.account.account_id,
+      account_alias: summary.account.account_alias,
+      account_kind: summary.account.account_kind
+    },
+    positions: [],
+    blockers: summary.blockers,
+    source_refs: summary.source_refs,
+    boundaries: {
+      ...summary.boundaries,
+      account_truth: false,
+      order_truth: false
+    },
+    rejection_rules: ["Do not show fixture positions when mirror API readback is unavailable."]
+  };
+}
+
+function mirrorUnavailableOrdersReadModel(routeAccountId: string, reason: string): AccountOrdersPanelReadModel {
+  const summary = mirrorUnavailableSummaryReadModel(routeAccountId, reason);
+  return {
+    schema_version: "account_orders_panel.v1",
+    workbench: "Account Workbench",
+    panel: "Account Orders Panel",
+    route: "/accounts/{account_id}/orders",
+    fixture_state: "blocked",
+    context: summary.context,
+    account: {
+      account_id: summary.account.account_id,
+      account_alias: summary.account.account_alias,
+      account_kind: summary.account.account_kind
+    },
+    orders: [],
+    blockers: summary.blockers,
+    source_refs: summary.source_refs,
+    boundaries: {
+      ...summary.boundaries,
+      account_truth: false,
+      order_truth: false
+    },
+    rejection_rules: ["Do not show fixture orders when mirror API readback is unavailable."]
+  };
+}
+
 export function App() {
   const currentPath = window.location.pathname;
   const isIntradayMonitorRoute = currentPath === "/monitor";
@@ -711,9 +873,16 @@ export function App() {
 
   const selectedAccount =
     visibleRows.find((account) => account.account_id === selectedAccountId) ?? visibleRows[0] ?? null;
-  const terminalSummary = mirrorReadback ? mirrorSummaryReadModel(mirrorReadback) : accountSummaryFixture;
-  const terminalPositions = mirrorReadback ? mirrorPositionsReadModel(mirrorReadback) : accountPositionsFixture;
-  const terminalOrders = mirrorReadback ? mirrorOrdersReadModel(mirrorReadback) : accountOrdersFixture;
+  const mirrorUnavailableReason = mirrorReadbackError ?? "mirror readback loading";
+  const terminalSummary = mirrorReadback
+    ? mirrorSummaryReadModel(mirrorReadback)
+    : mirrorUnavailableSummaryReadModel(routeAccountId, mirrorUnavailableReason);
+  const terminalPositions = mirrorReadback
+    ? mirrorPositionsReadModel(mirrorReadback)
+    : mirrorUnavailablePositionsReadModel(routeAccountId, mirrorUnavailableReason);
+  const terminalOrders = mirrorReadback
+    ? mirrorOrdersReadModel(mirrorReadback)
+    : mirrorUnavailableOrdersReadModel(routeAccountId, mirrorUnavailableReason);
 
   useEffect(() => {
     if (
@@ -846,7 +1015,7 @@ export function App() {
               <Ref label="Authority" value={terminalSummary.context.source_authority} />
               <Ref
                 label="Readback"
-                value={mirrorReadback ? "mirror API" : mirrorReadbackError ? "fixture fallback" : "loading"}
+                value={mirrorReadback ? "mirror API" : mirrorReadbackError ? "typed blocker" : "loading"}
               />
             </section>
 
@@ -1220,12 +1389,12 @@ function AccountWorkbenchTerminalPanel({
         streamState: stateTone(account.mirror_state),
         href: `/accounts/${encodeURIComponent(account.account_id)}`
       }))
-    : Object.entries(accountSummaryFixtureMap).map(([state, fixture]) => ({
-        state: state as AccountSummaryFixtureState,
-        account: fixture.account,
-        streamState: fixture.context.stream_state,
+    : [{
+        state: null,
+        account: summary.account,
+        streamState: summary.context.stream_state,
         href: null
-      }));
+      }];
   const visiblePositions = positions.positions.filter(
     (position) => position.account_id === summary.account.account_id
   );
@@ -1313,7 +1482,7 @@ function AccountWorkbenchTerminalPanel({
             <dl className="detail-list">
               <div>
                 <dt>Mode</dt>
-                <dd>{mirrorAccounts ? "mirror API" : "deterministic fixture fallback"}</dd>
+                <dd>{mirrorAccounts ? "mirror API" : "typed blocker"}</dd>
               </div>
               <div>
                 <dt>Endpoint</dt>
@@ -1321,7 +1490,7 @@ function AccountWorkbenchTerminalPanel({
               </div>
               {mirrorReadbackError ? (
                 <div>
-                  <dt>Fallback reason</dt>
+                  <dt>Blocker reason</dt>
                   <dd>{mirrorReadbackError}</dd>
                 </div>
               ) : null}
@@ -1347,9 +1516,7 @@ function AccountWorkbenchTerminalPanel({
                   {accountRows.map((row) => (
                     <tr
                       className={
-                        row.account.account_id === summary.account.account_id || row.state === fixtureState
-                          ? "selected"
-                          : undefined
+                        row.account.account_id === summary.account.account_id ? "selected" : undefined
                       }
                       key={`${row.account.account_id}-${row.state ?? "mirror"}`}
                     >
@@ -1360,13 +1527,7 @@ function AccountWorkbenchTerminalPanel({
                             {row.account.account_id}
                           </a>
                         ) : (
-                          <button
-                            className="table-link-button"
-                            onClick={() => row.state && onFixtureState(row.state)}
-                            type="button"
-                          >
-                            {row.account.account_id}
-                          </button>
+                          <span>{row.account.account_id}</span>
                         )}
                       </td>
                       <td>{formatLabel(row.account.account_kind)}</td>
@@ -1414,25 +1575,6 @@ function AccountWorkbenchTerminalPanel({
         </aside>
 
         <main className="terminal-center">
-          {mirrorAccounts ? null : (
-            <div className="filter-toolbar account-summary-toolbar terminal-fixture-toolbar">
-              <label>
-                <ListFilter size={14} />
-                Fixture
-                <select
-                  onChange={(event) => onFixtureState(event.target.value as AccountSummaryFixtureState)}
-                  value={fixtureState}
-                >
-                  {Object.entries(accountSummaryFixtureLabels).map(([value, label]) => (
-                    <option key={value} value={value}>
-                      {label}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            </div>
-          )}
-
           {summary.fixture_state === "stale" ? (
             <div className="state-callout stale" data-testid="account-summary-stale-state">
               <AlertTriangle size={16} />

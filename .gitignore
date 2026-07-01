@@ -12,6 +12,7 @@ frontend/tsconfig.tsbuildinfo
 docs/acceptance/browser-evidence/
 docs/acceptance/*browser-evidence.json
 docs/acceptance/*acceptance-evidence.json
+docs/design/*preview*.png
 docs/proposals/*/*.html
 docs/acceptance/browser-evidence/frontend-test-output/
 docs/acceptance/browser-evidence/*/test-output/

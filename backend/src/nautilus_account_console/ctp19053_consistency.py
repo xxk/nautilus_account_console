@@ -16,6 +16,7 @@ SOURCE_PACKAGE_TEMPLATE = (
     ROOT / "contracts" / "source_artifacts" / "templates" / "ctp_paper_19053_source_package.template.json"
 )
 ACCOUNT_ID = "acct.ctp.paper.19053"
+DEFAULT_SOURCE_PACKAGE_REF = "output/account_capability/ctp-paper-19053/source-package.json"
 
 
 class Ctp19053ConsistencyError(ValueError):
@@ -63,7 +64,7 @@ def evaluate_ctp19053_source_package(source_package: Path = DEFAULT_SOURCE_PACKA
             verdict="blocked",
             account_id=ACCOUNT_ID,
             blocker_id="ctp19053_source_unavailable",
-            source_ref=str(source_package),
+            source_ref=DEFAULT_SOURCE_PACKAGE_REF,
             source_checksum=None,
             projection_checkpoint_id=None,
             projection_checksum=None,

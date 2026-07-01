@@ -11,6 +11,19 @@
   "observed_at": "2026-06-15T00:00:00Z",
   "source_ref": "contracts/source_artifacts/account_sources/nautilus_paper_demo_source.json",
   "source_checksum": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "route_context": {
+    "state": "projected",
+    "route_id": "route.nautilus.paper.demo.readonly",
+    "account_alias": "Nautilus Paper Demo",
+    "market_data_source": "not_in_scope_for_account_readback",
+    "execution_adapter": "nautilus_paper_runtime",
+    "account_truth": "nautilus_paper_runtime",
+    "risk_domain": "sandbox",
+    "evidence_partition": "account/acct.nautilus.paper.demo/source-package",
+    "context_ref": "contracts/source_artifacts/account_sources/nautilus_paper_demo_source.json",
+    "context_checksum": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "blocker_id": null
+  },
   "balances": [
     {
       "currency": "USD",

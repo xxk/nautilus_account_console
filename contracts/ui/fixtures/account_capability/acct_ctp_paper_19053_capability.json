@@ -61,6 +61,19 @@
       }
     ]
   },
+  "route_context": {
+    "state": "blocked",
+    "route_id": "route.ctp.paper.19053.account-readonly",
+    "account_alias": "19053",
+    "market_data_source": "not_in_scope_for_account_readback",
+    "execution_adapter": "ctp_td.19053.blocked_until_source_package",
+    "account_truth": "blocked_until_pinned_source_package",
+    "risk_domain": "paper",
+    "evidence_partition": "account/acct.ctp.paper.19053/blocked-source-package",
+    "context_ref": "output/account_capability/ctp-paper-19053/source-package.pending.json",
+    "context_checksum": "sha256:2222222222222222222222222222222222222222222222222222222222222222",
+    "blocker_id": "ctp19053_source_package_pending"
+  },
   "boundaries": {
     "read_only_projection": true,
     "broker_truth": false,

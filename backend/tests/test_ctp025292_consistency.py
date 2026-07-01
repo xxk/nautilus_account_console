@@ -16,6 +16,7 @@ def test_ctp025292_missing_default_source_package_blocks() -> None:
     assert result.verdict == "blocked"
     assert result.blocker_id == "ctp025292_source_unavailable"
     assert result.command_disabled == "pass"
+    assert result.source_ref == "output/account_capability/ctp-live-025292/source-package.json"
 
 
 def test_ctp025292_sample_source_package_can_pass_harness() -> None:

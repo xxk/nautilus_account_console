@@ -61,6 +61,19 @@
       }
     ]
   },
+  "route_context": {
+    "state": "blocked",
+    "route_id": "route.ctp.live.025292.account-readonly",
+    "account_alias": "025292",
+    "market_data_source": "not_in_scope_for_account_readback",
+    "execution_adapter": "ctp_td.025292.blocked_until_source_package",
+    "account_truth": "blocked_until_pinned_source_package",
+    "risk_domain": "live",
+    "evidence_partition": "account/acct.ctp.live.025292/blocked-source-package",
+    "context_ref": "output/account_capability/ctp-live-025292/source-package.pending.json",
+    "context_checksum": "sha256:3333333333333333333333333333333333333333333333333333333333333333",
+    "blocker_id": "ctp025292_source_package_pending"
+  },
   "boundaries": {
     "read_only_projection": true,
     "broker_truth": false,

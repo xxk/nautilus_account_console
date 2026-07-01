@@ -19,6 +19,12 @@ def test_ctp19053_consistency_blocks_when_source_package_missing(tmp_path):
     assert result.command_disabled == "pass"
 
 
+def test_ctp19053_missing_source_blocker_uses_repo_relative_source_ref(tmp_path):
+    result = evaluate_ctp19053_source_package(tmp_path / "missing.json")
+
+    assert result.source_ref == "output/account_capability/ctp-paper-19053/source-package.json"
+
+
 def test_ctp19053_consistency_accepts_sample_source_package(tmp_path):
     source = (
         {
@@ -39,6 +45,19 @@ def test_ctp19053_consistency_accepts_sample_source_package(tmp_path):
             "observed_at": "2026-06-15T00:00:01Z",
             "source_ref": "tmp/ctp19053/source-package.json",
             "source_checksum": "sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+            "route_context": {
+                "state": "projected",
+                "route_id": "route.ctp.paper.19053.account-readonly",
+                "account_alias": "19053",
+                "market_data_source": "not_in_scope_for_account_readback",
+                "execution_adapter": "ctp_td.19053.readonly_projection",
+                "account_truth": "nautilus_ctp_adapter_source_package",
+                "risk_domain": "paper",
+                "evidence_partition": "account/acct.ctp.paper.19053/source-package",
+                "context_ref": "tmp/ctp19053/source-package.json",
+                "context_checksum": "sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+                "blocker_id": None,
+            },
             "balances": [
                 {
                     "currency": "CNY",

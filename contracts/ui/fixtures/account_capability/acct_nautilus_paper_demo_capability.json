@@ -62,6 +62,19 @@
     },
     "blockers": []
   },
+  "route_context": {
+    "state": "projected",
+    "route_id": "route.nautilus.paper.demo.readonly",
+    "account_alias": "Nautilus Paper Demo",
+    "market_data_source": "not_in_scope_for_account_readback",
+    "execution_adapter": "nautilus_paper_runtime",
+    "account_truth": "account-console-contracts",
+    "risk_domain": "sandbox",
+    "evidence_partition": "account/acct.nautilus.paper.demo/source-package",
+    "context_ref": "contracts/ui/fixtures/account_capability/acct_nautilus_paper_demo_capability.json",
+    "context_checksum": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+    "blocker_id": null
+  },
   "boundaries": {
     "read_only_projection": true,
     "broker_truth": false,

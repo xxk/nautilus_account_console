@@ -225,6 +225,28 @@ function scanForbiddenTerms() {
   }
 }
 
+function validateAccountWorkbenchMirrorFailClosedBoundary() {
+  const appPath = path.join(repoRoot, "frontend", "src", "App.tsx");
+  const appSource = readFileSync(appPath, "utf8");
+  const forbiddenFallbackSnippets = [
+    "fixture fallback",
+    "deterministic fixture fallback",
+    "const terminalSummary = mirrorReadback ? mirrorSummaryReadModel(mirrorReadback) : accountSummaryFixture;",
+    "const terminalPositions = mirrorReadback ? mirrorPositionsReadModel(mirrorReadback) : accountPositionsFixture;",
+    "const terminalOrders = mirrorReadback ? mirrorOrdersReadModel(mirrorReadback) : accountOrdersFixture;"
+  ];
+  for (const snippet of forbiddenFallbackSnippets) {
+    assert(
+      !appSource.includes(snippet),
+      `Account Workbench mirror API failure must fail closed, not use fixture fallback: ${snippet}`
+    );
+  }
+  assert(
+    appSource.includes("mirror_api_unavailable"),
+    "Account Workbench mirror API failure must expose a typed mirror_api_unavailable blocker"
+  );
+}
+
 function validateAccountSummaryFixture(fileName) {
   const filePath = path.join(accountWorkbenchFixtureDir, fileName);
   const fixture = readJson(filePath);
@@ -933,6 +955,7 @@ function main() {
   }
   validateP077PaperSliceFixture();
   scanForbiddenTerms();
+  validateAccountWorkbenchMirrorFailClosedBoundary();
   console.log("account health, account summary, account orders, account positions, account settlement, account equity, account reconcile, account incidents, account evidence, intraday monitor and P077 paper slice fixtures plus forbidden scan passed");
 }
 

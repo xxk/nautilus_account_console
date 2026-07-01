@@ -18,6 +18,7 @@ SOURCE_PACKAGE_TEMPLATE = (
     ROOT / "contracts" / "source_artifacts" / "templates" / "ctp_live_025292_source_package.template.json"
 )
 ACCOUNT_ID = "acct.ctp.live.025292"
+DEFAULT_SOURCE_PACKAGE_REF = "output/account_capability/ctp-live-025292/source-package.json"
 
 
 class Ctp025292ConsistencyError(ValueError):
@@ -64,7 +65,7 @@ def _blocked_result(source_package: Path) -> ConsistencyResult:
         verdict="blocked",
         account_id=ACCOUNT_ID,
         blocker_id="ctp025292_source_unavailable",
-        source_ref=str(source_package),
+        source_ref=DEFAULT_SOURCE_PACKAGE_REF,
         source_checksum=None,
         projection_checkpoint_id=None,
         projection_checksum=None,
