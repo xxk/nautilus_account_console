@@ -1,16 +1,18 @@
 ---
-schema_id: account_console_proposal_workflow_stage_contract
+schema_id: proposal_workflow_stage_contract
 schema_version: 1
-source_pattern: DSLresearch/docs/workflows/proposal-gates
 canonical_source: docs/workflows/proposal-gates/proposal_gate_manifest.yaml
 human_board: docs/workflows/proposal-gates/proposal_gate_board.md
-owner: account_console_workflow_governance
-status: accepted_initial_manifest
-scope: account_console_proposal_workflow_stage_contract
+owner: nautilus_account_console_governance
+status: accepted_project_manifest
+scope: account_console_proposal_workflow_contract
+contract_id: account_console_proposal_workflow_contract
+contract_version: '0.1'
+display_name: Account Console Proposal Workflow Contract v0.1
 description: >
-  Machine-readable Proposal Workflow Stage Contract for nautilus_account_console.
-  It constrains proposal docs and UI implementation phases without creating a
-  second runtime, account, broker, admission, approval, capital, or browser truth owner.
+  Local Account Console proposal workflow contract. It is retained for
+  Account Console proposal-doc tooling and owner-boundary validation. It must
+  not become a second runtime, account, broker, admission, approval, capital, or browser truth owner.
 
 terminology:
   stage:
